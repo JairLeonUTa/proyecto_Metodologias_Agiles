@@ -1,17 +1,21 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { expedientesApi, mensajeDeError } from '../api';
+import { detallesDeError, expedientesApi, mensajeDeError } from '../api';
+import { validarArchivoPdf } from '../utils/validaciones';
 import { EncabezadoPagina } from '../components/EncabezadoPagina';
 import { Alerta, Boton, CargandoBloque, Etiqueta, MetricaResumen, Tarjeta } from '../components/ui';
 import { RUTAS } from '../layouts/navegacion';
 import { useMensajes } from '../hooks/useMensajes';
 import { usePeticion } from '../hooks/usePeticion';
 import { useTituloPagina } from '../hooks/useTituloPagina';
-import { ETIQUETA_ESTADO, ETIQUETA_TIPO_TRAMITE } from '../types/comunes';
+import { ETIQUETA_ESTADO, ETIQUETA_ESTADO_DOCUMENTO, ETIQUETA_TIPO_TRAMITE } from '../types/comunes';
 import { abreviarHash, formatearBytes, formatearFechaHora } from '../utils/formato';
 
-/** Detalle completo de un expediente con opción de reintentar la publicación (S1-A09). */
+/**
+ * Detalle completo de un expediente (S1-A09). Para un borrador (PENDIENTE_DOCUMENTOS) permite cargar
+ * PDF adicionales y enviarlo; para un expediente con publicación fallida permite reintentarla.
+ */
 export function ExpedienteDetallePage(): JSX.Element {
   const { id = '' } = useParams<{ id: string }>();
   useTituloPagina('Detalle del expediente');
@@ -19,22 +23,58 @@ export function ExpedienteDetallePage(): JSX.Element {
   const expediente = usePeticion(() => expedientesApi.obtener(id), [id]);
   const { mensaje, exito, error: reportarError, limpiar } = useMensajes();
   const [republicando, setRepublicando] = useState(false);
+  const [cargando, setCargando] = useState(false);
+  const entrada = useRef<HTMLInputElement>(null);
 
-  const republicar = async (): Promise<void> => {
+  const ejecutar = async (accion: () => Promise<{ codigo: string; mensaje: string }>): Promise<void> => {
     limpiar();
     setRepublicando(true);
     try {
-      const respuesta = await expedientesApi.republicar(id);
+      const respuesta = await accion();
       exito(`Expediente ${respuesta.codigo}: ${respuesta.mensaje}`);
-      expediente.recargar();
     } catch (fallo) {
-      reportarError(mensajeDeError(fallo));
+      reportarError(mensajeDeError(fallo), detallesDeError(fallo));
     } finally {
       setRepublicando(false);
+      expediente.recargar();
+    }
+  };
+
+  const cargarPdf = async (lista: FileList | null): Promise<void> => {
+    const archivo = lista?.[0];
+    if (!archivo) {
+      return;
+    }
+
+    limpiar();
+    const errorLocal = validarArchivoPdf(archivo);
+    if (errorLocal) {
+      reportarError(errorLocal);
+      return;
+    }
+
+    setCargando(true);
+    try {
+      const documento = await expedientesApi.subirDocumento(id, archivo);
+      exito(`Documento ${documento.nombreArchivo} validado y almacenado en el servidor.`);
+    } catch (fallo) {
+      reportarError(mensajeDeError(fallo), detallesDeError(fallo));
+    } finally {
+      setCargando(false);
+      if (entrada.current) {
+        entrada.current.value = '';
+      }
+      expediente.recargar();
     }
   };
 
   const datos = expediente.datos;
+  const esBorrador = datos?.estado === 'PENDIENTE_DOCUMENTOS';
+  const puedeReintentar =
+    datos !== null &&
+    datos !== undefined &&
+    !datos.eventoPublicado &&
+    (datos.estado === 'REGISTRADO_PENDIENTE_PUBLICACION' || datos.estado === 'PUBLICACION_EN_CURSO');
 
   return (
     <div className="space-y-6">
@@ -50,8 +90,38 @@ export function ExpedienteDetallePage(): JSX.Element {
             >
               Volver a la bandeja
             </Link>
-            {datos && !datos.eventoPublicado ? (
-              <Boton cargando={republicando} textoCargando="Republicando…" onClick={() => void republicar()}>
+            {esBorrador ? (
+              <>
+                <input
+                  ref={entrada}
+                  type="file"
+                  accept=".pdf,application/pdf"
+                  className="sr-only"
+                  onChange={(evento) => void cargarPdf(evento.target.files)}
+                />
+                <Boton
+                  variante="secundario"
+                  cargando={cargando}
+                  textoCargando="Cargando PDF…"
+                  onClick={() => entrada.current?.click()}
+                >
+                  Cargar PDF
+                </Boton>
+                <Boton
+                  cargando={republicando}
+                  textoCargando="Verificando y enviando…"
+                  onClick={() => void ejecutar(() => expedientesApi.enviar(id))}
+                >
+                  Enviar a procesamiento
+                </Boton>
+              </>
+            ) : null}
+            {puedeReintentar ? (
+              <Boton
+                cargando={republicando}
+                textoCargando="Republicando…"
+                onClick={() => void ejecutar(() => expedientesApi.republicar(id))}
+              >
                 Reintentar publicación
               </Boton>
             ) : null}
@@ -85,7 +155,11 @@ export function ExpedienteDetallePage(): JSX.Element {
               tono={datos.eventoPublicado ? 'exito' : 'error'}
               descripcion={`Intentos: ${datos.intentosPublicacion}`}
             />
-            <MetricaResumen etiqueta="Documentos" valor={datos.documentos.length} />
+            <MetricaResumen
+              etiqueta="Documentos validados"
+              valor={datos.documentos.filter((documento) => documento.estadoRecepcion === 'VALIDADO').length}
+              descripcion={`Cargas registradas: ${datos.documentos.length}`}
+            />
             <MetricaResumen etiqueta="Materias" valor={datos.asignaturas.length} />
           </div>
 
@@ -121,6 +195,7 @@ export function ExpedienteDetallePage(): JSX.Element {
                   <thead className="bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
                     <tr>
                       <th scope="col" className="px-4 py-2.5 font-semibold">Archivo</th>
+                      <th scope="col" className="px-4 py-2.5 font-semibold">Estado</th>
                       <th scope="col" className="px-4 py-2.5 font-semibold">Tamaño</th>
                       <th scope="col" className="px-4 py-2.5 font-semibold">SHA-256</th>
                       <th scope="col" className="px-4 py-2.5 font-semibold">Ruta de almacenamiento</th>
@@ -131,9 +206,26 @@ export function ExpedienteDetallePage(): JSX.Element {
                     {datos.documentos.map((documento) => (
                       <tr key={documento.id}>
                         <td className="px-4 py-2.5 text-slate-700">{documento.nombreArchivo}</td>
+                        <td className="px-4 py-2.5">
+                          <Etiqueta
+                            tono={
+                              documento.estadoRecepcion === 'VALIDADO'
+                                ? 'exito'
+                                : documento.estadoRecepcion === 'RETIRADO'
+                                  ? 'neutro'
+                                  : 'error'
+                            }
+                            titulo={documento.observacionValidacion ?? undefined}
+                          >
+                            {ETIQUETA_ESTADO_DOCUMENTO[documento.estadoRecepcion] ?? documento.estadoRecepcion}
+                          </Etiqueta>
+                          {documento.observacionValidacion ? (
+                            <p className="mt-1 max-w-xs text-xs text-slate-500">{documento.observacionValidacion}</p>
+                          ) : null}
+                        </td>
                         <td className="px-4 py-2.5 text-slate-600">{formatearBytes(documento.tamanoBytes)}</td>
                         <td className="px-4 py-2.5 font-mono text-xs text-slate-500" title={documento.hashSha256}>
-                          {abreviarHash(documento.hashSha256, 8)}
+                          {documento.hashSha256 ? abreviarHash(documento.hashSha256, 8) : '—'}
                         </td>
                         <td className="px-4 py-2.5 text-xs text-slate-500">{documento.rutaAlmacenamiento}</td>
                         <td className="px-4 py-2.5 text-xs text-slate-500">{formatearFechaHora(documento.fechaCargaUtc)}</td>

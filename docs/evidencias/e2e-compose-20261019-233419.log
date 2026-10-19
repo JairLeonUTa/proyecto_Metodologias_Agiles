@@ -1,0 +1,124 @@
+23:34:19 == 1. Arranque desde cero ==
+Docker 29.9.1
+Docker Compose version v5.6.0
+ Volume siha-ia_siha-sqlb Creating 
+ Volume siha-ia_siha-sqlb Creating 
+ Network siha-ia_siha Creating 
+ Network siha-ia_siha Creating 
+ Volume siha-ia_siha-rabbit Creating 
+ Volume siha-ia_siha-rabbit Creating 
+ Volume siha-ia_siha-sqla Creating 
+ Volume siha-ia_siha-sqla Creating 
+ Volume siha-ia_siha-archivos Creating 
+ Volume siha-ia_siha-archivos Creating 
+ Volume siha-ia_siha-sqlb Created 
+ Volume siha-ia_siha-sqlb Created 
+ Volume siha-ia_siha-archivos Created 
+ Volume siha-ia_siha-archivos Created 
+ Volume siha-ia_siha-rabbit Created 
+ Volume siha-ia_siha-rabbit Created 
+ Volume siha-ia_siha-sqla Created 
+ Volume siha-ia_siha-sqla Created 
+ Network siha-ia_siha Created 
+ Network siha-ia_siha Created 
+ Container siha-sqlserver-b Creating 
+ Container siha-sqlserver-a Creating 
+ Container siha-rabbitmq Creating 
+ Container siha-sqlserver-a Created 
+ Container siha-ms-a Creating 
+ Container siha-sqlserver-b Created 
+ Container siha-rabbitmq Created 
+ Container siha-ms-b Creating 
+ Container siha-ms-a Created 
+ Container siha-ms-b Created 
+ Container siha-gateway Creating 
+ Container siha-gateway Created 
+ Container siha-frontend Creating 
+ Container siha-frontend Created 
+ Container siha-sqlserver-a Starting 
+ Container siha-sqlserver-b Starting 
+ Container siha-rabbitmq Starting 
+ Container siha-sqlserver-a Started 
+ Container siha-sqlserver-a Waiting 
+ Container siha-sqlserver-b Started 
+ Container siha-rabbitmq Started 
+ Container siha-rabbitmq Waiting 
+ Container siha-sqlserver-b Waiting 
+ Container siha-rabbitmq Healthy 
+ Container siha-sqlserver-a Healthy 
+ Container siha-ms-a Starting 
+ Container siha-ms-a Started 
+ Container siha-sqlserver-b Healthy 
+ Container siha-ms-b Starting 
+ Container siha-ms-b Started 
+ Container siha-ms-b Waiting 
+ Container siha-ms-a Waiting 
+ Container siha-ms-a Healthy 
+ Container siha-ms-b Healthy 
+ Container siha-gateway Starting 
+ Container siha-gateway Started 
+ Container siha-frontend Starting 
+ Container siha-frontend Started 
+23:34:52   [OK]    docker compose up -d (volúmenes vacíos)
+23:34:56   Listo: Gateway respondiendo (4 s)
+23:34:56   Listo: ms-a sano (0 s)
+23:34:56   Listo: ms-b sano (0 s)
+23:34:56   Listo: login del administrador (0 s)
+NAME               IMAGE                                        COMMAND                  SERVICE       CREATED          STATUS                            PORTS
+siha-frontend      siha-ia-frontend                             "/docker-entrypoint.…"   frontend      37 seconds ago   Up 4 seconds (health: starting)   0.0.0.0:5173->80/tcp
+siha-gateway       siha-ia-gateway                              "dotnet Siha.Gateway…"   gateway       37 seconds ago   Up 4 seconds                      0.0.0.0:5000->8080/tcp
+siha-ms-a          siha-ia-ms-a                                 "dotnet Siha.MsA.Api…"   ms-a          37 seconds ago   Up 25 seconds (healthy)           0.0.0.0:5081->8080/tcp, 0.0.0.0:5083->8081/tcp
+siha-ms-b          siha-ia-ms-b                                 "dotnet Siha.MsB.Api…"   ms-b          37 seconds ago   Up 20 seconds (healthy)           0.0.0.0:5082->8080/tcp
+siha-rabbitmq      rabbitmq:3.13-management                     "docker-entrypoint.s…"   rabbitmq      37 seconds ago   Up 35 seconds (healthy)           4369/tcp, 5671/tcp, 0.0.0.0:5672->5672/tcp, 15671/tcp, 15691-15692/tcp, 25672/tcp, 0.0.0.0:15672->15672/tcp
+siha-sqlserver-a   mcr.microsoft.com/mssql/server:2022-latest   "/opt/mssql/bin/laun…"   sqlserver-a   37 seconds ago   Up 36 seconds (healthy)           0.0.0.0:1433->1433/tcp
+siha-sqlserver-b   mcr.microsoft.com/mssql/server:2022-latest   "/opt/mssql/bin/laun…"   sqlserver-b   37 seconds ago   Up 36 seconds (healthy)           0.0.0.0:14330->1433/tcp
+23:34:57 == 2. Migraciones reales ==
+23:34:57   [OK]    DB A migrada en SQL Server real
+23:34:57   [OK]    DB B migrada en SQL Server real (3 migraciones)
+23:34:57   [OK]    Índice único filtrado de documentos en DB B
+23:34:57 == 3. Autenticación a través del Gateway ==
+23:34:57   [OK]    Login vía Gateway (JWT emitido por MsA)
+23:34:57 == 4. Flujo documental ==
+23:34:58   [OK]    Rechazo de documentos declarados por el cliente
+23:34:58   [OK]    Registro del borrador vía Gateway
+23:34:58   [OK]    Envío sin documentos bloqueado
+23:34:59   [OK]    Carga rechazada (firma %PDF ausente)
+23:34:59   [OK]    Carga de PDF real vía Gateway
+23:34:59   [OK]    SHA-256 calculado por el servidor = SHA-256 local
+23:34:59   [OK]    Reintento de la misma carga: 200 sin duplicar
+23:34:59   [OK]    Una sola fila VALIDADO en DB B
+23:34:59   [OK]    Archivo en el volumen siha-archivos con el mismo hash
+23:34:59   [OK]    Envío con documento verificado (202 Accepted)
+23:34:59   [OK]    Segundo envío idempotente (200, sin republicar)
+23:34:59 == 5. Recepción en RabbitMQ ==
+23:35:00   Listo: mensaje recibido por el suscriptor de verificación (0 s)
+23:35:00   [OK]    Mensaje recibido en RabbitMQ con el mismo CorrelationId
+23:35:00   [OK]    Exactamente un mensaje para el expediente
+23:35:00   [OK]    Intercambio del contrato declarado en RabbitMQ
+23:35:00 == 6. Persistencia del almacenamiento ==
+ Container siha-ms-b Recreate 
+ Container siha-ms-b Recreated 
+ Container siha-ms-b Starting 
+ Container siha-ms-b Started 
+23:35:07   Listo: ms-b recreado y sano (6 s)
+23:35:07   [OK]    PDF intacto tras recrear el contenedor ms-b
+23:35:07   [OK]    Expediente consultable tras el reinicio
+23:35:07 == 7. Caída y recuperación del bus ==
+ Container siha-rabbitmq Stopping 
+ Container siha-rabbitmq Stopped 
+23:35:09   RabbitMQ DETENIDO (23:35:09)
+23:35:25   [OK]    Con el bus caído: 202 y estado recuperable
+23:35:25   [OK]    CorrelationId conservado durante la caída
+ Container siha-rabbitmq Starting 
+ Container siha-rabbitmq Started 
+23:35:26   RabbitMQ INICIADO (23:35:26)
+23:35:38   Listo: reintento automático publicó el expediente (12 s)
+23:35:38   [OK]    Recuperación automática tras reiniciar RabbitMQ
+23:35:38   [OK]    CorrelationId idéntico tras la recuperación
+23:35:41   Listo: mensaje recuperado recibido (3 s)
+23:35:41   [OK]    Mensaje recibido tras la recuperación con el mismo CorrelationId
+23:35:41 == 8. Frontend (Nginx) ==
+23:35:41   [OK]    SPA servida por Nginx
+23:35:41   [OK]    Carga de PDF de ~2 MB a través de Nginx -> Gateway -> MsB
+23:35:42 Evidencia: docs/evidencias/e2e-compose-20261019-233419.md
+23:35:42 Resultado: 28/28 comprobaciones superadas

@@ -52,7 +52,14 @@ public class ExpedienteEventPublisher : IExpedienteEventPublisher
 
                 var tentativa = _publishEndpoint.Publish(
                     evento,
-                    context => context.CorrelationId = evento.CorrelationId,
+                    context =>
+                    {
+                        context.CorrelationId = evento.CorrelationId;
+
+                        // MessageId determinista (= ExpedienteId): si un reintento llega a publicar dos
+                        // veces el mismo expediente, el consumidor puede descartar el duplicado.
+                        context.MessageId = evento.ExpedienteId;
+                    },
                     limite.Token);
 
                 // Se observa el resultado para que un fallo posterior no quede como excepción no controlada.

@@ -23,13 +23,33 @@ export interface CrearExpediente {
   carreraOrigenCodigo: string;
   carreraDestinoCodigo: string;
   institucionOrigen: string | null;
-  documentos: Array<{
-    nombreArchivo: string;
-    rutaAlmacenamiento: string;
-    hashSha256: string | null;
-    tamanoBytes: number;
-  }>;
   asignaturas: AsignaturaExpediente[];
+}
+
+/** Metadatos de un documento devueltos por el servidor (hash, ruta y tamaño calculados en B). */
+export interface DocumentoCargado {
+  id: string;
+  nombreArchivo: string;
+  nombreAlmacenado: string;
+  rutaAlmacenamiento: string;
+  hashSha256: string;
+  tamanoBytes: number;
+  mimeType: string;
+  /** VALIDADO, RECHAZADO, RETIRADO o NO_DISPONIBLE. */
+  estadoRecepcion: string;
+  observacionValidacion: string | null;
+  fechaCargaUtc: string;
+}
+
+/** Respuesta de `GET /api/expedientes/{id}/documentos`. */
+export interface DocumentosExpediente {
+  expedienteId: string;
+  codigoExpediente: string;
+  estadoExpediente: string;
+  totalDocumentos: number;
+  documentosValidados: number;
+  documentosRechazados: number;
+  documentos: DocumentoCargado[];
 }
 
 /** Respuesta 202 Accepted de `POST /api/expedientes` y `POST /api/expedientes/{id}/republicar`. */
@@ -57,14 +77,7 @@ export interface Expediente {
   ultimoErrorPublicacion: string | null;
   fechaCreacionUtc: string;
   fechaPublicacionUtc: string | null;
-  documentos: Array<{
-    id: string;
-    nombreArchivo: string;
-    rutaAlmacenamiento: string;
-    hashSha256: string;
-    tamanoBytes: number;
-    fechaCargaUtc: string;
-  }>;
+  documentos: DocumentoCargado[];
   asignaturas: Array<{
     codigoOrigen: string;
     nombreOrigen: string;

@@ -21,6 +21,7 @@ public class SolicitudCreadaEventContractTests
         "CarreraOrigenCodigo",
         "CarreraDestinoCodigo",
         "DocumentoIds",
+        "Documentos",
         "AsignaturasOrigen",
         "Estado",
         "FechaCreacionUtc",
@@ -93,7 +94,7 @@ public class SolicitudCreadaEventContractTests
         var evento = new SolicitudCreadaEvent();
 
         evento.Estado.Should().Be(ExpedienteEstados.PendienteContenidos);
-        evento.Version.Should().Be("1.0");
+        evento.Version.Should().Be("1.1");
         evento.CodigoExpediente.Should().BeEmpty();
         evento.DocumentoIds.Should().BeEmpty();
         evento.AsignaturasOrigen.Should().BeEmpty();
@@ -115,6 +116,6 @@ public class SolicitudCreadaEventContractTests
         recuperado.DocumentoIds.Should().BeEquivalentTo(original.DocumentoIds);
         recuperado.AsignaturasOrigen.Should().BeEquivalentTo(original.AsignaturasOrigen);
         recuperado.RutaNormativa.Should().Be(RutasNormativas.Movilidad);
-        recuperado.Version.Should().Be("1.0");
+        recuperado.Version.Should().Be("1.1");
     }
 }

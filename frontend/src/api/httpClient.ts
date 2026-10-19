@@ -102,9 +102,10 @@ function extraerMensaje(cuerpo: unknown, estado: number): { mensaje: string; det
   if (cuerpo && typeof cuerpo === 'object') {
     const datos = cuerpo as Record<string, unknown>;
 
-    // Respuestas de los controladores de SIHA-IA: { mensaje: "..." }
+    // Respuestas de los controladores de SIHA-IA: { mensaje: "...", detalles?: ["..."] }
     if (typeof datos.mensaje === 'string' && datos.mensaje.trim()) {
-      return { mensaje: datos.mensaje.trim(), detalles: [] };
+      const detalles = Array.isArray(datos.detalles) ? datos.detalles.map(String) : [];
+      return { mensaje: datos.mensaje.trim(), detalles };
     }
 
     // `ValidationProblemDetails` de ASP.NET Core: { errors: { campo: ["..."] } }
@@ -160,7 +161,10 @@ export async function peticion<T>(ruta: string, opciones: OpcionesPeticion = {})
     cabeceras.Authorization = `Bearer ${token}`;
   }
 
-  if (cuerpo !== undefined) {
+  // Con FormData (carga de PDF) el navegador fija el Content-Type multipart con su boundary.
+  const esFormulario = typeof FormData !== 'undefined' && cuerpo instanceof FormData;
+
+  if (cuerpo !== undefined && !esFormulario) {
     cabeceras['Content-Type'] = 'application/json';
   }
 
@@ -168,7 +172,7 @@ export async function peticion<T>(ruta: string, opciones: OpcionesPeticion = {})
   try {
     const opcionesFetch: RequestInit = { method: metodo, headers: cabeceras };
     if (cuerpo !== undefined) {
-      opcionesFetch.body = JSON.stringify(cuerpo);
+      opcionesFetch.body = esFormulario ? (cuerpo as FormData) : JSON.stringify(cuerpo);
     }
     if (senal) {
       opcionesFetch.signal = senal;

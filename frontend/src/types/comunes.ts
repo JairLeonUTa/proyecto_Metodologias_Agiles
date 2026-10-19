@@ -72,10 +72,20 @@ export const ESTADOS_EXPEDIENTE_TODOS: EstadoExpediente[] = [
 
 export const ETIQUETA_ESTADO: Record<string, string> = {
   REGISTRADO: 'Registrado',
+  PENDIENTE_DOCUMENTOS: 'Borrador — pendiente de documentos',
+  PUBLICACION_EN_CURSO: 'Publicación en curso',
   PENDIENTE_CONTENIDOS: 'Pendiente de contenidos',
   EN_PROCESO: 'En proceso',
   REGISTRADO_PENDIENTE_PUBLICACION: 'Registrado — pendiente de publicación',
   EVALUADO: 'Evaluado',
+};
+
+/** Estado de recepción de cada documento PDF en el Microservicio B. */
+export const ETIQUETA_ESTADO_DOCUMENTO: Record<string, string> = {
+  VALIDADO: 'Validado',
+  RECHAZADO: 'Rechazado',
+  RETIRADO: 'Retirado',
+  NO_DISPONIBLE: 'No disponible',
 };
 
 /** Reglas de validación de archivos PDF (S1-A07, validación local). */

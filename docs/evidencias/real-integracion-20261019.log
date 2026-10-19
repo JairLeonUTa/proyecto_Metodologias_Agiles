@@ -1,0 +1,405 @@
+Test run for tests/Siha.Integracion.Tests/bin/Release/net8.0/Siha.Integracion.Tests.dll (.NETCoreApp,Version=v8.0)
+Microsoft (R) Test Execution Command Line Tool Version 17.8.0 (x64)
+Copyright (c) Microsoft Corporation.  All rights reserved.
+
+Starting test execution, please wait...
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v2.5.3.1+6b60a9e56a (64-bit .NET 8.0.32)
+[xUnit.net 00:00:00.10]   Discovering: Siha.Integracion.Tests
+[xUnit.net 00:00:00.15]   Discovered:  Siha.Integracion.Tests
+[xUnit.net 00:00:00.16]   Starting:    Siha.Integracion.Tests
+[testcontainers.org 00:00:00.14] Connected to Docker:
+  Host: unix:///var/run/docker.sock
+  Server Version: 29.9.1
+  Kernel Version: 6.18.44-fc-v139
+  API Version: 1.56
+  Operating System: Ubuntu 24.04.5 LTS
+  Total Memory: 7.84 GB
+[testcontainers.org 00:00:00.32] Docker container e5fae0b1ec56 created
+[testcontainers.org 00:00:00.36] Start Docker container e5fae0b1ec56
+[testcontainers.org 00:00:00.51] Wait for Docker container e5fae0b1ec56 to complete readiness checks
+[testcontainers.org 00:00:01.54] Docker container e5fae0b1ec56 ready
+[testcontainers.org 00:00:01.60] Docker container 305c5d8f81db created
+[testcontainers.org 00:00:01.61] Start Docker container 305c5d8f81db
+[testcontainers.org 00:00:01.67] Docker container a0340643b5aa created
+[testcontainers.org 00:00:01.67] Start Docker container a0340643b5aa
+[testcontainers.org 00:00:01.83] Wait for Docker container 305c5d8f81db to complete readiness checks
+[testcontainers.org 00:00:01.84] Execute "/bin/sh -c find /opt/mssql-tools*/bin/sqlcmd -type f -print -quit" at Docker container 305c5d8f81db
+[testcontainers.org 00:00:01.91] Wait for Docker container a0340643b5aa to complete readiness checks
+[testcontainers.org 00:00:01.98] Execute "/opt/mssql-tools18/bin/sqlcmd -C -Q SELECT 1;" at Docker container 305c5d8f81db
+[testcontainers.org 00:00:09.98] Docker container a0340643b5aa ready
+[testcontainers.org 00:00:11.09] Execute "/opt/mssql-tools18/bin/sqlcmd -C -Q SELECT 1;" at Docker container 305c5d8f81db
+[testcontainers.org 00:00:11.19] Docker container 305c5d8f81db ready
+info: Program[0]
+      Almacenamiento de documentos listo en /tmp/siha-integracion/f973d7bdf34842f688eae5d6ef729fc4.
+info: Microsoft.EntityFrameworkCore.Migrations[20402]
+      Applying migration '20261018145319_InitialCreate'.
+info: Microsoft.EntityFrameworkCore.Migrations[20402]
+      Applying migration '20261018151155_AgregarDocumentosYAprobacionCertificada'.
+info: Microsoft.EntityFrameworkCore.Migrations[20402]
+      Applying migration '20261019223505_FlujoDocumentosVerificados'.
+info: Program[0]
+      Microservicio B listo. DB B migrada. Swagger en /swagger, salud en /health.
+info: MassTransit[0]
+      Configured endpoint VerificacionSolicitud, Consumer: Siha.MsB.Api.Consumers.VerificacionSolicitudConsumer
+info: Siha.MsB.Api.Services.RepublicacionAutomaticaWorker[0]
+      Reintento automático de publicaciones activo cada 00:00:02.
+info: Microsoft.Hosting.Lifetime[14]
+      Now listening on: http://localhost:5082
+info: MassTransit[0]
+      Bus started: rabbitmq://127.0.0.1:32779/
+info: Siha.MsB.Api.Controllers.ExpedientesController[0]
+      Expediente registrado como borrador. ExpedienteId=20f64f43-0b62-4212-9957-71c7cf9ee0ac Codigo=EXP-20261019-F3E0DE CorrelationId=ffbce1c1-8088-457e-a05c-876f8af0bd40
+info: Siha.MsB.Api.Services.ArchivoStorageService[0]
+      Documento almacenado. NombreOriginal=plan-analitico.pdf NombreAlmacenado=2cc1e6fd74b74d78bc8e49b66f6979b2.pdf TamanoBytes=66 Hash=5d56f315fea6c5689bffe344a04862bf090bf89d601c4331c2cca0451933d892
+info: Siha.MsB.Api.Controllers.DocumentosController[0]
+      Documento cargado. ExpedienteId=20f64f43-0b62-4212-9957-71c7cf9ee0ac DocumentoId=da62ad90-a406-467f-aa11-fd14488f290c Hash=5d56f315fea6c5689bffe344a04862bf090bf89d601c4331c2cca0451933d892 Intento=1
+warn: Microsoft.EntityFrameworkCore.Query[20504]
+      Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+info: Siha.MsB.Api.Events.ExpedienteEventPublisher[0]
+      SolicitudCreadaEvent publicado. ExpedienteId=20f64f43-0b62-4212-9957-71c7cf9ee0ac CorrelationId=ffbce1c1-8088-457e-a05c-876f8af0bd40 Intento=1
+info: Siha.MsB.Api.Consumers.VerificacionSolicitudConsumer[0]
+      [Verificación] SolicitudCreadaEvent recibido. Codigo=EXP-20261019-F3E0DE ExpedienteId=20f64f43-0b62-4212-9957-71c7cf9ee0ac CorrelationId=ffbce1c1-8088-457e-a05c-876f8af0bd40 Ruta=CAU-P-122 Tipo=EXTERNO Documentos=1 Asignaturas=1 Estado=PENDIENTE_CONTENIDOS
+info: MassTransit[0]
+      Bus stopped: rabbitmq://127.0.0.1:32779/
+  Passed Siha.Integracion.Tests.FlujoDocumentosRealTests.Envios_simultaneos_publican_un_solo_mensaje [18 s]
+info: Program[0]
+      Almacenamiento de documentos listo en /tmp/siha-integracion/661192b2d6374678af6d834295e80090.
+info: Microsoft.EntityFrameworkCore.Migrations[20402]
+      Applying migration '20261018145319_InitialCreate'.
+info: Microsoft.EntityFrameworkCore.Migrations[20402]
+      Applying migration '20261018151155_AgregarDocumentosYAprobacionCertificada'.
+info: Microsoft.EntityFrameworkCore.Migrations[20402]
+      Applying migration '20261019223505_FlujoDocumentosVerificados'.
+info: Program[0]
+      Microservicio B listo. DB B migrada. Swagger en /swagger, salud en /health.
+info: MassTransit[0]
+      Configured endpoint VerificacionSolicitud, Consumer: Siha.MsB.Api.Consumers.VerificacionSolicitudConsumer
+info: Siha.MsB.Api.Services.RepublicacionAutomaticaWorker[0]
+      Reintento automático de publicaciones activo cada 00:00:02.
+info: Microsoft.Hosting.Lifetime[14]
+      Now listening on: http://localhost:5082
+info: Siha.MsB.Api.Controllers.ExpedientesController[0]
+      Expediente registrado como borrador. ExpedienteId=75f43b7d-d237-4134-90db-a0824486c1b4 Codigo=EXP-20261019-E79650 CorrelationId=a4a5bdac-5e5f-4a4f-a220-09ffd1a44025
+info: MassTransit[0]
+      Bus started: rabbitmq://127.0.0.1:32779/
+info: Siha.MsB.Api.Services.ArchivoStorageService[0]
+      Documento almacenado. NombreOriginal=plan-analitico.pdf NombreAlmacenado=5a6217bf348d418aa7525682c2952394.pdf TamanoBytes=63 Hash=8c7823cd901099888ee0a79c8ac5e558bdcc65752a9aa6dd029e20080ae8e923
+info: Siha.MsB.Api.Controllers.DocumentosController[0]
+      Documento cargado. ExpedienteId=75f43b7d-d237-4134-90db-a0824486c1b4 DocumentoId=57fdd53d-eb93-4a58-abb0-292230bd8fff Hash=8c7823cd901099888ee0a79c8ac5e558bdcc65752a9aa6dd029e20080ae8e923 Intento=1
+info: Siha.MsB.Api.Consumers.VerificacionSolicitudConsumer[0]
+      [Verificación] SolicitudCreadaEvent recibido. Codigo=EXP-20261019-E79650 ExpedienteId=75f43b7d-d237-4134-90db-a0824486c1b4 CorrelationId=a4a5bdac-5e5f-4a4f-a220-09ffd1a44025 Ruta=CAU-P-122 Tipo=EXTERNO Documentos=1 Asignaturas=1 Estado=PENDIENTE_CONTENIDOS
+info: Siha.MsB.Api.Events.ExpedienteEventPublisher[0]
+      SolicitudCreadaEvent publicado. ExpedienteId=75f43b7d-d237-4134-90db-a0824486c1b4 CorrelationId=a4a5bdac-5e5f-4a4f-a220-09ffd1a44025 Intento=1
+info: MassTransit[0]
+      Bus stopped: rabbitmq://127.0.0.1:32779/
+  Passed Siha.Integracion.Tests.FlujoDocumentosRealTests.Recorrido_completo_registro_carga_envio_y_recepcion_en_RabbitMQ [13 s]
+info: Program[0]
+      Almacenamiento de documentos listo en /tmp/siha-integracion/49fe4127d20a41fca9666b1285468720.
+info: Microsoft.EntityFrameworkCore.Migrations[20402]
+      Applying migration '20261018145319_InitialCreate'.
+info: Microsoft.EntityFrameworkCore.Migrations[20402]
+      Applying migration '20261018151155_AgregarDocumentosYAprobacionCertificada'.
+info: Microsoft.EntityFrameworkCore.Migrations[20402]
+      Applying migration '20261019223505_FlujoDocumentosVerificados'.
+info: Program[0]
+      Microservicio B listo. DB B migrada. Swagger en /swagger, salud en /health.
+info: MassTransit[0]
+      Configured endpoint VerificacionSolicitud, Consumer: Siha.MsB.Api.Consumers.VerificacionSolicitudConsumer
+info: Siha.MsB.Api.Services.RepublicacionAutomaticaWorker[0]
+      Reintento automático de publicaciones activo cada 00:00:02.
+info: Microsoft.Hosting.Lifetime[14]
+      Now listening on: http://localhost:5082
+info: Siha.MsB.Api.Controllers.ExpedientesController[0]
+      Expediente registrado como borrador. ExpedienteId=25c958b2-d204-45c1-b8da-bea0589948b1 Codigo=EXP-20261019-A921BE CorrelationId=1555de40-1a2b-4a9c-b251-f6625058eca5
+info: Siha.MsB.Api.Services.ArchivoStorageService[0]
+      Documento almacenado. NombreOriginal=plan-analitico.pdf NombreAlmacenado=8848b1f21db24902a14ddbee7b222acd.pdf TamanoBytes=61 Hash=5ac938a7dedd7a1d8534ac953e5eabda2f4729df68a787c17a3f43d51937c416
+info: Siha.MsB.Api.Controllers.DocumentosController[0]
+      Documento cargado. ExpedienteId=25c958b2-d204-45c1-b8da-bea0589948b1 DocumentoId=f0e8423a-1279-4282-beee-bf3fe2a0c06b Hash=5ac938a7dedd7a1d8534ac953e5eabda2f4729df68a787c17a3f43d51937c416 Intento=1
+info: MassTransit[0]
+      Bus started: rabbitmq://127.0.0.1:32779/
+warn: Siha.MsB.Api.Services.ExpedienteEnvioService[0]
+      Documento no disponible al verificar antes de publicar. ExpedienteId=25c958b2-d204-45c1-b8da-bea0589948b1 DocumentoId=f0e8423a-1279-4282-beee-bf3fe2a0c06b Motivo=El archivo no existe en el almacenamiento.
+warn: Siha.MsB.Api.Services.ExpedienteEnvioService[0]
+      Envío rechazado por requisitos documentales. ExpedienteId=25c958b2-d204-45c1-b8da-bea0589948b1 CorrelationId=1555de40-1a2b-4a9c-b251-f6625058eca5 Verificados=0 Minimo=1
+info: MassTransit[0]
+      Bus stopped: rabbitmq://127.0.0.1:32779/
+  Passed Siha.Integracion.Tests.FlujoDocumentosRealTests.No_se_publica_si_el_PDF_ya_no_existe_en_el_almacenamiento [15 s]
+info: Program[0]
+      Almacenamiento de documentos listo en /tmp/siha-integracion/9c91d0020ccd4767b140221118c08acd.
+info: Microsoft.EntityFrameworkCore.Migrations[20402]
+      Applying migration '20261018145319_InitialCreate'.
+info: Microsoft.EntityFrameworkCore.Migrations[20402]
+      Applying migration '20261018151155_AgregarDocumentosYAprobacionCertificada'.
+info: Microsoft.EntityFrameworkCore.Migrations[20402]
+      Applying migration '20261019223505_FlujoDocumentosVerificados'.
+info: Program[0]
+      Microservicio B listo. DB B migrada. Swagger en /swagger, salud en /health.
+info: MassTransit[0]
+      Configured endpoint VerificacionSolicitud, Consumer: Siha.MsB.Api.Consumers.VerificacionSolicitudConsumer
+info: Siha.MsB.Api.Services.RepublicacionAutomaticaWorker[0]
+      Reintento automático de publicaciones activo cada 00:00:02.
+info: Microsoft.Hosting.Lifetime[14]
+      Now listening on: http://localhost:5082
+info: Siha.MsB.Api.Controllers.ExpedientesController[0]
+      Expediente registrado como borrador. ExpedienteId=d147f448-e865-407b-90c9-0ea660cc43b4 Codigo=EXP-20261019-D92D92 CorrelationId=90c5f654-fb7d-45c6-8e98-fc1b2e60001a
+info: Siha.MsB.Api.Services.ArchivoStorageService[0]
+      Documento almacenado. NombreOriginal=plan-analitico.pdf NombreAlmacenado=494e1fe25e2c42038c684e16b7471ef0.pdf TamanoBytes=64 Hash=1bdb5aac2454ee1472d007c960b57ab37009b6b332fb842d9c0723cd6920953f
+info: MassTransit[0]
+      Bus started: rabbitmq://127.0.0.1:32779/
+info: Siha.MsB.Api.Controllers.DocumentosController[0]
+      Documento cargado. ExpedienteId=d147f448-e865-407b-90c9-0ea660cc43b4 DocumentoId=275a6f9c-f1ef-49b2-ac90-7b771e181150 Hash=1bdb5aac2454ee1472d007c960b57ab37009b6b332fb842d9c0723cd6920953f Intento=1
+info: Siha.MsB.Api.Services.ArchivoStorageService[0]
+      Documento almacenado. NombreOriginal=plan-analitico.pdf NombreAlmacenado=da6c8bb8f2b148f389a458a2a61993b7.pdf TamanoBytes=64 Hash=950153e9626b4b72ef320b3b15892acc7f95726459a3e4bdd2ceab6622ddd25d
+info: Siha.MsB.Api.Services.ArchivoStorageService[0]
+      Documento almacenado. NombreOriginal=plan-analitico.pdf NombreAlmacenado=6f6c6c4c046d4308a1269de2a336df70.pdf TamanoBytes=64 Hash=aacf75a5295c2249cc70dee9d3ddf2ffba62e8e3a248af2aa5c52889c8610115
+info: Siha.MsB.Api.Controllers.DocumentosController[0]
+      Documento cargado. ExpedienteId=d147f448-e865-407b-90c9-0ea660cc43b4 DocumentoId=074a3ab6-a108-47cf-9f06-d4825aac5e79 Hash=aacf75a5295c2249cc70dee9d3ddf2ffba62e8e3a248af2aa5c52889c8610115 Intento=1
+info: Siha.MsB.Api.Services.ArchivoStorageService[0]
+      Documento almacenado. NombreOriginal=plan-analitico.pdf NombreAlmacenado=7e8cd0205a6d4072ab43a2801e021ef2.pdf TamanoBytes=64 Hash=ee84790812cdcdd6c611202d1fa5876186e82f02642615ba3e5f1473a11c6339
+info: Siha.MsB.Api.Controllers.DocumentosController[0]
+      Documento cargado. ExpedienteId=d147f448-e865-407b-90c9-0ea660cc43b4 DocumentoId=696d0b68-da5b-4161-920b-22b6150fda7b Hash=ee84790812cdcdd6c611202d1fa5876186e82f02642615ba3e5f1473a11c6339 Intento=2
+info: Siha.MsB.Api.Controllers.DocumentosController[0]
+      Documento cargado. ExpedienteId=d147f448-e865-407b-90c9-0ea660cc43b4 DocumentoId=7f6c3a3f-41db-478a-b6f2-fc37ab718059 Hash=950153e9626b4b72ef320b3b15892acc7f95726459a3e4bdd2ceab6622ddd25d Intento=3
+info: MassTransit[0]
+      Bus stopped: rabbitmq://127.0.0.1:32779/
+  Passed Siha.Integracion.Tests.FlujoDocumentosRealTests.Cargas_simultaneas_de_PDF_distintos_se_aceptan_todas [12 s]
+info: Program[0]
+      Almacenamiento de documentos listo en /tmp/siha-integracion/6ce0b16c3c5743528883b24676498633.
+info: Microsoft.EntityFrameworkCore.Migrations[20402]
+      Applying migration '20261018145319_InitialCreate'.
+info: Microsoft.EntityFrameworkCore.Migrations[20402]
+      Applying migration '20261018151155_AgregarDocumentosYAprobacionCertificada'.
+info: Microsoft.EntityFrameworkCore.Migrations[20402]
+      Applying migration '20261019223505_FlujoDocumentosVerificados'.
+info: Program[0]
+      Microservicio B listo. DB B migrada. Swagger en /swagger, salud en /health.
+info: MassTransit[0]
+      Configured endpoint VerificacionSolicitud, Consumer: Siha.MsB.Api.Consumers.VerificacionSolicitudConsumer
+info: Siha.MsB.Api.Services.RepublicacionAutomaticaWorker[0]
+      Reintento automático de publicaciones activo cada 00:00:02.
+info: Microsoft.Hosting.Lifetime[14]
+      Now listening on: http://localhost:5082
+info: Siha.MsB.Api.Controllers.ExpedientesController[0]
+      Expediente registrado como borrador. ExpedienteId=51dc779e-2706-44c5-9f39-8d45d8c1e6b0 Codigo=EXP-20261019-9E0A95 CorrelationId=c2759b3f-ef4c-44a4-956e-807f3ed15811
+info: Siha.MsB.Api.Services.ArchivoStorageService[0]
+      Documento almacenado. NombreOriginal=plan-analitico.pdf NombreAlmacenado=2197be43295349659b6fde1b3488a3f3.pdf TamanoBytes=63 Hash=74a5839cc666cc2b00f82847c551b6026a9bbbcbf1188e199051759755b3d554
+info: MassTransit[0]
+      Bus started: rabbitmq://127.0.0.1:32779/
+info: Siha.MsB.Api.Services.ArchivoStorageService[0]
+      Documento almacenado. NombreOriginal=plan-analitico.pdf NombreAlmacenado=d9f56c848ae94c308fe986b6ffc18ec2.pdf TamanoBytes=63 Hash=74a5839cc666cc2b00f82847c551b6026a9bbbcbf1188e199051759755b3d554
+info: Siha.MsB.Api.Services.ArchivoStorageService[0]
+      Documento almacenado. NombreOriginal=plan-analitico.pdf NombreAlmacenado=6be6eefe56094e5f8e2adb9f64094c79.pdf TamanoBytes=63 Hash=74a5839cc666cc2b00f82847c551b6026a9bbbcbf1188e199051759755b3d554
+info: Siha.MsB.Api.Services.ArchivoStorageService[0]
+      Documento almacenado. NombreOriginal=plan-analitico.pdf NombreAlmacenado=daad9be54b95414598d3f0f9afb318a4.pdf TamanoBytes=63 Hash=74a5839cc666cc2b00f82847c551b6026a9bbbcbf1188e199051759755b3d554
+info: Siha.MsB.Api.Controllers.DocumentosController[0]
+      Documento cargado. ExpedienteId=51dc779e-2706-44c5-9f39-8d45d8c1e6b0 DocumentoId=8963fe4a-791d-42ac-893e-43bf815fa894 Hash=74a5839cc666cc2b00f82847c551b6026a9bbbcbf1188e199051759755b3d554 Intento=1
+info: Siha.MsB.Api.Services.ArchivoStorageService[0]
+      Documento almacenado. NombreOriginal=plan-analitico.pdf NombreAlmacenado=d354c75c73384d95a5cc8ebe8a20a82f.pdf TamanoBytes=63 Hash=74a5839cc666cc2b00f82847c551b6026a9bbbcbf1188e199051759755b3d554
+info: MassTransit[0]
+      Bus stopped: rabbitmq://127.0.0.1:32779/
+  Passed Siha.Integracion.Tests.FlujoDocumentosRealTests.Reintentos_y_cargas_simultaneas_del_mismo_PDF_no_duplican [12 s]
+info: Program[0]
+      Almacenamiento de documentos listo en /tmp/siha-integracion/b08f6702da354f098908a4e2b7d93268.
+info: Microsoft.EntityFrameworkCore.Migrations[20402]
+      Applying migration '20261018145319_InitialCreate'.
+info: Microsoft.EntityFrameworkCore.Migrations[20402]
+      Applying migration '20261018151155_AgregarDocumentosYAprobacionCertificada'.
+info: Microsoft.EntityFrameworkCore.Migrations[20402]
+      Applying migration '20261019223505_FlujoDocumentosVerificados'.
+info: Program[0]
+      Microservicio B listo. DB B migrada. Swagger en /swagger, salud en /health.
+info: MassTransit[0]
+      Configured endpoint VerificacionSolicitud, Consumer: Siha.MsB.Api.Consumers.VerificacionSolicitudConsumer
+info: Siha.MsB.Api.Services.RepublicacionAutomaticaWorker[0]
+      Reintento automático de publicaciones activo cada 00:00:02.
+info: Microsoft.Hosting.Lifetime[14]
+      Now listening on: http://localhost:5082
+info: MassTransit[0]
+      Bus started: rabbitmq://127.0.0.1:32779/
+info: MassTransit[0]
+      Bus stopped: rabbitmq://127.0.0.1:32779/
+  Passed Siha.Integracion.Tests.FlujoDocumentosRealTests.Las_migraciones_de_A_y_B_se_aplican_en_SQL_Server_real [20 s]
+fail: Program[0]
+      El almacenamiento de documentos en /tmp/siha-no-es-directorio-d0d2d714b1de4e368014c65286e70acc no es escribible.
+      System.IO.IOException: The file '/tmp/siha-no-es-directorio-d0d2d714b1de4e368014c65286e70acc' already exists.
+         at System.IO.FileSystem.CreateDirectory(String fullPath, UnixFileMode unixCreateMode)
+         at System.IO.Directory.CreateDirectory(String path)
+         at Program.<<Main>$>g__VerificarAlmacenamiento|0_10(WebApplication app, ArchivosOptions archivos) in src/Services/Siha.MsB.Api/Program.cs:line 178
+info: Microsoft.EntityFrameworkCore.Migrations[20402]
+      Applying migration '20261018145319_InitialCreate'.
+info: Microsoft.EntityFrameworkCore.Migrations[20402]
+      Applying migration '20261018151155_AgregarDocumentosYAprobacionCertificada'.
+info: Microsoft.EntityFrameworkCore.Migrations[20402]
+      Applying migration '20261019223505_FlujoDocumentosVerificados'.
+info: Program[0]
+      Microservicio B listo. DB B migrada. Swagger en /swagger, salud en /health.
+info: MassTransit[0]
+      Configured endpoint VerificacionSolicitud, Consumer: Siha.MsB.Api.Consumers.VerificacionSolicitudConsumer
+info: Siha.MsB.Api.Services.RepublicacionAutomaticaWorker[0]
+      Reintento automático de publicaciones activo cada 00:00:02.
+info: Microsoft.Hosting.Lifetime[14]
+      Now listening on: http://localhost:5082
+info: Siha.MsB.Api.Controllers.ExpedientesController[0]
+      Expediente registrado como borrador. ExpedienteId=65a592aa-4f3f-4790-9db4-5631f4790e05 Codigo=EXP-20261019-1D5572 CorrelationId=abfb35c0-89ce-4745-8660-c46791b61434
+fail: Siha.MsB.Api.Services.ArchivoStorageService[0]
+      No se pudo escribir el documento en /tmp/siha-no-es-directorio-d0d2d714b1de4e368014c65286e70acc/2026/10.
+      System.IO.DirectoryNotFoundException: Could not find a part of the path '/tmp/siha-no-es-directorio-d0d2d714b1de4e368014c65286e70acc/2026/10'.
+         at System.IO.FileSystem.CreateDirectory(String fullPath, UnixFileMode unixCreateMode)
+         at System.IO.Directory.CreateDirectory(String path)
+         at Siha.MsB.Api.Services.ArchivoStorageService.GuardarAsync(IFormFile archivo, CancellationToken cancellationToken) in src/Services/Siha.MsB.Api/Services/ArchivoStorageService.cs:line 186
+warn: MassTransit[0]
+      Failed to stop bus: rabbitmq://127.0.0.1:32779/vm_testhost_bus_wc5oyyruyz3yxrw1bdx1hq8xbq?temporary=true (Not Started)
+  Passed Siha.Integracion.Tests.FlujoDocumentosRealTests.Un_fallo_del_almacenamiento_responde_503_sin_dejar_filas [12 s]
+info: MassTransit[0]
+      Bus started: rabbitmq://127.0.0.1:32779/
+info: Program[0]
+      Almacenamiento de documentos listo en /tmp/siha-integracion/6639b788d93e415287aee66538ca2a0c.
+info: Microsoft.EntityFrameworkCore.Migrations[20402]
+      Applying migration '20261018145319_InitialCreate'.
+info: Microsoft.EntityFrameworkCore.Migrations[20402]
+      Applying migration '20261018151155_AgregarDocumentosYAprobacionCertificada'.
+info: Microsoft.EntityFrameworkCore.Migrations[20402]
+      Applying migration '20261019223505_FlujoDocumentosVerificados'.
+info: Program[0]
+      Microservicio B listo. DB B migrada. Swagger en /swagger, salud en /health.
+info: MassTransit[0]
+      Configured endpoint VerificacionSolicitud, Consumer: Siha.MsB.Api.Consumers.VerificacionSolicitudConsumer
+info: Siha.MsB.Api.Services.RepublicacionAutomaticaWorker[0]
+      Reintento automático de publicaciones activo cada 00:00:02.
+info: Microsoft.Hosting.Lifetime[14]
+      Now listening on: http://localhost:5082
+info: Siha.MsB.Api.Controllers.ExpedientesController[0]
+      Expediente registrado como borrador. ExpedienteId=793294f9-1395-457e-bff0-62622b6d42e9 Codigo=EXP-20261019-E654A9 CorrelationId=cad5557b-52cc-4304-ba57-930c48ca1821
+info: Siha.MsB.Api.Services.ArchivoStorageService[0]
+      Documento almacenado. NombreOriginal=plan-analitico.pdf NombreAlmacenado=b99b6c0199ab4242bdcd30e438e04522.pdf TamanoBytes=63 Hash=191e9be539a6e0e2cf9f6e65dd793739983e26496691c1fccb6dc4c51140b651
+info: Siha.MsB.Api.Controllers.DocumentosController[0]
+      Documento cargado. ExpedienteId=793294f9-1395-457e-bff0-62622b6d42e9 DocumentoId=b36eda68-0b0c-4898-a3df-8bde70bf6c78 Hash=191e9be539a6e0e2cf9f6e65dd793739983e26496691c1fccb6dc4c51140b651 Intento=1
+[testcontainers.org 00:02:07.53] Pause Docker container a0340643b5aa
+info: MassTransit[0]
+      Bus started: rabbitmq://127.0.0.1:32779/
+fail: MassTransit.SendTransport[0]
+      S-FAULT rabbitmq://127.0.0.1:32779/Siha.Contracts.Events:SolicitudCreadaEvent 793294f9-1395-457e-bff0-62622b6d42e9 Siha.Contracts.Events.SolicitudCreadaEvent
+      System.TimeoutException: The operation has timed out.
+         at RabbitMQ.Client.Impl.ModelBase.ModelRpc(MethodBase method, ContentHeaderBase header, Byte[] body)
+         at RabbitMQ.Client.Framing.Impl.Model._Private_ExchangeDeclare(String exchange, String type, Boolean passive, Boolean durable, Boolean autoDelete, Boolean internal, Boolean nowait, IDictionary`2 arguments)
+         at RabbitMQ.Client.Impl.ModelBase.ExchangeDeclare(String exchange, String type, Boolean durable, Boolean autoDelete, IDictionary`2 arguments)
+         at MassTransit.Util.TaskExecutor.ActionFuture.Run() in /_/src/MassTransit/Util/TaskExecutor.cs:line 320
+         at MassTransit.Util.TaskExecutor.Run(Action method, CancellationToken cancellationToken) in /_/src/MassTransit/Util/TaskExecutor.cs:line 73
+         at MassTransit.RabbitMqTransport.RabbitMqModelContext.RunRpc(Action callback, CancellationToken cancellationToken) in /_/src/Transports/MassTransit.RabbitMqTransport/RabbitMqTransport/RabbitMqModelContext.cs:line 219
+         at MassTransit.RabbitMqTransport.Middleware.ConfigureRabbitMqTopologyFilter`1.ConfigureTopology(ModelContext context) in /_/src/Transports/MassTransit.RabbitMqTransport/RabbitMqTransport/Middleware/ConfigureRabbitMqTopologyFilter.cs:line 62
+         at MassTransit.OneTimeSetupMethod.<>c__DisplayClass5_0.<<SetupPayload>g__SetupAsync|0>d.MoveNext() in /_/src/MassTransit.Abstractions/Middleware/OneTimeSetupMethod.cs:line 37
+      --- End of stack trace from previous location ---
+         at MassTransit.PipeExtensions.OneTimeSetup[T](PipeContext context, OneTimeSetupCallback setupMethod) in /_/src/MassTransit.Abstractions/Middleware/PipeExtensions.cs:line 90
+         at MassTransit.RabbitMqTransport.Middleware.ConfigureRabbitMqTopologyFilter`1.Configure(ModelContext context) in /_/src/Transports/MassTransit.RabbitMqTransport/RabbitMqTransport/Middleware/ConfigureRabbitMqTopologyFilter.cs:line 44
+         at MassTransit.RabbitMqTransport.RabbitMqSendTransportContext.Send[T](ModelContext transportContext, SendContext`1 sendContext) in /_/src/Transports/MassTransit.RabbitMqTransport/RabbitMqTransport/RabbitMqSendTransportContext.cs:line 111
+         at MassTransit.Transports.SendTransport`1.SendPipe`1.Send(TContext context) in /_/src/MassTransit/Transports/SendTransport.cs:line 93
+warn: Siha.MsB.Api.Events.ExpedienteEventPublisher[0]
+      Fallo al publicar SolicitudCreadaEvent. ExpedienteId=793294f9-1395-457e-bff0-62622b6d42e9 CorrelationId=cad5557b-52cc-4304-ba57-930c48ca1821 Intento=1/3
+      System.TimeoutException: The operation has timed out.
+         at RabbitMQ.Client.Impl.ModelBase.ModelRpc(MethodBase method, ContentHeaderBase header, Byte[] body)
+         at RabbitMQ.Client.Framing.Impl.Model._Private_ExchangeDeclare(String exchange, String type, Boolean passive, Boolean durable, Boolean autoDelete, Boolean internal, Boolean nowait, IDictionary`2 arguments)
+         at RabbitMQ.Client.Impl.ModelBase.ExchangeDeclare(String exchange, String type, Boolean durable, Boolean autoDelete, IDictionary`2 arguments)
+         at MassTransit.Util.TaskExecutor.ActionFuture.Run() in /_/src/MassTransit/Util/TaskExecutor.cs:line 320
+         at MassTransit.Util.TaskExecutor.Run(Action method, CancellationToken cancellationToken) in /_/src/MassTransit/Util/TaskExecutor.cs:line 73
+         at MassTransit.RabbitMqTransport.RabbitMqModelContext.RunRpc(Action callback, CancellationToken cancellationToken) in /_/src/Transports/MassTransit.RabbitMqTransport/RabbitMqTransport/RabbitMqModelContext.cs:line 219
+         at MassTransit.RabbitMqTransport.Middleware.ConfigureRabbitMqTopologyFilter`1.ConfigureTopology(ModelContext context) in /_/src/Transports/MassTransit.RabbitMqTransport/RabbitMqTransport/Middleware/ConfigureRabbitMqTopologyFilter.cs:line 62
+         at MassTransit.OneTimeSetupMethod.<>c__DisplayClass5_0.<<SetupPayload>g__SetupAsync|0>d.MoveNext() in /_/src/MassTransit.Abstractions/Middleware/OneTimeSetupMethod.cs:line 37
+      --- End of stack trace from previous location ---
+         at MassTransit.PipeExtensions.OneTimeSetup[T](PipeContext context, OneTimeSetupCallback setupMethod) in /_/src/MassTransit.Abstractions/Middleware/PipeExtensions.cs:line 90
+         at MassTransit.RabbitMqTransport.Middleware.ConfigureRabbitMqTopologyFilter`1.Configure(ModelContext context) in /_/src/Transports/MassTransit.RabbitMqTransport/RabbitMqTransport/Middleware/ConfigureRabbitMqTopologyFilter.cs:line 44
+         at MassTransit.RabbitMqTransport.RabbitMqSendTransportContext.Send[T](ModelContext transportContext, SendContext`1 sendContext) in /_/src/Transports/MassTransit.RabbitMqTransport/RabbitMqTransport/RabbitMqSendTransportContext.cs:line 111
+         at MassTransit.Transports.SendTransport`1.SendPipe`1.Send(TContext context) in /_/src/MassTransit/Transports/SendTransport.cs:line 93
+         at MassTransit.Transports.SendTransport`1.SendPipe`1.Send(TContext context) in /_/src/MassTransit/Transports/SendTransport.cs:line 111
+         at MassTransit.Agents.PipeContextSupervisor`1.Send(IPipe`1 pipe, CancellationToken cancellationToken) in /_/src/MassTransit/Agents/PipeContextSupervisor.cs:line 55
+         at MassTransit.Agents.PipeContextSupervisor`1.Send(IPipe`1 pipe, CancellationToken cancellationToken) in /_/src/MassTransit/Agents/PipeContextSupervisor.cs:line 61
+         at MassTransit.Agents.PipeContextSupervisor`1.Send(IPipe`1 pipe, CancellationToken cancellationToken) in /_/src/MassTransit/Agents/PipeContextSupervisor.cs:line 67
+         at MassTransit.Transports.HostConfigurationRetryExtensions.Retry(IHostConfiguration hostConfiguration, Func`1 factory, CancellationToken cancellationToken, CancellationToken stoppingToken) in /_/src/MassTransit/Transports/HostConfigurationRetryExtensions.cs:line 39
+         at Siha.MsB.Api.Events.ExpedienteEventPublisher.PublicarAsync(SolicitudCreadaEvent evento, CancellationToken cancellationToken) in src/Services/Siha.MsB.Api/Events/ExpedienteEventPublisher.cs:line 75
+fail: MassTransit.SendTransport[0]
+      S-FAULT rabbitmq://127.0.0.1:32779/Siha.Contracts.Events:SolicitudCreadaEvent 793294f9-1395-457e-bff0-62622b6d42e9 Siha.Contracts.Events.SolicitudCreadaEvent
+      System.NotSupportedException: Pipelining of requests forbidden
+         at RabbitMQ.Client.Impl.ModelBase.Enqueue(IRpcContinuation k)
+         at RabbitMQ.Client.Impl.ModelBase.ModelRpc(MethodBase method, ContentHeaderBase header, Byte[] body)
+         at RabbitMQ.Client.Framing.Impl.Model._Private_ExchangeDeclare(String exchange, String type, Boolean passive, Boolean durable, Boolean autoDelete, Boolean internal, Boolean nowait, IDictionary`2 arguments)
+         at RabbitMQ.Client.Impl.ModelBase.ExchangeDeclare(String exchange, String type, Boolean durable, Boolean autoDelete, IDictionary`2 arguments)
+         at MassTransit.Util.TaskExecutor.ActionFuture.Run() in /_/src/MassTransit/Util/TaskExecutor.cs:line 320
+         at MassTransit.Util.TaskExecutor.Run(Action method, CancellationToken cancellationToken) in /_/src/MassTransit/Util/TaskExecutor.cs:line 73
+         at MassTransit.RabbitMqTransport.RabbitMqModelContext.RunRpc(Action callback, CancellationToken cancellationToken) in /_/src/Transports/MassTransit.RabbitMqTransport/RabbitMqTransport/RabbitMqModelContext.cs:line 219
+         at MassTransit.RabbitMqTransport.Middleware.ConfigureRabbitMqTopologyFilter`1.ConfigureTopology(ModelContext context) in /_/src/Transports/MassTransit.RabbitMqTransport/RabbitMqTransport/Middleware/ConfigureRabbitMqTopologyFilter.cs:line 62
+         at MassTransit.OneTimeSetupMethod.<>c__DisplayClass5_0.<<SetupPayload>g__SetupAsync|0>d.MoveNext() in /_/src/MassTransit.Abstractions/Middleware/OneTimeSetupMethod.cs:line 37
+      --- End of stack trace from previous location ---
+         at MassTransit.PipeExtensions.OneTimeSetup[T](PipeContext context, OneTimeSetupCallback setupMethod) in /_/src/MassTransit.Abstractions/Middleware/PipeExtensions.cs:line 90
+         at MassTransit.RabbitMqTransport.Middleware.ConfigureRabbitMqTopologyFilter`1.Configure(ModelContext context) in /_/src/Transports/MassTransit.RabbitMqTransport/RabbitMqTransport/Middleware/ConfigureRabbitMqTopologyFilter.cs:line 44
+         at MassTransit.RabbitMqTransport.RabbitMqSendTransportContext.Send[T](ModelContext transportContext, SendContext`1 sendContext) in /_/src/Transports/MassTransit.RabbitMqTransport/RabbitMqTransport/RabbitMqSendTransportContext.cs:line 111
+         at MassTransit.Transports.SendTransport`1.SendPipe`1.Send(TContext context) in /_/src/MassTransit/Transports/SendTransport.cs:line 93
+warn: Siha.MsB.Api.Events.ExpedienteEventPublisher[0]
+      Fallo al publicar SolicitudCreadaEvent. ExpedienteId=793294f9-1395-457e-bff0-62622b6d42e9 CorrelationId=cad5557b-52cc-4304-ba57-930c48ca1821 Intento=2/3
+      System.NotSupportedException: Pipelining of requests forbidden
+         at RabbitMQ.Client.Impl.ModelBase.Enqueue(IRpcContinuation k)
+         at RabbitMQ.Client.Impl.ModelBase.ModelRpc(MethodBase method, ContentHeaderBase header, Byte[] body)
+         at RabbitMQ.Client.Framing.Impl.Model._Private_ExchangeDeclare(String exchange, String type, Boolean passive, Boolean durable, Boolean autoDelete, Boolean internal, Boolean nowait, IDictionary`2 arguments)
+         at RabbitMQ.Client.Impl.ModelBase.ExchangeDeclare(String exchange, String type, Boolean durable, Boolean autoDelete, IDictionary`2 arguments)
+         at MassTransit.Util.TaskExecutor.ActionFuture.Run() in /_/src/MassTransit/Util/TaskExecutor.cs:line 320
+         at MassTransit.Util.TaskExecutor.Run(Action method, CancellationToken cancellationToken) in /_/src/MassTransit/Util/TaskExecutor.cs:line 73
+         at MassTransit.RabbitMqTransport.RabbitMqModelContext.RunRpc(Action callback, CancellationToken cancellationToken) in /_/src/Transports/MassTransit.RabbitMqTransport/RabbitMqTransport/RabbitMqModelContext.cs:line 219
+         at MassTransit.RabbitMqTransport.Middleware.ConfigureRabbitMqTopologyFilter`1.ConfigureTopology(ModelContext context) in /_/src/Transports/MassTransit.RabbitMqTransport/RabbitMqTransport/Middleware/ConfigureRabbitMqTopologyFilter.cs:line 62
+         at MassTransit.OneTimeSetupMethod.<>c__DisplayClass5_0.<<SetupPayload>g__SetupAsync|0>d.MoveNext() in /_/src/MassTransit.Abstractions/Middleware/OneTimeSetupMethod.cs:line 37
+      --- End of stack trace from previous location ---
+         at MassTransit.PipeExtensions.OneTimeSetup[T](PipeContext context, OneTimeSetupCallback setupMethod) in /_/src/MassTransit.Abstractions/Middleware/PipeExtensions.cs:line 90
+         at MassTransit.RabbitMqTransport.Middleware.ConfigureRabbitMqTopologyFilter`1.Configure(ModelContext context) in /_/src/Transports/MassTransit.RabbitMqTransport/RabbitMqTransport/Middleware/ConfigureRabbitMqTopologyFilter.cs:line 44
+         at MassTransit.RabbitMqTransport.RabbitMqSendTransportContext.Send[T](ModelContext transportContext, SendContext`1 sendContext) in /_/src/Transports/MassTransit.RabbitMqTransport/RabbitMqTransport/RabbitMqSendTransportContext.cs:line 111
+         at MassTransit.Transports.SendTransport`1.SendPipe`1.Send(TContext context) in /_/src/MassTransit/Transports/SendTransport.cs:line 93
+         at MassTransit.Transports.SendTransport`1.SendPipe`1.Send(TContext context) in /_/src/MassTransit/Transports/SendTransport.cs:line 111
+         at MassTransit.Agents.PipeContextSupervisor`1.Send(IPipe`1 pipe, CancellationToken cancellationToken) in /_/src/MassTransit/Agents/PipeContextSupervisor.cs:line 55
+         at MassTransit.Agents.PipeContextSupervisor`1.Send(IPipe`1 pipe, CancellationToken cancellationToken) in /_/src/MassTransit/Agents/PipeContextSupervisor.cs:line 61
+         at MassTransit.Agents.PipeContextSupervisor`1.Send(IPipe`1 pipe, CancellationToken cancellationToken) in /_/src/MassTransit/Agents/PipeContextSupervisor.cs:line 67
+         at MassTransit.Transports.HostConfigurationRetryExtensions.Retry(IHostConfiguration hostConfiguration, Func`1 factory, CancellationToken cancellationToken, CancellationToken stoppingToken) in /_/src/MassTransit/Transports/HostConfigurationRetryExtensions.cs:line 39
+         at Siha.MsB.Api.Events.ExpedienteEventPublisher.PublicarAsync(SolicitudCreadaEvent evento, CancellationToken cancellationToken) in src/Services/Siha.MsB.Api/Events/ExpedienteEventPublisher.cs:line 75
+fail: MassTransit.SendTransport[0]
+      S-FAULT rabbitmq://127.0.0.1:32779/Siha.Contracts.Events:SolicitudCreadaEvent 793294f9-1395-457e-bff0-62622b6d42e9 Siha.Contracts.Events.SolicitudCreadaEvent
+      RabbitMQ.Client.Exceptions.OperationInterruptedException: The AMQP operation was interrupted: AMQP close-reason, initiated by Peer, code=491, text='Channel is already closed: AMQP close-reason, initiated by Application, code=500, text='Channel unusable due to continuation timeout', classId=0, methodId=0', classId=0, methodId=0
+         at MassTransit.RabbitMqTransport.RabbitMqModelContext.RunRpc(Action callback, CancellationToken cancellationToken) in /_/src/Transports/MassTransit.RabbitMqTransport/RabbitMqTransport/RabbitMqModelContext.cs:line 215
+         at MassTransit.RabbitMqTransport.Middleware.ConfigureRabbitMqTopologyFilter`1.ConfigureTopology(ModelContext context) in /_/src/Transports/MassTransit.RabbitMqTransport/RabbitMqTransport/Middleware/ConfigureRabbitMqTopologyFilter.cs:line 62
+         at MassTransit.OneTimeSetupMethod.<>c__DisplayClass5_0.<<SetupPayload>g__SetupAsync|0>d.MoveNext() in /_/src/MassTransit.Abstractions/Middleware/OneTimeSetupMethod.cs:line 37
+      --- End of stack trace from previous location ---
+         at MassTransit.PipeExtensions.OneTimeSetup[T](PipeContext context, OneTimeSetupCallback setupMethod) in /_/src/MassTransit.Abstractions/Middleware/PipeExtensions.cs:line 90
+         at MassTransit.RabbitMqTransport.Middleware.ConfigureRabbitMqTopologyFilter`1.Configure(ModelContext context) in /_/src/Transports/MassTransit.RabbitMqTransport/RabbitMqTransport/Middleware/ConfigureRabbitMqTopologyFilter.cs:line 44
+         at MassTransit.RabbitMqTransport.RabbitMqSendTransportContext.Send[T](ModelContext transportContext, SendContext`1 sendContext) in /_/src/Transports/MassTransit.RabbitMqTransport/RabbitMqTransport/RabbitMqSendTransportContext.cs:line 111
+         at MassTransit.Transports.SendTransport`1.SendPipe`1.Send(TContext context) in /_/src/MassTransit/Transports/SendTransport.cs:line 93
+warn: Siha.MsB.Api.Events.ExpedienteEventPublisher[0]
+      Fallo al publicar SolicitudCreadaEvent. ExpedienteId=793294f9-1395-457e-bff0-62622b6d42e9 CorrelationId=cad5557b-52cc-4304-ba57-930c48ca1821 Intento=3/3
+      System.TimeoutException: El bus no respondió en 5 s.
+         at Siha.MsB.Api.Events.ExpedienteEventPublisher.PublicarAsync(SolicitudCreadaEvent evento, CancellationToken cancellationToken) in src/Services/Siha.MsB.Api/Events/ExpedienteEventPublisher.cs:line 71
+[testcontainers.org 00:02:43.53] Unpause Docker container a0340643b5aa
+warn: MassTransit.ReceiveTransport[0]
+      R-RETRY rabbitmq://127.0.0.1:32779/VerificacionSolicitud 793294f9-1395-457e-bff0-62622b6d42e9 MassTransit.RetryPolicies.RetryConsumeContext<Siha.Contracts.Events.SolicitudCreadaEvent>
+      System.ObjectDisposedException: Cannot access a disposed object.
+      Object name: 'IServiceProvider'.
+         at Microsoft.Extensions.DependencyInjection.ServiceLookup.ThrowHelper.ThrowObjectDisposedException()
+         at MassTransit.Configuration.RegistrationContext.GetService(Type serviceType) in /_/src/MassTransit/DependencyInjection/Configuration/RegistrationContext.cs:line 129
+         at Microsoft.Extensions.DependencyInjection.ServiceProviderServiceExtensions.GetRequiredService(IServiceProvider provider, Type serviceType)
+         at Microsoft.Extensions.DependencyInjection.ServiceProviderServiceExtensions.GetRequiredService[T](IServiceProvider provider)
+         at Microsoft.Extensions.DependencyInjection.ServiceProviderServiceExtensions.CreateScope(IServiceProvider provider)
+         at MassTransit.DependencyInjection.BaseConsumeScopeProvider.GetScopeContext[TScopeContext,TPipeContext](TPipeContext context, Func`4 existingScopeContextFactory, Func`4 createdScopeContextFactory, Func`4 pipeContextFactory) in /_/src/MassTransit/DependencyInjection/DependencyInjection/BaseConsumeScopeProvider.cs:line 40
+         at MassTransit.DependencyInjection.ConsumeScopeProvider.GetScope[TConsumer,T](ConsumeContext`1 context) in /_/src/MassTransit/DependencyInjection/DependencyInjection/ConsumeScopeProvider.cs:line 43
+         at MassTransit.DependencyInjection.ScopeConsumerFactory`1.Send[TMessage](ConsumeContext`1 context, IPipe`1 next)
+         at MassTransit.Middleware.ConsumerMessageFilter`2.MassTransit.IFilter<MassTransit.ConsumeContext<TMessage>>.Send(ConsumeContext`1 context, IPipe`1 next) in /_/src/MassTransit/Middleware/ConsumerMessageFilter.cs:line 48
+         at MassTransit.Middleware.ConsumerMessageFilter`2.MassTransit.IFilter<MassTransit.ConsumeContext<TMessage>>.Send(ConsumeContext`1 context, IPipe`1 next) in /_/src/MassTransit/Middleware/ConsumerMessageFilter.cs:line 73
+         at MassTransit.Middleware.RetryFilter`1.MassTransit.IFilter<TContext>.Send(TContext context, IPipe`1 next) in /_/src/MassTransit/Middleware/RetryFilter.cs:line 47
+info: Siha.MsB.Api.Events.ExpedienteEventPublisher[0]
+      SolicitudCreadaEvent publicado. ExpedienteId=793294f9-1395-457e-bff0-62622b6d42e9 CorrelationId=cad5557b-52cc-4304-ba57-930c48ca1821 Intento=1
+info: Siha.MsB.Api.Services.RepublicacionAutomaticaWorker[0]
+      Reintento automático. ExpedienteId=793294f9-1395-457e-bff0-62622b6d42e9 CorrelationId=cad5557b-52cc-4304-ba57-930c48ca1821 Resultado=Publicado
+info: MassTransit[0]
+      Bus stopped: rabbitmq://127.0.0.1:32779/
+[testcontainers.org 00:02:46.08] Delete Docker container a0340643b5aa
+[testcontainers.org 00:02:46.34] Delete Docker container 305c5d8f81db
+  Passed Siha.Integracion.Tests.FlujoDocumentosRealTests.Caida_y_recuperacion_del_bus_conservan_el_CorrelationId_y_el_mensaje_llega [49 s]
+[xUnit.net 00:02:47.12]   Finished:    Siha.Integracion.Tests
+Results File: TestResults/Siha.Integracion.Tests.trx
+
+Test Run Successful.
+Total tests: 8
+     Passed: 8
+ Total time: 2.7941 Minutes

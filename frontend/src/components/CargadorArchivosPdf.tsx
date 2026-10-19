@@ -4,22 +4,43 @@ import { PDF } from '../types/comunes';
 import { formatearBytes, abreviarHash } from '../utils/formato';
 import { calcularSha256, validarArchivoPdf } from '../utils/validaciones';
 
-/** Documento listo para enviarse al Microservicio B. */
+/** Estado de la carga de un PDF en el Microservicio B. */
+export type EstadoCargaArchivo = 'pendiente' | 'subiendo' | 'cargado' | 'error';
+
+/** Documento adjunto en el navegador y su estado de carga en el servidor. */
 export interface ArchivoAdjunto {
   /** Identificador local, solo para las claves de React. */
   id: string;
   nombreArchivo: string;
   tamanoBytes: number;
+  /** SHA-256 calculado en el navegador (solo para comparar con el que calcula el servidor). */
   hashSha256: string | null;
-  /** Archivo original (no se envía: el backend recibe la referencia de almacenamiento). */
+  /** Archivo original: se envía como multipart a `POST /api/expedientes/{id}/documentos`. */
   archivo: File;
+  estado: EstadoCargaArchivo;
+  /** Identificador asignado por el servidor cuando el PDF quedó VALIDADO. */
+  documentoId?: string;
+  /** Motivo del rechazo o del fallo de carga devuelto por el servidor. */
+  error?: string;
 }
 
 interface PropsCargador {
   archivos: ArchivoAdjunto[];
   onCambiar: (archivos: ArchivoAdjunto[]) => void;
   deshabilitado?: boolean;
+  /**
+   * Se invoca antes de quitar un archivo de la lista. Si ya estaba cargado en el servidor, la página
+   * lo retira allí (`DELETE`). Devuelve `false` para cancelar el retiro.
+   */
+  onRetirar?: (archivo: ArchivoAdjunto) => Promise<boolean>;
 }
+
+const ETIQUETA_CARGA: Record<EstadoCargaArchivo, { texto: string; tono: 'neutro' | 'marca' | 'exito' | 'error' }> = {
+  pendiente: { texto: 'Pendiente de carga', tono: 'neutro' },
+  subiendo: { texto: 'Cargando…', tono: 'marca' },
+  cargado: { texto: 'Validado en el servidor', tono: 'exito' },
+  error: { texto: 'No cargado', tono: 'error' },
+};
 
 /**
  * Zona de carga de documentos PDF (S1-A07).
@@ -27,7 +48,12 @@ interface PropsCargador {
  * Realiza la validación local de tipo y tamaño antes de aceptar el archivo, calcula
  * el SHA-256 en el navegador y mantiene el listado con la opción de retirar documentos.
  */
-export function CargadorArchivosPdf({ archivos, onCambiar, deshabilitado = false }: PropsCargador): JSX.Element {
+export function CargadorArchivosPdf({
+  archivos,
+  onCambiar,
+  deshabilitado = false,
+  onRetirar,
+}: PropsCargador): JSX.Element {
   const entrada = useRef<HTMLInputElement>(null);
   const [errores, setErrores] = useState<string[]>([]);
   const [resaltado, setResaltado] = useState(false);
@@ -68,6 +94,7 @@ export function CargadorArchivosPdf({ archivos, onCambiar, deshabilitado = false
         tamanoBytes: archivo.size,
         hashSha256: await calcularSha256(archivo),
         archivo,
+        estado: 'pendiente',
       });
       cupo -= 1;
     }
@@ -84,8 +111,11 @@ export function CargadorArchivosPdf({ archivos, onCambiar, deshabilitado = false
     }
   };
 
-  const retirar = (id: string): void => {
-    onCambiar(archivos.filter((archivo) => archivo.id !== id));
+  const retirar = async (adjunto: ArchivoAdjunto): Promise<void> => {
+    if (onRetirar && !(await onRetirar(adjunto))) {
+      return;
+    }
+    onCambiar(archivos.filter((archivo) => archivo.id !== adjunto.id));
   };
 
   const totalBytes = archivos.reduce((suma, archivo) => suma + archivo.tamanoBytes, 0);
@@ -170,6 +200,9 @@ export function CargadorArchivosPdf({ archivos, onCambiar, deshabilitado = false
                   SHA-256
                 </th>
                 <th scope="col" className="px-3 py-2 font-semibold">
+                  Servidor
+                </th>
+                <th scope="col" className="px-3 py-2 font-semibold">
                   Acciones
                 </th>
               </tr>
@@ -187,11 +220,15 @@ export function CargadorArchivosPdf({ archivos, onCambiar, deshabilitado = false
                     )}
                   </td>
                   <td className="px-3 py-2">
+                    <Etiqueta tono={ETIQUETA_CARGA[archivo.estado].tono}>{ETIQUETA_CARGA[archivo.estado].texto}</Etiqueta>
+                    {archivo.error ? <p className="mt-1 text-xs text-rose-700">{archivo.error}</p> : null}
+                  </td>
+                  <td className="px-3 py-2">
                     <Boton
                       variante="fantasma"
                       tamano="sm"
-                      disabled={deshabilitado}
-                      onClick={() => retirar(archivo.id)}
+                      disabled={deshabilitado || archivo.estado === 'subiendo'}
+                      onClick={() => void retirar(archivo)}
                       aria-label={`Retirar el archivo ${archivo.nombreArchivo}`}
                     >
                       Retirar
@@ -202,7 +239,7 @@ export function CargadorArchivosPdf({ archivos, onCambiar, deshabilitado = false
             </tbody>
             <tfoot>
               <tr>
-                <td colSpan={4} className="bg-slate-50 px-3 py-2 text-xs text-slate-500">
+                <td colSpan={5} className="bg-slate-50 px-3 py-2 text-xs text-slate-500">
                   {archivos.length} documento(s) · {formatearBytes(totalBytes)} en total
                 </td>
               </tr>

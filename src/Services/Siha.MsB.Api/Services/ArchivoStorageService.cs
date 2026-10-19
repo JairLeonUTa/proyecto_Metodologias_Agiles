@@ -45,6 +45,41 @@ public interface IArchivoStorageService
     /// cliente) y devuelve sus metadatos, incluida la ruta relativa y el hash SHA-256.
     /// </summary>
     Task<DocumentoAlmacenado> GuardarAsync(IFormFile archivo, CancellationToken cancellationToken = default);
+
+    /// <summary>Calcula en el servidor el SHA-256 del archivo recibido (sin almacenarlo).</summary>
+    Task<string> CalcularHashAsync(IFormFile archivo, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Comprueba, desde el disco, que el archivo referenciado existe, conserva el tamaño registrado y
+    /// su SHA-256 coincide con el persistido. Es la verificación previa a publicar en el bus.
+    /// </summary>
+    Task<ResultadoVerificacionArchivo> VerificarAsync(
+        string rutaRelativa,
+        string hashEsperado,
+        long tamanoEsperado,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>Elimina el archivo físico si existe (compensación o retiro de un documento).</summary>
+    void Eliminar(string rutaRelativa);
+}
+
+/// <summary>Resultado de verificar en disco un documento ya almacenado.</summary>
+public sealed record ResultadoVerificacionArchivo(bool Disponible, string? Motivo, string? HashCalculado)
+{
+    public static ResultadoVerificacionArchivo Ok(string hash) => new(true, null, hash);
+
+    public static ResultadoVerificacionArchivo Fallo(string motivo, string? hash = null) => new(false, motivo, hash);
+}
+
+/// <summary>
+/// Fallo del almacenamiento físico (disco lleno, permisos, volumen no montado...). El controlador lo
+/// traduce a 503 sin dejar filas ni archivos huérfanos, de modo que el cliente puede reintentar.
+/// </summary>
+public sealed class AlmacenamientoNoDisponibleException : Exception
+{
+    public AlmacenamientoNoDisponibleException(string mensaje, Exception interna) : base(mensaje, interna)
+    {
+    }
 }
 
 /// <summary>
@@ -128,38 +163,73 @@ public class ArchivoStorageService : IArchivoStorageService
         CancellationToken cancellationToken = default)
     {
         var ahora = DateTimeOffset.UtcNow;
-        var raiz = Path.GetFullPath(_opciones.RutaAlmacenamiento);
+        var raiz = RaizAlmacenamiento();
         var subcarpeta = Path.Combine(ahora.Year.ToString(), ahora.Month.ToString("00"));
         var directorio = Path.Combine(raiz, subcarpeta);
-        Directory.CreateDirectory(directorio);
 
         // Nombre generado: nunca se reutiliza el nombre enviado por el cliente.
         var nombreAlmacenado = $"{Guid.NewGuid():N}{_opciones.ExtensionPermitida}";
         var rutaFisica = Path.GetFullPath(Path.Combine(directorio, nombreAlmacenado));
+        var rutaTemporal = rutaFisica + ".tmp";
 
         // Defensa ante path traversal: la ruta final debe quedar dentro del directorio configurado.
-        if (!rutaFisica.StartsWith(raiz, StringComparison.OrdinalIgnoreCase))
+        if (!EstaDentroDeRaiz(rutaFisica, raiz))
         {
             throw new InvalidOperationException("La ruta de almacenamiento calculada es inválida.");
         }
 
-        await using (var origen = archivo.OpenReadStream())
-        await using (var destino = File.Create(rutaFisica))
-        {
-            await origen.CopyToAsync(destino, cancellationToken);
-        }
-
         string hash;
-        await using (var contenido = archivo.OpenReadStream())
+        long escritos;
+
+        try
         {
-            hash = Convert.ToHexString(await SHA256.HashDataAsync(contenido, cancellationToken)).ToLowerInvariant();
+            Directory.CreateDirectory(directorio);
+
+            // Escritura atómica: se escribe en un .tmp, se fuerza a disco y solo entonces se renombra.
+            // El hash se calcula sobre los mismos bytes que se escriben (fuente de verdad: el servidor).
+            using var sha = IncrementalHash.CreateHash(HashAlgorithmName.SHA256);
+            await using (var origen = archivo.OpenReadStream())
+            await using (var destino = new FileStream(
+                rutaTemporal, FileMode.CreateNew, FileAccess.Write, FileShare.None, 81920, useAsync: true))
+            {
+                var buffer = new byte[81920];
+                int leidos;
+                escritos = 0;
+
+                while ((leidos = await origen.ReadAsync(buffer, cancellationToken)) > 0)
+                {
+                    sha.AppendData(buffer, 0, leidos);
+                    await destino.WriteAsync(buffer.AsMemory(0, leidos), cancellationToken);
+                    escritos += leidos;
+                }
+
+                await destino.FlushAsync(cancellationToken);
+                destino.Flush(flushToDisk: true);
+            }
+
+            hash = Convert.ToHexString(sha.GetHashAndReset()).ToLowerInvariant();
+            File.Move(rutaTemporal, rutaFisica);
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            BorrarSilencioso(rutaTemporal);
+            BorrarSilencioso(rutaFisica);
+            _logger.LogError(ex, "No se pudo escribir el documento en {Directorio}.", directorio);
+            throw new AlmacenamientoNoDisponibleException(
+                "El almacenamiento de documentos no está disponible en este momento. Intente nuevamente.", ex);
+        }
+        catch
+        {
+            BorrarSilencioso(rutaTemporal);
+            BorrarSilencioso(rutaFisica);
+            throw;
         }
 
         var rutaRelativa = Path.Combine(subcarpeta, nombreAlmacenado).Replace('\\', '/');
 
         _logger.LogInformation(
             "Documento almacenado. NombreOriginal={NombreOriginal} NombreAlmacenado={NombreAlmacenado} TamanoBytes={TamanoBytes} Hash={Hash}",
-            archivo.FileName, nombreAlmacenado, archivo.Length, hash);
+            archivo.FileName, nombreAlmacenado, escritos, hash);
 
         return new DocumentoAlmacenado(
             archivo.FileName ?? nombreAlmacenado,
@@ -167,8 +237,116 @@ public class ArchivoStorageService : IArchivoStorageService
             rutaRelativa,
             rutaFisica,
             hash,
-            archivo.Length,
+            escritos,
             NormalizarMime(archivo.ContentType));
+    }
+
+    public async Task<string> CalcularHashAsync(IFormFile archivo, CancellationToken cancellationToken = default)
+    {
+        await using var contenido = archivo.OpenReadStream();
+        return Convert.ToHexString(await SHA256.HashDataAsync(contenido, cancellationToken)).ToLowerInvariant();
+    }
+
+    public async Task<ResultadoVerificacionArchivo> VerificarAsync(
+        string rutaRelativa,
+        string hashEsperado,
+        long tamanoEsperado,
+        CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(rutaRelativa) || string.IsNullOrWhiteSpace(hashEsperado))
+        {
+            return ResultadoVerificacionArchivo.Fallo("El documento no tiene ruta o hash registrados por el servidor.");
+        }
+
+        string rutaFisica;
+        try
+        {
+            rutaFisica = ResolverRutaFisica(rutaRelativa);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return ResultadoVerificacionArchivo.Fallo(ex.Message);
+        }
+
+        try
+        {
+            var info = new FileInfo(rutaFisica);
+            if (!info.Exists)
+            {
+                return ResultadoVerificacionArchivo.Fallo("El archivo no existe en el almacenamiento.");
+            }
+
+            if (info.Length != tamanoEsperado)
+            {
+                return ResultadoVerificacionArchivo.Fallo(
+                    $"El tamaño en disco ({info.Length} bytes) no coincide con el registrado ({tamanoEsperado} bytes).");
+            }
+
+            await using var contenido = new FileStream(
+                rutaFisica, FileMode.Open, FileAccess.Read, FileShare.Read, 81920, useAsync: true);
+            var hash = Convert.ToHexString(await SHA256.HashDataAsync(contenido, cancellationToken)).ToLowerInvariant();
+
+            return string.Equals(hash, hashEsperado, StringComparison.OrdinalIgnoreCase)
+                ? ResultadoVerificacionArchivo.Ok(hash)
+                : ResultadoVerificacionArchivo.Fallo("El SHA-256 recalculado desde disco no coincide con el registrado.", hash);
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            return ResultadoVerificacionArchivo.Fallo($"No se pudo leer el archivo: {ex.Message}");
+        }
+    }
+
+    public void Eliminar(string rutaRelativa)
+    {
+        if (string.IsNullOrWhiteSpace(rutaRelativa))
+        {
+            return;
+        }
+
+        try
+        {
+            BorrarSilencioso(ResolverRutaFisica(rutaRelativa));
+        }
+        catch (InvalidOperationException)
+        {
+            // Ruta fuera de la raíz: no se toca nada.
+        }
+    }
+
+    private string RaizAlmacenamiento() => Path.GetFullPath(_opciones.RutaAlmacenamiento);
+
+    private string ResolverRutaFisica(string rutaRelativa)
+    {
+        var raiz = RaizAlmacenamiento();
+        var rutaFisica = Path.GetFullPath(Path.Combine(raiz, rutaRelativa));
+
+        if (!EstaDentroDeRaiz(rutaFisica, raiz))
+        {
+            throw new InvalidOperationException("La ruta del documento queda fuera del almacenamiento configurado.");
+        }
+
+        return rutaFisica;
+    }
+
+    private static bool EstaDentroDeRaiz(string rutaFisica, string raiz)
+    {
+        var raizConSeparador = raiz.EndsWith(Path.DirectorySeparatorChar) ? raiz : raiz + Path.DirectorySeparatorChar;
+        return rutaFisica.StartsWith(raizConSeparador, StringComparison.OrdinalIgnoreCase);
+    }
+
+    private void BorrarSilencioso(string ruta)
+    {
+        try
+        {
+            if (File.Exists(ruta))
+            {
+                File.Delete(ruta);
+            }
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            _logger.LogWarning(ex, "No se pudo eliminar el archivo {Ruta}.", ruta);
+        }
     }
 
     private static string NormalizarMime(string? contentType)

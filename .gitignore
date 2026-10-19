@@ -1,0 +1,10 @@
+# Compilación .NET
+bin/
+obj/
+TestResults/
+*.user
+.vs/
+
+# Frontend
+node_modules/
+dist/

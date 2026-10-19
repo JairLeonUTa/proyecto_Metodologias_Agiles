@@ -31,7 +31,7 @@ public class DocumentosControllerTests : IDisposable
             RutaNormativa = RutasNormativas.CambioCarreraOu,
             CarreraOrigenCodigo = "SW",
             CarreraDestinoCodigo = "TI",
-            Estado = ExpedienteEstados.PendienteContenidos
+            Estado = ExpedienteEstados.PendienteDocumentos
         };
 
         _db.Expedientes.Add(_expediente);
@@ -193,5 +193,79 @@ public class DocumentosControllerTests : IDisposable
         var resultado = await controlador.Listar(Guid.NewGuid(), null, CancellationToken.None);
 
         resultado.Result.Should().BeOfType<NotFoundObjectResult>();
+    }
+
+    [Fact]
+    public async Task Reintentar_la_misma_carga_no_duplica_filas_ni_archivos()
+    {
+        var bytes = Pruebas.BytesPdf();
+        var controlador = CrearControlador();
+
+        var primera = await controlador.Subir(_expediente.Id, Pruebas.Archivo(bytes), CancellationToken.None);
+        var segunda = await controlador.Subir(_expediente.Id, Pruebas.Archivo(bytes, nombreArchivo: "reintento.pdf"), CancellationToken.None);
+
+        var creado = primera.Result.Should().BeOfType<CreatedAtActionResult>().Subject.Value
+            .Should().BeOfType<DocumentoResponse>().Subject;
+        var repetido = segunda.Result.Should().BeOfType<OkObjectResult>().Subject.Value
+            .Should().BeOfType<DocumentoResponse>().Subject;
+
+        repetido.Id.Should().Be(creado.Id);
+        _db.ExpedienteDocumentos.Count(d => d.EstadoRecepcion == EstadosRecepcionDocumento.Validado).Should().Be(1);
+        Directory.GetFiles(_directorio, "*", SearchOption.AllDirectories).Should().HaveCount(1);
+    }
+
+    [Fact]
+    public async Task Devuelve_409_si_el_expediente_ya_fue_enviado()
+    {
+        _expediente.Estado = ExpedienteEstados.PendienteContenidos;
+        _db.SaveChanges();
+
+        var resultado = await CrearControlador().Subir(_expediente.Id, Pruebas.Archivo(), CancellationToken.None);
+
+        resultado.Result.Should().BeOfType<ConflictObjectResult>();
+        _db.ExpedienteDocumentos.Should().BeEmpty();
+        Directory.GetFiles(_directorio, "*", SearchOption.AllDirectories).Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task Devuelve_503_sin_dejar_filas_ni_archivos_cuando_falla_el_almacenamiento()
+    {
+        // La "raíz" de almacenamiento es un archivo: crear subdirectorios falla con IOException,
+        // igual que un volumen no montado o sin permisos.
+        var rutaInvalida = Path.Combine(_directorio, "no-es-directorio");
+        await File.WriteAllTextAsync(rutaInvalida, "x");
+
+        var controlador = new DocumentosController(
+            _db,
+            Pruebas.CrearAlmacenamiento(Pruebas.OpcionesArchivos(rutaInvalida)),
+            NullLogger<DocumentosController>.Instance)
+        {
+            ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() }
+        };
+
+        var resultado = await controlador.Subir(_expediente.Id, Pruebas.Archivo(), CancellationToken.None);
+
+        resultado.Result.Should().BeOfType<ObjectResult>().Which.StatusCode.Should().Be(StatusCodes.Status503ServiceUnavailable);
+        _db.ExpedienteDocumentos.Should().BeEmpty();
+        Directory.GetFiles(_directorio, "*.tmp", SearchOption.AllDirectories).Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task Retirar_un_documento_elimina_el_archivo_y_lo_marca_como_retirado()
+    {
+        var controlador = CrearControlador();
+        var subida = await controlador.Subir(_expediente.Id, Pruebas.Archivo(), CancellationToken.None);
+        var dto = subida.Result.Should().BeOfType<CreatedAtActionResult>().Subject.Value
+            .Should().BeOfType<DocumentoResponse>().Subject;
+
+        var resultado = await controlador.Retirar(_expediente.Id, dto.Id, CancellationToken.None);
+
+        resultado.Should().BeOfType<NoContentResult>();
+        _db.ExpedienteDocumentos.Single().EstadoRecepcion.Should().Be(EstadosRecepcionDocumento.Retirado);
+        File.Exists(Path.Combine(_directorio, dto.RutaAlmacenamiento)).Should().BeFalse();
+
+        // Tras retirarlo, el mismo PDF puede volver a cargarse como documento nuevo.
+        var recarga = await controlador.Subir(_expediente.Id, Pruebas.Archivo(), CancellationToken.None);
+        recarga.Result.Should().BeOfType<CreatedAtActionResult>();
     }
 }
