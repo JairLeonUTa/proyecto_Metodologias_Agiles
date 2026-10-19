@@ -1,0 +1,58 @@
+name: CI
+
+# Integración continua del SIHA-IA (Sprint 1 - S1-S08).
+# Se ejecuta en cada push y en cada pull request contra la solución completa.
+on:
+  push:
+    branches: [ main, master, develop, "feature/**", "sprint*" ]
+  pull_request:
+  workflow_dispatch:
+
+env:
+  DOTNET_NOLOGO: "true"
+  DOTNET_CLI_TELEMETRY_OPTOUT: "true"
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: "true"
+
+jobs:
+  build-test:
+    name: Restore, build y pruebas (net8.0)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout del repositorio
+        uses: actions/checkout@v4
+
+      - name: Instalar .NET 8
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+
+      - name: Caché de paquetes NuGet
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj', '**/Directory.Packages.props') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget-
+
+      - name: Restaurar dependencias
+        run: dotnet restore SIHA-IA.sln
+
+      - name: Compilar la solución
+        run: dotnet build SIHA-IA.sln --no-restore --configuration Release
+
+      - name: Ejecutar las pruebas
+        run: dotnet test SIHA-IA.sln --no-build --configuration Release --logger "trx;LogFileName=resultados.trx" --results-directory ./TestResults
+
+      # Siha.MsB.Tests se ejecuta explícitamente: la solución aún no referencia este proyecto,
+      # de modo que esta invocación garantiza que sus pruebas (S1-S03/S1-S09) corran en CI.
+      - name: Compilar y ejecutar las pruebas de Siha.MsB.Tests
+        run: dotnet test tests/Siha.MsB.Tests/Siha.MsB.Tests.csproj --configuration Release --logger "trx;LogFileName=msb-resultados.trx" --results-directory ./TestResults
+
+      - name: Publicar los resultados de las pruebas
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: resultados-pruebas
+          path: ./TestResults
+          if-no-files-found: ignore

@@ -1,0 +1,25 @@
+# ============================================================================
+# Corrección de enlace de puertos para los contenedores (Sprint 1).
+#
+# Motivo: los appsettings.json definen "Urls": "http://localhost:PORT".
+# En .NET 8 la clave de configuración "Urls" proviene de appsettings.json y
+# prevalece sobre la variable de entorno ASPNETCORE_URLS (que llega al
+# contenedor como "urls" desde la configuración del host, una capa anterior).
+# Consecuencia: el proceso escucha sólo en loopback y no es alcanzable ni por
+# el API Gateway ni por el puerto publicado del host.
+#
+# Solución: inyectar la variable de entorno "Urls" (sin prefijo ASPNETCORE_),
+# que en el orden de configuración se aplica DESPUÉS de appsettings.json y por
+# lo tanto sí lo sobrescribe.
+# ============================================================================
+
+services:
+  ms-a:
+    environment:
+      Urls: "http://+:8080"
+  ms-b:
+    environment:
+      Urls: "http://+:8080"
+  gateway:
+    environment:
+      Urls: "http://+:8080"
