@@ -1,0 +1,201 @@
+{
+  "GlobalConfiguration": {
+    "BaseUrl": "http://localhost:5000"
+  },
+  "Routes": [
+    {
+      "DownstreamPathTemplate": "/api/auth/login",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [ { "Host": "ms-a", "Port": 8080 } ],
+      "UpstreamPathTemplate": "/api/auth/login",
+      "UpstreamHttpMethod": [ "POST" ]
+    },
+    {
+      "DownstreamPathTemplate": "/api/auth/yo",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [ { "Host": "ms-a", "Port": 8080 } ],
+      "UpstreamPathTemplate": "/api/auth/yo",
+      "UpstreamHttpMethod": [ "GET" ],
+      "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer", "AllowedScopes": [] }
+    },
+    {
+      "DownstreamPathTemplate": "/api/usuarios",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [ { "Host": "ms-a", "Port": 8080 } ],
+      "UpstreamPathTemplate": "/api/usuarios",
+      "UpstreamHttpMethod": [ "GET", "POST" ],
+      "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer", "AllowedScopes": [] },
+      "RouteClaimsRequirement": { "http://schemas.microsoft.com/ws/2008/06/identity/claims/role": "ADMINISTRADOR" }
+    },
+    {
+      "DownstreamPathTemplate": "/api/usuarios/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [ { "Host": "ms-a", "Port": 8080 } ],
+      "UpstreamPathTemplate": "/api/usuarios/{everything}",
+      "UpstreamHttpMethod": [ "GET", "PUT", "PATCH", "DELETE" ],
+      "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer", "AllowedScopes": [] },
+      "RouteClaimsRequirement": { "http://schemas.microsoft.com/ws/2008/06/identity/claims/role": "ADMINISTRADOR" }
+    },
+    {
+      "DownstreamPathTemplate": "/api/roles",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [ { "Host": "ms-a", "Port": 8080 } ],
+      "UpstreamPathTemplate": "/api/roles",
+      "UpstreamHttpMethod": [ "GET" ],
+      "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer", "AllowedScopes": [] },
+      "RouteClaimsRequirement": { "http://schemas.microsoft.com/ws/2008/06/identity/claims/role": "ADMINISTRADOR" }
+    },
+    {
+      "DownstreamPathTemplate": "/api/reglas",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [ { "Host": "ms-a", "Port": 8080 } ],
+      "UpstreamPathTemplate": "/api/reglas",
+      "UpstreamHttpMethod": [ "GET" ],
+      "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer", "AllowedScopes": [] }
+    },
+    {
+      "DownstreamPathTemplate": "/api/reglas",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [ { "Host": "ms-a", "Port": 8080 } ],
+      "UpstreamPathTemplate": "/api/reglas",
+      "UpstreamHttpMethod": [ "POST" ],
+      "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer", "AllowedScopes": [] },
+      "RouteClaimsRequirement": { "http://schemas.microsoft.com/ws/2008/06/identity/claims/role": "ADMINISTRADOR" }
+    },
+    {
+      "DownstreamPathTemplate": "/api/reglas/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [ { "Host": "ms-a", "Port": 8080 } ],
+      "UpstreamPathTemplate": "/api/reglas/{everything}",
+      "UpstreamHttpMethod": [ "GET" ],
+      "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer", "AllowedScopes": [] }
+    },
+    {
+      "DownstreamPathTemplate": "/api/reglas/parametros/{rutaNormativa}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [ { "Host": "ms-a", "Port": 8080 } ],
+      "UpstreamPathTemplate": "/api/reglas/parametros/{rutaNormativa}",
+      "UpstreamHttpMethod": [ "PUT" ],
+      "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer", "AllowedScopes": [] },
+      "RouteClaimsRequirement": { "http://schemas.microsoft.com/ws/2008/06/identity/claims/role": "ADMINISTRADOR" }
+    },
+    {
+      "DownstreamPathTemplate": "/api/carreras",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [ { "Host": "ms-a", "Port": 8080 } ],
+      "UpstreamPathTemplate": "/api/carreras",
+      "UpstreamHttpMethod": [ "GET" ],
+      "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer", "AllowedScopes": [] }
+    },
+    {
+      "DownstreamPathTemplate": "/api/carreras",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [ { "Host": "ms-a", "Port": 8080 } ],
+      "UpstreamPathTemplate": "/api/carreras",
+      "UpstreamHttpMethod": [ "POST" ],
+      "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer", "AllowedScopes": [] },
+      "RouteClaimsRequirement": { "http://schemas.microsoft.com/ws/2008/06/identity/claims/role": "ADMINISTRADOR" }
+    },
+    {
+      "DownstreamPathTemplate": "/api/carreras/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [ { "Host": "ms-a", "Port": 8080 } ],
+      "UpstreamPathTemplate": "/api/carreras/{everything}",
+      "UpstreamHttpMethod": [ "GET" ],
+      "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer", "AllowedScopes": [] }
+    },
+    {
+      "DownstreamPathTemplate": "/api/carreras/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [ { "Host": "ms-a", "Port": 8080 } ],
+      "UpstreamPathTemplate": "/api/carreras/{everything}",
+      "UpstreamHttpMethod": [ "PUT" ],
+      "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer", "AllowedScopes": [] },
+      "RouteClaimsRequirement": { "http://schemas.microsoft.com/ws/2008/06/identity/claims/role": "ADMINISTRADOR" }
+    },
+    {
+      "DownstreamPathTemplate": "/api/mallas",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [ { "Host": "ms-a", "Port": 8080 } ],
+      "UpstreamPathTemplate": "/api/mallas",
+      "UpstreamHttpMethod": [ "GET" ],
+      "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer", "AllowedScopes": [] }
+    },
+    {
+      "DownstreamPathTemplate": "/api/mallas",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [ { "Host": "ms-a", "Port": 8080 } ],
+      "UpstreamPathTemplate": "/api/mallas",
+      "UpstreamHttpMethod": [ "POST" ],
+      "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer", "AllowedScopes": [] },
+      "RouteClaimsRequirement": { "http://schemas.microsoft.com/ws/2008/06/identity/claims/role": "ADMINISTRADOR" }
+    },
+    {
+      "DownstreamPathTemplate": "/api/mallas/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [ { "Host": "ms-a", "Port": 8080 } ],
+      "UpstreamPathTemplate": "/api/mallas/{everything}",
+      "UpstreamHttpMethod": [ "GET" ],
+      "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer", "AllowedScopes": [] }
+    },
+    {
+      "DownstreamPathTemplate": "/api/asignaturas",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [ { "Host": "ms-a", "Port": 8080 } ],
+      "UpstreamPathTemplate": "/api/asignaturas",
+      "UpstreamHttpMethod": [ "GET" ],
+      "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer", "AllowedScopes": [] }
+    },
+    {
+      "DownstreamPathTemplate": "/api/asignaturas",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [ { "Host": "ms-a", "Port": 8080 } ],
+      "UpstreamPathTemplate": "/api/asignaturas",
+      "UpstreamHttpMethod": [ "POST" ],
+      "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer", "AllowedScopes": [] },
+      "RouteClaimsRequirement": { "http://schemas.microsoft.com/ws/2008/06/identity/claims/role": "ADMINISTRADOR" }
+    },
+    {
+      "DownstreamPathTemplate": "/api/asignaturas/importar",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [ { "Host": "ms-a", "Port": 8080 } ],
+      "UpstreamPathTemplate": "/api/asignaturas/importar",
+      "UpstreamHttpMethod": [ "POST" ],
+      "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer", "AllowedScopes": [] },
+      "RouteClaimsRequirement": { "http://schemas.microsoft.com/ws/2008/06/identity/claims/role": "ADMINISTRADOR" }
+    },
+    {
+      "DownstreamPathTemplate": "/api/asignaturas/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [ { "Host": "ms-a", "Port": 8080 } ],
+      "UpstreamPathTemplate": "/api/asignaturas/{everything}",
+      "UpstreamHttpMethod": [ "GET" ],
+      "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer", "AllowedScopes": [] }
+    },
+    {
+      "DownstreamPathTemplate": "/api/asignaturas/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [ { "Host": "ms-a", "Port": 8080 } ],
+      "UpstreamPathTemplate": "/api/asignaturas/{everything}",
+      "UpstreamHttpMethod": [ "PUT" ],
+      "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer", "AllowedScopes": [] },
+      "RouteClaimsRequirement": { "http://schemas.microsoft.com/ws/2008/06/identity/claims/role": "ADMINISTRADOR" }
+    },
+    {
+      "DownstreamPathTemplate": "/api/expedientes",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [ { "Host": "ms-b", "Port": 8080 } ],
+      "UpstreamPathTemplate": "/api/expedientes",
+      "UpstreamHttpMethod": [ "GET", "POST" ],
+      "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer", "AllowedScopes": [] }
+    },
+    {
+      "DownstreamPathTemplate": "/api/expedientes/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [ { "Host": "ms-b", "Port": 8080 } ],
+      "UpstreamPathTemplate": "/api/expedientes/{everything}",
+      "UpstreamHttpMethod": [ "GET", "POST" ],
+      "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer", "AllowedScopes": [] }
+    }
+  ]
+}
