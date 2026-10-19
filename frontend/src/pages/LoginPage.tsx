@@ -75,15 +75,6 @@ export function LoginPage(): JSX.Element {
     <LayoutAutenticacion
       titulo="Inicio de sesión institucional"
       subtitulo="Acceda con sus credenciales de la Universidad Técnica de Ambato."
-      pie={
-        <div className="rounded-md border border-white/15 bg-white/10 p-3 text-xs text-slate-200">
-          <p className="font-semibold text-white">Cuenta semilla de verificación</p>
-          <p className="mt-1">
-            Usuario: <span className="font-mono">admin@uta.edu.ec</span> · Contraseña:{' '}
-            <span className="font-mono">Admin123*</span>
-          </p>
-        </div>
-      }
     >
       <div className="space-y-4">
         {motivoCierre ? <Alerta tono="advertencia">{motivoCierre}</Alerta> : null}

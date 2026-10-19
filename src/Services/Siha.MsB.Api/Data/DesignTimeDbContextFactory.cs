@@ -10,7 +10,8 @@ public class DesignTimeDbContextFactory : IDesignTimeDbContextFactory<SihaDbCont
     {
         var options = new DbContextOptionsBuilder<SihaDbContextB>()
             .UseSqlServer(
-                "Server=localhost,14330;Database=SihaDbB;User Id=sa;Password=SihaAdmin2026!;TrustServerCertificate=True;Encrypt=False")
+                Environment.GetEnvironmentVariable("ConnectionStrings__SihaDbB")
+                ?? throw new InvalidOperationException("Configura ConnectionStrings__SihaDbB para ejecutar las migraciones."))
             .Options;
 
         return new SihaDbContextB(options);

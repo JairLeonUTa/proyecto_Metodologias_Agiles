@@ -9,7 +9,7 @@ services:
     container_name: siha-sqlserver-a
     environment:
       ACCEPT_EULA: "Y"
-      MSSQL_SA_PASSWORD: "SihaAdmin2026!"
+      MSSQL_SA_PASSWORD: "${SIHA_SQL_PASSWORD:?Configura SIHA_SQL_PASSWORD en .env}"
       MSSQL_PID: "Developer"
     ports:
       - "1433:1433"
@@ -28,7 +28,7 @@ services:
     container_name: siha-sqlserver-b
     environment:
       ACCEPT_EULA: "Y"
-      MSSQL_SA_PASSWORD: "SihaAdmin2026!"
+      MSSQL_SA_PASSWORD: "${SIHA_SQL_PASSWORD:?Configura SIHA_SQL_PASSWORD en .env}"
       MSSQL_PID: "Developer"
     ports:
       - "14330:1433"
@@ -50,7 +50,7 @@ services:
     profiles: [ "sprint23" ]
     environment:
       ACCEPT_EULA: "Y"
-      MSSQL_SA_PASSWORD: "SihaAdmin2026!"
+      MSSQL_SA_PASSWORD: "${SIHA_SQL_PASSWORD:?Configura SIHA_SQL_PASSWORD en .env}"
       MSSQL_PID: "Developer"
     ports:
       - "14331:1433"
@@ -66,7 +66,7 @@ services:
     container_name: siha-rabbitmq
     environment:
       RABBITMQ_DEFAULT_USER: "siha"
-      RABBITMQ_DEFAULT_PASS: "siha-rabbit-2026"
+      RABBITMQ_DEFAULT_PASS: "${SIHA_RABBITMQ_PASSWORD:?Configura SIHA_RABBITMQ_PASSWORD en .env}"
     ports:
       - "5672:5672"
       - "15672:15672"
@@ -90,12 +90,12 @@ services:
     container_name: siha-ms-a
     environment:
       ASPNETCORE_ENVIRONMENT: "Production"
-      ConnectionStrings__SihaDbA: "Server=sqlserver-a,1433;Database=SihaDbA;User Id=sa;Password=SihaAdmin2026!;TrustServerCertificate=True;Encrypt=False"
-      Jwt__Key: "SIHA-IA-clave-de-firma-JWT-para-el-Sprint-1-2026-256bits"
+      ConnectionStrings__SihaDbA: "Server=sqlserver-a,1433;Database=SihaDbA;User Id=sa;Password=${SIHA_SQL_PASSWORD:?Configura SIHA_SQL_PASSWORD en .env};TrustServerCertificate=True;Encrypt=False"
+      Jwt__Key: "${SIHA_JWT_KEY:?Configura SIHA_JWT_KEY en .env}"
       Jwt__Issuer: "SIHA-IA"
       Jwt__Audience: "SIHA-IA-Clients"
       Seed__AdminCorreo: "admin@uta.edu.ec"
-      Seed__AdminPassword: "Admin123*"
+      Seed__AdminPassword: "${SIHA_ADMIN_PASSWORD:?Configura SIHA_ADMIN_PASSWORD en .env}"
       # Kestrel atiende REST (HTTP/1.1) en 8080 y gRPC (HTTP/2, h2c) en el listener dedicado 8081.
       Grpc__Puerto: "8081"
     depends_on:
@@ -119,13 +119,13 @@ services:
     container_name: siha-ms-b
     environment:
       ASPNETCORE_ENVIRONMENT: "Production"
-      ConnectionStrings__SihaDbB: "Server=sqlserver-b,1433;Database=SihaDbB;User Id=sa;Password=SihaAdmin2026!;TrustServerCertificate=True;Encrypt=False"
-      Jwt__Key: "SIHA-IA-clave-de-firma-JWT-para-el-Sprint-1-2026-256bits"
+      ConnectionStrings__SihaDbB: "Server=sqlserver-b,1433;Database=SihaDbB;User Id=sa;Password=${SIHA_SQL_PASSWORD:?Configura SIHA_SQL_PASSWORD en .env};TrustServerCertificate=True;Encrypt=False"
+      Jwt__Key: "${SIHA_JWT_KEY:?Configura SIHA_JWT_KEY en .env}"
       Jwt__Issuer: "SIHA-IA"
       Jwt__Audience: "SIHA-IA-Clients"
       RabbitMq__Uri: "rabbitmq://rabbitmq"
       RabbitMq__Usuario: "siha"
-      RabbitMq__Password: "siha-rabbit-2026"
+      RabbitMq__Password: "${SIHA_RABBITMQ_PASSWORD:?Configura SIHA_RABBITMQ_PASSWORD en .env}"
       # Archivos (S1-S05 / S1-S06): tamaño máximo admitido y directorio de almacenamiento seguro.
       Archivos__TamanoMaximoBytes: "10485760"
       Archivos__RutaAlmacenamiento: "/app/archivos"
@@ -153,7 +153,7 @@ services:
     container_name: siha-gateway
     environment:
       ASPNETCORE_ENVIRONMENT: "Production"
-      Jwt__Key: "SIHA-IA-clave-de-firma-JWT-para-el-Sprint-1-2026-256bits"
+      Jwt__Key: "${SIHA_JWT_KEY:?Configura SIHA_JWT_KEY en .env}"
       Jwt__Issuer: "SIHA-IA"
       Jwt__Audience: "SIHA-IA-Clients"
     depends_on:

@@ -10,7 +10,7 @@ public sealed class OpcionesBus
 {
     public const string UriPorDefecto = "rabbitmq://localhost";
     public const string UsuarioPorDefecto = "siha";
-    public const string PasswordPorDefecto = "siha-rabbit-2026";
+    public const string PasswordPorDefecto = "";
     public const string ColaPorDefecto = "siha-verificador-solicitud-creada";
 
     public string Uri { get; private init; } = UriPorDefecto;
@@ -101,6 +101,9 @@ public sealed class OpcionesBus
         password ??= Ambiente("SIHA_RABBITMQ_PASSWORD") ?? PasswordPorDefecto;
         cola ??= Ambiente("SIHA_RABBITMQ_COLA") ?? ColaPorDefecto;
 
+        if (!ayuda && string.IsNullOrWhiteSpace(password))
+            return Error("Configura SIHA_RABBITMQ_PASSWORD o utiliza --password.");
+
         if (!System.Uri.TryCreate(uri, UriKind.Absolute, out _))
         {
             return Error($"La URI del bus '{uri}' no es válida. Ejemplo: rabbitmq://localhost");
@@ -139,7 +142,7 @@ public sealed class OpcionesBus
                                       Variables: SIHA_RABBITMQ_URI
           --usuario <usuario>         Usuario del bus.           Por defecto: siha
                                       Variables: SIHA_RABBITMQ_USUARIO
-          --password <clave>          Contraseña del bus.        Por defecto: siha-rabbit-2026
+          --password <clave>          Contraseña del bus.        Obligatoria (sin valor por defecto)
                                       Variables: SIHA_RABBITMQ_PASSWORD
           --cola <nombre>             Cola de suscripción.       Por defecto: siha-verificador-solicitud-creada
                                       Variables: SIHA_RABBITMQ_COLA

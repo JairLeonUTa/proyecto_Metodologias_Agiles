@@ -213,7 +213,9 @@ static async Task MigrarYSembrarAsync(WebApplication app)
     }
 
     var correo = configuration["Seed:AdminCorreo"] ?? "admin@uta.edu.ec";
-    var password = configuration["Seed:AdminPassword"] ?? "Admin123*";
+    var password = configuration["Seed:AdminPassword"];
+    if (string.IsNullOrWhiteSpace(password))
+        throw new InvalidOperationException("Configura Seed__AdminPassword para inicializar la cuenta administradora.");
 
     await DbSeederA.SembrarAsync(db, hasher, correo, password, logger);
     logger.LogInformation("Microservicio A listo. Swagger en /swagger, salud en /health.");
