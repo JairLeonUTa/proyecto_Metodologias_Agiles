@@ -1,0 +1,60 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Estilos base de SIHA-IA (S1-A10: navegación por teclado siempre visible). */
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    @apply bg-slate-100 text-slate-800 antialiased;
+    font-feature-settings: 'cv02', 'cv03', 'cv04';
+  }
+
+  /* Anillo de foco uniforme: la navegación con Tab siempre es visible. */
+  :focus-visible {
+    @apply outline-none ring-2 ring-institucional-500 ring-offset-2 ring-offset-white;
+  }
+
+  h1,
+  h2,
+  h3 {
+    @apply text-slate-900;
+  }
+
+  table {
+    border-collapse: separate;
+    border-spacing: 0;
+  }
+}
+
+@layer components {
+  /* Contenedor estándar de tarjeta usado por todas las vistas. */
+  .tarjeta {
+    @apply rounded-lg border border-slate-200 bg-white shadow-sm;
+  }
+
+  /* Enlace de salto al contenido, visible solo al recibir el foco (WCAG 2.4.1). */
+  .salto-contenido {
+    @apply sr-only;
+  }
+
+  .salto-contenido:focus {
+    @apply not-sr-only fixed left-4 top-4 z-50 rounded-md bg-institucional-700 px-4 py-2 text-sm font-semibold text-white shadow-lg;
+  }
+}
+
+/* Área de desplazamiento con apariencia discreta. */
+.desplazable::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+.desplazable::-webkit-scrollbar-thumb {
+  background-color: rgb(148 163 184 / 0.6);
+  border-radius: 9999px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}

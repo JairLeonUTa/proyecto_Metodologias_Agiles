@@ -1,0 +1,11 @@
+node_modules
+dist
+.vite
+.git
+.gitignore
+*.log
+install.log
+.env
+.env.local
+Dockerfile
+.dockerignore
