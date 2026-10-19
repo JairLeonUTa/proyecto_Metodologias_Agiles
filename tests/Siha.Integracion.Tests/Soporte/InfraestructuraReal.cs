@@ -1,3 +1,5 @@
+extern alias msa;
+
 using System.Collections.Concurrent;
 using System.IdentityModel.Tokens.Jwt;
 using System.Net.Http.Headers;
@@ -65,7 +67,10 @@ public sealed class InfraestructuraReal : IAsyncLifetime
     public Uri UriRabbit => new($"rabbitmq://{RabbitMq.Hostname}:{RabbitMq.GetMappedPublicPort(5672)}");
 
     /// <summary>JWT firmado con la misma clave que usa el Microservicio A en docker-compose.</summary>
-    public static string TokenOperador()
+    public static string TokenOperador() => TokenCon(RolesSistema.Operador);
+
+    /// <summary>JWT con el rol indicado, firmado con la clave compartida por A, B y el Gateway.</summary>
+    public static string TokenCon(string rol)
     {
         var credenciales = new SigningCredentials(
             new SymmetricSecurityKey(Encoding.UTF8.GetBytes(ClaveJwt)), SecurityAlgorithms.HmacSha256);
@@ -76,7 +81,8 @@ public sealed class InfraestructuraReal : IAsyncLifetime
             new[]
             {
                 new Claim(JwtRegisteredClaimNames.Sub, Guid.NewGuid().ToString()),
-                new Claim(ClaimTypes.Role, RolesSistema.Operador)
+                new Claim(ClaimTypes.Name, $"qa-{rol.ToLowerInvariant()}@uta.edu.ec"),
+                new Claim(ClaimTypes.Role, rol)
             },
             expires: DateTime.UtcNow.AddHours(1),
             signingCredentials: credenciales);
@@ -214,4 +220,60 @@ public sealed class SuscriptorEspia : IAsyncDisposable
     }
 
     public async ValueTask DisposeAsync() => await _bus.StopAsync();
+}
+
+/// <summary>
+/// Microservicio A real (Program.cs completo: EF Core SqlServer, migraciones y semilla de DB A, JWT y
+/// servicio gRPC <c>siha.reglas.v1.ReglasGrpc</c>) sobre el SQL Server de <see cref="InfraestructuraReal"/>.
+/// El tipo genérico es un tipo público de Siha.MsA.Api: WebApplicationFactory solo lo usa para
+/// localizar el ensamblado y su punto de entrada (el Program de MsA no es público).
+/// </summary>
+public sealed class MsAReal : WebApplicationFactory<msa::Siha.MsA.Api.GrpcServices.ReglasGrpcService>
+{
+    private readonly InfraestructuraReal _infra;
+
+    /// <param name="baseDatos">Base existente a reutilizar (p. ej. para comprobar persistencia); nueva si es null.</param>
+    public MsAReal(InfraestructuraReal infra, string? baseDatos = null)
+    {
+        _infra = infra;
+        BaseDatos = baseDatos ?? $"SihaDbA_it_{Guid.NewGuid():N}"[..30];
+    }
+
+    public string BaseDatos { get; }
+
+    public string CadenaConexion => _infra.CadenaConexion(BaseDatos);
+
+    protected override void ConfigureWebHost(IWebHostBuilder builder)
+    {
+        builder.UseEnvironment("Production");
+        builder.UseSetting("ConnectionStrings:SihaDbA", CadenaConexion);
+        builder.UseSetting("Jwt:Key", InfraestructuraReal.ClaveJwt);
+        builder.UseSetting("Jwt:Issuer", InfraestructuraReal.EmisorJwt);
+        builder.UseSetting("Jwt:Audience", InfraestructuraReal.AudienciaJwt);
+        builder.UseSetting("Seed:AdminCorreo", "admin@uta.edu.ec");
+        builder.UseSetting("Seed:AdminPassword", "Admin123*");
+    }
+
+    /// <summary>Cliente HTTP con un JWT del rol indicado (para comparar gRPC con la API REST).</summary>
+    public HttpClient ClienteCon(string rol)
+    {
+        var cliente = CreateClient();
+        cliente.DefaultRequestHeaders.Authorization =
+            new AuthenticationHeaderValue("Bearer", InfraestructuraReal.TokenCon(rol));
+        return cliente;
+    }
+
+    /// <summary>
+    /// Canal gRPC (HTTP/2) hacia el servidor real de MsA. El transporte es el servidor de pruebas en
+    /// memoria; el servicio, la serialización Protobuf, EF Core y SQL Server son reales. La llamada
+    /// por red al contenedor ms-a se comprueba en scripts/e2e-docker-compose.sh.
+    /// </summary>
+    public Grpc.Net.Client.GrpcChannel CanalGrpc()
+    {
+        CreateClient(); // arranca el host (migración y semilla de DB A)
+        return Grpc.Net.Client.GrpcChannel.ForAddress(Server.BaseAddress, new Grpc.Net.Client.GrpcChannelOptions
+        {
+            HttpHandler = Server.CreateHandler()
+        });
+    }
 }

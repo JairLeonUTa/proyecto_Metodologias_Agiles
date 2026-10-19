@@ -20,6 +20,12 @@
 
   <ItemGroup>
     <PackageReference Include="FluentAssertions" Version="6.12.0" />
+    <PackageReference Include="Google.Protobuf" Version="3.27.0" />
+    <PackageReference Include="Grpc.Net.Client" Version="2.65.0" />
+    <PackageReference Include="Grpc.Tools" Version="2.65.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="8.0.10" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.8.0" />
     <PackageReference Include="Testcontainers.MsSql" Version="4.11.0" />
@@ -32,9 +38,14 @@
     <Using Include="Xunit" />
   </ItemGroup>
 
+  <!-- Cliente gRPC generado desde el MISMO contrato que publica el Microservicio A (S1-S04). -->
+  <ItemGroup>
+    <Protobuf Include="..\..\src\Services\Siha.MsA.Api\Protos\reglas.proto" GrpcServices="Client" Link="Protos\reglas.proto" />
+  </ItemGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\..\src\Services\Siha.MsB.Api\Siha.MsB.Api.csproj" />
-    <!-- Alias: Siha.MsA.Api también define 'Program'; solo se usa su DbContext para migrar DB A. -->
+    <!-- Alias: Siha.MsA.Api también define 'Program'. Se usa su DbContext y su host completo (MsAReal) para las pruebas gRPC. -->
     <ProjectReference Include="..\..\src\Services\Siha.MsA.Api\Siha.MsA.Api.csproj" Aliases="msa" />
   </ItemGroup>
 

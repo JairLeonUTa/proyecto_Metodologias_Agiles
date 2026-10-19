@@ -6,6 +6,7 @@
 #   1. Arranque limpio: docker compose down -v + up --build (volúmenes vacíos).
 #   2. Migraciones reales de DB A y DB B en SQL Server (__EFMigrationsHistory).
 #   3. Gateway + JWT: login en MsA y registro del expediente en MsB a través de Ocelot.
+#  3b. Servicio gRPC de reglas (S1-S04): llamada real con grpcurl a ms-a:8081 y coherencia con REST.
 #   4. Flujo documental: borrador -> PDF validado en el servidor -> envío -> RabbitMQ.
 #   5. Recepción del mensaje por el suscriptor de verificación con el mismo CorrelationId.
 #   6. Almacenamiento persistente: el PDF sobrevive a la recreación del contenedor ms-b.
@@ -124,6 +125,34 @@ CODIGO="$(http POST "$GATEWAY/api/auth/login" -H 'Content-Type: application/json
 TOKEN="$(campo "$(cat "$TMP/cuerpo")" token)"
 comprobar "Login vía Gateway (JWT emitido por MsA)" "200" "$CODIGO"
 AUT=(-H "Authorization: Bearer $TOKEN")
+
+log "== 3b. Servicio gRPC de reglas (S1-S04) por la red de Docker =="
+# grpcurl corre en un contenedor conectado a la misma red que ms-a y llama a ms-a:8081 (HTTP/2 h2c)
+# con el contrato reglas.proto del repositorio. Se usa docker cp (y no un volumen) para que funcione
+# igual en Linux, macOS y Git Bash sobre Windows.
+RED_COMPOSE="$(docker inspect -f '{{range $k, $v := .NetworkSettings.Networks}}{{$k}} {{end}}' siha-ms-a | awk '{print $1}')"
+PROTO_LOCAL="$(cd "$RAIZ/src/Services/Siha.MsA.Api/Protos" && (pwd -W 2>/dev/null || pwd))/reglas.proto"
+grpc_reglas() { # grpc_reglas <json de la petición> -> salida de grpcurl; código de salida de grpcurl
+  local id rc
+  id="$(docker create --network "$RED_COMPOSE" "$IMAGEN_GRPCURL" -plaintext -import-path / -proto reglas.proto \
+        -d "$1" ms-a:8081 siha.reglas.v1.ReglasGrpc/ObtenerConfiguracionRuta)" || return 99
+  docker cp "$PROTO_LOCAL" "$id:/reglas.proto" >/dev/null
+  docker start -a "$id" 2>&1; rc=$?
+  docker rm -f "$id" >/dev/null 2>&1
+  return $rc
+}
+IMAGEN_GRPCURL="${IMAGEN_GRPCURL:-fullstorydev/grpcurl:v1.9.1}"
+docker image inspect "$IMAGEN_GRPCURL" >/dev/null 2>&1 || docker pull -q "$IMAGEN_GRPCURL" >>"$LOG" 2>&1
+
+SALIDA_GRPC="$(grpc_reglas '{"ruta_normativa":"CAU-P-011"}')"; RC=$?
+printf '%s\n' "$SALIDA_GRPC" >>"$LOG"
+comprobar "gRPC ObtenerConfiguracionRuta(CAU-P-011) responde OK" "0 true" "$RC $(campo "$SALIDA_GRPC" parametrosConfigurados)" "reglas=$(printf '%s' "$SALIDA_GRPC" | grep -c '"codigo"')"
+CODIGO="$(http GET "$GATEWAY/api/reglas/parametros/CAU-P-011" "${AUT[@]}")"
+THETA_REST="$(campo "$(cat "$TMP/cuerpo")" theta)"; THETA_GRPC="$(campo "$SALIDA_GRPC" theta)"
+comprobar "θ por gRPC = θ por REST vía Gateway (misma fuente de verdad)" "1" \
+  "$(awk -v a="$THETA_GRPC" -v b="$THETA_REST" 'BEGIN { print (a != "" && a + 0 == b + 0) ? 1 : 0 }')" "gRPC θ=$THETA_GRPC · REST θ=$THETA_REST"
+SALIDA_GRPC="$(grpc_reglas '{"ruta_normativa":"CAU-P-999"}')"
+comprobar "gRPC rechaza ruta inválida con InvalidArgument" "1" "$(printf '%s' "$SALIDA_GRPC" | grep -c 'InvalidArgument')" "$(printf '%s' "$SALIDA_GRPC" | grep -m1 'Message' | tr -s ' ')"
 
 log "== 4. Flujo documental =="
 CODIGO="$(http POST "$GATEWAY/api/expedientes" "${AUT[@]}" -H 'Content-Type: application/json' -d '{"tipoTramite":"INTERNO","rutaNormativa":"CAU-P-011","carreraOrigenCodigo":"SW","carreraDestinoCodigo":"TI","documentos":[{"nombreArchivo":"x.pdf","rutaAlmacenamiento":"/etc/passwd","hashSha256":"0","tamanoBytes":1}]}')"

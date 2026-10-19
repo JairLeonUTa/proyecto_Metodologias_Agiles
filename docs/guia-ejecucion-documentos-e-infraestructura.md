@@ -62,10 +62,12 @@ descartar un duplicado si lo hubiera. Ver `docs/contrato-solicitud-creada-event.
 |---|---|---|---|---|
 | **Simuladas** | `tests/Siha.MsA.Tests` | EF Core InMemory, mocks | 53 | `dotnet test tests/Siha.MsA.Tests` |
 | **Simuladas** | `tests/Siha.MsB.Tests` | EF Core InMemory, Moq, arnés en memoria de MassTransit, inspección de configuración | 60 | `dotnet test tests/Siha.MsB.Tests` |
-| **Reales** | `tests/Siha.Integracion.Tests` | **SQL Server 2022 y RabbitMQ 3.13 reales** (Testcontainers), sistema de archivos real, suscriptor independiente | 8 | `dotnet test tests/Siha.Integracion.Tests` |
-| **Reales (E2E)** | `scripts/e2e-docker-compose.sh` | **Toda la pila de `docker-compose.yml`** desde cero: SQL A/B, RabbitMQ, ms-a, ms-b, gateway, frontend | 28 comprobaciones | `bash scripts/e2e-docker-compose.sh` |
+| **Reales** | `tests/Siha.Integracion.Tests` | **SQL Server 2022 y RabbitMQ 3.13 reales** (Testcontainers), sistema de archivos real, suscriptor independiente, MsA y MsB completos | 15 | `dotnet test tests/Siha.Integracion.Tests` |
+| **Reales (E2E)** | `scripts/e2e-docker-compose.sh` | **Toda la pila de `docker-compose.yml`** desde cero: SQL A/B, RabbitMQ, ms-a (REST + gRPC), ms-b, gateway, frontend | 31 comprobaciones | `bash scripts/e2e-docker-compose.sh` |
 
-Pruebas con infraestructura real (`Siha.Integracion.Tests`):
+Pruebas con infraestructura real (`Siha.Integracion.Tests`).
+
+`FlujoDocumentosRealTests` (documentos, expedientes y bus):
 
 1. `Las_migraciones_de_A_y_B_se_aplican_en_SQL_Server_real`
 2. `Recorrido_completo_registro_carga_envio_y_recepcion_en_RabbitMQ` (CorrelationId en cabecera y cuerpo, MessageId = ExpedienteId, referencias verificadas)
@@ -75,6 +77,13 @@ Pruebas con infraestructura real (`Siha.Integracion.Tests`):
 6. `No_se_publica_si_el_PDF_ya_no_existe_en_el_almacenamiento`
 7. `Un_fallo_del_almacenamiento_responde_503_sin_dejar_filas`
 8. `Caida_y_recuperacion_del_bus_conservan_el_CorrelationId_y_el_mensaje_llega` (detiene y reinicia el contenedor de RabbitMQ)
+
+`ReglasGrpcRealTests` (servidor gRPC de reglas, S1-S04 / S1-S09):
+
+9. `Grpc_devuelve_los_umbrales_y_reglas_sembrados_en_SQL_Server_igual_que_REST` (CAU-P-011 y CAU-P-122)
+10. `Grpc_filtra_por_tipo_de_tramite`
+11. `Grpc_rechaza_ruta_o_tipo_invalidos_con_InvalidArgument` (3 casos)
+12. `Un_cambio_de_umbrales_por_REST_se_refleja_en_gRPC_y_persiste_en_SQL_Server`
 
 ---
 
@@ -99,7 +108,7 @@ Resultado esperado: `Passed: 53` y `Passed: 60`.
 dotnet test tests/Siha.Integracion.Tests -c Release --logger "console;verbosity=normal"
 ```
 
-Resultado esperado: `Passed: 8` (tarda ~3 minutos; Testcontainers crea y destruye los contenedores solo).
+Resultado esperado: `Passed: 15` (tarda ~4 minutos; Testcontainers crea y destruye los contenedores solo).
 
 ### 4.3 Docker Compose desde cero (E2E)
 
@@ -114,6 +123,7 @@ El script ejecuta `docker compose down -v` (borra volúmenes), `up -d --build` y
 1. Arranque con volúmenes vacíos.
 2. Migraciones reales de DB A y DB B (`__EFMigrationsHistory`) e índice único filtrado.
 3. Login por el Gateway (JWT de MsA).
+3b. Llamada **gRPC real** a `ms-a:8081` con `grpcurl` (imagen `fullstorydev/grpcurl`): umbrales iguales a los de REST y `InvalidArgument` ante una ruta inválida.
 4. Flujo documental completo, rechazos, reintento sin duplicar y hash del archivo en el volumen.
 5. Recepción del mensaje por el suscriptor con el mismo CorrelationId (exactamente uno).
 6. El PDF sobrevive a recrear el contenedor `ms-b` (volumen persistente).
@@ -174,6 +184,7 @@ Cada job publica sus resultados como artefacto (`resultados-unitarias`, `resulta
 | Síntoma | Causa | Solución |
 |---|---|---|
 | `Docker is either not running or misconfigured` | Docker Desktop cerrado | Abrir Docker Desktop y esperar a que diga *Running* |
+| Falla la sección 3b (gRPC) del E2E | No se pudo descargar `fullstorydev/grpcurl` | `docker pull fullstorydev/grpcurl:v1.9.1` y repetir |
 | `toomanyrequests` / `429` al descargar `rabbitmq` | Límite de descargas anónimas de Docker Hub | `docker login` o esperar unos minutos |
 | Puerto 1433, 5000, 5672 o 5173 ocupado | Otro SQL Server, RabbitMQ o servicio local | Detener el servicio local o cambiar el puerto en `docker-compose.override.yml` |
 | `413 Request Entity Too Large` al subir un PDF | Imagen del frontend antigua | `docker compose build frontend` (Nginx ahora admite 12 MB) |

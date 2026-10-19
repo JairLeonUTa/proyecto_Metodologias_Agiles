@@ -1,11 +1,11 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<TestRun id="50eb54fa-e22e-4687-aa12-cc790647a479" name="@vm 2026-10-19 18:28:52" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
-  <Times creation="2026-10-19T18:28:52.4716566-05:00" queuing="2026-10-19T18:28:52.4716567-05:00" start="2026-10-19T18:28:21.9067289-05:00" finish="2026-10-19T18:31:09.5688471-05:00" />
-  <TestSettings name="default" id="d5cce5da-85f6-4bcc-810f-abfc2bdecab7">
-    <Deployment runDeploymentRoot="_vm_2026-10-19_18_28_52" />
+<TestRun id="fa4e3131-da0e-4189-9ed6-39f652c3cf08" name="@vm 2026-10-19 18:52:53" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+  <Times creation="2026-10-19T18:52:53.9813727-05:00" queuing="2026-10-19T18:52:53.9813728-05:00" start="2026-10-19T18:52:20.5751644-05:00" finish="2026-10-19T18:56:23.5751119-05:00" />
+  <TestSettings name="default" id="cd6d680c-1c3a-4956-a017-6614631c2ef5">
+    <Deployment runDeploymentRoot="_vm_2026-10-19_18_52_53" />
   </TestSettings>
   <Results>
-    <UnitTestResult executionId="3f837571-c4e0-4b0b-a592-32fca593c6e1" testId="67e9a941-6e81-233a-7d9e-eccb6b10c3a6" testName="Siha.Integracion.Tests.FlujoDocumentosRealTests.Las_migraciones_de_A_y_B_se_aplican_en_SQL_Server_real" computerName="vm" duration="00:00:20.9845021" startTime="2026-10-19T18:30:07.1297813-05:00" endTime="2026-10-19T18:30:07.1297817-05:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="3f837571-c4e0-4b0b-a592-32fca593c6e1">
+    <UnitTestResult executionId="daf88f6e-1c17-4414-865a-69a8ba6f1468" testId="67e9a941-6e81-233a-7d9e-eccb6b10c3a6" testName="Siha.Integracion.Tests.FlujoDocumentosRealTests.Las_migraciones_de_A_y_B_se_aplican_en_SQL_Server_real" computerName="vm" duration="00:00:21.0004116" startTime="2026-10-19T18:54:04.3085596-05:00" endTime="2026-10-19T18:54:04.3085600-05:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="daf88f6e-1c17-4414-865a-69a8ba6f1468">
       <Output>
         <StdOut>[SQL Server real] SELECT COUNT(*) FROM __EFMigrationsHistory =&gt; 3
 [SQL Server real] SELECT COUNT(*) FROM sys.indexes WHERE name = 'IX_EXPEDIENTE_DOC_Unico_Validado' AND is_unique = 1 AND has_filter = 1 =&gt; 1
@@ -13,111 +13,177 @@
 [DB A] migraciones aplicadas: 20261018145128_InitialCreate</StdOut>
       </Output>
     </UnitTestResult>
-    <UnitTestResult executionId="cbf38dba-19d4-40fa-a833-47483ad8ec17" testId="e11547b0-8c1d-29db-59f4-a7e188fb4786" testName="Siha.Integracion.Tests.FlujoDocumentosRealTests.Un_fallo_del_almacenamiento_responde_503_sin_dejar_filas" computerName="vm" duration="00:00:12.5054119" startTime="2026-10-19T18:30:19.6351014-05:00" endTime="2026-10-19T18:30:19.6351016-05:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="cbf38dba-19d4-40fa-a833-47483ad8ec17">
+    <UnitTestResult executionId="e88cceb0-4985-4ec5-a5b4-4328427a2086" testId="c7bd4640-92c2-ad09-6e97-0e45f1cf91cf" testName="Siha.Integracion.Tests.ReglasGrpcRealTests.Grpc_filtra_por_tipo_de_tramite" computerName="vm" duration="00:00:10.8812127" startTime="2026-10-19T18:56:11.6167074-05:00" endTime="2026-10-19T18:56:11.6167081-05:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="e88cceb0-4985-4ec5-a5b4-4328427a2086" />
+    <UnitTestResult executionId="bc35819a-306b-48ec-82cf-cbbef82c0ebf" testId="16fa3fac-4eca-770c-7792-87ce7135e6f7" testName="Siha.Integracion.Tests.ReglasGrpcRealTests.Grpc_devuelve_los_umbrales_y_reglas_sembrados_en_SQL_Server_igual_que_REST(ruta: &quot;CAU-P-011&quot;)" computerName="vm" duration="00:00:10.9298183" startTime="2026-10-19T18:56:00.7370927-05:00" endTime="2026-10-19T18:56:00.7370931-05:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="bc35819a-306b-48ec-82cf-cbbef82c0ebf">
       <Output>
-        <StdOut>{"mensaje":"El almacenamiento de documentos no está disponible en este momento. Intente nuevamente.","expedienteId":"65a592aa-4f3f-4790-9db4-5631f4790e05"}
-[SQL Server real] SELECT COUNT(*) FROM EXPEDIENTE_DOC WHERE ExpedienteId = '65a592aa-4f3f-4790-9db4-5631f4790e05' =&gt; 0
-[SQL Server real] SELECT Estado FROM EXPEDIENTE WHERE Id = '65a592aa-4f3f-4790-9db4-5631f4790e05' =&gt; PENDIENTE_DOCUMENTOS</StdOut>
+        <StdOut>[gRPC real] CAU-P-011: θ=80 δ=10 τ=70 v1 reglas=2</StdOut>
       </Output>
     </UnitTestResult>
-    <UnitTestResult executionId="89364fd3-163a-45ff-8d7b-5926982e55d8" testId="71938f5b-afbe-3635-522f-c83666cbf5ed" testName="Siha.Integracion.Tests.FlujoDocumentosRealTests.No_se_publica_si_el_PDF_ya_no_existe_en_el_almacenamiento" computerName="vm" duration="00:00:15.3093462" startTime="2026-10-19T18:29:21.1629389-05:00" endTime="2026-10-19T18:29:21.1629392-05:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="89364fd3-163a-45ff-8d7b-5926982e55d8">
+    <UnitTestResult executionId="50054465-a751-413e-b5e2-4465c5d99a29" testId="d60c7831-00d0-960b-e3e3-770fb41cfe5e" testName="Siha.Integracion.Tests.FlujoDocumentosRealTests.Caida_y_recuperacion_del_bus_conservan_el_CorrelationId_y_el_mensaje_llega" computerName="vm" duration="00:00:51.0642325" startTime="2026-10-19T18:55:05.8455158-05:00" endTime="2026-10-19T18:55:05.8455164-05:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="50054465-a751-413e-b5e2-4465c5d99a29">
       <Output>
-        <StdOut>{"mensaje":"El expediente no cumple los requisitos documentales para publicarse.","detalles":["Se requieren al menos 1 documento(s) PDF validado(s) y disponible(s); hay 0.","'plan-analitico.pdf' (f0e8423a-1279-4282-beee-bf3fe2a0c06b): El archivo no existe en el almacenamiento."],"expedienteId":"25c958b2-d204-45c1-b8da-bea0589948b1","estado":"PENDIENTE_DOCUMENTOS"}
-[SQL Server real] SELECT EstadoRecepcion FROM EXPEDIENTE_DOC WHERE Id = 'f0e8423a-1279-4282-beee-bf3fe2a0c06b' =&gt; NO_DISPONIBLE</StdOut>
+        <StdOut>2026-10-19T23:54:27.3257270+00:00 RabbitMQ PAUSADO
+2026-10-19T23:55:03.3169331+00:00 RabbitMQ REANUDADO
+Durante la caída: HTTP 202 Estado=REGISTRADO_PENDIENTE_PUBLICACION Publicado=False
+2026-10-19T23:55:05.2274339+00:00 Recibido tras la recuperación. CorrelationId=8d5edd62-fe79-4101-94be-8c66f85433ac
+[SQL Server real] SELECT Estado FROM EXPEDIENTE WHERE Id = 'e0c402ad-ff80-4bbb-bfa7-89f343e6aec7' =&gt; PENDIENTE_CONTENIDOS
+[SQL Server real] SELECT IntentosPublicacion FROM EXPEDIENTE WHERE Id = 'e0c402ad-ff80-4bbb-bfa7-89f343e6aec7' =&gt; 2
+[SQL Server real] SELECT CONVERT(varchar(36), CorrelationId) FROM EXPEDIENTE WHERE Id = 'e0c402ad-ff80-4bbb-bfa7-89f343e6aec7' =&gt; 8D5EDD62-FE79-4101-94BE-8C66F85433AC</StdOut>
       </Output>
     </UnitTestResult>
-    <UnitTestResult executionId="0b6457aa-5eb0-4601-b748-df094b2b78d3" testId="9a0b9d31-43eb-0927-1b96-75ebe1a73223" testName="Siha.Integracion.Tests.FlujoDocumentosRealTests.Envios_simultaneos_publican_un_solo_mensaje" computerName="vm" duration="00:00:18.4990639" startTime="2026-10-19T18:28:52.4189534-05:00" endTime="2026-10-19T18:28:52.4189771-05:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="0b6457aa-5eb0-4601-b748-df094b2b78d3">
+    <UnitTestResult executionId="5dcb3c9a-f287-4b1e-9b95-1512d81dc05a" testId="9a0b9d31-43eb-0927-1b96-75ebe1a73223" testName="Siha.Integracion.Tests.FlujoDocumentosRealTests.Envios_simultaneos_publican_un_solo_mensaje" computerName="vm" duration="00:00:20.3359545" startTime="2026-10-19T18:52:53.9217342-05:00" endTime="2026-10-19T18:52:53.9217694-05:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="5dcb3c9a-f287-4b1e-9b95-1512d81dc05a">
       <Output>
         <StdOut>Envíos simultáneos: 409, 202, 409, 409, 409
-[SQL Server real] SELECT IntentosPublicacion FROM EXPEDIENTE WHERE Id = '20f64f43-0b62-4212-9957-71c7cf9ee0ac' =&gt; 1</StdOut>
+[SQL Server real] SELECT IntentosPublicacion FROM EXPEDIENTE WHERE Id = 'ddc3e2dd-a0d6-419f-a48c-db0aae4a71fe' =&gt; 1</StdOut>
       </Output>
     </UnitTestResult>
-    <UnitTestResult executionId="b2b69147-0742-496f-beb8-486b917a32bf" testId="d60c7831-00d0-960b-e3e3-770fb41cfe5e" testName="Siha.Integracion.Tests.FlujoDocumentosRealTests.Caida_y_recuperacion_del_bus_conservan_el_CorrelationId_y_el_mensaje_llega" computerName="vm" duration="00:00:49.1251401" startTime="2026-10-19T18:31:08.7606682-05:00" endTime="2026-10-19T18:31:08.7606686-05:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="b2b69147-0742-496f-beb8-486b917a32bf">
+    <UnitTestResult executionId="6ccb7591-e1ad-437b-b6fd-6717782380f2" testId="61d68393-9f2d-5e1e-7614-23dc5d1fba4e" testName="Siha.Integracion.Tests.ReglasGrpcRealTests.Grpc_devuelve_los_umbrales_y_reglas_sembrados_en_SQL_Server_igual_que_REST(ruta: &quot;CAU-P-122&quot;)" computerName="vm" duration="00:00:11.0081580" startTime="2026-10-19T18:55:49.8028439-05:00" endTime="2026-10-19T18:55:49.8028442-05:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="6ccb7591-e1ad-437b-b6fd-6717782380f2">
       <Output>
-        <StdOut>2026-10-19T23:30:30.2387844+00:00 RabbitMQ PAUSADO
-2026-10-19T23:31:06.2411922+00:00 RabbitMQ REANUDADO
-Durante la caída: HTTP 202 Estado=REGISTRADO_PENDIENTE_PUBLICACION Publicado=False
-2026-10-19T23:31:08.2041593+00:00 Recibido tras la recuperación. CorrelationId=cad5557b-52cc-4304-ba57-930c48ca1821
-[SQL Server real] SELECT Estado FROM EXPEDIENTE WHERE Id = '793294f9-1395-457e-bff0-62622b6d42e9' =&gt; PENDIENTE_CONTENIDOS
-[SQL Server real] SELECT IntentosPublicacion FROM EXPEDIENTE WHERE Id = '793294f9-1395-457e-bff0-62622b6d42e9' =&gt; 2
-[SQL Server real] SELECT CONVERT(varchar(36), CorrelationId) FROM EXPEDIENTE WHERE Id = '793294f9-1395-457e-bff0-62622b6d42e9' =&gt; CAD5557B-52CC-4304-BA57-930C48CA1821</StdOut>
+        <StdOut>[gRPC real] CAU-P-122: θ=80 δ=15 τ=65 v1 reglas=3</StdOut>
       </Output>
     </UnitTestResult>
-    <UnitTestResult executionId="324c7fb5-2865-4316-a030-14adab5260cf" testId="f63b8bf6-91e8-6229-3752-c6e034d2c4ed" testName="Siha.Integracion.Tests.FlujoDocumentosRealTests.Reintentos_y_cargas_simultaneas_del_mismo_PDF_no_duplican" computerName="vm" duration="00:00:12.5777135" startTime="2026-10-19T18:29:46.1467473-05:00" endTime="2026-10-19T18:29:46.1467476-05:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="324c7fb5-2865-4316-a030-14adab5260cf">
+    <UnitTestResult executionId="b25bcdd6-3e35-4f14-8cd0-f8fcc70ce5c6" testId="727620da-e33a-0c3c-7683-8d2413f930e0" testName="Siha.Integracion.Tests.ReglasGrpcRealTests.Grpc_rechaza_ruta_o_tipo_invalidos_con_InvalidArgument(ruta: &quot;CAU-P-011&quot;, tipo: &quot;EXTRANJERO&quot;)" computerName="vm" duration="00:00:10.8154508" startTime="2026-10-19T18:55:27.9831984-05:00" endTime="2026-10-19T18:55:27.9831987-05:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="b25bcdd6-3e35-4f14-8cd0-f8fcc70ce5c6">
       <Output>
-        <StdOut>Cargas simultáneas: Created, OK, OK, OK, OK
-[SQL Server real] SELECT COUNT(*) FROM EXPEDIENTE_DOC WHERE ExpedienteId = '51dc779e-2706-44c5-9f39-8d45d8c1e6b0' AND EstadoRecepcion = 'VALIDADO' =&gt; 1</StdOut>
+        <StdOut>[gRPC real] ruta='CAU-P-011' tipo='EXTRANJERO' -&gt; InvalidArgument: Tipo de trámite inválido. Valores permitidos: INTERNO, EXTERNO.</StdOut>
       </Output>
     </UnitTestResult>
-    <UnitTestResult executionId="0ee5c7a7-8956-48d9-89ca-8cc7ee069e6b" testId="1e031d0f-bfd4-4e0f-7fd7-62522d601e8e" testName="Siha.Integracion.Tests.FlujoDocumentosRealTests.Cargas_simultaneas_de_PDF_distintos_se_aceptan_todas" computerName="vm" duration="00:00:12.4046049" startTime="2026-10-19T18:29:33.5670071-05:00" endTime="2026-10-19T18:29:33.5670075-05:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="0ee5c7a7-8956-48d9-89ca-8cc7ee069e6b">
+    <UnitTestResult executionId="b3881f8e-2947-49f3-9f7c-7cb2daa7933e" testId="70a9b7cf-18d8-61b7-5d0a-85da483128b2" testName="Siha.Integracion.Tests.FlujoDocumentosRealTests.Recorrido_completo_registro_carga_envio_y_recepcion_en_RabbitMQ" computerName="vm" duration="00:00:14.4206984" startTime="2026-10-19T18:53:08.3441287-05:00" endTime="2026-10-19T18:53:08.3441290-05:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="b3881f8e-2947-49f3-9f7c-7cb2daa7933e">
+      <Output>
+        <StdOut>[RabbitMQ real] Recibido ExpedienteId=55cb7193-c280-4834-ae37-d6c4a3f0aa8d CorrelationId(cabecera)=dd679136-bcd9-4370-a9c5-185fa5297d5e MessageId=55cb7193-c280-4834-ae37-d6c4a3f0aa8d
+[SQL Server real] SELECT Estado FROM EXPEDIENTE WHERE Id = '55cb7193-c280-4834-ae37-d6c4a3f0aa8d' =&gt; PENDIENTE_CONTENIDOS</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="4b9caca6-4f49-4381-a941-def4985c40c0" testId="4b76575f-06c2-ce82-e9e3-fc87b826b987" testName="Siha.Integracion.Tests.ReglasGrpcRealTests.Grpc_rechaza_ruta_o_tipo_invalidos_con_InvalidArgument(ruta: &quot;CAU-P-999&quot;, tipo: &quot;&quot;)" computerName="vm" duration="00:00:10.8111704" startTime="2026-10-19T18:55:38.7946963-05:00" endTime="2026-10-19T18:55:38.7946965-05:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="4b9caca6-4f49-4381-a941-def4985c40c0">
+      <Output>
+        <StdOut>[gRPC real] ruta='CAU-P-999' tipo='' -&gt; InvalidArgument: Ruta normativa inválida. Valores permitidos: CAU-P-011, CAU-P-122.</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="74115142-94c7-451d-a718-779f578eb4f2" testId="409c26b9-0d96-4020-10b6-65b0910dc048" testName="Siha.Integracion.Tests.ReglasGrpcRealTests.Grpc_rechaza_ruta_o_tipo_invalidos_con_InvalidArgument(ruta: &quot;&quot;, tipo: &quot;&quot;)" computerName="vm" duration="00:00:11.3221012" startTime="2026-10-19T18:55:17.1668187-05:00" endTime="2026-10-19T18:55:17.1668190-05:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="74115142-94c7-451d-a718-779f578eb4f2">
+      <Output>
+        <StdOut>[gRPC real] ruta='' tipo='' -&gt; InvalidArgument: Ruta normativa inválida. Valores permitidos: CAU-P-011, CAU-P-122.</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="8a115854-db09-4da4-829b-49e546204fb4" testId="1e031d0f-bfd4-4e0f-7fd7-62522d601e8e" testName="Siha.Integracion.Tests.FlujoDocumentosRealTests.Cargas_simultaneas_de_PDF_distintos_se_aceptan_todas" computerName="vm" duration="00:00:10.7146145" startTime="2026-10-19T18:53:32.6819114-05:00" endTime="2026-10-19T18:53:32.6819117-05:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="8a115854-db09-4da4-829b-49e546204fb4">
       <Output>
         <StdOut>Cargas simultáneas de PDF distintos: Created, Created, Created, Created
-[SQL Server real] SELECT COUNT(*) FROM EXPEDIENTE_DOC WHERE ExpedienteId = 'd147f448-e865-407b-90c9-0ea660cc43b4' AND EstadoRecepcion = 'VALIDADO' =&gt; 4</StdOut>
+[SQL Server real] SELECT COUNT(*) FROM EXPEDIENTE_DOC WHERE ExpedienteId = '65384a44-463f-4292-b262-0fcf05b65d53' AND EstadoRecepcion = 'VALIDADO' =&gt; 4</StdOut>
       </Output>
     </UnitTestResult>
-    <UnitTestResult executionId="2585bc04-9b6d-48a3-9d42-9a785cef684c" testId="70a9b7cf-18d8-61b7-5d0a-85da483128b2" testName="Siha.Integracion.Tests.FlujoDocumentosRealTests.Recorrido_completo_registro_carga_envio_y_recepcion_en_RabbitMQ" computerName="vm" duration="00:00:13.4322261" startTime="2026-10-19T18:29:05.8523761-05:00" endTime="2026-10-19T18:29:05.8523762-05:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="2585bc04-9b6d-48a3-9d42-9a785cef684c">
+    <UnitTestResult executionId="9cc5b704-ea30-4c6a-98b0-e3e08a99efc6" testId="4dde8f31-64f9-2654-5eaa-7c1201d12d8f" testName="Siha.Integracion.Tests.ReglasGrpcRealTests.Un_cambio_de_umbrales_por_REST_se_refleja_en_gRPC_y_persiste_en_SQL_Server" computerName="vm" duration="00:00:11.0076846" startTime="2026-10-19T18:56:22.6257988-05:00" endTime="2026-10-19T18:56:22.6257991-05:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="9cc5b704-ea30-4c6a-98b0-e3e08a99efc6">
       <Output>
-        <StdOut>[RabbitMQ real] Recibido ExpedienteId=75f43b7d-d237-4134-90db-a0824486c1b4 CorrelationId(cabecera)=a4a5bdac-5e5f-4a4f-a220-09ffd1a44025 MessageId=75f43b7d-d237-4134-90db-a0824486c1b4
-[SQL Server real] SELECT Estado FROM EXPEDIENTE WHERE Id = '75f43b7d-d237-4134-90db-a0824486c1b4' =&gt; PENDIENTE_CONTENIDOS</StdOut>
+        <StdOut>[gRPC real] antes θ=80 v1 -&gt; después θ=77.5 δ=7.5 τ=66 v2 por qa-administrador@uta.edu.ec</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="53dac719-a3bf-43cd-bbb0-86bad181c98e" testId="f63b8bf6-91e8-6229-3752-c6e034d2c4ed" testName="Siha.Integracion.Tests.FlujoDocumentosRealTests.Reintentos_y_cargas_simultaneas_del_mismo_PDF_no_duplican" computerName="vm" duration="00:00:10.6256481" startTime="2026-10-19T18:53:43.3112723-05:00" endTime="2026-10-19T18:53:43.3112726-05:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="53dac719-a3bf-43cd-bbb0-86bad181c98e">
+      <Output>
+        <StdOut>Cargas simultáneas: OK, OK, Created, OK, OK
+[SQL Server real] SELECT COUNT(*) FROM EXPEDIENTE_DOC WHERE ExpedienteId = '7f2c3197-90e4-439c-9ba0-0fce72074c6d' AND EstadoRecepcion = 'VALIDADO' =&gt; 1</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="5c06b4b1-082c-433a-80a0-551d3ac9852d" testId="71938f5b-afbe-3635-522f-c83666cbf5ed" testName="Siha.Integracion.Tests.FlujoDocumentosRealTests.No_se_publica_si_el_PDF_ya_no_existe_en_el_almacenamiento" computerName="vm" duration="00:00:13.6245940" startTime="2026-10-19T18:53:21.9665638-05:00" endTime="2026-10-19T18:53:21.9665641-05:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="5c06b4b1-082c-433a-80a0-551d3ac9852d">
+      <Output>
+        <StdOut>{"mensaje":"El expediente no cumple los requisitos documentales para publicarse.","detalles":["Se requieren al menos 1 documento(s) PDF validado(s) y disponible(s); hay 0.","'plan-analitico.pdf' (18e59dff-81ae-4ab0-b45a-7a9e49947562): El archivo no existe en el almacenamiento."],"expedienteId":"e5efad35-3e9f-4d35-8740-1c7242ac7210","estado":"PENDIENTE_DOCUMENTOS"}
+[SQL Server real] SELECT EstadoRecepcion FROM EXPEDIENTE_DOC WHERE Id = '18e59dff-81ae-4ab0-b45a-7a9e49947562' =&gt; NO_DISPONIBLE</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="d2f21fa8-a88d-4e2f-8a56-2d6c735d9688" testId="e11547b0-8c1d-29db-59f4-a7e188fb4786" testName="Siha.Integracion.Tests.FlujoDocumentosRealTests.Un_fallo_del_almacenamiento_responde_503_sin_dejar_filas" computerName="vm" duration="00:00:10.4681061" startTime="2026-10-19T18:54:14.7768798-05:00" endTime="2026-10-19T18:54:14.7768801-05:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="d2f21fa8-a88d-4e2f-8a56-2d6c735d9688">
+      <Output>
+        <StdOut>{"mensaje":"El almacenamiento de documentos no está disponible en este momento. Intente nuevamente.","expedienteId":"c337cdda-bdd9-45cc-8f59-55f1d6c4b201"}
+[SQL Server real] SELECT COUNT(*) FROM EXPEDIENTE_DOC WHERE ExpedienteId = 'c337cdda-bdd9-45cc-8f59-55f1d6c4b201' =&gt; 0
+[SQL Server real] SELECT Estado FROM EXPEDIENTE WHERE Id = 'c337cdda-bdd9-45cc-8f59-55f1d6c4b201' =&gt; PENDIENTE_DOCUMENTOS</StdOut>
       </Output>
     </UnitTestResult>
   </Results>
   <TestDefinitions>
     <UnitTest name="Siha.Integracion.Tests.FlujoDocumentosRealTests.Cargas_simultaneas_de_PDF_distintos_se_aceptan_todas" storage="tests/siha.integracion.tests/bin/release/net8.0/siha.integracion.tests.dll" id="1e031d0f-bfd4-4e0f-7fd7-62522d601e8e">
-      <Execution id="0ee5c7a7-8956-48d9-89ca-8cc7ee069e6b" />
+      <Execution id="8a115854-db09-4da4-829b-49e546204fb4" />
       <TestMethod codeBase="tests/Siha.Integracion.Tests/bin/Release/net8.0/Siha.Integracion.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="Siha.Integracion.Tests.FlujoDocumentosRealTests" name="Cargas_simultaneas_de_PDF_distintos_se_aceptan_todas" />
     </UnitTest>
     <UnitTest name="Siha.Integracion.Tests.FlujoDocumentosRealTests.Caida_y_recuperacion_del_bus_conservan_el_CorrelationId_y_el_mensaje_llega" storage="tests/siha.integracion.tests/bin/release/net8.0/siha.integracion.tests.dll" id="d60c7831-00d0-960b-e3e3-770fb41cfe5e">
-      <Execution id="b2b69147-0742-496f-beb8-486b917a32bf" />
+      <Execution id="50054465-a751-413e-b5e2-4465c5d99a29" />
       <TestMethod codeBase="tests/Siha.Integracion.Tests/bin/Release/net8.0/Siha.Integracion.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="Siha.Integracion.Tests.FlujoDocumentosRealTests" name="Caida_y_recuperacion_del_bus_conservan_el_CorrelationId_y_el_mensaje_llega" />
     </UnitTest>
     <UnitTest name="Siha.Integracion.Tests.FlujoDocumentosRealTests.Envios_simultaneos_publican_un_solo_mensaje" storage="tests/siha.integracion.tests/bin/release/net8.0/siha.integracion.tests.dll" id="9a0b9d31-43eb-0927-1b96-75ebe1a73223">
-      <Execution id="0b6457aa-5eb0-4601-b748-df094b2b78d3" />
+      <Execution id="5dcb3c9a-f287-4b1e-9b95-1512d81dc05a" />
       <TestMethod codeBase="tests/Siha.Integracion.Tests/bin/Release/net8.0/Siha.Integracion.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="Siha.Integracion.Tests.FlujoDocumentosRealTests" name="Envios_simultaneos_publican_un_solo_mensaje" />
     </UnitTest>
+    <UnitTest name="Siha.Integracion.Tests.ReglasGrpcRealTests.Grpc_rechaza_ruta_o_tipo_invalidos_con_InvalidArgument(ruta: &quot;&quot;, tipo: &quot;&quot;)" storage="tests/siha.integracion.tests/bin/release/net8.0/siha.integracion.tests.dll" id="409c26b9-0d96-4020-10b6-65b0910dc048">
+      <Execution id="74115142-94c7-451d-a718-779f578eb4f2" />
+      <TestMethod codeBase="tests/Siha.Integracion.Tests/bin/Release/net8.0/Siha.Integracion.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="Siha.Integracion.Tests.ReglasGrpcRealTests" name="Grpc_rechaza_ruta_o_tipo_invalidos_con_InvalidArgument" />
+    </UnitTest>
+    <UnitTest name="Siha.Integracion.Tests.ReglasGrpcRealTests.Un_cambio_de_umbrales_por_REST_se_refleja_en_gRPC_y_persiste_en_SQL_Server" storage="tests/siha.integracion.tests/bin/release/net8.0/siha.integracion.tests.dll" id="4dde8f31-64f9-2654-5eaa-7c1201d12d8f">
+      <Execution id="9cc5b704-ea30-4c6a-98b0-e3e08a99efc6" />
+      <TestMethod codeBase="tests/Siha.Integracion.Tests/bin/Release/net8.0/Siha.Integracion.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="Siha.Integracion.Tests.ReglasGrpcRealTests" name="Un_cambio_de_umbrales_por_REST_se_refleja_en_gRPC_y_persiste_en_SQL_Server" />
+    </UnitTest>
     <UnitTest name="Siha.Integracion.Tests.FlujoDocumentosRealTests.Las_migraciones_de_A_y_B_se_aplican_en_SQL_Server_real" storage="tests/siha.integracion.tests/bin/release/net8.0/siha.integracion.tests.dll" id="67e9a941-6e81-233a-7d9e-eccb6b10c3a6">
-      <Execution id="3f837571-c4e0-4b0b-a592-32fca593c6e1" />
+      <Execution id="daf88f6e-1c17-4414-865a-69a8ba6f1468" />
       <TestMethod codeBase="tests/Siha.Integracion.Tests/bin/Release/net8.0/Siha.Integracion.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="Siha.Integracion.Tests.FlujoDocumentosRealTests" name="Las_migraciones_de_A_y_B_se_aplican_en_SQL_Server_real" />
     </UnitTest>
     <UnitTest name="Siha.Integracion.Tests.FlujoDocumentosRealTests.Recorrido_completo_registro_carga_envio_y_recepcion_en_RabbitMQ" storage="tests/siha.integracion.tests/bin/release/net8.0/siha.integracion.tests.dll" id="70a9b7cf-18d8-61b7-5d0a-85da483128b2">
-      <Execution id="2585bc04-9b6d-48a3-9d42-9a785cef684c" />
+      <Execution id="b3881f8e-2947-49f3-9f7c-7cb2daa7933e" />
       <TestMethod codeBase="tests/Siha.Integracion.Tests/bin/Release/net8.0/Siha.Integracion.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="Siha.Integracion.Tests.FlujoDocumentosRealTests" name="Recorrido_completo_registro_carga_envio_y_recepcion_en_RabbitMQ" />
     </UnitTest>
+    <UnitTest name="Siha.Integracion.Tests.ReglasGrpcRealTests.Grpc_filtra_por_tipo_de_tramite" storage="tests/siha.integracion.tests/bin/release/net8.0/siha.integracion.tests.dll" id="c7bd4640-92c2-ad09-6e97-0e45f1cf91cf">
+      <Execution id="e88cceb0-4985-4ec5-a5b4-4328427a2086" />
+      <TestMethod codeBase="tests/Siha.Integracion.Tests/bin/Release/net8.0/Siha.Integracion.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="Siha.Integracion.Tests.ReglasGrpcRealTests" name="Grpc_filtra_por_tipo_de_tramite" />
+    </UnitTest>
+    <UnitTest name="Siha.Integracion.Tests.ReglasGrpcRealTests.Grpc_rechaza_ruta_o_tipo_invalidos_con_InvalidArgument(ruta: &quot;CAU-P-999&quot;, tipo: &quot;&quot;)" storage="tests/siha.integracion.tests/bin/release/net8.0/siha.integracion.tests.dll" id="4b76575f-06c2-ce82-e9e3-fc87b826b987">
+      <Execution id="4b9caca6-4f49-4381-a941-def4985c40c0" />
+      <TestMethod codeBase="tests/Siha.Integracion.Tests/bin/Release/net8.0/Siha.Integracion.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="Siha.Integracion.Tests.ReglasGrpcRealTests" name="Grpc_rechaza_ruta_o_tipo_invalidos_con_InvalidArgument" />
+    </UnitTest>
     <UnitTest name="Siha.Integracion.Tests.FlujoDocumentosRealTests.Reintentos_y_cargas_simultaneas_del_mismo_PDF_no_duplican" storage="tests/siha.integracion.tests/bin/release/net8.0/siha.integracion.tests.dll" id="f63b8bf6-91e8-6229-3752-c6e034d2c4ed">
-      <Execution id="324c7fb5-2865-4316-a030-14adab5260cf" />
+      <Execution id="53dac719-a3bf-43cd-bbb0-86bad181c98e" />
       <TestMethod codeBase="tests/Siha.Integracion.Tests/bin/Release/net8.0/Siha.Integracion.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="Siha.Integracion.Tests.FlujoDocumentosRealTests" name="Reintentos_y_cargas_simultaneas_del_mismo_PDF_no_duplican" />
     </UnitTest>
+    <UnitTest name="Siha.Integracion.Tests.ReglasGrpcRealTests.Grpc_devuelve_los_umbrales_y_reglas_sembrados_en_SQL_Server_igual_que_REST(ruta: &quot;CAU-P-122&quot;)" storage="tests/siha.integracion.tests/bin/release/net8.0/siha.integracion.tests.dll" id="61d68393-9f2d-5e1e-7614-23dc5d1fba4e">
+      <Execution id="6ccb7591-e1ad-437b-b6fd-6717782380f2" />
+      <TestMethod codeBase="tests/Siha.Integracion.Tests/bin/Release/net8.0/Siha.Integracion.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="Siha.Integracion.Tests.ReglasGrpcRealTests" name="Grpc_devuelve_los_umbrales_y_reglas_sembrados_en_SQL_Server_igual_que_REST" />
+    </UnitTest>
     <UnitTest name="Siha.Integracion.Tests.FlujoDocumentosRealTests.No_se_publica_si_el_PDF_ya_no_existe_en_el_almacenamiento" storage="tests/siha.integracion.tests/bin/release/net8.0/siha.integracion.tests.dll" id="71938f5b-afbe-3635-522f-c83666cbf5ed">
-      <Execution id="89364fd3-163a-45ff-8d7b-5926982e55d8" />
+      <Execution id="5c06b4b1-082c-433a-80a0-551d3ac9852d" />
       <TestMethod codeBase="tests/Siha.Integracion.Tests/bin/Release/net8.0/Siha.Integracion.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="Siha.Integracion.Tests.FlujoDocumentosRealTests" name="No_se_publica_si_el_PDF_ya_no_existe_en_el_almacenamiento" />
     </UnitTest>
+    <UnitTest name="Siha.Integracion.Tests.ReglasGrpcRealTests.Grpc_devuelve_los_umbrales_y_reglas_sembrados_en_SQL_Server_igual_que_REST(ruta: &quot;CAU-P-011&quot;)" storage="tests/siha.integracion.tests/bin/release/net8.0/siha.integracion.tests.dll" id="16fa3fac-4eca-770c-7792-87ce7135e6f7">
+      <Execution id="bc35819a-306b-48ec-82cf-cbbef82c0ebf" />
+      <TestMethod codeBase="tests/Siha.Integracion.Tests/bin/Release/net8.0/Siha.Integracion.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="Siha.Integracion.Tests.ReglasGrpcRealTests" name="Grpc_devuelve_los_umbrales_y_reglas_sembrados_en_SQL_Server_igual_que_REST" />
+    </UnitTest>
+    <UnitTest name="Siha.Integracion.Tests.ReglasGrpcRealTests.Grpc_rechaza_ruta_o_tipo_invalidos_con_InvalidArgument(ruta: &quot;CAU-P-011&quot;, tipo: &quot;EXTRANJERO&quot;)" storage="tests/siha.integracion.tests/bin/release/net8.0/siha.integracion.tests.dll" id="727620da-e33a-0c3c-7683-8d2413f930e0">
+      <Execution id="b25bcdd6-3e35-4f14-8cd0-f8fcc70ce5c6" />
+      <TestMethod codeBase="tests/Siha.Integracion.Tests/bin/Release/net8.0/Siha.Integracion.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="Siha.Integracion.Tests.ReglasGrpcRealTests" name="Grpc_rechaza_ruta_o_tipo_invalidos_con_InvalidArgument" />
+    </UnitTest>
     <UnitTest name="Siha.Integracion.Tests.FlujoDocumentosRealTests.Un_fallo_del_almacenamiento_responde_503_sin_dejar_filas" storage="tests/siha.integracion.tests/bin/release/net8.0/siha.integracion.tests.dll" id="e11547b0-8c1d-29db-59f4-a7e188fb4786">
-      <Execution id="cbf38dba-19d4-40fa-a833-47483ad8ec17" />
+      <Execution id="d2f21fa8-a88d-4e2f-8a56-2d6c735d9688" />
       <TestMethod codeBase="tests/Siha.Integracion.Tests/bin/Release/net8.0/Siha.Integracion.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="Siha.Integracion.Tests.FlujoDocumentosRealTests" name="Un_fallo_del_almacenamiento_responde_503_sin_dejar_filas" />
     </UnitTest>
   </TestDefinitions>
   <TestEntries>
-    <TestEntry testId="67e9a941-6e81-233a-7d9e-eccb6b10c3a6" executionId="3f837571-c4e0-4b0b-a592-32fca593c6e1" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
-    <TestEntry testId="e11547b0-8c1d-29db-59f4-a7e188fb4786" executionId="cbf38dba-19d4-40fa-a833-47483ad8ec17" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
-    <TestEntry testId="71938f5b-afbe-3635-522f-c83666cbf5ed" executionId="89364fd3-163a-45ff-8d7b-5926982e55d8" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
-    <TestEntry testId="9a0b9d31-43eb-0927-1b96-75ebe1a73223" executionId="0b6457aa-5eb0-4601-b748-df094b2b78d3" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
-    <TestEntry testId="d60c7831-00d0-960b-e3e3-770fb41cfe5e" executionId="b2b69147-0742-496f-beb8-486b917a32bf" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
-    <TestEntry testId="f63b8bf6-91e8-6229-3752-c6e034d2c4ed" executionId="324c7fb5-2865-4316-a030-14adab5260cf" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
-    <TestEntry testId="1e031d0f-bfd4-4e0f-7fd7-62522d601e8e" executionId="0ee5c7a7-8956-48d9-89ca-8cc7ee069e6b" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
-    <TestEntry testId="70a9b7cf-18d8-61b7-5d0a-85da483128b2" executionId="2585bc04-9b6d-48a3-9d42-9a785cef684c" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="67e9a941-6e81-233a-7d9e-eccb6b10c3a6" executionId="daf88f6e-1c17-4414-865a-69a8ba6f1468" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="c7bd4640-92c2-ad09-6e97-0e45f1cf91cf" executionId="e88cceb0-4985-4ec5-a5b4-4328427a2086" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="16fa3fac-4eca-770c-7792-87ce7135e6f7" executionId="bc35819a-306b-48ec-82cf-cbbef82c0ebf" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="d60c7831-00d0-960b-e3e3-770fb41cfe5e" executionId="50054465-a751-413e-b5e2-4465c5d99a29" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="9a0b9d31-43eb-0927-1b96-75ebe1a73223" executionId="5dcb3c9a-f287-4b1e-9b95-1512d81dc05a" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="61d68393-9f2d-5e1e-7614-23dc5d1fba4e" executionId="6ccb7591-e1ad-437b-b6fd-6717782380f2" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="727620da-e33a-0c3c-7683-8d2413f930e0" executionId="b25bcdd6-3e35-4f14-8cd0-f8fcc70ce5c6" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="70a9b7cf-18d8-61b7-5d0a-85da483128b2" executionId="b3881f8e-2947-49f3-9f7c-7cb2daa7933e" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="4b76575f-06c2-ce82-e9e3-fc87b826b987" executionId="4b9caca6-4f49-4381-a941-def4985c40c0" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="409c26b9-0d96-4020-10b6-65b0910dc048" executionId="74115142-94c7-451d-a718-779f578eb4f2" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="1e031d0f-bfd4-4e0f-7fd7-62522d601e8e" executionId="8a115854-db09-4da4-829b-49e546204fb4" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="4dde8f31-64f9-2654-5eaa-7c1201d12d8f" executionId="9cc5b704-ea30-4c6a-98b0-e3e08a99efc6" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="f63b8bf6-91e8-6229-3752-c6e034d2c4ed" executionId="53dac719-a3bf-43cd-bbb0-86bad181c98e" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="71938f5b-afbe-3635-522f-c83666cbf5ed" executionId="5c06b4b1-082c-433a-80a0-551d3ac9852d" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="e11547b0-8c1d-29db-59f4-a7e188fb4786" executionId="d2f21fa8-a88d-4e2f-8a56-2d6c735d9688" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
   </TestEntries>
   <TestLists>
     <TestList name="Results Not in a List" id="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
     <TestList name="All Loaded Results" id="19431567-8539-422a-85d7-44ee4e166bda" />
   </TestLists>
   <ResultSummary outcome="Completed">
-    <Counters total="8" executed="8" passed="8" failed="0" error="0" timeout="0" aborted="0" inconclusive="0" passedButRunAborted="0" notRunnable="0" notExecuted="0" disconnected="0" warning="0" completed="0" inProgress="0" pending="0" />
+    <Counters total="15" executed="15" passed="15" failed="0" error="0" timeout="0" aborted="0" inconclusive="0" passedButRunAborted="0" notRunnable="0" notExecuted="0" disconnected="0" warning="0" completed="0" inProgress="0" pending="0" />
     <Output>
       <StdOut>[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v2.5.3.1+6b60a9e56a (64-bit .NET 8.0.32)
-[xUnit.net 00:00:00.10]   Discovering: Siha.Integracion.Tests
-[xUnit.net 00:00:00.15]   Discovered:  Siha.Integracion.Tests
-[xUnit.net 00:00:00.16]   Starting:    Siha.Integracion.Tests
-[xUnit.net 00:02:47.12]   Finished:    Siha.Integracion.Tests
+[xUnit.net 00:00:00.11]   Discovering: Siha.Integracion.Tests
+[xUnit.net 00:00:00.17]   Discovered:  Siha.Integracion.Tests
+[xUnit.net 00:00:00.18]   Starting:    Siha.Integracion.Tests
+[xUnit.net 00:04:02.34]   Finished:    Siha.Integracion.Tests
 </StdOut>
     </Output>
   </ResultSummary>
