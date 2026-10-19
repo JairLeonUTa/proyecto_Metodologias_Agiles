@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Suscriptor de prueba del bus (tarea S1-P04 del Sprint 1).
+    Referencia el contrato compartido Siha.Contracts y MassTransit.RabbitMQ, igual que el
+    Microservicio B, para comprobar el evento SolicitudCreadaEvent publicado por el MS B.
+  -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RootNamespace>Siha.BusVerifier</RootNamespace>
+    <AssemblyName>Siha.BusVerifier</AssemblyName>
+    <InvariantGlobalization>true</InvariantGlobalization>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="MassTransit.RabbitMQ" Version="8.2.5" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\BuildingBlocks\Siha.Contracts\Siha.Contracts.csproj" />
+  </ItemGroup>
+
+</Project>

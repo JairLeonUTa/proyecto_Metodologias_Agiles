@@ -1,0 +1,3012 @@
+{
+  "info": {
+    "_postman_id": "e4a1b2c3-d4e5-4f60-8a7b-9c0d1e2f3a4b",
+    "name": "SIHA-IA · Sprint 1 · Contrato, RBAC y expedientes",
+    "description": "Colección ejecutable del Sprint 1 del SIHA-IA (Universidad Técnica de Ambato).\n\nCubre US-01 a US-06: autenticación y RBAC (200/201/400/401/403/404/409), reglas y umbrales θ/δ/τ, catálogo e importación de los 43 planes analíticos, expedientes INTERNO/EXTERNO con ruta CAU-P-011/CAU-P-122, contrato del evento en RabbitMQ y recuperación ante fallo del bus.\n\nRequisitos: `docker compose up -d --build` (Gateway en http://localhost:5000) y RabbitMQ healthy.\nEjecución sugerida: carpeta por carpeta, en orden (00 → 05), con el Collection Runner.\nAutora: Paul Medardo Acurio López (PO Proxy & QA/AI Lead). Documentos: docs/contrato-solicitud-creada-event.md, docs/matriz-rbac.md, docs/plan-de-pruebas-sprint-1.md.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{tokenAdmin}}",
+        "type": "string"
+      }
+    ]
+  },
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// La colección usa el token de administrador por defecto; cada petición puede sobreescribirlo.",
+          "if (!pm.collectionVariables.get('baseUrl')) { pm.collectionVariables.set('baseUrl', 'http://localhost:5000'); }"
+        ]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:5000",
+      "type": "string"
+    },
+    {
+      "key": "prefijo",
+      "value": "QA000000",
+      "type": "string"
+    },
+    {
+      "key": "tokenAdmin",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "tokenOperador",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "tokenDocente",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "usuarioId",
+      "value": "1",
+      "type": "string"
+    },
+    {
+      "key": "carreraId",
+      "value": "1",
+      "type": "string"
+    },
+    {
+      "key": "mallaId",
+      "value": "1",
+      "type": "string"
+    },
+    {
+      "key": "reglaCodigo",
+      "value": "RN-QA",
+      "type": "string"
+    },
+    {
+      "key": "expedienteId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "correlationId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "codigoExpediente",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "expedienteExternoId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "expedienteRecuperableId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "correlationIdRecuperable",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "expedienteRegresionId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "correoPrueba",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "00 · Preparación y autenticación (US-01)",
+      "description": "Crea las cuentas de apoyo (OPERADOR y DOCENTE), obtiene los tres tokens y los guarda como variables de colección. Debe ejecutarse primero. Las altas toleran 201 (creada) o 409 (ya existía).",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "// Prefijo único por corrida: evita colisiones de códigos/duplicados entre ejecuciones.",
+              "pm.collectionVariables.set('prefijo', 'QA' + Date.now().toString().slice(-6));"
+            ]
+          }
+        }
+      ],
+      "item": [
+        {
+          "name": "Alta de cuenta OPERADOR de QA (201 o 409)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('201 creada o 409 ya existía', function () { pm.expect([201, 409]).to.include(pm.response.code); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/usuarios",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"correoInstitucional\": \"operador.qa@uta.edu.ec\",\n  \"nombreCompleto\": \"Operador de QA\",\n  \"password\": \"Operador123*\",\n  \"rol\": \"OPERADOR\",\n  \"activo\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Crea (o reutiliza) la cuenta OPERADOR que se usa en toda la matriz RBAC."
+          },
+          "response": []
+        },
+        {
+          "name": "Alta de cuenta DOCENTE de QA (201 o 409)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('201 creada o 409 ya existía', function () { pm.expect([201, 409]).to.include(pm.response.code); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/usuarios",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"correoInstitucional\": \"docente.qa@uta.edu.ec\",\n  \"nombreCompleto\": \"Docente de QA\",\n  \"password\": \"Docente123*\",\n  \"rol\": \"DOCENTE\",\n  \"activo\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Login administrador (200) · captura tokenAdmin",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Login 200 OK', function () { pm.response.to.have.status(200); });",
+                  "const json = pm.response.json();",
+                  "pm.collectionVariables.set('tokenAdmin', json.token);",
+                  "pm.test('El token y el rol son los esperados', function () { pm.expect(json.token).to.be.a('string').and.not.empty; pm.expect(json.usuario.rol).to.eql('ADMINISTRADOR'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/auth/login",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"correoInstitucional\": \"admin@uta.edu.ec\",\n  \"password\": \"Admin123*\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "auth": {
+              "type": "noauth"
+            },
+            "description": "Cuenta semilla del Sprint 1: admin@uta.edu.ec / Admin123*."
+          },
+          "response": []
+        },
+        {
+          "name": "Login operador (200) · captura tokenOperador",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Login 200 OK', function () { pm.response.to.have.status(200); });",
+                  "const json = pm.response.json();",
+                  "pm.collectionVariables.set('tokenOperador', json.token);",
+                  "pm.test('Rol OPERADOR', function () { pm.expect(json.usuario.rol).to.eql('OPERADOR'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/auth/login",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"correoInstitucional\": \"operador.qa@uta.edu.ec\",\n  \"password\": \"Operador123*\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Login docente (200) · captura tokenDocente",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Login 200 OK', function () { pm.response.to.have.status(200); });",
+                  "const json = pm.response.json();",
+                  "pm.collectionVariables.set('tokenDocente', json.token);",
+                  "pm.test('Rol DOCENTE', function () { pm.expect(json.usuario.rol).to.eql('DOCENTE'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/auth/login",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"correoInstitucional\": \"docente.qa@uta.edu.ec\",\n  \"password\": \"Docente123*\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Login con contraseña incorrecta (401)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('401 Unauthorized', function () { pm.response.to.have.status(401); });",
+                  "const json = pm.response.json();",
+                  "pm.test('Mensaje de credenciales inválidas', function () { pm.expect(json.mensaje).to.contain('Credenciales'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/auth/login",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"correoInstitucional\": \"admin@uta.edu.ec\",\n  \"password\": \"ClaveIncorrecta1*\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Identidad del token vigente (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 OK', function () { pm.response.to.have.status(200); });",
+                  "const json = pm.response.json();",
+                  "pm.test('El token corresponde al administrador', function () { pm.expect(json.rol).to.eql('ADMINISTRADOR'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/auth/yo"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "01 · Usuarios y roles (US-01)",
+      "description": "RBAC de la gestión de cuentas y roles: 200/201/204/400/401/403/404/409.",
+      "item": [
+        {
+          "name": "Listar usuarios (admin → 200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 OK', function () { pm.response.to.have.status(200); });",
+                  "const json = pm.response.json();",
+                  "pm.test('No expone passwordHash', function () { pm.expect(JSON.stringify(json)).to.not.contain('passwordHash'); });",
+                  "pm.test('Existe la cuenta administradora', function () { pm.expect(json.some(u => u.correoInstitucional === 'admin@uta.edu.ec')).to.be.true; });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/usuarios"
+          },
+          "response": []
+        },
+        {
+          "name": "Alta de cuenta de prueba (201) · captura usuarioId",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('201 Created', function () { pm.response.to.have.status(201); });",
+                  "const json = pm.response.json();",
+                  "pm.collectionVariables.set('usuarioId', json.id);",
+                  "pm.collectionVariables.set('correoPrueba', json.correoInstitucional);",
+                  "pm.test('Rol OPERADOR y sin hash', function () { pm.expect(json.rol).to.eql('OPERADOR'); pm.expect(json).to.not.have.property('passwordHash'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/usuarios",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"correoInstitucional\": \"cuenta.prueba.{{prefijo}}@uta.edu.ec\",\n  \"nombreCompleto\": \"Cuenta de prueba QA\",\n  \"password\": \"Prueba1234*\",\n  \"rol\": \"OPERADOR\",\n  \"activo\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Alta duplicada (409 Conflict)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('409 Conflict', function () { pm.response.to.have.status(409); });",
+                  "const json = pm.response.json();",
+                  "pm.test('Mensaje de correo duplicado', function () { pm.expect(json.mensaje).to.contain('Ya existe'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/usuarios",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"correoInstitucional\": \"cuenta.prueba.{{prefijo}}@uta.edu.ec\",\n  \"nombreCompleto\": \"Cuenta duplicada\",\n  \"password\": \"Prueba1234*\",\n  \"rol\": \"OPERADOR\",\n  \"activo\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Alta con rol inexistente (400)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('400 Bad Request', function () { pm.response.to.have.status(400); });",
+                  "const json = pm.response.json();",
+                  "pm.test('Lista los roles permitidos', function () { pm.expect(json.mensaje).to.contain('ADMINISTRADOR'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/usuarios",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"correoInstitucional\": \"rol.invalido.{{prefijo}}@uta.edu.ec\",\n  \"nombreCompleto\": \"Rol inválido\",\n  \"password\": \"Prueba1234*\",\n  \"rol\": \"INVITADO\",\n  \"activo\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Alta con contraseña corta (400)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('400 Bad Request', function () { pm.response.to.have.status(400); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/usuarios",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"correoInstitucional\": \"corta.{{prefijo}}@uta.edu.ec\",\n  \"nombreCompleto\": \"Contraseña corta\",\n  \"password\": \"123\",\n  \"rol\": \"OPERADOR\",\n  \"activo\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Consultar la cuenta de prueba (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 OK', function () { pm.response.to.have.status(200); });",
+                  "const json = pm.response.json();",
+                  "pm.test('Coincide el identificador', function () { pm.expect(json.correoInstitucional).to.contain('cuenta.prueba'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/usuarios/{{usuarioId}}"
+          },
+          "response": []
+        },
+        {
+          "name": "Consultar cuenta inexistente (404)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('404 Not Found', function () { pm.response.to.have.status(404); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/usuarios/999999"
+          },
+          "response": []
+        },
+        {
+          "name": "Baja lógica de la cuenta (204)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('204 No Content', function () { pm.response.to.have.status(204); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/usuarios/{{usuarioId}}"
+          },
+          "response": []
+        },
+        {
+          "name": "La cuenta inactiva no puede autenticarse (401)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('401 Unauthorized', function () { pm.response.to.have.status(401); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/auth/login",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"correoInstitucional\": \"cuenta.prueba.{{prefijo}}@uta.edu.ec\",\n  \"password\": \"Prueba1234*\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Reactivar la cuenta (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 OK', function () { pm.response.to.have.status(200); });",
+                  "const json = pm.response.json();",
+                  "pm.test('Cuenta activa', function () { pm.expect(json.activo).to.be.true; });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/usuarios/{{usuarioId}}/estado",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"activo\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Catálogo de roles (admin → 200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 OK', function () { pm.response.to.have.status(200); });",
+                  "const json = pm.response.json();",
+                  "pm.test('Tres roles del sistema', function () { pm.expect(json.map(r => r.nombre).sort()).to.eql(['ADMINISTRADOR', 'DOCENTE', 'OPERADOR']); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/roles"
+          },
+          "response": []
+        },
+        {
+          "name": "Listar usuarios con OPERADOR (403)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('403 Forbidden', function () { pm.response.to.have.status(403); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/usuarios",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenOperador}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Catálogo de roles con DOCENTE (403)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('403 Forbidden', function () { pm.response.to.have.status(403); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/roles",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenDocente}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Listar usuarios sin token (401)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('401 Unauthorized', function () { pm.response.to.have.status(401); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/usuarios",
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "02 · Reglas y umbrales θ, δ, τ (US-02)",
+      "description": "Consulta de reglas y parámetros, actualización válida, rechazo de δ > θ y de valores fuera de rango (sin mutar la configuración previa) y RBAC de la modificación.",
+      "item": [
+        {
+          "name": "Listar reglas (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 OK', function () { pm.response.to.have.status(200); });",
+                  "const json = pm.response.json();",
+                  "pm.test('Reglas normativas sembradas', function () { pm.expect(json.length).to.be.above(0); pm.expect(json.map(r => r.codigo)).to.include('RN-01'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/reglas"
+          },
+          "response": []
+        },
+        {
+          "name": "Listar reglas filtradas CAU-P-122 / EXTERNO (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 OK', function () { pm.response.to.have.status(200); });",
+                  "const json = pm.response.json();",
+                  "pm.test('Devuelve solo la ruta solicitada', function () { pm.expect(json.every(r => r.rutaNormativa === 'CAU-P-122')).to.be.true; });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/reglas?rutaNormativa=CAU-P-122&tipoTramite=EXTERNO"
+          },
+          "response": []
+        },
+        {
+          "name": "Parámetros vigentes CAU-P-011 (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 OK', function () { pm.response.to.have.status(200); });",
+                  "const json = pm.response.json();",
+                  "pm.test('Estructura de parámetros', function () { pm.expect(json.rutaNormativa).to.eql('CAU-P-011'); pm.expect(json.theta).to.be.a('number'); pm.expect(json.delta).to.be.a('number'); pm.expect(json.tau).to.be.a('number'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/reglas/parametros/CAU-P-011"
+          },
+          "response": []
+        },
+        {
+          "name": "Actualización válida 82/12/71 (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 OK', function () { pm.response.to.have.status(200); });",
+                  "const json = pm.response.json();",
+                  "pm.test('Nuevos valores con versión incrementada', function () { pm.expect(json.theta).to.eql(82); pm.expect(json.delta).to.eql(12); pm.expect(json.tau).to.eql(71); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/reglas/parametros/CAU-P-011",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"theta\": 82,\n  \"delta\": 12,\n  \"tau\": 71\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Rechazo δ > θ (400)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('400 Bad Request', function () { pm.response.to.have.status(400); });",
+                  "const json = pm.response.json();",
+                  "pm.test('Mensaje de banda inválida', function () { pm.expect(json.mensaje).to.contain('δ'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/reglas/parametros/CAU-P-011",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"theta\": 50,\n  \"delta\": 80,\n  \"tau\": 60\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Rechazo de θ negativo (400)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('400 Bad Request', function () { pm.response.to.have.status(400); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/reglas/parametros/CAU-P-011",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"theta\": -1,\n  \"delta\": 0,\n  \"tau\": 0\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Rechazo de θ > 100 % (400)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('400 Bad Request', function () { pm.response.to.have.status(400); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/reglas/parametros/CAU-P-011",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"theta\": 101,\n  \"delta\": 0,\n  \"tau\": 0\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Rechazo de τ > 100 % (400)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('400 Bad Request', function () { pm.response.to.have.status(400); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/reglas/parametros/CAU-P-011",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"theta\": 50,\n  \"delta\": 10,\n  \"tau\": 120\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Verificación de no mutación (200 · conserva 82/12/71)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 OK', function () { pm.response.to.have.status(200); });",
+                  "const json = pm.response.json();",
+                  "pm.test('Conserva la última actualización válida', function () { pm.expect(json.theta).to.eql(82); pm.expect(json.delta).to.eql(12); pm.expect(json.tau).to.eql(71); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/reglas/parametros/CAU-P-011",
+            "description": "US-02/CA2: los intentos inválidos NO modifican la configuración vigente."
+          },
+          "response": []
+        },
+        {
+          "name": "Actualización de parámetros con OPERADOR (403)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('403 Forbidden', function () { pm.response.to.have.status(403); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/reglas/parametros/CAU-P-011",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"theta\": 70,\n  \"delta\": 5,\n  \"tau\": 65\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenOperador}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Actualización de parámetros sin token (401)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('401 Unauthorized', function () { pm.response.to.have.status(401); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/reglas/parametros/CAU-P-011",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"theta\": 70,\n  \"delta\": 5,\n  \"tau\": 65\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Parámetros de una ruta sin configuración (404)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('404 Not Found', function () { pm.response.to.have.status(404); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/reglas/parametros/CAU-P-999"
+          },
+          "response": []
+        },
+        {
+          "name": "Crear regla normativa (201) · captura reglaCodigo",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('201 Created', function () { pm.response.to.have.status(201); });",
+                  "const json = pm.response.json();",
+                  "pm.collectionVariables.set('reglaCodigo', json.codigo);",
+                  "pm.test('Versión y fuente registradas', function () { pm.expect(json.fuente).to.contain('SIHA-IA'); pm.expect(json.activa).to.be.true; });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/reglas",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"codigo\": \"RN-QA\",\n  \"rutaNormativa\": \"CAU-P-122\",\n  \"tipoTramite\": \"EXTERNO\",\n  \"descripcion\": \"Regla de prueba QA del Sprint 1.\",\n  \"expresion\": \"tau>=70\",\n  \"version\": \"{{prefijo}}\",\n  \"fuente\": \"Plan de pruebas SIHA-IA\",\n  \"esNormativa\": true,\n  \"vigenteDesde\": \"2026-01-01\",\n  \"vigenteHasta\": null\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Crear regla duplicada (400)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('400 Bad Request', function () { pm.response.to.have.status(400); });",
+                  "const json = pm.response.json();",
+                  "pm.test('Mensaje de regla duplicada', function () { pm.expect(json.mensaje).to.contain('Ya existe'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/reglas",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"codigo\": \"RN-QA\",\n  \"rutaNormativa\": \"CAU-P-122\",\n  \"tipoTramite\": \"EXTERNO\",\n  \"descripcion\": \"Duplicado de la regla QA.\",\n  \"expresion\": \"tau>=70\",\n  \"version\": \"{{prefijo}}\",\n  \"fuente\": \"Plan de pruebas SIHA-IA\",\n  \"esNormativa\": true,\n  \"vigenteDesde\": \"2026-01-01\",\n  \"vigenteHasta\": null\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Hallazgo H-03: el duplicado de una regla responde 400 (no 409). Documentado en docs/matriz-rbac.md."
+          },
+          "response": []
+        },
+        {
+          "name": "Crear regla con ruta normativa inválida (400)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('400 Bad Request', function () { pm.response.to.have.status(400); });",
+                  "const json = pm.response.json();",
+                  "pm.test('Indica las rutas válidas', function () { pm.expect(json.mensaje).to.contain('CAU-P-011'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/reglas",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"codigo\": \"RN-QA-2\",\n  \"rutaNormativa\": \"CAU-P-999\",\n  \"tipoTramite\": \"INTERNO\",\n  \"descripcion\": \"Ruta inválida.\",\n  \"expresion\": null,\n  \"version\": \"1.0\",\n  \"fuente\": \"Prueba QA\",\n  \"esNormativa\": false,\n  \"vigenteDesde\": \"2026-01-01\",\n  \"vigenteHasta\": null\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Crear regla con DOCENTE (403)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('403 Forbidden', function () { pm.response.to.have.status(403); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/reglas",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"codigo\": \"RN-QA-3\",\n  \"rutaNormativa\": \"CAU-P-011\",\n  \"tipoTramite\": \"INTERNO\",\n  \"descripcion\": \"Intento sin permiso.\",\n  \"expresion\": null,\n  \"version\": \"1.0\",\n  \"fuente\": \"Prueba QA\",\n  \"esNormativa\": false,\n  \"vigenteDesde\": \"2026-01-01\",\n  \"vigenteHasta\": null\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenDocente}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "03 · Catálogo académico e importación (US-03)",
+      "description": "CRUD de carreras, mallas y asignaturas, conflictos 409, importación de los 43 planes analíticos, duplicados, equivalencia de 48 h/crédito UTA y planes incompletos.",
+      "item": [
+        {
+          "name": "Listar carreras (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 OK', function () { pm.response.to.have.status(200); });",
+                  "const json = pm.response.json();",
+                  "pm.test('Carreras de la semilla', function () { pm.expect(json.map(c => c.codigo)).to.include('SW'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/carreras"
+          },
+          "response": []
+        },
+        {
+          "name": "Crear carrera QA (201) · captura carreraId",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('201 Created', function () { pm.response.to.have.status(201); });",
+                  "const json = pm.response.json();",
+                  "pm.collectionVariables.set('carreraId', json.id);",
+                  "pm.test('Código en mayúsculas', function () { pm.expect(json.codigo).to.eql('{{prefijo}}'.toUpperCase()); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/carreras",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"codigo\": \"{{prefijo}}\",\n  \"nombre\": \"Carrera de prueba QA\",\n  \"facultad\": \"FISEI\",\n  \"activa\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Crear carrera duplicada (409)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('409 Conflict', function () { pm.response.to.have.status(409); });",
+                  "const json = pm.response.json();",
+                  "pm.test('Mensaje de código duplicado', function () { pm.expect(json.mensaje).to.contain('Ya existe'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/carreras",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"codigo\": \"{{prefijo}}\",\n  \"nombre\": \"Carrera duplicada\",\n  \"facultad\": \"FISEI\",\n  \"activa\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Crear carrera con OPERADOR (403)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('403 Forbidden', function () { pm.response.to.have.status(403); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/carreras",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"codigo\": \"QA-403\",\n  \"nombre\": \"Sin permiso\",\n  \"facultad\": \"FISEI\",\n  \"activa\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenOperador}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Consultar la carrera creada (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 OK', function () { pm.response.to.have.status(200); });",
+                  "const json = pm.response.json();",
+                  "pm.test('Devuelve la carrera QA', function () { pm.expect(json.id).to.eql(Number(pm.collectionVariables.get('carreraId'))); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/carreras/{{carreraId}}"
+          },
+          "response": []
+        },
+        {
+          "name": "Consultar carrera inexistente (404)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('404 Not Found', function () { pm.response.to.have.status(404); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/carreras/999999"
+          },
+          "response": []
+        },
+        {
+          "name": "Crear malla QA (201) · captura mallaId",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('201 Created', function () { pm.response.to.have.status(201); });",
+                  "const json = pm.response.json();",
+                  "pm.collectionVariables.set('mallaId', json.id);",
+                  "pm.test('Malla sin asignaturas aún', function () { pm.expect(json.totalAsignaturas).to.eql(0); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/mallas",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"carreraId\": \"{{carreraId}}\",\n  \"version\": \"2026-QA-{{prefijo}}\",\n  \"anio\": 2026,\n  \"fuente\": \"Plan de pruebas QA\",\n  \"rutaNormativa\": \"CAU-P-011\",\n  \"vigente\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Crear malla duplicada (409)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('409 Conflict', function () { pm.response.to.have.status(409); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/mallas",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"carreraId\": \"{{carreraId}}\",\n  \"version\": \"2026-QA-{{prefijo}}\",\n  \"anio\": 2026,\n  \"fuente\": \"Duplicada\",\n  \"rutaNormativa\": \"CAU-P-011\",\n  \"vigente\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Crear malla con carrera inexistente (400)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('400 Bad Request', function () { pm.response.to.have.status(400); });",
+                  "const json = pm.response.json();",
+                  "pm.test('Indica que la carrera no existe', function () { pm.expect(json.mensaje).to.contain('no existe'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/mallas",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"carreraId\": 999999,\n  \"version\": \"2026-QA-X\",\n  \"anio\": 2026,\n  \"fuente\": \"Prueba QA\",\n  \"rutaNormativa\": \"CAU-P-011\",\n  \"vigente\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Listar mallas de la carrera QA (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 OK', function () { pm.response.to.have.status(200); });",
+                  "const json = pm.response.json();",
+                  "pm.test('Contiene la malla creada', function () { pm.expect(json.length).to.be.above(0); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/mallas?carreraId={{carreraId}}"
+          },
+          "response": []
+        },
+        {
+          "name": "Consultar malla inexistente (404)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('404 Not Found', function () { pm.response.to.have.status(404); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/mallas/999999"
+          },
+          "response": []
+        },
+        {
+          "name": "PT-11 · Importar los 43 planes analíticos (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 OK', function () { pm.response.to.have.status(200); });",
+                  "const json = pm.response.json();",
+                  "pm.test('43 planes analizados', function () { pm.expect(json.total).to.eql(43); });",
+                  "pm.test('Los 43 planes se importan sin rechazos', function () { pm.expect(json.importadas).to.eql(43); pm.expect(json.rechazadas).to.eql(0); });",
+                  "pm.test('Sin advertencias de completitud', function () { pm.expect(json.errores).to.have.lengthOf(0); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/asignaturas/importar",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"mallaId\": \"{{mallaId}}\",\n  \"asignaturas\": [\n    {\n      \"codigo\": \"{{prefijo}}-01\",\n      \"nombre\": \"Plan analítico QA 01 (semestre 1)\",\n      \"creditos\": 4,\n      \"horas\": 192,\n      \"semestre\": 1,\n      \"unidades\": [\n        {\n          \"numero\": 1,\n          \"nombre\": \"Unidad A\",\n          \"horas\": 96,\n          \"contenidos\": \"Contenidos de la unidad A.\"\n        },\n        {\n          \"numero\": 2,\n          \"nombre\": \"Unidad B\",\n          \"horas\": 96,\n          \"contenidos\": \"Contenidos de la unidad B.\"\n        }\n      ]\n    },\n    {\n      \"codigo\": \"{{prefijo}}-02\",\n      \"nombre\": \"Plan analítico QA 02 (semestre 1)\",\n      \"creditos\": 4,\n      \"horas\": 192,\n      \"semestre\": 1,\n      \"unidades\": [\n        {\n          \"numero\": 1,\n          \"nombre\": \"Unidad A\",\n          \"horas\": 96,\n          \"contenidos\": \"Contenidos de la unidad A.\"\n        },\n        {\n          \"numero\": 2,\n          \"nombre\": \"Unidad B\",\n          \"horas\": 96,\n          \"contenidos\": \"Contenidos de la unidad B.\"\n        }\n      ]\n    },\n    {\n      \"codigo\": \"{{prefijo}}-03\",\n      \"nombre\": \"Plan analítico QA 03 (semestre 1)\",\n      \"creditos\": 3,\n      \"horas\": 144,\n      \"semestre\": 1,\n      \"unidades\": [\n        {\n          \"numero\": 1,\n          \"nombre\": \"Unidad A\",\n          \"horas\": 72,\n          \"contenidos\": \"Contenidos de la unidad A.\"\n        },\n        {\n          \"numero\": 2,\n          \"nombre\": \"Unidad B\",\n          \"horas\": 72,\n          \"contenidos\": \"Contenidos de la unidad B.\"\n        }\n      ]\n    },\n    {\n      \"codigo\": \"{{prefijo}}-04\",\n      \"nombre\": \"Plan analítico QA 04 (semestre 1)\",\n      \"creditos\": 4,\n      \"horas\": 192,\n      \"semestre\": 1,\n      \"unidades\": [\n        {\n          \"numero\": 1,\n          \"nombre\": \"Unidad A\",\n          \"horas\": 96,\n          \"contenidos\": \"Contenidos de la unidad A.\"\n        },\n        {\n          \"numero\": 2,\n          \"nombre\": \"Unidad B\",\n          \"horas\": 96,\n          \"contenidos\": \"Contenidos de la unidad B.\"\n        }\n      ]\n    },\n    {\n      \"codigo\": \"{{prefijo}}-05\",\n      \"nombre\": \"Plan analítico QA 05 (semestre 1)\",\n      \"creditos\": 4,\n      \"horas\": 192,\n      \"semestre\": 1,\n      \"unidades\": [\n        {\n          \"numero\": 1,\n          \"nombre\": \"Unidad A\",\n          \"horas\": 96,\n          \"contenidos\": \"Contenidos de la unidad A.\"\n        },\n        {\n          \"numero\": 2,\n          \"nombre\": \"Unidad B\",\n          \"horas\": 96,\n          \"contenidos\": \"Contenidos de la unidad B.\"\n        }\n      ]\n    },\n    {\n      \"codigo\": \"{{prefijo}}-06\",\n      \"nombre\": \"Plan analítico QA 06 (semestre 2)\",\n      \"creditos\": 3,\n      \"horas\": 144,\n      \"semestre\": 2,\n      \"unidades\": [\n        {\n          \"numero\": 1,\n          \"nombre\": \"Unidad A\",\n          \"horas\": 72,\n          \"contenidos\": \"Contenidos de la unidad A.\"\n        },\n        {\n          \"numero\": 2,\n          \"nombre\": \"Unidad B\",\n          \"horas\": 72,\n          \"contenidos\": \"Contenidos de la unidad B.\"\n        }\n      ]\n    },\n    {\n      \"codigo\": \"{{prefijo}}-07\",\n      \"nombre\": \"Plan analítico QA 07 (semestre 2)\",\n      \"creditos\": 4,\n      \"horas\": 192,\n      \"semestre\": 2,\n      \"unidades\": [\n        {\n          \"numero\": 1,\n          \"nombre\": \"Unidad A\",\n          \"horas\": 96,\n          \"contenidos\": \"Contenidos de la unidad A.\"\n        },\n        {\n          \"numero\": 2,\n          \"nombre\": \"Unidad B\",\n          \"horas\": 96,\n          \"contenidos\": \"Contenidos de la unidad B.\"\n        }\n      ]\n    },\n    {\n      \"codigo\": \"{{prefijo}}-08\",\n      \"nombre\": \"Plan analítico QA 08 (semestre 2)\",\n      \"creditos\": 4,\n      \"horas\": 192,\n      \"semestre\": 2,\n      \"unidades\": [\n        {\n          \"numero\": 1,\n          \"nombre\": \"Unidad A\",\n          \"horas\": 96,\n          \"contenidos\": \"Contenidos de la unidad A.\"\n        },\n        {\n          \"numero\": 2,\n          \"nombre\": \"Unidad B\",\n          \"horas\": 96,\n          \"contenidos\": \"Contenidos de la unidad B.\"\n        }\n      ]\n    },\n    {\n      \"codigo\": \"{{prefijo}}-09\",\n      \"nombre\": \"Plan analítico QA 09 (semestre 2)\",\n      \"creditos\": 3,\n      \"horas\": 144,\n      \"semestre\": 2,\n      \"unidades\": [\n        {\n          \"numero\": 1,\n          \"nombre\": \"Unidad A\",\n          \"horas\": 72,\n          \"contenidos\": \"Contenidos de la unidad A.\"\n        },\n        {\n          \"numero\": 2,\n          \"nombre\": \"Unidad B\",\n          \"horas\": 72,\n          \"contenidos\": \"Contenidos de la unidad B.\"\n        }\n      ]\n    },\n    {\n      \"codigo\": \"{{prefijo}}-10\",\n      \"nombre\": \"Plan analítico QA 10 (semestre 2)\",\n      \"creditos\": 4,\n      \"horas\": 192,\n      \"semestre\": 2,\n      \"unidades\": [\n        {\n          \"numero\": 1,\n          \"nombre\": \"Unidad A\",\n          \"horas\": 96,\n          \"contenidos\": \"Contenidos de la unidad A.\"\n        },\n        {\n          \"numero\": 2,\n          \"nombre\": \"Unidad B\",\n          \"horas\": 96,\n          \"contenidos\": \"Contenidos de la unidad B.\"\n        }\n      ]\n    },\n    {\n      \"codigo\": \"{{prefijo}}-11\",\n      \"nombre\": \"Plan analítico QA 11 (semestre 3)\",\n      \"creditos\": 4,\n      \"horas\": 192,\n      \"semestre\": 3,\n      \"unidades\": [\n        {\n          \"numero\": 1,\n          \"nombre\": \"Unidad A\",\n          \"horas\": 96,\n          \"contenidos\": \"Contenidos de la unidad A.\"\n        },\n        {\n          \"numero\": 2,\n          \"nombre\": \"Unidad B\",\n          \"horas\": 96,\n          \"contenidos\": \"Contenidos de la unidad B.\"\n        }\n      ]\n    },\n    {\n      \"codigo\": \"{{prefijo}}-12\",\n      \"nombre\": \"Plan analítico QA 12 (semestre 3)\",\n      \"creditos\": 3,\n      \"horas\": 144,\n      \"semestre\": 3,\n      \"unidades\": [\n        {\n          \"numero\": 1,\n          \"nombre\": \"Unidad A\",\n          \"horas\": 72,\n          \"contenidos\": \"Contenidos de la unidad A.\"\n        },\n        {\n          \"numero\": 2,\n          \"nombre\": \"Unidad B\",\n          \"horas\": 72,\n          \"contenidos\": \"Contenidos de la unidad B.\"\n        }\n      ]\n    },\n    {\n      \"codigo\": \"{{prefijo}}-13\",\n      \"nombre\": \"Plan analítico QA 13 (semestre 3)\",\n      \"creditos\": 4,\n      \"horas\": 192,\n      \"semestre\": 3,\n      \"unidades\": [\n        {\n          \"numero\": 1,\n          \"nombre\": \"Unidad A\",\n          \"horas\": 96,\n          \"contenidos\": \"Contenidos de la unidad A.\"\n        },\n        {\n          \"numero\": 2,\n          \"nombre\": \"Unidad B\",\n          \"horas\": 96,\n          \"contenidos\": \"Contenidos de la unidad B.\"\n        }\n      ]\n    },\n    {\n      \"codigo\": \"{{prefijo}}-14\",\n      \"nombre\": \"Plan analítico QA 14 (semestre 3)\",\n      \"creditos\": 4,\n      \"horas\": 192,\n      \"semestre\": 3,\n      \"unidades\": [\n        {\n          \"numero\": 1,\n          \"nombre\": \"Unidad A\",\n          \"horas\": 96,\n          \"contenidos\": \"Contenidos de la unidad A.\"\n        },\n        {\n          \"numero\": 2,\n          \"nombre\": \"Unidad B\",\n          \"horas\": 96,\n          \"contenidos\": \"Contenidos de la unidad B.\"\n        }\n      ]\n    },\n    {\n      \"codigo\": \"{{prefijo}}-15\",\n      \"nombre\": \"Plan analítico QA 15 (semestre 3)\",\n      \"creditos\": 3,\n      \"horas\": 144,\n      \"semestre\": 3,\n      \"unidades\": [\n        {\n          \"numero\": 1,\n          \"nombre\": \"Unidad A\",\n          \"horas\": 72,\n          \"contenidos\": \"Contenidos de la unidad A.\"\n        },\n        {\n          \"numero\": 2,\n          \"nombre\": \"Unidad B\",\n          \"horas\": 72,\n          \"contenidos\": \"Contenidos de la unidad B.\"\n        }\n      ]\n    },\n    {\n      \"codigo\": \"{{prefijo}}-16\",\n      \"nombre\": \"Plan analítico QA 16 (semestre 4)\",\n      \"creditos\": 4,\n      \"horas\": 192,\n      \"semestre\": 4,\n      \"unidades\": [\n        {\n          \"numero\": 1,\n          \"nombre\": \"Unidad A\",\n          \"horas\": 96,\n          \"contenidos\": \"Contenidos de la unidad A.\"\n        },\n        {\n          \"numero\": 2,\n          \"nombre\": \"Unidad B\",\n          \"horas\": 96,\n          \"contenidos\": \"Contenidos de la unidad B.\"\n        }\n      ]\n    },\n    {\n      \"codigo\": \"{{prefijo}}-17\",\n      \"nombre\": \"Plan analítico QA 17 (semestre 4)\",\n      \"creditos\": 4,\n      \"horas\": 192,\n      \"semestre\": 4,\n      \"unidades\": [\n        {\n          \"numero\": 1,\n          \"nombre\": \"Unidad A\",\n          \"horas\": 96,\n          \"contenidos\": \"Contenidos de la unidad A.\"\n        },\n        {\n          \"numero\": 2,\n          \"nombre\": \"Unidad B\",\n          \"horas\": 96,\n          \"contenidos\": \"Contenidos de la unidad B.\"\n        }\n      ]\n    },\n    {\n      \"codigo\": \"{{prefijo}}-18\",\n      \"nombre\": \"Plan analítico QA 18 (semestre 4)\",\n      \"creditos\": 3,\n      \"horas\": 144,\n      \"semestre\": 4,\n      \"unidades\": [\n        {\n          \"numero\": 1,\n          \"nombre\": \"Unidad A\",\n          \"horas\": 72,\n          \"contenidos\": \"Contenidos de la unidad A.\"\n        },\n        {\n          \"numero\": 2,\n          \"nombre\": \"Unidad B\",\n          \"horas\": 72,\n          \"contenidos\": \"Contenidos de la unidad B.\"\n        }\n      ]\n    },\n    {\n      \"codigo\": \"{{prefijo}}-19\",\n      \"nombre\": \"Plan analítico QA 19 (semestre 4)\",\n      \"creditos\": 4,\n      \"horas\": 192,\n      \"semestre\": 4,\n      \"unidades\": [\n        {\n          \"numero\": 1,\n          \"nombre\": \"Unidad A\",\n          \"horas\": 96,\n          \"contenidos\": \"Contenidos de la unidad A.\"\n        },\n        {\n          \"numero\": 2,\n          \"nombre\": \"Unidad B\",\n          \"horas\": 96,\n          \"contenidos\": \"Contenidos de la unidad B.\"\n        }\n      ]\n    },\n    {\n      \"codigo\": \"{{prefijo}}-20\",\n      \"nombre\": \"Plan analítico QA 20 (semestre 4)\",\n      \"creditos\": 4,\n      \"horas\": 192,\n      \"semestre\": 4,\n      \"unidades\": [\n        {\n          \"numero\": 1,\n          \"nombre\": \"Unidad A\",\n          \"horas\": 96,\n          \"contenidos\": \"Contenidos de la unidad A.\"\n        },\n        {\n          \"numero\": 2,\n          \"nombre\": \"Unidad B\",\n          \"horas\": 96,\n          \"contenidos\": \"Contenidos de la unidad B.\"\n        }\n      ]\n    },\n    {\n      \"codigo\": \"{{prefijo}}-21\",\n      \"nombre\": \"Plan analítico QA 21 (semestre 5)\",\n      \"creditos\": 3,\n      \"horas\": 144,\n      \"semestre\": 5,\n      \"unidades\": [\n        {\n          \"numero\": 1,\n          \"nombre\": \"Unidad A\",\n          \"horas\": 72,\n          \"contenidos\": \"Contenidos de la unidad A.\"\n        },\n        {\n          \"numero\": 2,\n          \"nombre\": \"Unidad B\",\n          \"horas\": 72,\n          \"contenidos\": \"Contenidos de la unidad B.\"\n        }\n      ]\n    },\n    {\n      \"codigo\": \"{{prefijo}}-22\",\n      \"nombre\": \"Plan analítico QA 22 (semestre 5)\",\n      \"creditos\": 4,\n      \"horas\": 192,\n      \"semestre\": 5,\n      \"unidades\": [\n        {\n          \"numero\": 1,\n          \"nombre\": \"Unidad A\",\n          \"horas\": 96,\n          \"contenidos\": \"Contenidos de la unidad A.\"\n        },\n        {\n          \"numero\": 2,\n          \"nombre\": \"Unidad B\",\n          \"horas\": 96,\n          \"contenidos\": \"Contenidos de la unidad B.\"\n        }\n      ]\n    },\n    {\n      \"codigo\": \"{{prefijo}}-23\",\n      \"nombre\": \"Plan analítico QA 23 (semestre 5)\",\n      \"creditos\": 4,\n      \"horas\": 192,\n      \"semestre\": 5,\n      \"unidades\": [\n        {\n          \"numero\": 1,\n          \"nombre\": \"Unidad A\",\n          \"horas\": 96,\n          \"contenidos\": \"Contenidos de la unidad A.\"\n        },\n        {\n          \"numero\": 2,\n          \"nombre\": \"Unidad B\",\n          \"horas\": 96,\n          \"contenidos\": \"Contenidos de la unidad B.\"\n        }\n      ]\n    },\n    {\n      \"codigo\": \"{{prefijo}}-24\",\n      \"nombre\": \"Plan analítico QA 24 (semestre 5)\",\n      \"creditos\": 3,\n      \"horas\": 144,\n      \"semestre\": 5,\n      \"unidades\": [\n        {\n          \"numero\": 1,\n          \"nombre\": \"Unidad A\",\n          \"horas\": 72,\n          \"contenidos\": \"Contenidos de la unidad A.\"\n        },\n        {\n          \"numero\": 2,\n          \"nombre\": \"Unidad B\",\n          \"horas\": 72,\n          \"contenidos\": \"Contenidos de la unidad B.\"\n        }\n      ]\n    },\n    {\n      \"codigo\": \"{{prefijo}}-25\",\n      \"nombre\": \"Plan analítico QA 25 (semestre 5)\",\n      \"creditos\": 4,\n      \"horas\": 192,\n      \"semestre\": 5,\n      \"unidades\": [\n        {\n          \"numero\": 1,\n          \"nombre\": \"Unidad A\",\n          \"horas\": 96,\n          \"contenidos\": \"Contenidos de la unidad A.\"\n        },\n        {\n          \"numero\": 2,\n          \"nombre\": \"Unidad B\",\n          \"horas\": 96,\n          \"contenidos\": \"Contenidos de la unidad B.\"\n        }\n      ]\n    },\n    {\n      \"codigo\": \"{{prefijo}}-26\",\n      \"nombre\": \"Plan analítico QA 26 (semestre 6)\",\n      \"creditos\": 4,\n      \"horas\": 192,\n      \"semestre\": 6,\n      \"unidades\": [\n        {\n          \"numero\": 1,\n          \"nombre\": \"Unidad A\",\n          \"horas\": 96,\n          \"contenidos\": \"Contenidos de la unidad A.\"\n        },\n        {\n          \"numero\": 2,\n          \"nombre\": \"Unidad B\",\n          \"horas\": 96,\n          \"contenidos\": \"Contenidos de la unidad B.\"\n        }\n      ]\n    },\n    {\n      \"codigo\": \"{{prefijo}}-27\",\n      \"nombre\": \"Plan analítico QA 27 (semestre 6)\",\n      \"creditos\": 3,\n      \"horas\": 144,\n      \"semestre\": 6,\n      \"unidades\": [\n        {\n          \"numero\": 1,\n          \"nombre\": \"Unidad A\",\n          \"horas\": 72,\n          \"contenidos\": \"Contenidos de la unidad A.\"\n        },\n        {\n          \"numero\": 2,\n          \"nombre\": \"Unidad B\",\n          \"horas\": 72,\n          \"contenidos\": \"Contenidos de la unidad B.\"\n        }\n      ]\n    },\n    {\n      \"codigo\": \"{{prefijo}}-28\",\n      \"nombre\": \"Plan analítico QA 28 (semestre 6)\",\n      \"creditos\": 4,\n      \"horas\": 192,\n      \"semestre\": 6,\n      \"unidades\": [\n        {\n          \"numero\": 1,\n          \"nombre\": \"Unidad A\",\n          \"horas\": 96,\n          \"contenidos\": \"Contenidos de la unidad A.\"\n        },\n        {\n          \"numero\": 2,\n          \"nombre\": \"Unidad B\",\n          \"horas\": 96,\n          \"contenidos\": \"Contenidos de la unidad B.\"\n        }\n      ]\n    },\n    {\n      \"codigo\": \"{{prefijo}}-29\",\n      \"nombre\": \"Plan analítico QA 29 (semestre 6)\",\n      \"creditos\": 4,\n      \"horas\": 192,\n      \"semestre\": 6,\n      \"unidades\": [\n        {\n          \"numero\": 1,\n          \"nombre\": \"Unidad A\",\n          \"horas\": 96,\n          \"contenidos\": \"Contenidos de la unidad A.\"\n        },\n        {\n          \"numero\": 2,\n          \"nombre\": \"Unidad B\",\n          \"horas\": 96,\n          \"contenidos\": \"Contenidos de la unidad B.\"\n        }\n      ]\n    },\n    {\n      \"codigo\": \"{{prefijo}}-30\",\n      \"nombre\": \"Plan analítico QA 30 (semestre 6)\",\n      \"creditos\": 3,\n      \"horas\": 144,\n      \"semestre\": 6,\n      \"unidades\": [\n        {\n          \"numero\": 1,\n          \"nombre\": \"Unidad A\",\n          \"horas\": 72,\n          \"contenidos\": \"Contenidos de la unidad A.\"\n        },\n        {\n          \"numero\": 2,\n          \"nombre\": \"Unidad B\",\n          \"horas\": 72,\n          \"contenidos\": \"Contenidos de la unidad B.\"\n        }\n      ]\n    },\n    {\n      \"codigo\": \"{{prefijo}}-31\",\n      \"nombre\": \"Plan analítico QA 31 (semestre 7)\",\n      \"creditos\": 4,\n      \"horas\": 192,\n      \"semestre\": 7,\n      \"unidades\": [\n        {\n          \"numero\": 1,\n          \"nombre\": \"Unidad A\",\n          \"horas\": 96,\n          \"contenidos\": \"Contenidos de la unidad A.\"\n        },\n        {\n          \"numero\": 2,\n          \"nombre\": \"Unidad B\",\n          \"horas\": 96,\n          \"contenidos\": \"Contenidos de la unidad B.\"\n        }\n      ]\n    },\n    {\n      \"codigo\": \"{{prefijo}}-32\",\n      \"nombre\": \"Plan analítico QA 32 (semestre 7)\",\n      \"creditos\": 4,\n      \"horas\": 192,\n      \"semestre\": 7,\n      \"unidades\": [\n        {\n          \"numero\": 1,\n          \"nombre\": \"Unidad A\",\n          \"horas\": 96,\n          \"contenidos\": \"Contenidos de la unidad A.\"\n        },\n        {\n          \"numero\": 2,\n          \"nombre\": \"Unidad B\",\n          \"horas\": 96,\n          \"contenidos\": \"Contenidos de la unidad B.\"\n        }\n      ]\n    },\n    {\n      \"codigo\": \"{{prefijo}}-33\",\n      \"nombre\": \"Plan analítico QA 33 (semestre 7)\",\n      \"creditos\": 3,\n      \"horas\": 144,\n      \"semestre\": 7,\n      \"unidades\": [\n        {\n          \"numero\": 1,\n          \"nombre\": \"Unidad A\",\n          \"horas\": 72,\n          \"contenidos\": \"Contenidos de la unidad A.\"\n        },\n        {\n          \"numero\": 2,\n          \"nombre\": \"Unidad B\",\n          \"horas\": 72,\n          \"contenidos\": \"Contenidos de la unidad B.\"\n        }\n      ]\n    },\n    {\n      \"codigo\": \"{{prefijo}}-34\",\n      \"nombre\": \"Plan analítico QA 34 (semestre 7)\",\n      \"creditos\": 4,\n      \"horas\": 192,\n      \"semestre\": 7,\n      \"unidades\": [\n        {\n          \"numero\": 1,\n          \"nombre\": \"Unidad A\",\n          \"horas\": 96,\n          \"contenidos\": \"Contenidos de la unidad A.\"\n        },\n        {\n          \"numero\": 2,\n          \"nombre\": \"Unidad B\",\n          \"horas\": 96,\n          \"contenidos\": \"Contenidos de la unidad B.\"\n        }\n      ]\n    },\n    {\n      \"codigo\": \"{{prefijo}}-35\",\n      \"nombre\": \"Plan analítico QA 35 (semestre 7)\",\n      \"creditos\": 4,\n      \"horas\": 192,\n      \"semestre\": 7,\n      \"unidades\": [\n        {\n          \"numero\": 1,\n          \"nombre\": \"Unidad A\",\n          \"horas\": 96,\n          \"contenidos\": \"Contenidos de la unidad A.\"\n        },\n        {\n          \"numero\": 2,\n          \"nombre\": \"Unidad B\",\n          \"horas\": 96,\n          \"contenidos\": \"Contenidos de la unidad B.\"\n        }\n      ]\n    },\n    {\n      \"codigo\": \"{{prefijo}}-36\",\n      \"nombre\": \"Plan analítico QA 36 (semestre 8)\",\n      \"creditos\": 3,\n      \"horas\": 144,\n      \"semestre\": 8,\n      \"unidades\": [\n        {\n          \"numero\": 1,\n          \"nombre\": \"Unidad A\",\n          \"horas\": 72,\n          \"contenidos\": \"Contenidos de la unidad A.\"\n        },\n        {\n          \"numero\": 2,\n          \"nombre\": \"Unidad B\",\n          \"horas\": 72,\n          \"contenidos\": \"Contenidos de la unidad B.\"\n        }\n      ]\n    },\n    {\n      \"codigo\": \"{{prefijo}}-37\",\n      \"nombre\": \"Plan analítico QA 37 (semestre 8)\",\n      \"creditos\": 4,\n      \"horas\": 192,\n      \"semestre\": 8,\n      \"unidades\": [\n        {\n          \"numero\": 1,\n          \"nombre\": \"Unidad A\",\n          \"horas\": 96,\n          \"contenidos\": \"Contenidos de la unidad A.\"\n        },\n        {\n          \"numero\": 2,\n          \"nombre\": \"Unidad B\",\n          \"horas\": 96,\n          \"contenidos\": \"Contenidos de la unidad B.\"\n        }\n      ]\n    },\n    {\n      \"codigo\": \"{{prefijo}}-38\",\n      \"nombre\": \"Plan analítico QA 38 (semestre 8)\",\n      \"creditos\": 4,\n      \"horas\": 192,\n      \"semestre\": 8,\n      \"unidades\": [\n        {\n          \"numero\": 1,\n          \"nombre\": \"Unidad A\",\n          \"horas\": 96,\n          \"contenidos\": \"Contenidos de la unidad A.\"\n        },\n        {\n          \"numero\": 2,\n          \"nombre\": \"Unidad B\",\n          \"horas\": 96,\n          \"contenidos\": \"Contenidos de la unidad B.\"\n        }\n      ]\n    },\n    {\n      \"codigo\": \"{{prefijo}}-39\",\n      \"nombre\": \"Plan analítico QA 39 (semestre 8)\",\n      \"creditos\": 3,\n      \"horas\": 144,\n      \"semestre\": 8,\n      \"unidades\": [\n        {\n          \"numero\": 1,\n          \"nombre\": \"Unidad A\",\n          \"horas\": 72,\n          \"contenidos\": \"Contenidos de la unidad A.\"\n        },\n        {\n          \"numero\": 2,\n          \"nombre\": \"Unidad B\",\n          \"horas\": 72,\n          \"contenidos\": \"Contenidos de la unidad B.\"\n        }\n      ]\n    },\n    {\n      \"codigo\": \"{{prefijo}}-40\",\n      \"nombre\": \"Plan analítico QA 40 (semestre 8)\",\n      \"creditos\": 4,\n      \"horas\": 192,\n      \"semestre\": 8,\n      \"unidades\": [\n        {\n          \"numero\": 1,\n          \"nombre\": \"Unidad A\",\n          \"horas\": 96,\n          \"contenidos\": \"Contenidos de la unidad A.\"\n        },\n        {\n          \"numero\": 2,\n          \"nombre\": \"Unidad B\",\n          \"horas\": 96,\n          \"contenidos\": \"Contenidos de la unidad B.\"\n        }\n      ]\n    },\n    {\n      \"codigo\": \"{{prefijo}}-41\",\n      \"nombre\": \"Plan analítico QA 41 (semestre 9)\",\n      \"creditos\": 4,\n      \"horas\": 192,\n      \"semestre\": 9,\n      \"unidades\": [\n        {\n          \"numero\": 1,\n          \"nombre\": \"Unidad A\",\n          \"horas\": 96,\n          \"contenidos\": \"Contenidos de la unidad A.\"\n        },\n        {\n          \"numero\": 2,\n          \"nombre\": \"Unidad B\",\n          \"horas\": 96,\n          \"contenidos\": \"Contenidos de la unidad B.\"\n        }\n      ]\n    },\n    {\n      \"codigo\": \"{{prefijo}}-42\",\n      \"nombre\": \"Plan analítico QA 42 (semestre 9)\",\n      \"creditos\": 3,\n      \"horas\": 144,\n      \"semestre\": 9,\n      \"unidades\": [\n        {\n          \"numero\": 1,\n          \"nombre\": \"Unidad A\",\n          \"horas\": 72,\n          \"contenidos\": \"Contenidos de la unidad A.\"\n        },\n        {\n          \"numero\": 2,\n          \"nombre\": \"Unidad B\",\n          \"horas\": 72,\n          \"contenidos\": \"Contenidos de la unidad B.\"\n        }\n      ]\n    },\n    {\n      \"codigo\": \"{{prefijo}}-43\",\n      \"nombre\": \"Plan analítico QA 43 (semestre 9)\",\n      \"creditos\": 4,\n      \"horas\": 192,\n      \"semestre\": 9,\n      \"unidades\": [\n        {\n          \"numero\": 1,\n          \"nombre\": \"Unidad A\",\n          \"horas\": 96,\n          \"contenidos\": \"Contenidos de la unidad A.\"\n        },\n        {\n          \"numero\": 2,\n          \"nombre\": \"Unidad B\",\n          \"horas\": 96,\n          \"contenidos\": \"Contenidos de la unidad B.\"\n        }\n      ]\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Caso feliz de la importación masiva (US-03/CA3). Cada plan declara 48 h por crédito UTA y dos unidades cuya suma de horas iguala lo declarado. Los códigos usan el prefijo único de la corrida ({{prefijo}})."
+          },
+          "response": []
+        },
+        {
+          "name": "PT-12 · Importar con códigos duplicados (200 · rechazadas ≥ 1)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 OK', function () { pm.response.to.have.status(200); });",
+                  "const json = pm.response.json();",
+                  "pm.test('Rechaza los duplicados sin abortar el lote', function () { pm.expect(json.rechazadas).to.be.at.least(2); });",
+                  "pm.test('Informa el motivo de cada rechazo', function () { pm.expect(json.errores.join(' ')).to.contain('duplicado'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/asignaturas/importar",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"mallaId\": \"{{mallaId}}\",\n  \"asignaturas\": [\n    {\n      \"codigo\": \"{{prefijo}}-DUP\",\n      \"nombre\": \"Plan QA duplicado\",\n      \"creditos\": 4,\n      \"horas\": 192,\n      \"semestre\": 1,\n      \"unidades\": [\n        {\n          \"numero\": 1,\n          \"nombre\": \"Unidad A\",\n          \"horas\": 96,\n          \"contenidos\": \"A\"\n        },\n        {\n          \"numero\": 2,\n          \"nombre\": \"Unidad B\",\n          \"horas\": 96,\n          \"contenidos\": \"B\"\n        }\n      ]\n    },\n    {\n      \"codigo\": \"{{prefijo}}-DUP\",\n      \"nombre\": \"Plan QA duplicado (repetido)\",\n      \"creditos\": 4,\n      \"horas\": 192,\n      \"semestre\": 1,\n      \"unidades\": []\n    },\n    {\n      \"codigo\": \"{{prefijo}}-01\",\n      \"nombre\": \"Plan ya importado en el caso anterior\",\n      \"creditos\": 4,\n      \"horas\": 192,\n      \"semestre\": 1,\n      \"unidades\": []\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "PT-13 · Equivalencia 48 h/crédito UTA (200 · plan incompleto)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 OK', function () { pm.response.to.have.status(200); });",
+                  "const json = pm.response.json();",
+                  "pm.test('Advierte el incumplimiento de 48 h/crédito', function () { pm.expect(json.errores.join(' ')).to.contain('48 h/crédito'); });",
+                  "pm.test('El plan queda pendiente pero importado', function () { pm.expect(json.importadas).to.eql(1); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/asignaturas/importar",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"mallaId\": \"{{mallaId}}\",\n  \"asignaturas\": [\n    {\n      \"codigo\": \"{{prefijo}}-48H\",\n      \"nombre\": \"Plan con horas inconsistentes\",\n      \"creditos\": 4,\n      \"horas\": 100,\n      \"semestre\": 2,\n      \"unidades\": [\n        {\n          \"numero\": 1,\n          \"nombre\": \"Unidad A\",\n          \"horas\": 50,\n          \"contenidos\": \"A\"\n        },\n        {\n          \"numero\": 2,\n          \"nombre\": \"Unidad B\",\n          \"horas\": 50,\n          \"contenidos\": \"B\"\n        }\n      ]\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "PT-14 · Plan incompleto sin unidades temáticas (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 OK', function () { pm.response.to.have.status(200); });",
+                  "const json = pm.response.json();",
+                  "pm.test('Advierte la ausencia de unidades temáticas', function () { pm.expect(json.errores.join(' ')).to.contain('unidades temáticas'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/asignaturas/importar",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"mallaId\": \"{{mallaId}}\",\n  \"asignaturas\": [\n    {\n      \"codigo\": \"{{prefijo}}-INCOMP\",\n      \"nombre\": \"Plan sin unidades\",\n      \"creditos\": 3,\n      \"horas\": 144,\n      \"semestre\": 3,\n      \"unidades\": []\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "PT-14g · Importar en una malla inexistente (400)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('400 Bad Request', function () { pm.response.to.have.status(400); });",
+                  "const json = pm.response.json();",
+                  "pm.test('Indica que la malla no existe', function () { pm.expect(json.mensaje).to.contain('no existe'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/asignaturas/importar",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"mallaId\": 999999,\n  \"asignaturas\": [\n    {\n      \"codigo\": \"QA-X\",\n      \"nombre\": \"Nada\",\n      \"creditos\": 4,\n      \"horas\": 192,\n      \"semestre\": 1,\n      \"unidades\": []\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "PT-15 · Hallazgo H-01 · Importar por el API Gateway (404)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('404 Not Found (hallazgo H-01 pendiente de corrección)', function () { pm.response.to.have.status(404); });",
+                  "pm.test('Documentar el hallazgo H-01 en el informe de QA', function () { pm.expect(pm.response.code).to.eql(404); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/asignaturas/importar",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"mallaId\": \"{{mallaId}}\",\n  \"asignaturas\": [\n    {\n      \"codigo\": \"{{prefijo}}-GW\",\n      \"nombre\": \"Plan vía Gateway\",\n      \"creditos\": 4,\n      \"horas\": 192,\n      \"semestre\": 1,\n      \"unidades\": [\n        {\n          \"numero\": 1,\n          \"nombre\": \"Unidad A\",\n          \"horas\": 192,\n          \"contenidos\": \"A\"\n        }\n      ]\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "HALLAZGO H-01: la ruta del Gateway `/api/asignaturas/{everything}` solo admite GET y PUT, por lo que `POST /api/asignaturas/importar` no está publicado en el borde y responde 404. Cuando el equipo corrija `ocelot.json`, esta aserción debe cambiar a 200 (ver docs/matriz-rbac.md §7 y PT-15 del plan de pruebas)."
+          },
+          "response": []
+        },
+        {
+          "name": "Listar asignaturas de la malla QA (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 OK', function () { pm.response.to.have.status(200); });",
+                  "const json = pm.response.json();",
+                  "pm.test('Hay planes importados', function () { pm.expect(json.length).to.be.above(0); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/asignaturas?mallaId={{mallaId}}",
+            "description": "Si el paso PT-15 se ejecutó contra el Gateway (404), esta consulta usa solo lo importado por el Microservicio A. Para la carga completa de los 43 planes por el borde, ver H-01."
+          },
+          "response": []
+        },
+        {
+          "name": "Consultar asignatura inexistente (404)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('404 Not Found', function () { pm.response.to.have.status(404); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/asignaturas/999999"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "04 · Expedientes y bus (US-05 / US-06)",
+      "description": "Alta de expedientes INTERNO (CAU-P-011) y EXTERNO (CAU-P-122) con 202 Accepted, consulta de estado, publicación del evento, RBAC y casos de error 400/403/404.",
+      "item": [
+        {
+          "name": "PT-19 · Alta expediente INTERNO CAU-P-011 (202) · captura id y correlación",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('202 Accepted', function () { pm.response.to.have.status(202); });",
+                  "const json = pm.response.json();",
+                  "pm.collectionVariables.set('expedienteId', json.id);",
+                  "pm.collectionVariables.set('correlationId', json.correlationId);",
+                  "pm.collectionVariables.set('codigoExpediente', json.codigo);",
+                  "pm.test('Estado PENDIENTE_CONTENIDOS', function () { pm.expect(json.estado).to.eql('PENDIENTE_CONTENIDOS'); });",
+                  "pm.test('Publicado en el bus con correlación', function () { pm.expect(json.publicado).to.be.true; pm.expect(json.correlationId).to.match(/^[0-9a-f-]{36}$/); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/expedientes",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tipoTramite\": \"INTERNO\",\n  \"rutaNormativa\": \"CAU-P-011\",\n  \"carreraOrigenCodigo\": \"SW\",\n  \"carreraDestinoCodigo\": \"TI\",\n  \"institucionOrigen\": \"UTA\",\n  \"documentos\": [\n    {\n      \"nombreArchivo\": \"record-academico.pdf\",\n      \"rutaAlmacenamiento\": \"/data/qa/record-academico.pdf\",\n      \"hashSha256\": \"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\n      \"tamanoBytes\": 184320\n    }\n  ],\n  \"asignaturas\": [\n    {\n      \"codigoOrigen\": \"SW101\",\n      \"nombreOrigen\": \"Fundamentos de Programación\",\n      \"codigoDestino\": \"TI101\",\n      \"nota\": 18\n    },\n    {\n      \"codigoOrigen\": \"SW201\",\n      \"nombreOrigen\": \"Estructuras de Datos\",\n      \"codigoDestino\": \"TI201\",\n      \"nota\": 16.5\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenOperador}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "description": "US-06/CA2: la API responde 202 Accepted (no 201) porque el procesamiento es asíncrono; el estado inicial es PENDIENTE_CONTENIDOS y se devuelve el CorrelationId para la trazabilidad (CA3)."
+          },
+          "response": []
+        },
+        {
+          "name": "PT-20 · Alta expediente EXTERNO CAU-P-122 (202)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('202 Accepted', function () { pm.response.to.have.status(202); });",
+                  "const json = pm.response.json();",
+                  "pm.test('Estado PENDIENTE_CONTENIDOS y tipo EXTERNO', function () { pm.expect(json.estado).to.eql('PENDIENTE_CONTENIDOS'); });",
+                  "pm.collectionVariables.set('expedienteExternoId', json.id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/expedientes",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tipoTramite\": \"EXTERNO\",\n  \"rutaNormativa\": \"CAU-P-122\",\n  \"carreraOrigenCodigo\": \"SW\",\n  \"carreraDestinoCodigo\": \"ROB\",\n  \"institucionOrigen\": \"Universidad de Cuenca\",\n  \"documentos\": [\n    {\n      \"nombreArchivo\": \"certificado-notas.pdf\",\n      \"rutaAlmacenamiento\": \"/data/qa/certificado-notas.pdf\",\n      \"hashSha256\": \"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\",\n      \"tamanoBytes\": 240128\n    }\n  ],\n  \"asignaturas\": [\n    {\n      \"codigoOrigen\": \"EXT-101\",\n      \"nombreOrigen\": \"Algoritmos y Estructuras\",\n      \"codigoDestino\": \"ROB101\",\n      \"nota\": 17\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenOperador}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "PT-20c · Tipo de trámite inválido (400)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('400 Bad Request', function () { pm.response.to.have.status(400); });",
+                  "const json = pm.response.json();",
+                  "pm.test('Enumera los tipos válidos', function () { pm.expect(json.mensaje).to.contain('INTERNO'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/expedientes",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tipoTramite\": \"EXTRANJERO\",\n  \"rutaNormativa\": \"CAU-P-011\",\n  \"carreraOrigenCodigo\": \"SW\",\n  \"carreraDestinoCodigo\": \"TI\",\n  \"institucionOrigen\": \"UTA\",\n  \"documentos\": [\n    {\n      \"nombreArchivo\": \"record-academico.pdf\",\n      \"rutaAlmacenamiento\": \"/data/qa/record-academico.pdf\",\n      \"hashSha256\": \"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\n      \"tamanoBytes\": 184320\n    }\n  ],\n  \"asignaturas\": [\n    {\n      \"codigoOrigen\": \"SW101\",\n      \"nombreOrigen\": \"Fundamentos de Programación\",\n      \"codigoDestino\": \"TI101\",\n      \"nota\": 18\n    },\n    {\n      \"codigoOrigen\": \"SW201\",\n      \"nombreOrigen\": \"Estructuras de Datos\",\n      \"codigoDestino\": \"TI201\",\n      \"nota\": 16.5\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "PT-20c · Ruta normativa inválida (400)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('400 Bad Request', function () { pm.response.to.have.status(400); });",
+                  "const json = pm.response.json();",
+                  "pm.test('Enumera las rutas válidas', function () { pm.expect(json.mensaje).to.contain('CAU-P-011'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/expedientes",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tipoTramite\": \"INTERNO\",\n  \"rutaNormativa\": \"CAU-P-999\",\n  \"carreraOrigenCodigo\": \"SW\",\n  \"carreraDestinoCodigo\": \"TI\",\n  \"institucionOrigen\": \"UTA\",\n  \"documentos\": [\n    {\n      \"nombreArchivo\": \"record-academico.pdf\",\n      \"rutaAlmacenamiento\": \"/data/qa/record-academico.pdf\",\n      \"hashSha256\": \"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\n      \"tamanoBytes\": 184320\n    }\n  ],\n  \"asignaturas\": [\n    {\n      \"codigoOrigen\": \"SW101\",\n      \"nombreOrigen\": \"Fundamentos de Programación\",\n      \"codigoDestino\": \"TI101\",\n      \"nota\": 18\n    },\n    {\n      \"codigoOrigen\": \"SW201\",\n      \"nombreOrigen\": \"Estructuras de Datos\",\n      \"codigoDestino\": \"TI201\",\n      \"nota\": 16.5\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "PT-21 · Consultar el expediente creado (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 OK', function () { pm.response.to.have.status(200); });",
+                  "const json = pm.response.json();",
+                  "pm.test('Conserva el CorrelationId devuelto al crear', function () { pm.expect(json.correlationId).to.eql(pm.collectionVariables.get('correlationId')); });",
+                  "pm.test('El evento quedó publicado', function () { pm.expect(json.eventoPublicado).to.be.true; pm.expect(json.intentosPublicacion).to.be.at.least(1); });",
+                  "pm.test('Documentos y asignaturas persistidos', function () { pm.expect(json.documentos.length).to.be.above(0); pm.expect(json.asignaturas.length).to.be.above(0); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/expedientes/{{expedienteId}}"
+          },
+          "response": []
+        },
+        {
+          "name": "PT-21 · Consultar expediente inexistente (404)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('404 Not Found', function () { pm.response.to.have.status(404); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/expedientes/00000000-0000-0000-0000-000000000000"
+          },
+          "response": []
+        },
+        {
+          "name": "PT-21 · Listar expedientes por estado (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 OK', function () { pm.response.to.have.status(200); });",
+                  "const json = pm.response.json();",
+                  "pm.test('Lista con la estructura del contrato', function () { pm.expect(json).to.be.an('array'); if (json.length > 0) { pm.expect(json[0]).to.have.property('correlationId'); } });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/expedientes?estado=PENDIENTE_CONTENIDOS"
+          },
+          "response": []
+        },
+        {
+          "name": "PT-24 · Republicar conservando el CorrelationId (202)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('202 Accepted', function () { pm.response.to.have.status(202); });",
+                  "const json = pm.response.json();",
+                  "pm.test('Mismo CorrelationId que en el alta', function () { pm.expect(json.correlationId).to.eql(pm.collectionVariables.get('correlationId')); });",
+                  "pm.test('Estado PENDIENTE_CONTENIDOS tras republicar', function () { pm.expect(json.estado).to.eql('PENDIENTE_CONTENIDOS'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/expedientes/{{expedienteId}}/republicar",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenOperador}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "description": "US-06/CA3: la republicación reutiliza el CorrelationId original del expediente."
+          },
+          "response": []
+        },
+        {
+          "name": "Republicar un expediente inexistente (404)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('404 Not Found', function () { pm.response.to.have.status(404); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/expedientes/00000000-0000-0000-0000-000000000000/republicar"
+          },
+          "response": []
+        },
+        {
+          "name": "PT-20/PT-21 · Expediente con DOCENTE (403)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('403 Forbidden', function () { pm.response.to.have.status(403); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/expedientes",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tipoTramite\": \"INTERNO\",\n  \"rutaNormativa\": \"CAU-P-011\",\n  \"carreraOrigenCodigo\": \"SW\",\n  \"carreraDestinoCodigo\": \"TI\",\n  \"institucionOrigen\": \"UTA\",\n  \"documentos\": [\n    {\n      \"nombreArchivo\": \"record-academico.pdf\",\n      \"rutaAlmacenamiento\": \"/data/qa/record-academico.pdf\",\n      \"hashSha256\": \"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\n      \"tamanoBytes\": 184320\n    }\n  ],\n  \"asignaturas\": [\n    {\n      \"codigoOrigen\": \"SW101\",\n      \"nombreOrigen\": \"Fundamentos de Programación\",\n      \"codigoDestino\": \"TI101\",\n      \"nota\": 18\n    },\n    {\n      \"codigoOrigen\": \"SW201\",\n      \"nombreOrigen\": \"Estructuras de Datos\",\n      \"codigoDestino\": \"TI201\",\n      \"nota\": 16.5\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenDocente}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "PT-16 · Expediente sin token (401)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('401 Unauthorized', function () { pm.response.to.have.status(401); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/expedientes",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tipoTramite\": \"INTERNO\",\n  \"rutaNormativa\": \"CAU-P-011\",\n  \"carreraOrigenCodigo\": \"SW\",\n  \"carreraDestinoCodigo\": \"TI\",\n  \"institucionOrigen\": \"UTA\",\n  \"documentos\": [\n    {\n      \"nombreArchivo\": \"record-academico.pdf\",\n      \"rutaAlmacenamiento\": \"/data/qa/record-academico.pdf\",\n      \"hashSha256\": \"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\n      \"tamanoBytes\": 184320\n    }\n  ],\n  \"asignaturas\": [\n    {\n      \"codigoOrigen\": \"SW101\",\n      \"nombreOrigen\": \"Fundamentos de Programación\",\n      \"codigoDestino\": \"TI101\",\n      \"nota\": 18\n    },\n    {\n      \"codigoOrigen\": \"SW201\",\n      \"nombreOrigen\": \"Estructuras de Datos\",\n      \"codigoDestino\": \"TI201\",\n      \"nota\": 16.5\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "PT-16 · Listado de expedientes sin token (401)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('401 Unauthorized', function () { pm.response.to.have.status(401); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/expedientes",
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "05 · Regresión y recuperación (S1-P09 / S1-P10)",
+      "description": "Prueba de fallo y recuperación del bus (PT-24) y batería de regresión funcional (PT-R01…PT-R08).\n\nIMPORTANTE (paso manual): antes de ejecutar esta carpeta, detener RabbitMQ con `docker compose stop rabbitmq` para reproducir el escenario de fallo. La primera petición debe responder 202 con estado REGISTRADO_PENDIENTE_PUBLICACION y conservar el CorrelationId; luego, con el bus levantado (`docker compose start rabbitmq`), la republicación debe publicar el mensaje con el MISMO CorrelationId. Si el bus está arriba, el primer expediente quedará en PENDIENTE_CONTENIDOS: el caso sigue siendo válido para verificar la republicación, pero la evidencia de recuperación requiere el bus detenido.",
+      "item": [
+        {
+          "name": "PT-24 · Alta con el bus detenido (202 recuperable)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('202 Accepted (el fallo del bus no rompe la API)', function () { pm.response.to.have.status(202); });",
+                  "const json = pm.response.json();",
+                  "pm.collectionVariables.set('expedienteRecuperableId', json.id);",
+                  "pm.collectionVariables.set('correlationIdRecuperable', json.correlationId);",
+                  "pm.test('Estado recuperable o publicado si el bus está arriba', function () { pm.expect(['REGISTRADO_PENDIENTE_PUBLICACION', 'PENDIENTE_CONTENIDOS']).to.include(json.estado); });",
+                  "pm.test('El CorrelationId se devuelve siempre', function () { pm.expect(json.correlationId).to.match(/^[0-9a-f-]{36}$/); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/expedientes",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tipoTramite\": \"INTERNO\",\n  \"rutaNormativa\": \"CAU-P-011\",\n  \"carreraOrigenCodigo\": \"SW\",\n  \"carreraDestinoCodigo\": \"TI\",\n  \"institucionOrigen\": \"UTA · prueba de recuperación\",\n  \"documentos\": [\n    {\n      \"nombreArchivo\": \"record-academico.pdf\",\n      \"rutaAlmacenamiento\": \"/data/qa/record-academico.pdf\",\n      \"hashSha256\": \"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\n      \"tamanoBytes\": 184320\n    }\n  ],\n  \"asignaturas\": [\n    {\n      \"codigoOrigen\": \"SW101\",\n      \"nombreOrigen\": \"Fundamentos de Programación\",\n      \"codigoDestino\": \"TI101\",\n      \"nota\": 18\n    },\n    {\n      \"codigoOrigen\": \"SW201\",\n      \"nombreOrigen\": \"Estructuras de Datos\",\n      \"codigoDestino\": \"TI201\",\n      \"nota\": 16.5\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenOperador}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "description": "Con RabbitMQ detenido: el expediente debe persistirse igualmente y quedar en estado recuperable."
+          },
+          "response": []
+        },
+        {
+          "name": "PT-24 · Estado del expediente recuperable (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 OK', function () { pm.response.to.have.status(200); });",
+                  "const json = pm.response.json();",
+                  "pm.test('Conserva el CorrelationId y el detalle del fallo', function () { pm.expect(json.correlationId).to.eql(pm.collectionVariables.get('correlationIdRecuperable')); if (json.estado === 'REGISTRADO_PENDIENTE_PUBLICACION') { pm.expect(json.ultimoErrorPublicacion).to.be.a('string').and.not.empty; } });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/expedientes/{{expedienteRecuperableId}}"
+          },
+          "response": []
+        },
+        {
+          "name": "PT-24 · Listar expedientes en estado recuperable (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 OK', function () { pm.response.to.have.status(200); });",
+                  "const json = pm.response.json();",
+                  "pm.test('Lista coherente con el estado consultado', function () { pm.expect(json.every(e => e.estado === 'REGISTRADO_PENDIENTE_PUBLICACION')).to.be.true; });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/expedientes?estado=REGISTRADO_PENDIENTE_PUBLICACION"
+          },
+          "response": []
+        },
+        {
+          "name": "PT-24 · Republicar con el bus levantado (202 · mismo CorrelationId)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('202 Accepted', function () { pm.response.to.have.status(202); });",
+                  "const json = pm.response.json();",
+                  "pm.test('Republicación exitosa', function () { pm.expect(json.publicado).to.be.true; });",
+                  "pm.test('Mismo CorrelationId (trazabilidad preservada)', function () { pm.expect(json.correlationId).to.eql(pm.collectionVariables.get('correlationIdRecuperable')); });",
+                  "pm.test('Estado PENDIENTE_CONTENIDOS', function () { pm.expect(json.estado).to.eql('PENDIENTE_CONTENIDOS'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/expedientes/{{expedienteRecuperableId}}/republicar",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenOperador}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "description": "Levantar RabbitMQ antes de ejecutar esta petición (`docker compose start rabbitmq`)."
+          },
+          "response": []
+        },
+        {
+          "name": "PT-R01 · Regresión RBAC: sin token (401)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('401 Unauthorized', function () { pm.response.to.have.status(401); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/usuarios",
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "PT-R01 · Regresión RBAC: rol insuficiente (403)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('403 Forbidden', function () { pm.response.to.have.status(403); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/reglas/parametros/CAU-P-011",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"theta\": 75,\n  \"delta\": 10,\n  \"tau\": 65\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenDocente}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "PT-R02 · Regresión umbrales: δ ≤ θ vigente (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 OK', function () { pm.response.to.have.status(200); });",
+                  "const json = pm.response.json();",
+                  "pm.test('Invariante δ ≤ θ', function () { pm.expect(json.delta).to.be.at.most(json.theta); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/reglas/parametros/CAU-P-011"
+          },
+          "response": []
+        },
+        {
+          "name": "PT-R03 · Regresión catálogo: consulta de carreras (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 OK', function () { pm.response.to.have.status(200); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/carreras"
+          },
+          "response": []
+        },
+        {
+          "name": "PT-R04 · Regresión expedientes: alta y consulta (202 → 200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('202 Accepted', function () { pm.response.to.have.status(202); });",
+                  "const json = pm.response.json();",
+                  "pm.collectionVariables.set('expedienteRegresionId', json.id);",
+                  "pm.test('Estado PENDIENTE_CONTENIDOS', function () { pm.expect(json.estado).to.eql('PENDIENTE_CONTENIDOS'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/expedientes",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tipoTramite\": \"INTERNO\",\n  \"rutaNormativa\": \"CAU-P-011\",\n  \"carreraOrigenCodigo\": \"SW\",\n  \"carreraDestinoCodigo\": \"IND\",\n  \"institucionOrigen\": \"UTA\",\n  \"documentos\": [\n    {\n      \"nombreArchivo\": \"record-academico.pdf\",\n      \"rutaAlmacenamiento\": \"/data/qa/record-academico.pdf\",\n      \"hashSha256\": \"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\n      \"tamanoBytes\": 184320\n    }\n  ],\n  \"asignaturas\": [\n    {\n      \"codigoOrigen\": \"SW101\",\n      \"nombreOrigen\": \"Fundamentos de Programación\",\n      \"codigoDestino\": \"TI101\",\n      \"nota\": 18\n    },\n    {\n      \"codigoOrigen\": \"SW201\",\n      \"nombreOrigen\": \"Estructuras de Datos\",\n      \"codigoDestino\": \"TI201\",\n      \"nota\": 16.5\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenOperador}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "PT-R05 · Regresión contrato: expediente consultable con correlación (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 OK', function () { pm.response.to.have.status(200); });",
+                  "const json = pm.response.json();",
+                  "pm.test('Contrato de consulta completo', function () { pm.expect(json).to.have.all.keys('id', 'codigo', 'tipoTramite', 'rutaNormativa', 'carreraOrigenCodigo', 'carreraDestinoCodigo', 'estado', 'correlationId', 'eventoPublicado', 'intentosPublicacion', 'ultimoErrorPublicacion', 'fechaCreacionUtc', 'fechaPublicacionUtc', 'documentos', 'asignaturas'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/expedientes/{{expedienteRegresionId}}"
+          },
+          "response": []
+        },
+        {
+          "name": "PT-R05 · Regresión contrato: evento en el bus (verificación manual)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 OK del Gateway', function () { pm.response.to.have.status(200); });",
+                  "const json = pm.response.json();",
+                  "pm.test('El Gateway está operativo (los servicios son alcanzables)', function () { pm.expect(json.estado).to.eql('OK'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/health",
+            "description": "PASO MANUAL: con `tools/Siha.BusVerifier` suscrito (dotnet run --project tools/Siha.BusVerifier), el evento del expediente PT-R04 debe imprimirse con los 12 campos del contrato, sin binarios y con el mismo CorrelationId devuelto por la API (docs/contrato-solicitud-creada-event.md §8)."
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}

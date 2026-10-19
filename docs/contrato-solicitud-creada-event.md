@@ -1,0 +1,332 @@
+# Contrato del evento `SolicitudCreadaEvent`
+
+**Proyecto:** SIHA-IA · Sistema Inteligente de Homologación Académica Asistido por Agentes IA
+**Institución:** Universidad Técnica de Ambato — FISEI — Metodologías Ágiles
+**Sprint:** 1 (Base del Sistema) · **Tarea:** S1-P01
+**Autor:** Paul Medardo Acurio López — Product Owner Proxy & QA/AI Lead
+**Versión del documento:** 1.0 · **Versión del contrato:** 1.0 · **Estado:** Aprobado para Sprint 1
+**Fecha:** 18 de octubre de 2026
+
+---
+
+## 1. Objetivo y alcance
+
+Este documento es el **contrato formal del evento `SolicitudCreadaEvent`**, mensaje asíncrono que el
+**Microservicio B** (Expedientes) publica en **RabbitMQ** para que el **Microservicio C** (Agentes IA /
+análisis semántico) ejecute el procesamiento de contenidos.
+
+Alcance:
+
+- Definir la **estructura completa** del mensaje (campos, tipos, obligatoriedad y ejemplos).
+- Fijar el **rol del `CorrelationId`** como hilo de trazabilidad extremo a extremo.
+- Fijar los **metadatos mínimos** de transporte que todo consumidor puede exigir.
+- Establecer la regla inquebrantable de que **NO se adjuntan archivos binarios**; solo **referencias**.
+- Documentar el **diagrama de intercambio B → RabbitMQ → C**.
+
+Fuera de alcance: el algoritmo de homologación del Microservicio C, la validación binaria de PDF
+(tarea S1-S05/S1-S06 de Sebastián) y el almacenamiento seguro de documentos.
+
+**Definición canónica en código:** `src/BuildingBlocks/Siha.Contracts/Events/SolicitudCreadaEvent.cs`
+(proyecto `Siha.Contracts`, único origen de verdad para B y C).
+
+---
+
+## 2. Estructura formal del evento
+
+Tipo .NET: `public sealed record SolicitudCreadaEvent` (`Siha.Contracts.Events`, `net8.0`).
+
+| # | Campo | Tipo .NET | Tipo JSON | Obligatorio | Descripción | Ejemplo |
+|---|---|---|---|---|---|---|
+| 1 | `ExpedienteId` | `Guid` | string (uuid) | **Sí** | Clave primaria del expediente persistido en **DB B**. Es la llave de conciliación del lado de C. | `bef8ef40-14a2-4c22-ab78-ca1ddb072468` |
+| 2 | `CorrelationId` | `Guid` | string (uuid) | **Sí** | Identificador de correlación extremo a extremo. Generado **una sola vez** por B al registrar el expediente y conservado en cada reintento/republicación. No se regenera jamás. | `5160c9cd-552b-4607-ae2b-67a6c85fc063` |
+| 3 | `CodigoExpediente` | `string` | string | **Sí** | Código legible del expediente (prefijo + fecha + secuencia). Es el identificador que usa el operador en la interfaz. | `EXP-20261018-4F9B2C` |
+| 4 | `TipoTramite` | `string` | string | **Sí** | Tipo de trámite. Dominio cerrado: `INTERNO` \| `EXTERNO` (`TiposTramite`). | `INTERNO` |
+| 5 | `RutaNormativa` | `string` | string | **Sí** | Ruta normativa institucional aplicable. Dominio cerrado: `CAU-P-011` \| `CAU-P-122` (`RutasNormativas`). | `CAU-P-011` |
+| 6 | `CarreraOrigenCodigo` | `string` | string | **Sí** | Código de la carrera de origen (malla origen del catálogo del MS A). | `SW` |
+| 7 | `CarreraDestinoCodigo` | `string` | string | **Sí** | Código de la carrera receptora (malla destino). | `TI` |
+| 8 | `DocumentoIds` | `IReadOnlyCollection<Guid>` | array&lt;string&gt; | **Sí** (puede ir vacía) | **Referencias** a los registros `EXPEDIENTE_DOC` de DB B (no binarios, no rutas compartidas en claro). C resuelve el archivo por su cuenta. | `["ffa6954a-…", "c5d4685e-…"]` |
+| 9 | `AsignaturasOrigen` | `IReadOnlyCollection<string>` | array&lt;string&gt; | **Sí** (puede ir vacía) | Códigos de las asignaturas de origen seleccionadas para homologación. | `["SW101", "SW201"]` |
+| 10 | `Estado` | `string` | string | **Sí** | Estado del expediente al publicar. En el flujo normal es `PENDIENTE_CONTENIDOS`. | `PENDIENTE_CONTENIDOS` |
+| 11 | `FechaCreacionUtc` | `DateTimeOffset` | string (ISO-8601) | **Sí** | Marca temporal de creación del expediente, **siempre en UTC**. | `2026-10-18T15:09:15.3705354+00:00` |
+| 12 | `Version` | `string` | string | **Sí** | Versión del contrato del evento. Permite evolución compatible. | `1.0` |
+
+### 2.1 Reglas de obligatoriedad
+
+1. Los 12 campos viajan **siempre**: el contrato no tiene propiedades opcionales ni campos que se
+   omitan por `null` (las colecciones vacías se serializan como `[]`, nunca como `null`).
+2. `DocumentoIds` y `AsignaturasOrigen` pueden ser **colecciones vacías**, pero **siempre presentes**.
+3. Los dominios cerrados (`TipoTramite`, `RutaNormativa`, `Estado`) se validan en B **antes** de
+   publicar: un evento en el bus nunca contiene un valor fuera de dominio.
+4. `CorrelationId` es obligatorio y **no nulo** (`Guid.Empty` se considera inválido).
+
+### 2.2 Ejemplo JSON del mensaje (cuerpo del evento)
+
+Serialización **verificada en el bus** (captura real del Sprint 1, envelope MassTransit, clave `message`):
+
+```json
+{
+  "expedienteId": "bef8ef40-14a2-4c22-ab78-ca1ddb072468",
+  "correlationId": "5160c9cd-552b-4607-ae2b-67a6c85fc063",
+  "codigoExpediente": "EXP-20261018-4F9B2C",
+  "tipoTramite": "INTERNO",
+  "rutaNormativa": "CAU-P-011",
+  "carreraOrigenCodigo": "SW",
+  "carreraDestinoCodigo": "TI",
+  "documentoIds": [
+    "ffa6954a-64c4-472e-9aab-3bfd5c3b4e91",
+    "c5d4685e-189c-49a8-9004-ac448416ddce"
+  ],
+  "asignaturasOrigen": ["SW101", "SW201"],
+  "estado": "PENDIENTE_CONTENIDOS",
+  "fechaCreacionUtc": "2026-10-18T15:09:15.3705354+00:00",
+  "version": "1.0"
+}
+```
+
+**Observación de serialización:** MassTransit 8 serializa con `System.Text.Json` y política
+**camelCase**; el sobre completo (envelope) se muestra en la sección 5. El consumidor debe deserializar
+al tipo `SolicitudCreadaEvent` usando el serializador de MassTransit (`IConsumer<SolicitudCreadaEvent>`),
+nunca parseando JSON a mano.
+
+---
+
+## 3. Regla inquebrantable: sin archivos binarios
+
+> **R-01 — El evento nunca transporta archivos binarios.**
+> `SolicitudCreadaEvent` viaja con **referencias** (`DocumentoIds`) y metadatos; **jamás** con el
+> contenido del PDF, ni en base64, ni como *attachment*, ni como ruta de red compartida.
+
+Fundamento y consecuencias:
+
+| Aspecto | Regla del contrato | Motivo |
+|---|---|---|
+| Contenido del PDF | **Prohibido** en el mensaje | RabbitMQ no es un almacén de objetos; un PDF de 5 MB bloquea el canal y rompe el *prefetch*. |
+| Base64 en el cuerpo | **Prohibido** | Infla el mensaje ~33 % y evita la validación antivirus/formato en el punto de ingreso. |
+| Rutas de red compartidas | **Prohibido** | Acopla C a la topología de disco de B y rompe el aislamiento de microservicios. |
+| Referencia válida | `Guid` de `EXPEDIENTE_DOC` en DB B | C resuelve el documento por su propia vía de acceso autorizada. |
+| Integridad | `HashSha256` + `TamanoBytes` quedan en DB B (no en el evento) | Permite auditar la evidencia sin transportarla. |
+| Tamaño esperado del evento | **< 4 KB** (típico < 2 KB) | Garantiza publicación en < 100 ms y *ack* inmediato. |
+| Límite duro operativo | **256 KB** | Si se supera, es un error de diseño: B debe rechazar la publicación. |
+| Retención/expiración | `ExpirationTime` nulo (sin TTL por mensaje) | La cola del consumidor define su política de retención y *dead-letter*. |
+
+Trazabilidad de la referencia: `DocumentoIds` corresponde 1:1 con `EXPEDIENTE_DOC.Id` de **DB B**;
+cada registro conserva `NombreArchivo`, `RutaAlmacenamiento`, `HashSha256` y `TamanoBytes`. C solicita
+el binario por su canal autorizado, no por el bus.
+
+---
+
+## 4. Rol del `CorrelationId`
+
+El `CorrelationId` es el **hilo conductor de la trazabilidad extremo a extremo** (CA3 de US-06).
+
+| Propiedad | Definición del contrato |
+|---|---|
+| **Quién lo genera** | El **Microservicio B**, en `ExpedientesController.ConstruirExpediente`, con `Guid.NewGuid()` al crear el expediente y **antes** de persistir. |
+| **Dónde se persiste** | `EXPEDIENTE.CorrelationId` (DB B). Es un dato del expediente, no del mensaje: sobrevive a reinicios, fallos del bus y republicaciones. |
+| **Cuándo se propaga** | En cada publicación y en **cada reintento**. El publicador lo asigna también al contexto de MassTransit: `Publish(evento, ctx => ctx.CorrelationId = evento.CorrelationId)`. |
+| **Qué NO debe pasar** | Que un reintento genere un `CorrelationId` nuevo. Un `CorrelationId` distinto en un reintento del mismo expediente rompe la conciliación y **es un defecto bloqueante**. |
+| **Qué recibe el usuario** | El `CorrelationId` viaja en la respuesta `202 Accepted` (`ExpedienteAceptadoResponse.CorrelationId`) y en `GET /api/expedientes/{id}`. |
+| **Qué imprime el sistema** | B lo registra en cada log de publicación (`CorrelationId={CorrelationId}`), el suscriptor de verificación lo imprime y el verificador de QA (`tools/Siha.BusVerifier`) lo muestra en pantalla. |
+| **Qué hace C** | Lo conserva en su contexto (`ConsumeContext.CorrelationId`), lo usa como clave de sus trazas y lo devuelve en el evento de resultado del Sprint 2. |
+| **Nivel de transporte** | MassTransit lo copia a la cabecera AMQP `correlation_id` de la publicación, de modo que el propio RabbitMQ lo conoce (visible en el panel: *Get Message → Properties*). |
+
+Regla de oro para QA: **«mismo expediente ⇒ mismo CorrelationId, del primer intento al último»**.
+Es el criterio de verificación de la prueba de fallo y recuperación (S1-P09, ver
+`plan-de-pruebas-sprint-1.md`, caso PT-24).
+
+---
+
+## 5. Metadatos mínimos del mensaje
+
+Además del cuerpo, todo consumidor puede exigir estos metadatos. Los primeros son **del envelope
+MassTransit** (cuerpo del mensaje AMQP) y los últimos son **propiedades AMQP** del canal.
+
+### 5.1 Envelope MassTransit (contrato mínimo exigible)
+
+| Campo | Valor / tipo | Obligatorio | Uso para C |
+|---|---|---|---|
+| `messageId` | uuid (string) | **Sí** | Clave de idempotencia: C descarta un reentregado con igual `messageId`. |
+| `correlationId` | uuid (string) | **Sí** | Espejo del `CorrelationId` del contrato; trazabilidad. |
+| `conversationId` | uuid (string) | **Sí** | Agrupa la conversación (petición y respuestas) en la traza. |
+| `destinationAddress` | `rabbitmq://<host>/Siha.Contracts.Events:SolicitudCreadaEvent` | **Sí** | Exchange de publicación (fanout) del contrato. |
+| `messageType` | `["urn:message:Siha.Contracts.Events:SolicitudCreadaEvent"]` | **Sí** | Tipo lógico del mensaje; C lo usa para enrutar al consumidor. |
+| `sentTime` | ISO-8601 UTC | **Sí** | Marca de emisión en B (permite medir la latencia B → C). |
+| `sourceAddress` | uri del bus emisor | Recomendado | Identifica el emisor (`SihaBusVerifier`, MS B). |
+| `headers` | objeto | Puede ir vacío | Reservado para metadatos de extensión compatibles. |
+| `host` | objeto (`machineName`, `processName`, `processId`, `assembly`, `assemblyVersion`, `frameworkVersion`, `massTransitVersion`, `operatingSystemVersion`) | Recomendado | Diagnóstico de infraestructura. |
+
+### 5.2 Propiedades AMQP de la publicación (verificadas en el Sprint 1)
+
+| Propiedad | Valor | Significado |
+|---|---|---|
+| `content_type` | `application/vnd.masstransit+json` | Formato del envelope: JSON de MassTransit. |
+| `content_encoding` | sin valor | UTF-8 implícito. |
+| `correlation_id` | uuid del expediente | El broker conoce el identificador de correlación. |
+| `message_id` | uuid | Idempotencia a nivel de broker. |
+| `delivery_mode` | `2` (persistente) | El mensaje sobrevive un reinicio del broker si la cola es durable. |
+| Exchange | `Siha.Contracts.Events:SolicitudCreadaEvent` (**fanout**, durable) | Publicación *publish/subscribe*; cada consumidor con su propia cola. |
+| Routing key | cadena vacía (`""`) | Propio de un exchange *fanout*. |
+| Cola del consumidor | p. ej. `siha-verificador-solicitud-creada`, `VerificacionSolicitud` | Una cola por consumidor, enlazada al exchange del contrato. |
+
+### 5.3 Topología de enrutamiento (B → RabbitMQ → C)
+
+```mermaid
+flowchart LR
+    subgraph MSB["Microservicio B · Expedientes (US-05/US-06)"]
+        API["ExpedientesController.Registrar\n202 Accepted"]
+        PUB["ExpedienteEventPublisher\n3 reintentos + CorrelationId"]
+        API --> PUB
+    end
+
+    subgraph BUS["RabbitMQ 3.13 (rabbitmq://localhost)"]
+        EX{{"exchange fanout durable\nSiha.Contracts.Events:SolicitudCreadaEvent"}}
+        QV[["cola de verificación\ntools/Siha.BusVerifier"]]
+        QC[["cola del Microservicio C\n(Sprint 2/3)"]]
+        EX --> QV
+        EX --> QC
+    end
+
+    subgraph MSC["Microservicio C · Agentes IA (Sprint 2/3)"]
+        CON["IConsumer<SolicitudCreadaEvent>"]
+        ANA["Extracción y análisis semántico"]
+        CON --> ANA
+    end
+
+    PUB -->|"Publish · content_type\napplication/vnd.masstransit+json"| EX
+    QV -->|"imprime el evento completo"| VER["Verificación QA (S1-P04)"]
+    QC --> CON
+    ANA -.->|"evento de resultado\n(Sprint 2)"| EX
+```
+
+---
+
+## 6. Diagrama de intercambio B → RabbitMQ → C
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor OP as Operador (rol OPERADOR)
+    participant GW as API Gateway :5000
+    participant B as Microservicio B
+    participant DB as SQL Server DB B
+    participant MQ as RabbitMQ (bus)
+    participant C as Microservicio C (Sprint 2/3)
+
+    OP->>GW: POST /api/expedientes (JWT)
+    GW->>GW: valida JWT y RBAC (OPERADOR|ADMINISTRADOR)
+    GW->>B: reenvía la petición
+    B->>B: valida dominio (TipoTramite, RutaNormativa)
+    B->>DB: INSERT EXPEDIENTE (Estado=REGISTRADO, CorrelationId=nuevo)
+    DB-->>B: expediente persistido (ExpedienteId)
+
+    Note over B,DB: 1º se persiste, después se publica (CA3 de US-06)
+
+    B->>MQ: Publish SolicitudCreadaEvent (CorrelationId del expediente)
+    alt publicación correcta
+        MQ-->>B: ack
+        B->>DB: UPDATE Estado=PENDIENTE_CONTENIDOS, EventoPublicado=true
+        B-->>OP: 202 Accepted {id, codigo, estado, correlationId, publicado=true}
+    else publicación fallida (3 intentos)
+        B->>DB: UPDATE Estado=REGISTRADO_PENDIENTE_PUBLICACION + UltimoErrorPublicacion
+        B-->>OP: 202 Accepted {publicado=false, correlationId} (recuperable)
+        OP->>B: POST /api/expedientes/{id}/republicar (mismo CorrelationId)
+    end
+
+    MQ->>C: entrega en la cola del Microservicio C
+    C->>C: deserializa IConsumer<SolicitudCreadaEvent>
+    C->>DB: (vía su propio acceso autorizado) resuelve DocumentoIds
+    Note over C: NO recibe binarios: solo referencias (R-01)
+    C->>C: extracción y análisis semántico (Sprint 2/3)
+    C-->>MQ: publica evento de resultado (Sprint 2)
+```
+
+Secuencia resumida en texto (para la sustentación):
+
+```
+Operador → Gateway (JWT + RBAC) → MS B
+   1. valida dominio (INTERNO/EXTERNO, CAU-P-011/CAU-P-122)
+   2. persiste en DB B (Estado=REGISTRADO, CorrelationId nuevo)   ← 1º persistir
+   3. publica SolicitudCreadaEvent en RabbitMQ                    ← 2º publicar
+   4. actualiza Estado=PENDIENTE_CONTENIDOS y responde 202 Accepted
+   └─ si el bus falla: Estado=REGISTRADO_PENDIENTE_PUBLICACION (conserva CorrelationId) y permite /republicar
+RabbitMQ → MS C: entrega el evento (solo referencias), C procesa y publica el resultado.
+```
+
+---
+
+## 7. Reglas de compatibilidad y evolución (versión 1.0)
+
+| Regla | Descripción |
+|---|---|
+| **EV-01** | La versión se declara en `Version`. Un cambio incompatible incrementa la mayor (`2.0`). |
+| **EV-02** | **Solo se admiten cambios aditivos** dentro de la mayor 1.x: agregar campos **con valor por defecto** y siempre al final del contrato. |
+| **EV-03** | Prohibido renombrar, reordenar (semánticamente) o cambiar el tipo de un campo existente dentro de la misma mayor. |
+| **EV-04** | Prohibido eliminar campos en 1.x; se marcan obsoletos un sprint y se retiran en 2.0. |
+| **EV-05** | Los dominios cerrados solo crecen con resolución del CAU; nunca se publican valores fuera de dominio. |
+| **EV-06** | Cualquier cambio del contrato se actualiza **primero** en `Siha.Contracts` y exige actualizar este documento y el caso PT-23 del plan de pruebas. |
+
+---
+
+## 8. Criterios de verificación del contrato (QA)
+
+| # | Verificación | Cómo se comprueba | Caso del plan |
+|---|---|---|---|
+| V-01 | El evento contiene los 12 campos con los valores del expediente | `tools/Siha.BusVerifier` imprime el cuerpo JSON completo | PT-23 |
+| V-02 | **No hay binarios**: solo `N` referencias de documento | Mensaje < 4 KB; `documentoIds` con UUID; sin `content` ni *attachment* | PT-23, PT-22 |
+| V-03 | `Content-Type` = `application/vnd.masstransit+json` | Propiedades del mensaje en el panel de RabbitMQ | PT-23 |
+| V-04 | El `CorrelationId` del evento = el devuelto por la API | Comparar `202.correlationId` con la salida del verificador | PT-23, PT-24 |
+| V-05 | Tras un fallo del bus, el expediente queda recuperable con el **mismo** `CorrelationId` | Prueba de recuperación (S1-P09) | PT-24 |
+| V-06 | El consumidor C no necesita binarios ni rutas compartidas | Revisión de `documentoIds` y del origen del expediente | PT-22, PT-23 |
+
+Procedimiento rápido (copiable):
+
+```powershell
+# 1) Levantar el bus
+docker compose up -d rabbitmq
+
+# 2) Suscribir el verificador del contrato (S1-P04) en una terminal
+dotnet run --project tools/Siha.BusVerifier
+
+# 3) En otra terminal, registrar un expediente contra el Gateway
+$login = Invoke-RestMethod -Method Post -Uri http://localhost:5000/api/auth/login `
+  -ContentType "application/json" `
+  -Body '{"correoInstitucional":"admin@uta.edu.ec","password":"Admin123*"}'
+$headers = @{ Authorization = "Bearer $($login.token)" }
+
+$resp = Invoke-WebRequest -Method Post -Uri http://localhost:5000/api/expedientes -Headers $headers `
+  -ContentType "application/json" -Body '{
+    "tipoTramite":"INTERNO","rutaNormativa":"CAU-P-011",
+    "carreraOrigenCodigo":"SW","carreraDestinoCodigo":"TI","institucionOrigen":"UTA",
+    "documentos":[{"nombreArchivo":"record.pdf","rutaAlmacenamiento":"/data/record.pdf","hashSha256":"abc","tamanoBytes":1024}],
+    "asignaturas":[{"codigoOrigen":"SW101","nombreOrigen":"Fundamentos de Programación","codigoDestino":"TI101","nota":18}]}'
+
+$resp.StatusCode                      # 202 Accepted
+($resp.Content | ConvertFrom-Json).correlationId   # debe coincidir con el del verificador
+```
+
+Evidencia a adjuntar: captura del verificador con el evento completo y captura del panel de RabbitMQ
+(`http://localhost:15672` → *Exchanges* → `Siha.Contracts.Events:SolicitudCreadaEvent`, o la cola con su
+consumidor enlazado).
+
+---
+
+## 9. Matriz de trazabilidad del contrato
+
+| Requisito | Sección de este documento | Implementación en código |
+|---|---|---|
+| US-06 · CA1 — evento con referencias mínimas, sin binarios | §2, §3 | `SolicitudCreadaEvent`, `ExpedientesController.ConstruirEvento` |
+| US-06 · CA2 — HTTP 202 y `PENDIENTE_CONTENIDOS` | §2 (campo `Estado`), §6 | `ExpedientesController.Registrar`, `ExpedienteAceptadoResponse` |
+| US-06 · CA3 — estado recuperable y correlación preservada | §4, §6 | `ExpedienteEventPublisher` (3 reintentos), `ExpedientesController.Republicar` |
+| US-05 · CA3 — consulta del estado de recepción | §4 | `GET /api/expedientes/{id}` con `CorrelationId` y `IntentosPublicacion` |
+| Sprint 2 · MS C — consumo del contrato | §5, §6 | `VerificacionSolicitudConsumer` (referencia) y `tools/Siha.BusVerifier` (S1-P04) |
+
+---
+
+## 10. Referencias
+
+- `src/BuildingBlocks/Siha.Contracts/Events/SolicitudCreadaEvent.cs` — definición canónica.
+- `src/BuildingBlocks/Siha.Contracts/SihaContratos.cs` — `ExpedienteEstados`, `RutasNormativas`, `TiposTramite`, `RolesSistema`.
+- `src/Services/Siha.MsB.Api/Events/ExpedienteEventPublisher.cs` — publicación con reintentos.
+- `src/Services/Siha.MsB.Api/Controllers/ExpedientesController.cs` — flujo persistir → publicar → 202.
+- `tools/Siha.BusVerifier/README.md` — suscriptor de prueba del bus (S1-P04).
+- `docs/matriz-rbac.md`, `docs/plan-de-pruebas-sprint-1.md` — verificación funcional del Sprint 1.
