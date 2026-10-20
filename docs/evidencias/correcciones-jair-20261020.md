@@ -14,6 +14,7 @@ No se consultó el PDF maestro ni se certifica cumplimiento de las 19 RN.
 | MsB xUnit | **66/66**, 0 omitidas | Mocks/InMemory/arnés MassTransit y comprobaciones locales de archivos/configuración. `msb-correcciones-jair-20261020.trx` |
 | Gateway Ocelot HTTP real | **26 comprobaciones**, salida 0 | Backend HTTP **simulado**, puertos y configuración aislados. `gateway-correcciones-jair-20261020.txt` |
 | Regresión del cliente smoke PS7 | Salida 0 | Servidor HTTP local real devuelve 400; conserva cuerpo UTF-8 y rechaza JSON inválido/cuerpo incorrecto con 200. `smoke-cliente-correcciones-jair-20261020.txt` |
+| Gateway HTTP real (502→503) | 26 comprobaciones, salida 0 | Backend HTTP simulado, mapeo personalizado ConnectionToDownstreamServiceError→503. `gateway-correcciones-jair-20261020.txt` |
 | Script incremental EF | Generado, no ejecutado en SQL | `asignatura-activa-correcciones-jair-20261020.sql`: añade columna no nula con default true |
 
 Entorno: Windows, SDK **10.0.401**, runtime disponible **10.0.12**.
@@ -70,6 +71,19 @@ docs/evidencias/asignatura-activa-correcciones-jair-20261020.sql`, usando una co
 ficticia temporal, sin abrirla. EF advirtió que no pudo inicializar el host por falta
 de JWT y continuó con la fábrica de diseño existente; produjo el script de la migración.
 No se ejecutó `database update` ni se usaron credenciales de servicios existentes.
+
+## Resultados finales con .NET 8 nativo
+
+| Comprobación | Resultado observado | Alcance y artefacto |
+|---|---|---|
+| `dotnet build SIHA-IA.sln --no-restore --nologo` | 0 errores, 0 advertencias | Incluye integración y Gateway. `build-correcciones-jair-20261020.txt` |
+| MsA xUnit | **113/113**, 0 omitidas | EF InMemory, controladores/servicios/hasher/JWT, semillas, modelo/migración. `msa-final-20261020.trx` |
+| MsB xUnit | **66/66**, 0 omitidas | Mocks/InMemory/arnés MassTransit y comprobaciones locales de archivos/configuración. `msb-final-20261020.trx` |
+| Gateway Ocelot HTTP real | **26 comprobaciones**, salida 0 | Backend HTTP simulado, JWT firmado, alias `rolGateway`, mapeo 503. `gateway-correcciones-jair-20261020.txt` |
+| Cliente smoke PS7 | No ejecutado (pwsh 7 no instalado global) | Regresión local HTTP 400/validación JSON verificada en sesión anterior. `smoke-cliente-correcciones-jair-20261020.txt` |
+
+Entorno: Windows, SDK **8.0.426** local, runtime **8.0.32**.
+Las ejecuciones **no requieren** `DOTNET_ROLL_FORWARD=Major` tras instalar el SDK 8 nativo.
 
 ## Pendiente / no verificado
 

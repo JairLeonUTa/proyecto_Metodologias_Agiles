@@ -150,7 +150,7 @@ public class ReglasServiceTests
     {
         using var db = NuevaDb();
         await Sembrar(db);
-        Assert.Equal(new[] { "RN-02", "RN-09", "RN-10", "RN-13", "RN-14" },
+        Assert.Equal(new[] { "RN-01", "RN-02", "RN-09", "RN-10", "RN-13", "RN-14" },
             await db.Reglas.OrderBy(r => r.Codigo).Select(r => r.Codigo).ToArrayAsync());
         Assert.Equal(new[] { "CAU-P-011", "CAU-P-122" }, await db.ParametrosEvaluacion
             .OrderBy(p => p.RutaNormativa).Select(p => p.RutaNormativa).ToArrayAsync());
@@ -162,10 +162,61 @@ public class ReglasServiceTests
         });
         var ra = await db.Reglas.SingleAsync(r => r.Codigo == "RN-02");
         Assert.True(ra.EsNormativa);
+        Assert.Equal("CAU-P-122", ra.RutaNormativa);
+        Assert.Contains("Solo para movilidad", ra.Descripcion);
         Assert.Equal("ra>=80", ra.Expresion);
         Assert.All(db.Reglas.Where(r => r.Codigo == "RN-13" || r.Codigo == "RN-14"),
             r => Assert.False(r.EsNormativa));
-        Assert.Equal("cobertura>=tau", (await db.Reglas.SingleAsync(r => r.Codigo == "RN-14")).Expresion);
+        Assert.All(db.Reglas, r =>
+        {
+            Assert.False(string.IsNullOrWhiteSpace(r.Fuente));
+            Assert.Equal("1.0", r.Version);
+            Assert.Equal(new DateOnly(2026, 1, 1), r.VigenteDesde);
+            Assert.Null(r.VigenteHasta);
+            Assert.True(r.Activa);
+        });
+    }
+
+    [Fact]
+    public async Task SemillaRn01ExigeOchentaEnCadaDimensionSinUsarTheta()
+    {
+        using var db = NuevaDb();
+        await Sembrar(db);
+        var regla = await db.Reglas.SingleAsync(r => r.Codigo == "RN-01");
+        Assert.True(regla.EsNormativa);
+        Assert.Equal("CAU-P-011", regla.RutaNormativa);
+        Assert.Equal("contenido>=80 && profundidad>=80 && cargaHoraria>=80", regla.Expresion);
+        Assert.Contains("cambio de carrera o universidad", regla.Descripcion);
+    }
+
+    [Theory]
+    [InlineData("RN-09", "historial académico", "malla vigente", "sílabos aprobados certificados", "no impedimentos", "identidad")]
+    [InlineData("RN-10", "Solo para movilidad", "acuerdo de movilidad aprobado", "certificado de notas oficial legalizado", "informe final", "documentos")]
+    public async Task SemillaDocumentalEnumeraEvidencias(string codigo, params string[] evidencias)
+    {
+        using var db = NuevaDb();
+        await Sembrar(db);
+        var regla = await db.Reglas.SingleAsync(r => r.Codigo == codigo);
+        Assert.True(regla.EsNormativa);
+        Assert.All(evidencias, evidencia => Assert.Contains(evidencia, regla.Descripcion));
+    }
+
+    [Fact]
+    public async Task SemillaModeloUsaCreditosSoloComoApoyoYCoberturaPonderadaPorHorasDocumentadas()
+    {
+        using var db = NuevaDb();
+        await Sembrar(db);
+        var creditos = await db.Reglas.SingleAsync(r => r.Codigo == "RN-13");
+        Assert.False(creditos.EsNormativa);
+        Assert.Equal("Pcred=min(100,sumCredOrigen/CredDestino*100)", creditos.Expresion);
+        Assert.Contains("sin umbral", creditos.Descripcion);
+        var contenido = await db.Reglas.SingleAsync(r => r.Codigo == "RN-14");
+        Assert.False(contenido.EsNormativa);
+        Assert.Equal("Pcont=sum(hj*cj)/sum(hj)*100; cj=1 si similitudCoseno>=tau/100, 0 en otro caso", contenido.Expresion);
+        Assert.Contains("horas documentadas", contenido.Descripcion);
+        Assert.Contains("pendiente", contenido.Descripcion);
+        Assert.Contains("no inventar", contenido.Descripcion);
+        Assert.Contains("no es un umbral de cobertura", contenido.Descripcion);
     }
 
     [Fact]
@@ -193,7 +244,7 @@ public class ReglasServiceTests
         await db.SaveChangesAsync();
         await Sembrar(db);
         Assert.Equal(2, await db.ParametrosEvaluacion.CountAsync());
-        Assert.Equal(5, await db.Reglas.CountAsync());
+        Assert.Equal(6, await db.Reglas.CountAsync());
         Assert.Equal(42, parametro.Tau);
         Assert.Equal("Configuración local", regla.Descripcion);
     }

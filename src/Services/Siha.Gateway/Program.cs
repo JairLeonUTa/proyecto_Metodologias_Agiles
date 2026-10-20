@@ -3,7 +3,10 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Ocelot.DependencyInjection;
+using Ocelot.Errors;
 using Ocelot.Middleware;
+using Ocelot.Responder;
+using Siha.Gateway;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -53,6 +56,10 @@ builder.Services
             }
         };
     });
+
+// Mapeo de errores de Ocelot: conexión caída → 503 (US-04, CA3), no 502.
+// Reemplaza el mapper por defecto que devuelve 502 para ConnectionToDownstreamServiceError.
+builder.Services.AddSingleton<IErrorsToHttpStatusCodeMapper, GatewayErrorMapper>();
 
 builder.Services.AddAuthorization();
 builder.Services.AddOcelot(builder.Configuration);
