@@ -30,9 +30,9 @@ docker compose up -d
 |---|---|---|
 | URI del bus | `rabbitmq://localhost` | `--uri` · `SIHA_RABBITMQ_URI` |
 | Usuario | `siha` | `--usuario` · `SIHA_RABBITMQ_USUARIO` |
-| Contraseña | `siha-rabbit-2026` | `--password` · `SIHA_RABBITMQ_PASSWORD` |
+| Contraseña | `<SIHA_RABBITMQ_PASSWORD>` | `--password` · `SIHA_RABBITMQ_PASSWORD` |
 | Cola de suscripción | `siha-verificador-solicitud-creada` | `--cola` · `SIHA_RABBITMQ_COLA` |
-| Panel de administración | http://localhost:15672 | `siha` / `siha-rabbit-2026` |
+| Panel de administración | http://localhost:15672 | `siha` / `<SIHA_RABBITMQ_PASSWORD>` |
 
 Los valores por defecto coinciden con `docker-compose.yml`, de modo que **no hace falta configurar
 nada** en el entorno de desarrollo del Sprint 1.
@@ -86,7 +86,7 @@ las instrucciones para levantar el bus, y termina con código 0.
 |---|---|---|
 | `--uri <uri>` | URI del host RabbitMQ | `rabbitmq://localhost` |
 | `--usuario <usuario>` | Usuario del bus | `siha` |
-| `--password <clave>` | Contraseña del bus | `siha-rabbit-2026` |
+| `--password <clave>` | Contraseña del bus | `<SIHA_RABBITMQ_PASSWORD>` |
 | `--cola <nombre>` | Cola de suscripción del verificador | `siha-verificador-solicitud-creada` |
 | `--prefetch <n>` | Mensajes en vuelo por consumidor | `16` |
 | `--timeout-conexion <seg>` | Segundos de espera a que el bus acepte la conexión | `15` |
@@ -105,6 +105,7 @@ dotnet run --project tools/Siha.BusVerifier -- --uri rabbitmq://192.168.1.50:567
 # Autoprueba: no requiere que el Microservicio B esté levantado.
 # Publica un SolicitudCreadaEvent sintético, comprueba que el contrato viaja íntegro
 # y termina con código 0 (útil en CI o para validar credenciales del bus).
+# No demuestra almacenamiento/validación de PDF por B ni recepción por C.
 dotnet run --project tools/Siha.BusVerifier -- --prueba
 ```
 
@@ -121,26 +122,35 @@ Terminal 1 — verificador a la escucha:
 dotnet run --project tools/Siha.BusVerifier
 ```
 
-Terminal 2 — registro de un expediente contra el API Gateway:
+Terminal 2 — borrador → carga → envío contra el API Gateway (PowerShell 7):
 
 ```powershell
 $login = Invoke-RestMethod -Method Post -Uri http://localhost:5000/api/auth/login `
   -ContentType "application/json" `
-  -Body '{"correoInstitucional":"admin@uta.edu.ec","password":"Admin123*"}'
+  -Body '{"correoInstitucional":"admin@uta.edu.ec","password":"<SIHA_ADMIN_PASSWORD>"}'
 $headers = @{ Authorization = "Bearer $($login.token)" }
 
 $resp = Invoke-WebRequest -Method Post -Uri http://localhost:5000/api/expedientes -Headers $headers `
   -ContentType "application/json" -Body '{
     "tipoTramite":"INTERNO","rutaNormativa":"CAU-P-011",
     "carreraOrigenCodigo":"SW","carreraDestinoCodigo":"TI","institucionOrigen":"UTA",
-    "documentos":[{"nombreArchivo":"record.pdf","rutaAlmacenamiento":"/data/record.pdf","hashSha256":"abc","tamanoBytes":1024}],
-    "asignaturas":[{"codigoOrigen":"SW101","nombreOrigen":"Fundamentos de Programación","codigoDestino":"TI101","nota":18}]}'
+    "asignaturas":[{"codigoOrigen":"SW101","nombreOrigen":"Fundamentos de Programación","codigoDestino":"TI101","nota":8.5,"fechaAprobacionCertificada":"2025-07-15"}]}'
 
-$resp.StatusCode                                     # 202 Accepted
-($resp.Content | ConvertFrom-Json).correlationId      # igual al CorrelationId que imprime el verificador
+$resp.StatusCode # 201 Created, sin evento
+$borrador = $resp.Content | ConvertFrom-Json
+$documento = Invoke-RestMethod -Method Post -Uri "http://localhost:5000/api/expedientes/$($borrador.id)/documentos" `
+  -Headers $headers -Form @{ archivo = Get-Item './docs/postman/muestras/record-academico.pdf' }
+$envio = Invoke-RestMethod -Method Post -Uri "http://localhost:5000/api/expedientes/$($borrador.id)/enviar" -Headers $headers
+$envio # 202 no prueba recepción; publicado=false indica fallo del bus
 ```
 
-El verificador muestra el evento con este formato (extracto real de una ejecución del Sprint 1):
+**Verificar recepción**, no solo HTTP: esperar el evento en esta consola independiente y comparar `ExpedienteId=$borrador.id`, `CorrelationId=$borrador.correlationId`, `MessageId=$borrador.id`, `Version=1.1` y las referencias `Documentos` (ID/ruta/hash/tamaño) con la carga y DB B/disco. El verificador no acredita consumo por C.
+
+Si falta un PDF previamente validado o cambia tamaño/hash, B devuelve **422** y no publica ni siquiera el subconjunto que alcance el mínimo. Queda `NO_DISPONIBLE`; recargar el mismo contenido y usar `/enviar`. Reintentar sin corregir sigue bloqueado. `RECHAZADO`/`RETIRADO` no se incluyen ni bloquean.
+
+**Coordinación pendiente con Sebastián y Alex:** no hay canal en esta sesión, no se realizó contacto ni se obtuvo aceptación. El acceso autorizado de C al binario sigue pendiente: `RutaAlmacenamiento` no es URL pública ni permiso de acceso; no se añade endpoint de descarga. La regresión real nueva está preparada, **no ejecutada por Docker no disponible**; pruebas InMemory/Moq se etiquetan simuladas.
+
+El siguiente es un **extracto histórico v1.0**, no evidencia del nuevo flujo v1.1 ni de esta revisión. Para el contrato vigente, ver `docs/contrato-solicitud-creada-event.md`:
 
 ```
 ======================================================================================
@@ -199,7 +209,7 @@ El verificador muestra el evento con este formato (extracto real de una ejecuci�
 
 ## 5. Verificación en el panel de RabbitMQ
 
-1. Abrir http://localhost:15672 con `siha` / `siha-rabbit-2026`.
+1. Abrir http://localhost:15672 con `siha` / `<SIHA_RABBITMQ_PASSWORD>`.
 2. **Queues** → `siha-verificador-solicitud-creada`: aparece con **1 consumidor** mientras el
    verificador está en ejecución.
 3. **Exchanges** → `Siha.Contracts.Events:SolicitudCreadaEvent` (tipo *fanout*, durable): es el
@@ -256,7 +266,7 @@ tools/Siha.BusVerifier/
 ## 9. Criterio de aceptación de la tarea S1-P04
 
 - [x] Proyecto de consola .NET 8 en `tools/Siha.BusVerifier/` con `Siha.Contracts` y `MassTransit.RabbitMQ`.
-- [x] Se conecta a `rabbitmq://localhost` con `siha` / `siha-rabbit-2026` (ambos configurables por CLI y variables de entorno).
+- [x] Se conecta a `rabbitmq://localhost` con `siha` / `<SIHA_RABBITMQ_PASSWORD>` (ambos configurables por CLI y variables de entorno).
 - [x] Se suscribe a `SolicitudCreadaEvent` e imprime el mensaje completo (contrato + metadatos + `CorrelationId`).
 - [x] `dotnet build tools/Siha.BusVerifier/Siha.BusVerifier.csproj` compila sin errores ni advertencias.
 - [x] `dotnet run --project tools/Siha.BusVerifier -- --prueba` arranca, se suscribe, recibe y verifica el contrato (código 0).

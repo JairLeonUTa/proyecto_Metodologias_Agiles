@@ -65,3 +65,26 @@ El servicio gRPC de reglas no exige autenticación y `docker-compose.yml` public
 anfitrión (`5083:8081`). Para el Sprint 1 sirve como herramienta de verificación, pero cuando el
 Microservicio C lo consuma conviene dejarlo solo en la red interna de Docker (quitar el `ports`) o
 protegerlo con un token de servicio.
+
+---
+
+## Validación funcional y normativa · 20 de octubre de 2026 (Paul Acurio)
+
+Corrección de la regresión post-correcciones y flujo de caída/recuperación del bus:
+
+| Tipo | Suite / corrida | Resultado | Archivo |
+|---|---|---|---|
+| **Simulada** | `Siha.MsA.Tests` | **58/58** (+5 `CatalogoImportacionRealTests` con PDF reales) | `simuladas-msa-20261020.trx` |
+| **Simulada** | `Siha.MsB.Tests` | **60/60** | `simuladas-msb-20261020.trx` |
+| **Real (Newman)** | Carpetas 00–04 | **75 requests · 132/132 aserciones** | `newman-carpetas00-04-20261020.log/.json` |
+| **Real (Newman)** | PT-24 Fase A · RabbitMQ **caído** | **8 requests · 15/15 aserciones** (202 recuperable, CorrelationId conservado) | `newman-pt24-faseA-busdetenido-20261020.log/.json` |
+| **Real (Newman)** | PT-24 Fase B · RabbitMQ **operativo** | **13 requests · 24/24 aserciones** (republicado + PT-R01…R05) | `newman-pt24-faseB-buslevantado-20261020.log/.json` |
+| **Real (auditoría)** | Gateway 404/502/recuperación · estado H-01…H-06 | verificado | `gateway-audit-s1p08-20261020.log`, `hallazgos-h01-h06-estado-20261020.log`, `h01-rbac-gateway-20261020.log` |
+
+Correcciones aplicadas a la colección: el script del `prefijo` (caso que fallaba en la corrida del 19)
+y el caso **PT-15/H-01** (actualizado a esperar `200`, hallazgo corregido) — la regresión cerró en
+**132/132**.
+
+**Informe consolidado (8 tareas, criterios de aceptación y estado de tareas):**
+`validacion-funcional-sprint1-paul-acurio.md` · Conciliación de catálogo:
+`catalogo-planes-analiticos-20261020.md` (brecha: 19 planes de Software frente a los 43 oficiales).

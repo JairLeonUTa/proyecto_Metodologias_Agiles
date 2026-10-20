@@ -24,11 +24,11 @@ public class SeguridadTests
     {
         var hasher = new BCryptPasswordHasher();
 
-        var hash = hasher.Hash("Admin123*");
+        var hash = hasher.Hash("UnitTestOnly123!");
 
-        hash.Should().NotBe("Admin123*");
+        hash.Should().NotBe("UnitTestOnly123!");
         hash.Should().StartWith("$2");
-        hasher.Verify("Admin123*", hash).Should().BeTrue();
+        hasher.Verify("UnitTestOnly123!", hash).Should().BeTrue();
         hasher.Verify("otra-clave", hash).Should().BeFalse();
     }
 
@@ -37,12 +37,12 @@ public class SeguridadTests
     {
         var hasher = new BCryptPasswordHasher();
 
-        var hash1 = hasher.Hash("Admin123*");
-        var hash2 = hasher.Hash("Admin123*");
+        var hash1 = hasher.Hash("UnitTestOnly123!");
+        var hash2 = hasher.Hash("UnitTestOnly123!");
 
         hash1.Should().NotBe(hash2);
-        hasher.Verify("Admin123*", hash1).Should().BeTrue();
-        hasher.Verify("Admin123*", hash2).Should().BeTrue();
+        hasher.Verify("UnitTestOnly123!", hash1).Should().BeTrue();
+        hasher.Verify("UnitTestOnly123!", hash2).Should().BeTrue();
     }
 
     [Fact]

@@ -4,7 +4,7 @@ namespace Siha.MsA.Api.Contracts.Dtos;
 
 public record LoginRequest(
     [param: Required, EmailAddress] string CorreoInstitucional,
-    [param: Required, MinLength(8)] string Password);
+    [param: Required] string Password);
 
 public record UsuarioDto(
     int Id,

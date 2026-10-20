@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Siha.Contracts;
 using Siha.MsA.Api.Contracts;
@@ -83,7 +84,15 @@ public class UsuariosController : ControllerBase
         };
 
         _db.Usuarios.Add(usuario);
-        await _db.SaveChangesAsync();
+
+        try
+        {
+            await _db.SaveChangesAsync();
+        }
+        catch (DbUpdateException ex) when (ex.InnerException is SqlException sql && (sql.Number == 2601 || sql.Number == 2627))
+        {
+            return Conflict(new { mensaje = "Ya existe una cuenta con ese correo institucional." });
+        }
 
         usuario.Rol = rol;
         return CreatedAtAction(nameof(Obtener), new { id = usuario.Id }, Mapeos.AUsuarioDto(usuario));

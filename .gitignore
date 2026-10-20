@@ -1,10 +1,20 @@
-# Compilación .NET
-bin/
-obj/
-TestResults/
-*.user
+**/bin/
+**/obj/
+**/node_modules/
+**/dist/
+**/.vite/
+.env
+.env.*
+!.env.example
+!**/.env.example
+**/appsettings.Local.json
 .vs/
-
-# Frontend
-node_modules/
-dist/
+*.user
+*.suo
+**/TestResults/
+**/coverage/
+*.log
+**/archivos/
+*.bak
+*.mdf
+*.ldf

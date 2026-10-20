@@ -46,7 +46,7 @@ public class CarrerasController : ControllerBase
     public async Task<ActionResult<CarreraDto>> Crear([FromBody] CrearCarreraRequest request)
     {
         var codigo = request.Codigo.Trim().ToUpperInvariant();
-        if (await _db.Carreras.AnyAsync(c => c.Codigo == codigo))
+        if (await _db.Carreras.AnyAsync(c => c.Codigo.Trim().ToUpper() == codigo))
         {
             return Conflict(new { mensaje = $"Ya existe una carrera con el código {codigo}." });
         }
@@ -83,5 +83,18 @@ public class CarrerasController : ControllerBase
 
         await _db.SaveChangesAsync();
         return Ok(Mapeos.ACarreraDto(carrera));
+    }
+
+    [HttpDelete("{id:int}")]
+    [Authorize(Roles = RolesSistema.Administrador)]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> Eliminar(int id)
+    {
+        var carrera = await _db.Carreras.FindAsync(id);
+        if (carrera is null) return NotFound();
+        carrera.Activa = false;
+        await _db.SaveChangesAsync();
+        return NoContent();
     }
 }

@@ -36,6 +36,11 @@ public record ReglaDto(
     DateOnly? VigenteHasta,
     bool Activa);
 
+/// <summary>
+/// Cuerpo completo para POST y PUT /api/reglas/{id}. PUT exige nueva versión e inicio posterior;
+/// código, ruta, tipo de trámite y EsNormativa deben coincidir con la fila identificada.
+/// Vigencias inclusivas; la versión es una etiqueta opaca, no un número ordenable.
+/// </summary>
 public record CrearReglaRequest(
     [param: Required, MaxLength(20)] string Codigo,
     [param: Required, MaxLength(20)] string RutaNormativa,

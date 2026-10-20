@@ -35,9 +35,10 @@ public class AuthController : ControllerBase
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<ActionResult<LoginResponse>> Login([FromBody] LoginRequest request)
     {
+        var correo = request.CorreoInstitucional.Trim().ToLowerInvariant();
         var usuario = await _db.Usuarios
             .Include(u => u.Rol)
-            .FirstOrDefaultAsync(u => u.CorreoInstitucional == request.CorreoInstitucional);
+            .FirstOrDefaultAsync(u => u.CorreoInstitucional == correo);
 
         if (usuario is null || !usuario.Activo || !_hasher.Verify(request.Password, usuario.PasswordHash))
         {

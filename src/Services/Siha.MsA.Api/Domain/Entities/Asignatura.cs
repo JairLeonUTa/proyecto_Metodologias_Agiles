@@ -23,5 +23,7 @@ public class Asignatura
     /// <summary>Falso cuando el plan analítico llega incompleto y no debe pasar a análisis semántico.</summary>
     public bool PlanCompleto { get; set; } = true;
 
+    public bool Activa { get; set; } = true;
+
     public ICollection<UnidadTematica> Unidades { get; set; } = new List<UnidadTematica>();
 }

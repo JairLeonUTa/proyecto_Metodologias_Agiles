@@ -9,3 +9,5 @@ install.log
 .env.local
 Dockerfile
 .dockerignore
+
+.env.*

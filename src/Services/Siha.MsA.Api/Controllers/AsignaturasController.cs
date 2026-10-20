@@ -43,7 +43,8 @@ public class AsignaturasController : ControllerBase
 
         if (!string.IsNullOrWhiteSpace(codigo))
         {
-            query = query.Where(a => a.Codigo == codigo);
+            var codigoNormalizado = codigo.Trim().ToUpperInvariant();
+            query = query.Where(a => a.Codigo.Trim().ToUpper() == codigoNormalizado);
         }
 
         var asignaturas = await query.OrderBy(a => a.Semestre).ThenBy(a => a.Codigo).ToListAsync();
@@ -74,8 +75,13 @@ public class AsignaturasController : ControllerBase
             return BadRequest(new { mensaje = $"La malla {request.MallaId} no existe." });
         }
 
-        var codigo = request.Codigo.Trim();
-        if (await _db.Asignaturas.AnyAsync(a => a.MallaId == request.MallaId && a.Codigo == codigo))
+        var (error, advertencias) = ValidacionCatalogo.Validar(request.Codigo, request.Nombre,
+            request.Creditos, request.Horas, request.Semestre, request.Unidades ?? Array.Empty<UnidadTematicaRequest>());
+        if (error is not null)
+            return BadRequest(new { mensaje = error });
+
+        var codigo = request.Codigo.Trim().ToUpperInvariant();
+        if (await _db.Asignaturas.AnyAsync(a => a.MallaId == request.MallaId && a.Codigo.Trim().ToUpper() == codigo))
         {
             return Conflict(new { mensaje = $"El código {codigo} ya existe en la malla {malla.Version}." });
         }
@@ -88,7 +94,7 @@ public class AsignaturasController : ControllerBase
             Creditos = request.Creditos,
             Horas = request.Horas,
             Semestre = request.Semestre,
-            PlanCompleto = request.Unidades is { Count: > 0 }
+            PlanCompleto = advertencias.Count == 0
         };
 
         AplicarUnidades(asignatura, request.Unidades);
@@ -111,6 +117,13 @@ public class AsignaturasController : ControllerBase
             return NotFound();
         }
 
+        var unidades = request.Unidades ?? asignatura.Unidades
+            .Select(u => new UnidadTematicaRequest(u.Numero, u.Nombre, u.Horas, u.Contenidos)).ToArray();
+        var (error, advertencias) = ValidacionCatalogo.Validar(asignatura.Codigo, request.Nombre,
+            request.Creditos, request.Horas, request.Semestre, unidades);
+        if (error is not null)
+            return BadRequest(new { mensaje = error });
+
         asignatura.Nombre = request.Nombre.Trim();
         asignatura.Creditos = request.Creditos;
         asignatura.Horas = request.Horas;
@@ -121,11 +134,24 @@ public class AsignaturasController : ControllerBase
             _db.UnidadesTematicas.RemoveRange(asignatura.Unidades);
             asignatura.Unidades.Clear();
             AplicarUnidades(asignatura, request.Unidades);
-            asignatura.PlanCompleto = request.Unidades.Count > 0;
         }
 
+        asignatura.PlanCompleto = advertencias.Count == 0;
         await _db.SaveChangesAsync();
         return Ok(Mapeos.AAsignaturaDto(asignatura));
+    }
+
+    [HttpDelete("{id:int}")]
+    [Authorize(Roles = RolesSistema.Administrador)]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> Eliminar(int id)
+    {
+        var asignatura = await _db.Asignaturas.FindAsync(id);
+        if (asignatura is null) return NotFound();
+        asignatura.Activa = false;
+        await _db.SaveChangesAsync();
+        return NoContent();
     }
 
     /// <summary>
@@ -159,7 +185,7 @@ public class AsignaturasController : ControllerBase
             asignatura.Unidades.Add(new UnidadTematica
             {
                 Numero = unidad.Numero,
-                Nombre = unidad.Nombre,
+                Nombre = unidad.Nombre.Trim(),
                 Horas = unidad.Horas,
                 Contenidos = unidad.Contenidos ?? string.Empty
             });

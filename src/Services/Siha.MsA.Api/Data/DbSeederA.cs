@@ -69,18 +69,18 @@ public static class DbSeederA
             {
                 RutaNormativa = RutasNormativas.CambioCarreraOu,
                 Theta = 80d,
-                Delta = 10d,
-                Tau = 70d,
+                Delta = 15d,
+                Tau = 75d,
                 Version = 1,
                 ActualizadoPor = "semilla"
             },
             new ParametroEvaluacion
             {
-                // CAU-P-122, Art. 20: al menos 80 % de correspondencia en resultados de aprendizaje.
+                // Defaults heurísticos del modelo; no son el mínimo normativo de RA.
                 RutaNormativa = RutasNormativas.Movilidad,
                 Theta = 80d,
                 Delta = 15d,
-                Tau = 65d,
+                Tau = 75d,
                 Version = 1,
                 ActualizadoPor = "semilla"
             });
@@ -103,68 +103,82 @@ public static class DbSeederA
             {
                 Codigo = "RN-01",
                 RutaNormativa = RutasNormativas.CambioCarreraOu,
+                // INTERNO es la etiqueta de esta fila, no excluye cambio de universidad EXTERNO por CAU-P-011.
                 TipoTramite = TiposTramite.Interno,
-                Descripcion = "Solo se admiten materias aprobadas de la malla de origen vigente.",
+                Descripcion = "Para cambio de carrera o universidad (CAU-P-011), contenido, profundidad y carga horaria deben alcanzar cada uno al menos 80 %; no es un umbral de créditos ni theta.",
+                Expresion = "contenido>=80 && profundidad>=80 && cargaHoraria>=80",
                 Version = "1.0",
-                Fuente = "Resolución CAU-P-011",
+                Fuente = "Informe técnico y planificación por sprints SIHA-IA, pp. 3–4, RN-01; CAU-P-011",
                 EsNormativa = true,
+                VigenteDesde = vigencia,
+                Activa = true
+            },
+            new Regla
+            {
+                Codigo = "RN-09",
+                RutaNormativa = RutasNormativas.CambioCarreraOu,
+                TipoTramite = TiposTramite.Interno,
+                Descripcion = "Para CAU-P-011 se requieren historial académico, malla vigente, sílabos aprobados certificados, certificado de no impedimentos e identidad.",
+                Version = "1.0",
+                Fuente = "Informe técnico y planificación por sprints SIHA-IA, p. 4, RN-09; CAU-P-011",
+                EsNormativa = true,
+                VigenteDesde = vigencia,
+                Activa = true
+            },
+            new Regla
+            {
+                Codigo = "RN-13",
+                RutaNormativa = RutasNormativas.CambioCarreraOu,
+                TipoTramite = TiposTramite.Interno,
+                Descripcion = "Pcred es solo un dato de apoyo, sin umbral de aceptación ni mínimo legal; requiere créditos de origen y destino documentados y CredDestino positivo.",
+                Expresion = "Pcred=min(100,sumCredOrigen/CredDestino*100)",
+                Version = "1.0",
+                Fuente = "Informe técnico y planificación por sprints SIHA-IA, pp. 3–4, RN-13; modelo de apoyo",
+                EsNormativa = false,
+                VigenteDesde = vigencia,
+                Activa = true
+            },
+            new Regla
+            {
+                Codigo = "RN-10",
+                RutaNormativa = RutasNormativas.Movilidad,
+                TipoTramite = TiposTramite.Externo,
+                Descripcion = "Solo para movilidad (CAU-P-122), los documentos requeridos son acuerdo de movilidad aprobado, certificado de notas oficial legalizado e informe final.",
+                Version = "1.0",
+                Fuente = "Informe técnico y planificación por sprints SIHA-IA, p. 4, RN-10; CAU-P-122",
+                EsNormativa = true,
+                VigenteDesde = vigencia,
+                Activa = true
+            },
+            new Regla
+            {
+                Codigo = "RN-14",
+                RutaNormativa = RutasNormativas.Movilidad,
+                TipoTramite = TiposTramite.Externo,
+                Descripcion = "Modelo de cobertura ponderada por horas documentadas hj: cj indica similitud coseno >= tau (0,75; API 75/100). Si faltan horas o sum(hj)<=0, pendiente; no inventar datos. Tau no es un umbral de cobertura.",
+                Expresion = "Pcont=sum(hj*cj)/sum(hj)*100; cj=1 si similitudCoseno>=tau/100, 0 en otro caso",
+                Version = "1.0",
+                Fuente = "Informe técnico y planificación por sprints SIHA-IA, pp. 3–4, RN-14; modelo heurístico",
+                EsNormativa = false,
                 VigenteDesde = vigencia,
                 Activa = true
             },
             new Regla
             {
                 Codigo = "RN-02",
-                RutaNormativa = RutasNormativas.CambioCarreraOu,
-                TipoTramite = TiposTramite.Interno,
-                Descripcion = "La proporción mínima de créditos homologables es un parámetro heurístico configurable.",
-                Expresion = "theta>=80",
-                Version = "1.0",
-                Fuente = "Parámetro heurístico del proyecto",
-                EsNormativa = false,
-                VigenteDesde = vigencia,
-                Activa = true
-            },
-            new Regla
-            {
-                Codigo = "RN-03",
                 RutaNormativa = RutasNormativas.Movilidad,
                 TipoTramite = TiposTramite.Externo,
-                Descripcion = "La documentación debe acreditar la aprobación certificada en la institución de origen.",
+                Descripcion = "Solo para movilidad (CAU-P-122), se exige al menos 80 % de correspondencia en resultados de aprendizaje; EXTERNO no equivale por sí solo a movilidad.",
+                Expresion = "ra>=80",
                 Version = "1.0",
-                Fuente = "Resolución CAU-P-122",
-                EsNormativa = true,
-                VigenteDesde = vigencia,
-                Activa = true
-            },
-            new Regla
-            {
-                Codigo = "RN-04",
-                RutaNormativa = RutasNormativas.Movilidad,
-                TipoTramite = TiposTramite.Externo,
-                Descripcion = "Cobertura temática mínima configurable para sugerir homologación.",
-                Expresion = "tau>=65",
-                Version = "1.0",
-                Fuente = "Parámetro heurístico del proyecto",
-                EsNormativa = false,
-                VigenteDesde = vigencia,
-                Activa = true
-            },
-            new Regla
-            {
-                Codigo = "RN-05",
-                RutaNormativa = RutasNormativas.Movilidad,
-                TipoTramite = TiposTramite.Externo,
-                Descripcion = "Para homologar una asignatura se exige al menos 80 % de correspondencia en resultados de aprendizaje.",
-                Expresion = "theta>=80",
-                Version = "1.0",
-                Fuente = "Resolución CAU-P-122, Art. 20",
+                Fuente = "Informe técnico y planificación por sprints SIHA-IA, pp. 3–4, RN-02; CAU-P-122, Art. 20",
                 EsNormativa = true,
                 VigenteDesde = vigencia,
                 Activa = true
             });
 
         await db.SaveChangesAsync();
-        logger.LogInformation("Semilla de reglas aplicada (RN-01 a RN-05).");
+        logger.LogInformation("Semilla de seis metadatos de reglas aplicada (RN-01, RN-02, RN-09, RN-10, RN-13 y RN-14; informe SIHA-IA pp. 3–4). No ejecuta evaluación.");
     }
 
     private static async Task SembrarCatalogoAsync(SihaDbContextA db, ILogger logger)
@@ -231,8 +245,7 @@ public static class DbSeederA
             Nombre = nombre,
             Creditos = creditos,
             Horas = creditos * Services.CatalogoService.HorasPorCreditoUta,
-            Semestre = semestre,
-            PlanCompleto = true
+            Semestre = semestre
         };
 
         var numero = 1;
@@ -247,6 +260,8 @@ public static class DbSeederA
             });
         }
 
+        var (error, advertencias) = Services.ValidacionCatalogo.Evaluar(asignatura);
+        asignatura.PlanCompleto = error is null && advertencias.Count == 0;
         return asignatura;
     }
 }

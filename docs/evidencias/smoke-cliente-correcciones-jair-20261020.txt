@@ -1,0 +1,4 @@
+﻿[OK] JSON correcto -> esperado 200, obtenido 200 
+[FALLO] JSON inválido -> esperado 200, obtenido 200 JSON inválido o contrato de respuesta incumplido.
+[FALLO] Cuerpo incorrecto -> esperado 200, obtenido 200 El cuerpo no cumple el contrato esperado.
+Regresión smoke: HTTP 400 local y validación de cuerpos correctos (PowerShell 7.5.4)

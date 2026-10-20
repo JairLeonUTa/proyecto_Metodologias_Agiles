@@ -213,6 +213,76 @@ public class ExpedientesControllerTests : IDisposable
     }
 
     [Fact]
+    public async Task Dos_adjuntos_uno_corrupto_del_mismo_tamano_bloquean_hasta_recargarlo()
+    {
+        var borrador = await RegistrarBorradorAsync();
+        var corrupto = await CargarPdfAsync(borrador.Id, "AAAA");
+        var valido = await CargarPdfAsync(borrador.Id, "valido");
+        await File.WriteAllBytesAsync(Path.Combine(_directorio, corrupto.RutaAlmacenamiento), Pruebas.BytesPdf("BBBB"));
+
+        for (var intento = 0; intento < 2; intento++)
+        {
+            var resultado = await CrearControlador().Enviar(borrador.Id, CancellationToken.None);
+            resultado.Result.Should().BeOfType<UnprocessableEntityObjectResult>();
+            _publicados.Should().BeEmpty();
+            _db.Expedientes.Single().Estado.Should().Be(ExpedienteEstados.PendienteDocumentos);
+            _db.Expedientes.Single().IntentosPublicacion.Should().Be(0);
+            _db.ExpedienteDocumentos.Single(d => d.Id == corrupto.Id).EstadoRecepcion
+                .Should().Be(EstadosRecepcionDocumento.NoDisponible);
+        }
+
+        var reemplazo = await CargarPdfAsync(borrador.Id, "AAAA");
+        var envio = await CrearControlador().Enviar(borrador.Id, CancellationToken.None);
+        envio.Result.Should().BeOfType<AcceptedResult>();
+        var evento = _publicados.Should().ContainSingle().Subject;
+        evento.DocumentoIds.Should().BeEquivalentTo(new[] { valido.Id, reemplazo.Id });
+        evento.Documentos.Select(d => (d.DocumentoId, d.RutaAlmacenamiento, d.HashSha256, d.TamanoBytes))
+            .Should().BeEquivalentTo(_db.ExpedienteDocumentos
+                .Where(d => d.EstadoRecepcion == EstadosRecepcionDocumento.Validado)
+                .AsEnumerable().Select(d => (d.Id, d.RutaAlmacenamiento, d.HashSha256, d.TamanoBytes)));
+    }
+
+    [Fact]
+    public async Task Rechazos_y_retiros_previos_no_bloquean_un_envio_valido()
+    {
+        var borrador = await RegistrarBorradorAsync();
+        var retirado = await CargarPdfAsync(borrador.Id, "retirado");
+        await CrearControladorDocumentos().Retirar(borrador.Id, retirado.Id, CancellationToken.None);
+        await CrearControladorDocumentos().Subir(borrador.Id, Pruebas.Archivo(new byte[] { 1, 2 }), CancellationToken.None);
+        var valido = await CargarPdfAsync(borrador.Id, "valido");
+
+        var envio = await CrearControlador().Enviar(borrador.Id, CancellationToken.None);
+
+        envio.Result.Should().BeOfType<AcceptedResult>();
+        _publicados.Should().ContainSingle().Which.DocumentoIds.Should().Equal(valido.Id);
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task Republicar_no_omite_un_adjunto_ausente_o_de_tamano_invalido(bool ausente)
+    {
+        var borrador = await RegistrarBorradorAsync();
+        var documento = await CargarPdfAsync(borrador.Id, "AAAA");
+        await CargarPdfAsync(borrador.Id, "valido");
+        SimularPublicacion(ok: false, error: "sin bus");
+        await CrearControlador().Enviar(borrador.Id, CancellationToken.None);
+        _publicados.Clear();
+        SimularPublicacion(ok: true);
+        var ruta = Path.Combine(_directorio, documento.RutaAlmacenamiento);
+        if (ausente) File.Delete(ruta);
+        else await File.WriteAllBytesAsync(ruta, Pruebas.BytesPdf("otro tamano"));
+
+        var resultado = await CrearControlador().Republicar(borrador.Id, CancellationToken.None);
+
+        resultado.Result.Should().BeOfType<UnprocessableEntityObjectResult>();
+        _publicados.Should().BeEmpty();
+        _db.Expedientes.Single().Estado.Should().Be(ExpedienteEstados.PendienteDocumentos);
+        _db.Expedientes.Single().CorrelationId.Should().Be(borrador.CorrelationId);
+        _db.Expedientes.Single().IntentosPublicacion.Should().Be(1);
+    }
+
+    [Fact]
     public async Task Un_segundo_envio_no_vuelve_a_publicar()
     {
         var borrador = await RegistrarBorradorAsync();

@@ -11,15 +11,14 @@ caída/recuperación del bus.
 
 ## 1. Flujo de documentos propuesto (para acordar con Alex y Jair)
 
-> **Pendiente de aprobación:** este es el flujo implementado en MsB y en el frontend. Alex (frontend) y
-> Jair (expedientes/bus) deben revisarlo y confirmarlo.
+> **Coordinación pendiente (20/10/2026):** revisar con Sebastián y Alex el flujo implementado, los errores 422 y la recepción independiente. No hay canal disponible en esta sesión; **no se realizó contacto ni se obtuvo aceptación**. El acceso autorizado de C a los binarios sigue pendiente de decisión: las rutas relativas del evento no son URLs públicas ni permisos de acceso; no se implementa un nuevo endpoint de descarga.
 
 | Paso | Endpoint (vía Gateway) | Qué hace el servidor | Estado del expediente |
 |---|---|---|---|
 | 1. Registrar borrador | `POST /api/expedientes` | Crea el expediente con sus asignaturas. **No publica nada.** Si el cliente envía `documentos` (rutas/hashes/tamaños), responde **400**. | `PENDIENTE_DOCUMENTOS` |
 | 2. Cargar cada PDF | `POST /api/expedientes/{id}/documentos` (multipart, campo `archivo`) | Valida extensión, MIME, tamaño y firma binaria `%PDF`; guarda con nombre GUID en el volumen `siha-archivos` (escritura atómica `.tmp` → rename); **calcula el SHA-256 en el servidor**. | `PENDIENTE_DOCUMENTOS` |
 | (opcional) Retirar | `DELETE /api/expedientes/{id}/documentos/{docId}` | Marca `RETIRADO` y borra el archivo. Solo antes del envío. | `PENDIENTE_DOCUMENTOS` |
-| 3. Enviar | `POST /api/expedientes/{id}/enviar` | Vuelve a leer **desde disco** cada documento `VALIDADO` (existe, tamaño y SHA-256 coinciden). Si hay al menos `Archivos:MinimoDocumentosRequeridos` (1 por defecto), reserva el expediente con concurrencia optimista y publica `SolicitudCreadaEvent` v1.1 **solo con referencias verificadas**. | `PENDIENTE_CONTENIDOS` (publicado) o `REGISTRADO_PENDIENTE_PUBLICACION` (bus caído) |
+| 3. Enviar | `POST /api/expedientes/{id}/enviar` | Vuelve a leer **desde disco** cada documento `VALIDADO` (existencia, tamaño y SHA-256). Exige mínimo `max(1, Archivos:MinimoDocumentosRequeridos)` y **ningún adjunto aceptado no disponible sin reemplazo**; no publica subconjuntos silenciosamente. Reserva y publica v1.1 solo con referencias verificadas. | `PENDIENTE_CONTENIDOS` (publicado), `REGISTRADO_PENDIENTE_PUBLICACION` (bus caído) o `PENDIENTE_DOCUMENTOS` (422) |
 | 4. Recuperación | Automática cada `Republicacion:IntervaloSegundos` (10 s en Compose) o `POST /api/expedientes/{id}/republicar` | Reintenta conservando el **mismo CorrelationId**; vuelve a verificar los PDF. Un expediente ya publicado **nunca** se publica de nuevo. | `PENDIENTE_CONTENIDOS` |
 
 **Respuestas relevantes**
@@ -35,6 +34,10 @@ caída/recuperación del bus.
 | Segundo envío de un expediente ya publicado | **200**, sin volver a publicar |
 | Bus caído al enviar | **202** con estado `REGISTRADO_PENDIENTE_PUBLICACION`; se recupera solo al volver RabbitMQ |
 | Cargar documentos después de enviar | **409** |
+
+**Recuperación de un 422:** el documento queda `NO_DISPONIBLE` con motivo consultable en `GET /api/expedientes/{id}/documentos`. El siguiente envío sigue bloqueado aunque quede otro válido. Recargar el mismo PDF (mismo SHA-256/tamaño calculados por B) crea una referencia validada que sustituye la fallida al enviar; la antigua permanece para auditoría. Después usar `/enviar`. No se exige corregir un `RECHAZADO` previo ni incluir un `RETIRADO`. El modelo no enlaza reemplazos de contenido diferente.
+
+**202 no prueba recepción:** incluso con `publicado=true` falta acreditar consumo; con `publicado=false` el bus falló. Registrar salida del suscriptor independiente con `ExpedienteId`, `CorrelationId`, `MessageId=ExpedienteId` y contrastar IDs/rutas/hash/tamaño con DB B y disco. La autoprueba sintética del verificador tampoco demuestra este recorrido documental.
 
 El `MessageId` del mensaje es igual al `ExpedienteId`, para que el consumidor (Microservicio C) pueda
 descartar un duplicado si lo hubiera. Ver `docs/contrato-solicitud-creada-event.md` (v1.1).
@@ -61,8 +64,8 @@ descartar un duplicado si lo hubiera. Ver `docs/contrato-solicitud-creada-event.
 | Nivel | Proyecto / script | Infraestructura | Pruebas | Comando |
 |---|---|---|---|---|
 | **Simuladas** | `tests/Siha.MsA.Tests` | EF Core InMemory, mocks | 53 | `dotnet test tests/Siha.MsA.Tests` |
-| **Simuladas** | `tests/Siha.MsB.Tests` | EF Core InMemory, Moq, arnés en memoria de MassTransit, inspección de configuración | 60 | `dotnet test tests/Siha.MsB.Tests` |
-| **Reales** | `tests/Siha.Integracion.Tests` | **SQL Server 2022 y RabbitMQ 3.13 reales** (Testcontainers), sistema de archivos real, suscriptor independiente, MsA y MsB completos | 15 | `dotnet test tests/Siha.Integracion.Tests` |
+| **Simuladas** | `tests/Siha.MsB.Tests` | EF Core InMemory, Moq, arnés en memoria de MassTransit, inspección de configuración | Ver salida actual | `dotnet test tests/Siha.MsB.Tests` |
+| **Reales** | `tests/Siha.Integracion.Tests` | **SQL Server 2022 y RabbitMQ 3.13 reales** (Testcontainers), sistema de archivos real, suscriptor independiente, MsA y MsB completos | Ver salida actual | `dotnet test tests/Siha.Integracion.Tests` |
 | **Reales (E2E)** | `scripts/e2e-docker-compose.sh` | **Toda la pila de `docker-compose.yml`** desde cero: SQL A/B, RabbitMQ, ms-a (REST + gRPC), ms-b, gateway, frontend | 31 comprobaciones | `bash scripts/e2e-docker-compose.sh` |
 
 Pruebas con infraestructura real (`Siha.Integracion.Tests`).
@@ -76,7 +79,8 @@ Pruebas con infraestructura real (`Siha.Integracion.Tests`).
 5. `Envios_simultaneos_publican_un_solo_mensaje`
 6. `No_se_publica_si_el_PDF_ya_no_existe_en_el_almacenamiento`
 7. `Un_fallo_del_almacenamiento_responde_503_sin_dejar_filas`
-8. `Caida_y_recuperacion_del_bus_conservan_el_CorrelationId_y_el_mensaje_llega` (detiene y reinicia el contenedor de RabbitMQ)
+8. `Caida_y_recuperacion_del_bus_conservan_el_CorrelationId_y_el_mensaje_llega` (pausa y reanuda RabbitMQ)
+9. `Dos_adjuntos_uno_corrupto_del_mismo_tamano_no_publican_un_subconjunto` (422 repetido, cero mensajes, recarga y coincidencia de rutas evento/DB B)
 
 `ReglasGrpcRealTests` (servidor gRPC de reglas, S1-S04 / S1-S09):
 
@@ -100,7 +104,19 @@ dotnet test tests/Siha.MsA.Tests -c Release --no-build
 dotnet test tests/Siha.MsB.Tests -c Release --no-build
 ```
 
-Resultado esperado: `Passed: 53` y `Passed: 60`.
+Resultado esperado: cero fallos; consultar los totales de la ejecución, no usar conteos históricos como evidencia.
+
+Si solo está instalado .NET 10, aplicar roll-forward **solo a la ejecución local** (sin cambiar el target `net8.0`):
+
+```powershell
+$previo = $env:DOTNET_ROLL_FORWARD
+try {
+  $env:DOTNET_ROLL_FORWARD = 'Major'
+  dotnet test tests/Siha.MsB.Tests --no-restore
+} finally { $env:DOTNET_ROLL_FORWARD = $previo }
+```
+
+La regresión de dos adjuntos se comprobó rojo → verde con InMemory/Moq y disco temporal: **prueba simulada**, no recepción RabbitMQ. La prueba equivalente real está preparada en `FlujoDocumentosRealTests`; **no ejecutada en esta revisión: Docker no disponible**. No se ejecutó E2E ni se operaron contenedores/volúmenes.
 
 ### 4.2 Pruebas con SQL Server y RabbitMQ reales
 
@@ -108,7 +124,7 @@ Resultado esperado: `Passed: 53` y `Passed: 60`.
 dotnet test tests/Siha.Integracion.Tests -c Release --logger "console;verbosity=normal"
 ```
 
-Resultado esperado: `Passed: 15` (tarda ~4 minutos; Testcontainers crea y destruye los contenedores solo).
+Resultado esperado: cero fallos (Testcontainers crea y destruye contenedores). Ejecutar solo en un entorno Docker autorizado; no presentar una compilación como prueba real.
 
 ### 4.3 Docker Compose desde cero (E2E)
 
@@ -189,4 +205,4 @@ Cada job publica sus resultados como artefacto (`resultados-unitarias`, `resulta
 | Puerto 1433, 5000, 5672 o 5173 ocupado | Otro SQL Server, RabbitMQ o servicio local | Detener el servicio local o cambiar el puerto en `docker-compose.override.yml` |
 | `413 Request Entity Too Large` al subir un PDF | Imagen del frontend antigua | `docker compose build frontend` (Nginx ahora admite 12 MB) |
 | El expediente queda en `REGISTRADO_PENDIENTE_PUBLICACION` | RabbitMQ caído | Levantar RabbitMQ; el reintento automático lo publica en ≤ 10 s |
-| Envío responde 422 «no disponible» | El PDF se borró o cambió en el volumen | Volver a cargarlo y enviar de nuevo |
+| Envío responde 422 «no disponible» | Un PDF aceptado se borró o cambió en el volumen | Recargar el mismo contenido y usar `/enviar`; no basta otro PDF distinto aunque alcance el mínimo |
