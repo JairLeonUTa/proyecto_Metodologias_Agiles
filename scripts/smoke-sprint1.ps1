@@ -11,8 +11,12 @@
 param(
     [string]$BaseUrl = "http://localhost:5000",
     [string]$AdminCorreo = "admin@uta.edu.ec",
-    [string]$AdminPassword = "Admin123*"
+    [string]$AdminPassword = $env:SIHA_ADMIN_PASSWORD
 )
+
+if ([string]::IsNullOrWhiteSpace($AdminPassword)) {
+    throw "Configura SIHA_ADMIN_PASSWORD o proporciona -AdminPassword."
+}
 
 $ErrorActionPreference = "Continue"
 $global:Resultados = @()

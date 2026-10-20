@@ -182,7 +182,7 @@ static void ImprimirDiagnosticoSinBus(OpcionesBus opciones)
     Console.WriteLine("    docker compose up -d rabbitmq");
     Console.WriteLine("    docker compose ps rabbitmq          # debe verse como healthy");
     Console.WriteLine();
-    Console.WriteLine("  Panel de administración: http://localhost:15672  (siha / siha-rabbit-2026)");
+    Console.WriteLine("  Panel de administración: http://localhost:15672  (usa las credenciales de tu entorno local)");
     Console.WriteLine();
     Console.WriteLine("  Si RabbitMQ corre en otro host o puerto:");
     Console.WriteLine("    dotnet run --project tools/Siha.BusVerifier -- --uri rabbitmq://mi-host:5672");

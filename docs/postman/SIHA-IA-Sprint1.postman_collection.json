@@ -166,7 +166,7 @@
             "url": "{{baseUrl}}/api/auth/login",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"correoInstitucional\": \"admin@uta.edu.ec\",\n  \"password\": \"Admin123*\"\n}",
+              "raw": "{\n  \"correoInstitucional\": \"admin@uta.edu.ec\",\n  \"password\": \"{{adminPassword}}\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -176,7 +176,7 @@
             "auth": {
               "type": "noauth"
             },
-            "description": "Cuenta semilla del Sprint 1: admin@uta.edu.ec / Admin123*."
+            "description": "Cuenta semilla del Sprint 1: admin@uta.edu.ec / {{adminPassword}}."
           },
           "response": []
         },

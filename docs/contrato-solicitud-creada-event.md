@@ -310,7 +310,7 @@ dotnet run --project tools/Siha.BusVerifier
 # 3) En otra terminal, registrar un expediente contra el Gateway
 $login = Invoke-RestMethod -Method Post -Uri http://localhost:5000/api/auth/login `
   -ContentType "application/json" `
-  -Body '{"correoInstitucional":"admin@uta.edu.ec","password":"Admin123*"}'
+  -Body '{"correoInstitucional":"admin@uta.edu.ec","password":"<SIHA_ADMIN_PASSWORD>"}'
 $headers = @{ Authorization = "Bearer $($login.token)" }
 
 $resp = Invoke-WebRequest -Method Post -Uri http://localhost:5000/api/expedientes -Headers $headers `

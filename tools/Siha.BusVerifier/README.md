@@ -30,9 +30,9 @@ docker compose up -d
 |---|---|---|
 | URI del bus | `rabbitmq://localhost` | `--uri` · `SIHA_RABBITMQ_URI` |
 | Usuario | `siha` | `--usuario` · `SIHA_RABBITMQ_USUARIO` |
-| Contraseña | `siha-rabbit-2026` | `--password` · `SIHA_RABBITMQ_PASSWORD` |
+| Contraseña | `<SIHA_RABBITMQ_PASSWORD>` | `--password` · `SIHA_RABBITMQ_PASSWORD` |
 | Cola de suscripción | `siha-verificador-solicitud-creada` | `--cola` · `SIHA_RABBITMQ_COLA` |
-| Panel de administración | http://localhost:15672 | `siha` / `siha-rabbit-2026` |
+| Panel de administración | http://localhost:15672 | `siha` / `<SIHA_RABBITMQ_PASSWORD>` |
 
 Los valores por defecto coinciden con `docker-compose.yml`, de modo que **no hace falta configurar
 nada** en el entorno de desarrollo del Sprint 1.
@@ -86,7 +86,7 @@ las instrucciones para levantar el bus, y termina con código 0.
 |---|---|---|
 | `--uri <uri>` | URI del host RabbitMQ | `rabbitmq://localhost` |
 | `--usuario <usuario>` | Usuario del bus | `siha` |
-| `--password <clave>` | Contraseña del bus | `siha-rabbit-2026` |
+| `--password <clave>` | Contraseña del bus | `<SIHA_RABBITMQ_PASSWORD>` |
 | `--cola <nombre>` | Cola de suscripción del verificador | `siha-verificador-solicitud-creada` |
 | `--prefetch <n>` | Mensajes en vuelo por consumidor | `16` |
 | `--timeout-conexion <seg>` | Segundos de espera a que el bus acepte la conexión | `15` |
@@ -126,7 +126,7 @@ Terminal 2 — registro de un expediente contra el API Gateway:
 ```powershell
 $login = Invoke-RestMethod -Method Post -Uri http://localhost:5000/api/auth/login `
   -ContentType "application/json" `
-  -Body '{"correoInstitucional":"admin@uta.edu.ec","password":"Admin123*"}'
+  -Body '{"correoInstitucional":"admin@uta.edu.ec","password":"<SIHA_ADMIN_PASSWORD>"}'
 $headers = @{ Authorization = "Bearer $($login.token)" }
 
 $resp = Invoke-WebRequest -Method Post -Uri http://localhost:5000/api/expedientes -Headers $headers `
@@ -199,7 +199,7 @@ El verificador muestra el evento con este formato (extracto real de una ejecuci�
 
 ## 5. Verificación en el panel de RabbitMQ
 
-1. Abrir http://localhost:15672 con `siha` / `siha-rabbit-2026`.
+1. Abrir http://localhost:15672 con `siha` / `<SIHA_RABBITMQ_PASSWORD>`.
 2. **Queues** → `siha-verificador-solicitud-creada`: aparece con **1 consumidor** mientras el
    verificador está en ejecución.
 3. **Exchanges** → `Siha.Contracts.Events:SolicitudCreadaEvent` (tipo *fanout*, durable): es el
@@ -256,7 +256,7 @@ tools/Siha.BusVerifier/
 ## 9. Criterio de aceptación de la tarea S1-P04
 
 - [x] Proyecto de consola .NET 8 en `tools/Siha.BusVerifier/` con `Siha.Contracts` y `MassTransit.RabbitMQ`.
-- [x] Se conecta a `rabbitmq://localhost` con `siha` / `siha-rabbit-2026` (ambos configurables por CLI y variables de entorno).
+- [x] Se conecta a `rabbitmq://localhost` con `siha` / `<SIHA_RABBITMQ_PASSWORD>` (ambos configurables por CLI y variables de entorno).
 - [x] Se suscribe a `SolicitudCreadaEvent` e imprime el mensaje completo (contrato + metadatos + `CorrelationId`).
 - [x] `dotnet build tools/Siha.BusVerifier/Siha.BusVerifier.csproj` compila sin errores ni advertencias.
 - [x] `dotnet run --project tools/Siha.BusVerifier -- --prueba` arranca, se suscribe, recibe y verifica el contrato (código 0).

@@ -44,9 +44,9 @@ de consola) y el resultado coincide con el esperado. Sin evidencia, el caso qued
 | Punto de entrada | `http://localhost:5000` (API Gateway Ocelot) |
 | Microservicio A (directo) | `http://localhost:5081/swagger` |
 | Microservicio B (directo) | `http://localhost:5082/swagger` |
-| RabbitMQ (panel) | `http://localhost:15672` · `siha` / `siha-rabbit-2026` |
-| SQL Server A / B | `localhost,1433` · `localhost,14330` · `sa` / `SihaAdmin2026!` |
-| Cuenta administradora (semilla) | `admin@uta.edu.ec` / `Admin123*` |
+| RabbitMQ (panel) | `http://localhost:15672` · `siha` / `<SIHA_RABBITMQ_PASSWORD>` |
+| SQL Server A / B | `localhost,1433` · `localhost,14330` · `sa` / `<SIHA_SQL_PASSWORD>` |
+| Cuenta administradora (semilla) | `admin@uta.edu.ec` / `<SIHA_ADMIN_PASSWORD>` |
 | Cuentas de apoyo | `operador.qa@uta.edu.ec` / `Operador123*` (OPERADOR) y `docente.qa@uta.edu.ec` / `Docente123*` (DOCENTE) — se crean en PT-03 |
 | Datos semilla | 3 roles; umbrales CAU-P-011 (80/10/70) y CAU-P-122 (80/15/65); reglas RN-01…RN-05; 5 carreras; malla SW 2024-A con SW101/SW201/SW301 |
 | Colección de pruebas | `docs/postman/SIHA-IA-Sprint1.postman_collection.json` |
@@ -81,7 +81,7 @@ informe de QA.
 
 | ID | Caso | Precondiciones | Pasos (resumen) | Resultado esperado | CA | Evidencia |
 |---|---|---|---|---|---|---|
-| **PT-01** | Login exitoso y emisión del JWT | Servicios arriba; cuenta admin sembrada | 1) `POST /api/auth/login` con `admin@uta.edu.ec` / `Admin123*` | `200 OK` con `token`, `expiraUtc` y `usuario.rol = ADMINISTRADOR`; el token se captura en la colección | US-01/CA2 | Captura de Postman (respuesta + test *Login administrador*) |
+| **PT-01** | Login exitoso y emisión del JWT | Servicios arriba; cuenta admin sembrada | 1) `POST /api/auth/login` con `admin@uta.edu.ec` / `<SIHA_ADMIN_PASSWORD>` | `200 OK` con `token`, `expiraUtc` y `usuario.rol = ADMINISTRADOR`; el token se captura en la colección | US-01/CA2 | Captura de Postman (respuesta + test *Login administrador*) |
 | **PT-02** | Login rechazado | Igual que PT-01 | 1) Login con contraseña errónea; 2) login con correo inexistente | `401 Unauthorized` — «Credenciales inválidas o cuenta inactiva.» en ambos casos | US-01/CA2 | Captura `401` + assert de la colección |
 | **PT-03** | Alta de usuarios y asignación de rol | Token de admin | 1) `POST /api/usuarios` rol `OPERADOR`; 2) repetir con `DOCENTE`; 3) repetir el primero; 4) `POST` con `rol = INVITADO`; 5) `POST` con contraseña de 5 caracteres | `201 Created` (1 y 2), `409 Conflict` (3), `400 Bad Request` (4) con roles permitidos, `400 Bad Request` (5) | US-01/CA1, CA3 | Capturas `201`, `409`, `400` + listado `GET /api/usuarios` |
 | **PT-04** | RBAC de cuentas y roles | Tokens de OPERADOR y DOCENTE | 1) `GET /api/usuarios` con OPERADOR; 2) `GET /api/roles` con DOCENTE; 3) `GET /api/usuarios` sin token; 4) `GET /api/usuarios` con admin | `403`, `403`, `401`, `200` respectivamente | US-01/CA3, US-04/CA2 | Capturas `403` y `401` |

@@ -13,7 +13,9 @@
 #   7. Caída del bus (docker compose stop rabbitmq) y recuperación automática conservando el CorrelationId.
 #   8. Frontend (Nginx) sirviendo la SPA y reenviando una carga de ~2 MB al Gateway.
 #
-# Uso (Linux, macOS o Git Bash en Windows; requiere Docker y curl):
+# Uso (Linux, macOS o Git Bash en Windows; requiere Docker, curl y Node.js):
+#   Exportar SIHA_SQL_PASSWORD, SIHA_RABBITMQ_PASSWORD, SIHA_JWT_KEY y SIHA_ADMIN_PASSWORD.
+#   ATENCIÓN: siempre borra los volúmenes al inicio; usar solo un entorno desechable.
 #   bash scripts/e2e-docker-compose.sh            # recorrido completo y evidencia
 #   CONSERVAR=1 bash scripts/e2e-docker-compose.sh # no apaga los contenedores al terminar
 #   CONSTRUIR=0 bash scripts/e2e-docker-compose.sh # reutiliza las imágenes ya construidas
@@ -27,9 +29,15 @@ cd "$RAIZ"
 
 GATEWAY="${GATEWAY:-http://localhost:5000}"
 FRONTEND="${FRONTEND:-http://localhost:5173}"
-ADMIN_CORREO="${ADMIN_CORREO:-admin@uta.edu.ec}"
-ADMIN_PASSWORD="${ADMIN_PASSWORD:-Admin123*}"
-SQL_PASSWORD="SihaAdmin2026!"
+export ADMIN_CORREO="${ADMIN_CORREO:-admin@uta.edu.ec}"
+: "${SIHA_SQL_PASSWORD:?Exporta SIHA_SQL_PASSWORD}"
+: "${SIHA_RABBITMQ_PASSWORD:?Exporta SIHA_RABBITMQ_PASSWORD}"
+: "${SIHA_JWT_KEY:?Exporta SIHA_JWT_KEY}"
+: "${SIHA_ADMIN_PASSWORD:?Exporta SIHA_ADMIN_PASSWORD}"
+SQL_PASSWORD="$SIHA_SQL_PASSWORD"
+LOGIN_JSON="$(node -e 'process.stdout.write(JSON.stringify({correoInstitucional:process.env.ADMIN_CORREO,password:process.env.SIHA_ADMIN_PASSWORD}))')" || exit 1
+# Validar antes de registrar la limpieza: una configuración inválida no debe borrar datos.
+docker compose config --quiet || exit 1
 SELLO="$(date -u +%Y%m%d-%H%M%S)"
 DIR_EVIDENCIA="$RAIZ/docs/evidencias"
 EVIDENCIA="$DIR_EVIDENCIA/e2e-compose-$SELLO.md"
@@ -109,7 +117,7 @@ if docker compose up "${ARGS_UP[@]}" >>"$LOG" 2>&1; then registrar OK "docker co
 esperar "Gateway respondiendo" 300 bash -c "curl -s -o /dev/null -w '%{http_code}' -X POST '$GATEWAY/api/auth/login' -H 'Content-Type: application/json' -d '{}' | grep -qE '^(2|4)[0-9][0-9]$'" || true
 esperar "ms-a sano" 300 bash -c "docker inspect -f '{{.State.Health.Status}}' siha-ms-a | grep -q healthy"
 esperar "ms-b sano" 300 bash -c "docker inspect -f '{{.State.Health.Status}}' siha-ms-b | grep -q healthy"
-esperar "login del administrador" 180 bash -c "curl -sf -o /dev/null -X POST '$GATEWAY/api/auth/login' -H 'Content-Type: application/json' -d '{\"correoInstitucional\":\"$ADMIN_CORREO\",\"password\":\"$ADMIN_PASSWORD\"}'"
+esperar "login del administrador" 180 curl -sf -o /dev/null -X POST "$GATEWAY/api/auth/login" -H 'Content-Type: application/json' -d "$LOGIN_JSON"
 docker compose ps >>"$LOG" 2>&1
 
 log "== 2. Migraciones reales =="
@@ -121,7 +129,7 @@ comprobar "DB B migrada en SQL Server real (3 migraciones)" "3" "$MIG_B" "últim
 comprobar "Índice único filtrado de documentos en DB B" "1" "$(sql siha-sqlserver-b SihaDbB "SELECT COUNT(*) FROM sys.indexes WHERE name='IX_EXPEDIENTE_DOC_Unico_Validado' AND has_filter=1")"
 
 log "== 3. Autenticación a través del Gateway =="
-CODIGO="$(http POST "$GATEWAY/api/auth/login" -H 'Content-Type: application/json' -d "{\"correoInstitucional\":\"$ADMIN_CORREO\",\"password\":\"$ADMIN_PASSWORD\"}")"
+CODIGO="$(http POST "$GATEWAY/api/auth/login" -H 'Content-Type: application/json' -d "$LOGIN_JSON")"
 TOKEN="$(campo "$(cat "$TMP/cuerpo")" token)"
 comprobar "Login vía Gateway (JWT emitido por MsA)" "200" "$CODIGO"
 AUT=(-H "Authorization: Bearer $TOKEN")
@@ -196,7 +204,7 @@ else
 fi
 RECIBIDOS="$(docker logs siha-ms-b 2>&1 | grep -c "SolicitudCreadaEvent recibido.*ExpedienteId=$EXP_ID")"
 comprobar "Exactamente un mensaje para el expediente" "1" "$RECIBIDOS"
-INTERCAMBIO="$(curl -s -u siha:siha-rabbit-2026 'http://localhost:15672/api/exchanges/%2F/Siha.Contracts.Events:SolicitudCreadaEvent' | grep -o '"name":"Siha.Contracts.Events:SolicitudCreadaEvent"' | head -n1)"
+INTERCAMBIO="$(curl -s -u "siha:$SIHA_RABBITMQ_PASSWORD" 'http://localhost:15672/api/exchanges/%2F/Siha.Contracts.Events:SolicitudCreadaEvent' | grep -o '"name":"Siha.Contracts.Events:SolicitudCreadaEvent"' | head -n1)"
 [[ -n "$INTERCAMBIO" ]] && registrar OK "Intercambio del contrato declarado en RabbitMQ" "$INTERCAMBIO" || registrar FALLO "Intercambio del contrato en RabbitMQ" "no encontrado"
 
 log "== 6. Persistencia del almacenamiento =="

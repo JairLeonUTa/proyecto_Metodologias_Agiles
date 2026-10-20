@@ -18,7 +18,7 @@ transportados en el JWT como `ClaimTypes.Role` (`http://schemas.microsoft.com/ws
 
 | Rol | Constante | Propósito | Cuenta de prueba |
 |---|---|---|---|
-| **ADMINISTRADOR** | `RolesSistema.Administrador` | Gestiona cuentas y roles, define reglas/umbrales y mantiene el catálogo académico | `admin@uta.edu.ec` / `Admin123*` (semilla) |
+| **ADMINISTRADOR** | `RolesSistema.Administrador` | Gestiona cuentas y roles, define reglas/umbrales y mantiene el catálogo académico | `admin@uta.edu.ec` / `<SIHA_ADMIN_PASSWORD>` (semilla) |
 | **DOCENTE** | `RolesSistema.Docente` | Revisa expedientes y emite dictámenes de homologación (consulta) | crear con `POST /api/usuarios` (rol `DOCENTE`) |
 | **OPERADOR** | `RolesSistema.Operador` | Registra expedientes y carga documentos | crear con `POST /api/usuarios` (rol `OPERADOR`) |
 | *(sin token)* | — | Anónimo: solo el login | — |

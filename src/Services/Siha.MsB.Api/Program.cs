@@ -55,7 +55,9 @@ builder.Services.AddHostedService(sp => sp.GetRequiredService<RepublicacionAutom
 // --- Bus de eventos: MassTransit + RabbitMQ (US-06, tarea S1-J07) ---
 var rabbitUri = builder.Configuration["RabbitMq:Uri"] ?? "rabbitmq://localhost";
 var rabbitUsuario = builder.Configuration["RabbitMq:Usuario"] ?? "guest";
-var rabbitPassword = builder.Configuration["RabbitMq:Password"] ?? "guest";
+var rabbitPassword = builder.Configuration["RabbitMq:Password"];
+if (string.IsNullOrWhiteSpace(rabbitPassword))
+    throw new InvalidOperationException("Configura RabbitMq__Password para conectar al bus.");
 
 builder.Services.AddMassTransit(x =>
 {

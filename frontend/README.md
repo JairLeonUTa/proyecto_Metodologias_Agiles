@@ -40,7 +40,7 @@ que la SPA puede consumirlo directamente desde el navegador.
 
 | Correo institucional | Contraseña  | Rol           |
 | -------------------- | ----------- | ------------- |
-| `admin@uta.edu.ec`   | `Admin123*` | ADMINISTRADOR |
+| `admin@uta.edu.ec`   | `<SIHA_ADMIN_PASSWORD>` | ADMINISTRADOR |
 
 ## Estructura del proyecto
 
