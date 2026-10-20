@@ -137,6 +137,7 @@ public class GatewayOcelotConfiguracionTests
         administrativas.Should().NotBeEmpty();
         administrativas.Should().OnlyContain(r =>
             r.RouteClaimsRequirement != null &&
+            r.RouteClaimsRequirement.ContainsKey("rolGateway") &&
             r.RouteClaimsRequirement.Values.Contains("ADMINISTRADOR"));
 
         // El registro de expedientes lo realiza el OPERADOR: no puede exigir ADMINISTRADOR.
@@ -197,5 +198,28 @@ public class GatewayOcelotConfiguracionTests
         documentos.Should().NotBeNull();
         documentos!.UpstreamHttpMethod.Should().Contain("POST");
         documentos.DownstreamPathTemplate.Should().Be("/api/expedientes/{everything}");
+    }
+
+    [Theory]
+    [InlineData(RutaProduccion)]
+    [InlineData(RutaDesarrollo)]
+    public void El_crud_completo_y_el_versionado_exigen_administrador_sin_restringir_lecturas(string archivo)
+    {
+        var configuracion = Cargar(archivo);
+        foreach (var recurso in new[] { "carreras", "mallas", "asignaturas" })
+        {
+            var plantilla = $"/api/{recurso}/{{everything}}";
+            foreach (var verbo in new[] { "PUT", "DELETE" })
+            {
+                var ruta = configuracion.Routes.Single(r => r.UpstreamPathTemplate == plantilla && r.UpstreamHttpMethod.Contains(verbo));
+                ClaveAutenticacion(ruta).Should().Be("Bearer");
+                ruta.RouteClaimsRequirement.Values.Should().Contain("ADMINISTRADOR");
+            }
+            var lectura = configuracion.Routes.Single(r => r.UpstreamPathTemplate == plantilla && r.UpstreamHttpMethod.Contains("GET"));
+            lectura.RouteClaimsRequirement.Should().BeNullOrEmpty();
+        }
+        var versionado = configuracion.Routes.Single(r => r.UpstreamPathTemplate == "/api/reglas/{id}" && r.UpstreamHttpMethod.Contains("PUT"));
+        ClaveAutenticacion(versionado).Should().Be("Bearer");
+        versionado.RouteClaimsRequirement.Values.Should().Contain("ADMINISTRADOR");
     }
 }

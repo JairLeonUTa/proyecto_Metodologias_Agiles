@@ -25,7 +25,7 @@
       "UpstreamPathTemplate": "/api/usuarios",
       "UpstreamHttpMethod": [ "GET", "POST" ],
       "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer", "AllowedScopes": [] },
-      "RouteClaimsRequirement": { "http://schemas.microsoft.com/ws/2008/06/identity/claims/role": "ADMINISTRADOR" }
+      "RouteClaimsRequirement": { "rolGateway": "ADMINISTRADOR" }
     },
     {
       "DownstreamPathTemplate": "/api/usuarios/{everything}",
@@ -34,7 +34,7 @@
       "UpstreamPathTemplate": "/api/usuarios/{everything}",
       "UpstreamHttpMethod": [ "GET", "PUT", "PATCH", "DELETE" ],
       "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer", "AllowedScopes": [] },
-      "RouteClaimsRequirement": { "http://schemas.microsoft.com/ws/2008/06/identity/claims/role": "ADMINISTRADOR" }
+      "RouteClaimsRequirement": { "rolGateway": "ADMINISTRADOR" }
     },
     {
       "DownstreamPathTemplate": "/api/roles",
@@ -43,7 +43,7 @@
       "UpstreamPathTemplate": "/api/roles",
       "UpstreamHttpMethod": [ "GET" ],
       "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer", "AllowedScopes": [] },
-      "RouteClaimsRequirement": { "http://schemas.microsoft.com/ws/2008/06/identity/claims/role": "ADMINISTRADOR" }
+      "RouteClaimsRequirement": { "rolGateway": "ADMINISTRADOR" }
     },
     {
       "DownstreamPathTemplate": "/api/reglas",
@@ -60,7 +60,7 @@
       "UpstreamPathTemplate": "/api/reglas",
       "UpstreamHttpMethod": [ "POST" ],
       "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer", "AllowedScopes": [] },
-      "RouteClaimsRequirement": { "http://schemas.microsoft.com/ws/2008/06/identity/claims/role": "ADMINISTRADOR" }
+      "RouteClaimsRequirement": { "rolGateway": "ADMINISTRADOR" }
     },
     {
       "DownstreamPathTemplate": "/api/reglas/{everything}",
@@ -77,41 +77,50 @@
       "UpstreamPathTemplate": "/api/reglas/parametros/{rutaNormativa}",
       "UpstreamHttpMethod": [ "PUT" ],
       "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer", "AllowedScopes": [] },
-      "RouteClaimsRequirement": { "http://schemas.microsoft.com/ws/2008/06/identity/claims/role": "ADMINISTRADOR" }
+      "RouteClaimsRequirement": { "rolGateway": "ADMINISTRADOR" }
     },
     {
-      "DownstreamPathTemplate": "/api/carreras",
+      "DownstreamPathTemplate": "/api/reglas/{id}",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [ { "Host": "localhost", "Port": 5081 } ],
-      "UpstreamPathTemplate": "/api/carreras",
-      "UpstreamHttpMethod": [ "GET" ],
-      "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer", "AllowedScopes": [] }
-    },
-    {
-      "DownstreamPathTemplate": "/api/carreras",
-      "DownstreamScheme": "http",
-      "DownstreamHostAndPorts": [ { "Host": "localhost", "Port": 5081 } ],
-      "UpstreamPathTemplate": "/api/carreras",
-      "UpstreamHttpMethod": [ "POST" ],
-      "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer", "AllowedScopes": [] },
-      "RouteClaimsRequirement": { "http://schemas.microsoft.com/ws/2008/06/identity/claims/role": "ADMINISTRADOR" }
-    },
-    {
-      "DownstreamPathTemplate": "/api/carreras/{everything}",
-      "DownstreamScheme": "http",
-      "DownstreamHostAndPorts": [ { "Host": "localhost", "Port": 5081 } ],
-      "UpstreamPathTemplate": "/api/carreras/{everything}",
-      "UpstreamHttpMethod": [ "GET" ],
-      "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer", "AllowedScopes": [] }
-    },
-    {
-      "DownstreamPathTemplate": "/api/carreras/{everything}",
-      "DownstreamScheme": "http",
-      "DownstreamHostAndPorts": [ { "Host": "localhost", "Port": 5081 } ],
-      "UpstreamPathTemplate": "/api/carreras/{everything}",
+      "UpstreamPathTemplate": "/api/reglas/{id}",
       "UpstreamHttpMethod": [ "PUT" ],
       "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer", "AllowedScopes": [] },
-      "RouteClaimsRequirement": { "http://schemas.microsoft.com/ws/2008/06/identity/claims/role": "ADMINISTRADOR" }
+      "RouteClaimsRequirement": { "rolGateway": "ADMINISTRADOR" }
+    },
+    {
+      "DownstreamPathTemplate": "/api/carreras",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [ { "Host": "localhost", "Port": 5081 } ],
+      "UpstreamPathTemplate": "/api/carreras",
+      "UpstreamHttpMethod": [ "GET" ],
+      "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer", "AllowedScopes": [] }
+    },
+    {
+      "DownstreamPathTemplate": "/api/carreras",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [ { "Host": "localhost", "Port": 5081 } ],
+      "UpstreamPathTemplate": "/api/carreras",
+      "UpstreamHttpMethod": [ "POST" ],
+      "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer", "AllowedScopes": [] },
+      "RouteClaimsRequirement": { "rolGateway": "ADMINISTRADOR" }
+    },
+    {
+      "DownstreamPathTemplate": "/api/carreras/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [ { "Host": "localhost", "Port": 5081 } ],
+      "UpstreamPathTemplate": "/api/carreras/{everything}",
+      "UpstreamHttpMethod": [ "GET" ],
+      "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer", "AllowedScopes": [] }
+    },
+    {
+      "DownstreamPathTemplate": "/api/carreras/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [ { "Host": "localhost", "Port": 5081 } ],
+      "UpstreamPathTemplate": "/api/carreras/{everything}",
+      "UpstreamHttpMethod": [ "PUT", "DELETE" ],
+      "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer", "AllowedScopes": [] },
+      "RouteClaimsRequirement": { "rolGateway": "ADMINISTRADOR" }
     },
     {
       "DownstreamPathTemplate": "/api/mallas",
@@ -128,7 +137,7 @@
       "UpstreamPathTemplate": "/api/mallas",
       "UpstreamHttpMethod": [ "POST" ],
       "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer", "AllowedScopes": [] },
-      "RouteClaimsRequirement": { "http://schemas.microsoft.com/ws/2008/06/identity/claims/role": "ADMINISTRADOR" }
+      "RouteClaimsRequirement": { "rolGateway": "ADMINISTRADOR" }
     },
     {
       "DownstreamPathTemplate": "/api/mallas/{everything}",
@@ -139,6 +148,15 @@
       "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer", "AllowedScopes": [] }
     },
     {
+      "DownstreamPathTemplate": "/api/mallas/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [ { "Host": "localhost", "Port": 5081 } ],
+      "UpstreamPathTemplate": "/api/mallas/{everything}",
+      "UpstreamHttpMethod": [ "PUT", "DELETE" ],
+      "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer", "AllowedScopes": [] },
+      "RouteClaimsRequirement": { "rolGateway": "ADMINISTRADOR" }
+    },
+    {
       "DownstreamPathTemplate": "/api/asignaturas",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [ { "Host": "localhost", "Port": 5081 } ],
@@ -153,7 +171,7 @@
       "UpstreamPathTemplate": "/api/asignaturas",
       "UpstreamHttpMethod": [ "POST" ],
       "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer", "AllowedScopes": [] },
-      "RouteClaimsRequirement": { "http://schemas.microsoft.com/ws/2008/06/identity/claims/role": "ADMINISTRADOR" }
+      "RouteClaimsRequirement": { "rolGateway": "ADMINISTRADOR" }
     },
     {
       "DownstreamPathTemplate": "/api/asignaturas/importar",
@@ -162,7 +180,7 @@
       "UpstreamPathTemplate": "/api/asignaturas/importar",
       "UpstreamHttpMethod": [ "POST" ],
       "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer", "AllowedScopes": [] },
-      "RouteClaimsRequirement": { "http://schemas.microsoft.com/ws/2008/06/identity/claims/role": "ADMINISTRADOR" }
+      "RouteClaimsRequirement": { "rolGateway": "ADMINISTRADOR" }
     },
     {
       "DownstreamPathTemplate": "/api/asignaturas/{everything}",
@@ -177,9 +195,9 @@
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [ { "Host": "localhost", "Port": 5081 } ],
       "UpstreamPathTemplate": "/api/asignaturas/{everything}",
-      "UpstreamHttpMethod": [ "PUT" ],
+      "UpstreamHttpMethod": [ "PUT", "DELETE" ],
       "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer", "AllowedScopes": [] },
-      "RouteClaimsRequirement": { "http://schemas.microsoft.com/ws/2008/06/identity/claims/role": "ADMINISTRADOR" }
+      "RouteClaimsRequirement": { "rolGateway": "ADMINISTRADOR" }
     },
     {
       "DownstreamPathTemplate": "/api/expedientes",

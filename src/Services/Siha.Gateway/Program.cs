@@ -1,4 +1,5 @@
 using System.Text;
+using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Ocelot.DependencyInjection;
@@ -37,6 +38,19 @@ builder.Services
             ValidAudience = jwtAudience,
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey)),
             ClockSkew = TimeSpan.FromSeconds(30)
+        };
+        options.Events = new JwtBearerEvents
+        {
+            OnTokenValidated = context =>
+            {
+                // IConfiguration interpreta ':' como separador: el URI ClaimTypes.Role no
+                // sirve como clave de RouteClaimsRequirement. Alias solo tras validar la firma.
+                var identity = (ClaimsIdentity)context.Principal!.Identity!;
+                foreach (var claim in identity.FindAll("rolGateway").ToList()) identity.RemoveClaim(claim);
+                var rol = identity.FindFirst(ClaimTypes.Role)?.Value;
+                if (rol is not null) identity.AddClaim(new Claim("rolGateway", rol));
+                return Task.CompletedTask;
+            }
         };
     });
 
