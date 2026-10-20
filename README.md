@@ -34,3 +34,11 @@ Las conexiones SQL locales deben apuntar a los puertos 1433 (A) y 14330 (B). A y
 - Postman: definir `adminPassword` en un entorno local privado. No exportar contraseñas ni tokens. Los valores `<SIHA_...>` en la documentación son marcadores, no contraseñas.
 
 Se versionan migraciones, contratos, pruebas, Compose, Dockerfiles y `frontend/package-lock.json`. Se excluyen dependencias instaladas, resultados de compilación y configuración privada.
+
+## Correcciones S1-J01 a S1-J10 en develop
+
+Contratos: [catálogo y bajas lógicas](docs/catalogo-sprint1.md), [reglas y escala de tau](docs/reglas-sprint1.md).
+[Resultados ejecutados y pendientes](docs/evidencias/correcciones-jair-20261020.md): se distinguen pruebas simuladas, Gateway HTTP con upstream simulado y comprobaciones reales pendientes.
+La migración `20261020190757_AsignaturaActiva` debe desplegarse antes de usar el nuevo modelo; no se aplicó sobre bases existentes.
+Checks aislados: `pwsh -File scripts/test-smoke-sprint1.ps1` y, después de compilar el Gateway, `node scripts/test-gateway-rutas.cjs` (Node 20+).
+Las pruebas de `Siha.Integracion.Tests` requieren Docker Linux disponible; el smoke completo requiere la pila ya iniciada y crea datos de QA/modifica parámetros.

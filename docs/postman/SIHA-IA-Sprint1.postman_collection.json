@@ -908,7 +908,7 @@
                 "exec": [
                   "pm.test('200 OK', function () { pm.response.to.have.status(200); });",
                   "const json = pm.response.json();",
-                  "pm.test('Reglas normativas sembradas', function () { pm.expect(json.length).to.be.above(0); pm.expect(json.map(r => r.codigo)).to.include('RN-01'); });"
+                  "pm.test('Reglas normativas sembradas (ID alineado o legado documentado)', function () { pm.expect(json.length).to.be.above(0); pm.expect(json.some(r => r.esNormativa && ['RN-09', 'RN-01'].includes(r.codigo))).to.be.true; });"
                 ]
               }
             }
@@ -1346,7 +1346,7 @@
             "url": "{{baseUrl}}/api/reglas",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"codigo\": \"RN-QA\",\n  \"rutaNormativa\": \"CAU-P-122\",\n  \"tipoTramite\": \"EXTERNO\",\n  \"descripcion\": \"Regla de prueba QA del Sprint 1.\",\n  \"expresion\": \"tau>=70\",\n  \"version\": \"{{prefijo}}\",\n  \"fuente\": \"Plan de pruebas SIHA-IA\",\n  \"esNormativa\": true,\n  \"vigenteDesde\": \"2026-01-01\",\n  \"vigenteHasta\": null\n}",
+              "raw": "{\n  \"codigo\": \"RN-QA\",\n  \"rutaNormativa\": \"CAU-P-122\",\n  \"tipoTramite\": \"EXTERNO\",\n  \"descripcion\": \"Ejemplo QA de mínimo normativo de resultados de aprendizaje.\",\n  \"expresion\": \"ra>=80\",\n  \"version\": \"{{prefijo}}\",\n  \"fuente\": \"Plan de pruebas SIHA-IA\",\n  \"esNormativa\": true,\n  \"vigenteDesde\": \"2026-01-01\",\n  \"vigenteHasta\": null\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -1386,7 +1386,7 @@
             "url": "{{baseUrl}}/api/reglas",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"codigo\": \"RN-QA\",\n  \"rutaNormativa\": \"CAU-P-122\",\n  \"tipoTramite\": \"EXTERNO\",\n  \"descripcion\": \"Duplicado de la regla QA.\",\n  \"expresion\": \"tau>=70\",\n  \"version\": \"{{prefijo}}\",\n  \"fuente\": \"Plan de pruebas SIHA-IA\",\n  \"esNormativa\": true,\n  \"vigenteDesde\": \"2026-01-01\",\n  \"vigenteHasta\": null\n}",
+              "raw": "{\n  \"codigo\": \"RN-QA\",\n  \"rutaNormativa\": \"CAU-P-122\",\n  \"tipoTramite\": \"EXTERNO\",\n  \"descripcion\": \"Duplicado de la regla QA.\",\n  \"expresion\": \"ra>=80\",\n  \"version\": \"{{prefijo}}\",\n  \"fuente\": \"Plan de pruebas SIHA-IA\",\n  \"esNormativa\": true,\n  \"vigenteDesde\": \"2026-01-01\",\n  \"vigenteHasta\": null\n}",
               "options": {
                 "raw": {
                   "language": "json"

@@ -1,0 +1,14 @@
+﻿  Siha.Contracts -> C:\Users\jair\Desktop\entrega-1-Leon-Tusa-Jair-Alexander\src\BuildingBlocks\Siha.Contracts\bin\Debug\net8.0\Siha.Contracts.dll
+  Siha.Gateway -> C:\Users\jair\Desktop\entrega-1-Leon-Tusa-Jair-Alexander\src\Services\Siha.Gateway\bin\Debug\net8.0\Siha.Gateway.dll
+  Siha.BusVerifier -> C:\Users\jair\Desktop\entrega-1-Leon-Tusa-Jair-Alexander\tools\Siha.BusVerifier\bin\Debug\net8.0\Siha.BusVerifier.dll
+  Siha.MsB.Api -> C:\Users\jair\Desktop\entrega-1-Leon-Tusa-Jair-Alexander\src\Services\Siha.MsB.Api\bin\Debug\net8.0\Siha.MsB.Api.dll
+  Siha.MsA.Api -> C:\Users\jair\Desktop\entrega-1-Leon-Tusa-Jair-Alexander\src\Services\Siha.MsA.Api\bin\Debug\net8.0\Siha.MsA.Api.dll
+  Siha.MsB.Tests -> C:\Users\jair\Desktop\entrega-1-Leon-Tusa-Jair-Alexander\tests\Siha.MsB.Tests\bin\Debug\net8.0\Siha.MsB.Tests.dll
+  Siha.MsA.Tests -> C:\Users\jair\Desktop\entrega-1-Leon-Tusa-Jair-Alexander\tests\Siha.MsA.Tests\bin\Debug\net8.0\Siha.MsA.Tests.dll
+  Siha.Integracion.Tests -> C:\Users\jair\Desktop\entrega-1-Leon-Tusa-Jair-Alexander\tests\Siha.Integracion.Tests\bin\Debug\net8.0\Siha.Integracion.Tests.dll
+
+Compilaci├│n correcta.
+    0 Advertencia(s)
+    0 Errores
+
+Tiempo transcurrido 00:00:03.15

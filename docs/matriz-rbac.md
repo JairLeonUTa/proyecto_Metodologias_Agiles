@@ -86,14 +86,25 @@ transportados en el JWT como `ClaimTypes.Role` (`http://schemas.microsoft.com/ws
 | `GET /api/carreras/{id}` | `200` · `404` | `200` | `200` | `401` |
 | `POST /api/carreras` | `201` · `409` código duplicado | `403` | `403` | `401` |
 | `PUT /api/carreras/{id}` | `200` · `404` | `403` | `403` | `401` |
+| `DELETE /api/carreras/{id}` | `204` baja lógica · `404` | `403` | `403` | `401` |
 | `GET /api/mallas` (`?carreraId=`) | `200` | `200` | `200` | `401` |
 | `GET /api/mallas/{id}` | `200` · `404` | `200` | `200` | `401` |
 | `POST /api/mallas` | `201` · `400` carrera inexistente · `409` versión duplicada | `403` | `403` | `401` |
+| `PUT /api/mallas/{id}` | `200` · `400` · `404` · `409` | `403` | `403` | `401` |
+| `DELETE /api/mallas/{id}` | `204` baja lógica · `404` | `403` | `403` | `401` |
 | `GET /api/asignaturas` (`?mallaId=`, `?codigo=`) | `200` | `200` | `200` | `401` |
 | `GET /api/asignaturas/{id}` | `200` · `404` | `200` | `200` | `401` |
 | `POST /api/asignaturas` | `201` · `400` malla inexistente · `409` código duplicado en la malla | `403` | `403` | `401` |
 | `PUT /api/asignaturas/{id}` | `200` · `404` | `403` | `403` | `401` |
+| `DELETE /api/asignaturas/{id}` | `204` baja lógica · `404` | `403` | `403` | `401` |
 | `POST /api/asignaturas/importar` | `200` con `ImportacionResultadoDto` · `400` malla inexistente o lote vacío | `403` | `403` | `401` |
+
+Actualización de correcciones de Jair: `PUT /api/reglas/{id}` exige ADMINISTRADOR;
+`GET /api/reglas/historial` permite cualquier rol autenticado. Ver `reglas-sprint1.md`.
+Las nuevas bajas conservan filas e identificadores; GET expone los indicadores de actividad/vigencia.
+La configuración de Ocelot usa `rolGateway`, derivado del `ClaimTypes.Role` del JWT ya
+validado, porque `IConfiguration` interpreta los dos puntos del URI como separadores.
+Se ejecutó una regresión HTTP con Gateway real y upstream simulado; no equivale a SQL ni E2E.
 
 ### 2.5 Expedientes y bus (US-05 / US-06)
 
@@ -153,7 +164,7 @@ inválido devuelve la **misma versión** y los mismos valores.
 | R-01 | `POST /api/reglas` con `rutaNormativa = CAU-P-011`, código/versión nuevos | `201 Created` con `fuente`, `version`, `vigenteDesde`, `esNormativa` |
 | R-02 | Repetir R-01 (mismo código + ruta + versión) | `400 Bad Request` — «Ya existe una regla con el mismo código, ruta normativa y versión.» |
 | R-03 | `POST /api/reglas` con `rutaNormativa = CAU-P-999` | `400 Bad Request` — «La ruta normativa debe ser CAU-P-011 o CAU-P-122.» |
-| R-04 | `GET /api/reglas?rutaNormativa=CAU-P-122&tipoTramite=EXTERNO` | `200 OK` con RN-03, RN-04 y RN-05 (semilla) |
+| R-04 | `GET /api/reglas?rutaNormativa=CAU-P-122&tipoTramite=EXTERNO` | `200 OK` con RN-10, RN-14 y RN-02 (semilla nueva); ver correspondencia de IDs legados en `reglas-sprint1.md` |
 
 ---
 

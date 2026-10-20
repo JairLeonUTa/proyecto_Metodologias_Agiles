@@ -48,7 +48,7 @@ de consola) y el resultado coincide con el esperado. Sin evidencia, el caso qued
 | SQL Server A / B | `localhost,1433` · `localhost,14330` · `sa` / `<SIHA_SQL_PASSWORD>` |
 | Cuenta administradora (semilla) | `admin@uta.edu.ec` / `<SIHA_ADMIN_PASSWORD>` |
 | Cuentas de apoyo | `operador.qa@uta.edu.ec` / `Operador123*` (OPERADOR) y `docente.qa@uta.edu.ec` / `Docente123*` (DOCENTE) — se crean en PT-03 |
-| Datos semilla | 3 roles; umbrales CAU-P-011 (80/10/70) y CAU-P-122 (80/15/65); reglas RN-01…RN-05; 5 carreras; malla SW 2024-A con SW101/SW201/SW301 |
+| Datos semilla (instalación nueva) | 3 roles; umbrales 80/15/75 en ambas rutas; reglas RN-09/RN-13/RN-10/RN-14/RN-02; 5 carreras; malla SW 2024-A con SW101/SW201/SW301 pendientes por horas de unidades incompletas. Instalaciones existentes no se sobrescriben; ver `reglas-sprint1.md`. |
 | Colección de pruebas | `docs/postman/SIHA-IA-Sprint1.postman_collection.json` |
 
 Preparación del entorno (una sola vez por sesión):
@@ -91,7 +91,7 @@ informe de QA.
 
 | ID | Caso | Precondiciones | Pasos (resumen) | Resultado esperado | CA | Evidencia |
 |---|---|---|---|---|---|---|
-| **PT-06** | Consulta de reglas y parámetros | Token de cualquier rol | 1) `GET /api/reglas`; 2) `GET /api/reglas?rutaNormativa=CAU-P-122&tipoTramite=EXTERNO`; 3) `GET /api/reglas/parametros/CAU-P-011` | `200 OK`; RN-01…RN-05 con tipo, versión, fuente y vigencia; parámetros 80/10/70 versión 1 | US-02/CA1 | Capturas de las tres respuestas |
+| **PT-06** | Consulta de reglas y parámetros | Token de cualquier rol | 1) `GET /api/reglas`; 2) `GET /api/reglas?rutaNormativa=CAU-P-122&tipoTramite=EXTERNO`; 3) `GET /api/reglas/parametros/CAU-P-011` | `200 OK`; reglas vigentes con tipo, versión, fuente y vigencia; instalación nueva 80/15/75 versión 1 (tau porcentual, 75 = 0,75 del modelo); historial en `/api/reglas/historial` | US-02/CA1 | Capturas de las tres respuestas |
 | **PT-07** | Actualización válida de umbrales | Token de admin | 1) `PUT /api/reglas/parametros/CAU-P-011` con `{theta:82,delta:12,tau:71}`; 2) `GET` del mismo recurso | `200 OK` con `version = 2`; la consulta devuelve los nuevos valores | US-02/CA2 | Captura `PUT` + `GET` |
 | **PT-08** | Umbrales inválidos sin mutación | Token de admin; parámetros en 82/12/71 (tras PT-07) | 1) `PUT` con `{theta:50,delta:80,tau:60}` (δ > θ); 2) `PUT` con `{theta:-1,...}`; 3) `PUT` con `{theta:101,...}`; 4) `PUT` con `{theta:50,delta:10,tau:120}`; 5) `GET` de verificación | Cada `PUT` responde `400 Bad Request` con el mensaje de la regla; el `GET` final conserva **82/12/71 versión 2** (sin mutación) | US-02/CA2 | Capturas de los cuatro `400` + `GET` final |
 | **PT-09** | RBAC de reglas | Tokens OPERADOR y DOCENTE | 1) `PUT` parámetros con OPERADOR; 2) `POST /api/reglas` con DOCENTE; 3) `PUT` sin token; 4) `GET /api/reglas/parametros/CAU-P-999` | `403`, `403`, `401`, `404` respectivamente | US-02/CA3 | Capturas `403`/`401`/`404` |
@@ -115,7 +115,7 @@ informe de QA.
 **PT-11 · Importación de los 43 planes analíticos (caso feliz)**
 
 - **Precondición:** `mallaId` obtenido en PT-10 (o malla SW 2024-A), token de admin, catálogo base sin los códigos a importar.
-- **Datos:** lote JSON con los **43 planes** de la carrera, cada uno con `codigo`, `nombre`, `creditos`, `horas = creditos × 48` y al menos dos unidades temáticas cuya suma de horas ≤ `horas` declaradas.
+- **Datos:** lote JSON con los **43 planes** de la carrera, cada uno con `codigo`, `nombre`, `creditos`, `horas = creditos × 48` y unidades temáticas cuya suma de horas sea igual a `horas` declaradas. No deducir unidades ausentes: guardar el plan pendiente con advertencias.
 - **Pasos:** 1) `POST /api/asignaturas/importar` con el lote; 2) `GET /api/asignaturas?mallaId={id}`; 3) contar las asignaturas con `planCompleto = true`.
 - **Resultado esperado:** `200 OK`; `total = 43`, `importadas = 43`, `rechazadas = 0`, `errores = []`; las 43 asignaturas quedan con `planCompleto = true` y visibles en la consulta.
 - **CA:** US-03/CA1, CA3 (los planes completos pasan a estar listos para el análisis semántico).
@@ -140,7 +140,7 @@ informe de QA.
 | PT-14a | Plan sin unidades temáticas (`unidades: []`) | Importado con `planCompleto = false`; error «no tiene unidades temáticas; queda pendiente» |
 | PT-14b | Plan con `creditos = 0` | `planCompleto = false`; «no declara créditos válidos» |
 | PT-14c | Plan cuyas unidades suman más horas que las declaradas | `planCompleto = false`; «suma N h en unidades y supera las M h declaradas» |
-| PT-14d | Plan con número de unidad repetido | `planCompleto = false`; «repite el número de unidad» |
+| PT-14d | Plan con número de unidad repetido | Rechazo del elemento importado (o 400 en crear/editar), sin persistir unidades duplicadas; se conserva el índice único |
 | PT-14e | Plan con `codigo` o `nombre` vacío | `rechazadas +1`; «el código y el nombre son obligatorios» |
 | PT-14f | Lote vacío `asignaturas: []` | `400 Bad Request` — «Debe enviar al menos una asignatura para la importación.» |
 | PT-14g | `mallaId` inexistente | `400 Bad Request` — «La malla 999 no existe en el catálogo.» |
