@@ -78,6 +78,7 @@ public class SihaDbContextA : DbContext
         modelBuilder.Entity<Asignatura>(e =>
         {
             e.ToTable("ASIGNATURA");
+            e.Property(x => x.Activa).HasDefaultValue(true);
             // CA3 de US-03: códigos duplicados dentro de una malla se rechazan.
             e.HasIndex(x => new { x.MallaId, x.Codigo }).IsUnique();
             e.Property(x => x.Codigo).HasMaxLength(30).IsRequired();

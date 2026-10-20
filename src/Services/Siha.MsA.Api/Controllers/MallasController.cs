@@ -60,8 +60,11 @@ public class MallasController : ControllerBase
             return BadRequest(new { mensaje = $"La carrera {request.CarreraId} no existe." });
         }
 
-        var version = request.Version.Trim();
-        if (await _db.Mallas.AnyAsync(m => m.CarreraId == request.CarreraId && m.Version == version))
+        var error = Validar(request.Version, request.Anio, request.Fuente, request.RutaNormativa);
+        if (error is not null) return BadRequest(new { mensaje = error });
+
+        var version = request.Version.Trim().ToUpperInvariant();
+        if (await _db.Mallas.AnyAsync(m => m.CarreraId == request.CarreraId && m.Version.Trim().ToUpper() == version))
         {
             return Conflict(new { mensaje = $"La carrera {carrera.Codigo} ya tiene la versión de malla {version}." });
         }
@@ -72,7 +75,7 @@ public class MallasController : ControllerBase
             Version = version,
             Anio = request.Anio,
             Fuente = request.Fuente.Trim(),
-            RutaNormativa = request.RutaNormativa,
+            RutaNormativa = request.RutaNormativa?.Trim().ToUpperInvariant(),
             Vigente = request.Vigente,
             Carrera = carrera
         };
@@ -82,4 +85,51 @@ public class MallasController : ControllerBase
 
         return CreatedAtAction(nameof(Obtener), new { id = malla.Id }, Mapeos.AMallaDto(malla, 0));
     }
+
+    [HttpPut("{id:int}")]
+    [Authorize(Roles = RolesSistema.Administrador)]
+    [ProducesResponseType(typeof(MallaDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    public async Task<ActionResult<MallaDto>> Actualizar(int id, [FromBody] ActualizarMallaRequest request)
+    {
+        var malla = await _db.Mallas.Include(m => m.Carrera).Include(m => m.Asignaturas)
+            .FirstOrDefaultAsync(m => m.Id == id);
+        if (malla is null) return NotFound();
+        var error = Validar(request.Version, request.Anio, request.Fuente, request.RutaNormativa);
+        if (error is not null) return BadRequest(new { mensaje = error });
+
+        var version = request.Version.Trim().ToUpperInvariant();
+        if (await _db.Mallas.AnyAsync(m => m.Id != id && m.CarreraId == malla.CarreraId &&
+            m.Version.Trim().ToUpper() == version))
+            return Conflict(new { mensaje = $"La carrera ya tiene la versión de malla {version}." });
+
+        malla.Version = version;
+        malla.Anio = request.Anio;
+        malla.Fuente = request.Fuente.Trim();
+        malla.RutaNormativa = request.RutaNormativa?.Trim().ToUpperInvariant();
+        malla.Vigente = request.Vigente;
+        await _db.SaveChangesAsync();
+        return Ok(Mapeos.AMallaDto(malla, malla.Asignaturas.Count));
+    }
+
+    [HttpDelete("{id:int}")]
+    [Authorize(Roles = RolesSistema.Administrador)]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> Eliminar(int id)
+    {
+        var malla = await _db.Mallas.FindAsync(id);
+        if (malla is null) return NotFound();
+        malla.Vigente = false;
+        await _db.SaveChangesAsync();
+        return NoContent();
+    }
+
+    private static string? Validar(string version, int anio, string fuente, string? ruta) =>
+        string.IsNullOrWhiteSpace(version) || version.Trim().Length > 20 || anio is < 1990 or > 2100 ||
+        string.IsNullOrWhiteSpace(fuente) || fuente.Trim().Length > 200 || ruta?.Length > 20
+            ? "Versión (máximo 20), año (1990–2100), fuente (máximo 200) y ruta (máximo 20) deben ser válidos."
+            : null;
 }

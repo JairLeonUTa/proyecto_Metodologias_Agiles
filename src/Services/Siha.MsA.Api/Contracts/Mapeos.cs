@@ -1,5 +1,6 @@
 using Siha.MsA.Api.Contracts.Dtos;
 using Siha.MsA.Api.Domain.Entities;
+using Siha.MsA.Api.Services;
 
 namespace Siha.MsA.Api.Contracts;
 
@@ -29,19 +30,27 @@ public static class Mapeos
         m.Vigente,
         totalAsignaturas);
 
-    public static AsignaturaDto AAsignaturaDto(Asignatura a) => new(
-        a.Id,
-        a.MallaId,
-        a.Codigo,
-        a.Nombre,
-        a.Creditos,
-        a.Horas,
-        a.Semestre,
-        a.PlanCompleto,
-        a.Unidades
-            .OrderBy(u => u.Numero)
-            .Select(u => new UnidadTematicaDto(u.Numero, u.Nombre, u.Horas, u.Contenidos))
-            .ToList());
+    public static AsignaturaDto AAsignaturaDto(Asignatura a)
+    {
+        var (error, advertencias) = ValidacionCatalogo.Evaluar(a);
+        return new(
+            a.Id,
+            a.MallaId,
+            a.Codigo,
+            a.Nombre,
+            a.Creditos,
+            a.Horas,
+            a.Semestre,
+            error is null && advertencias.Count == 0,
+            a.Unidades
+                .OrderBy(u => u.Numero)
+                .Select(u => new UnidadTematicaDto(u.Numero, u.Nombre, u.Horas, u.Contenidos))
+                .ToList(),
+            a.Activa)
+        {
+            Advertencias = error is null ? advertencias : new[] { error }
+        };
+    }
 
     public static RolDto ARolDto(Rol r) => new(r.Id, r.Nombre, r.Descripcion);
 }

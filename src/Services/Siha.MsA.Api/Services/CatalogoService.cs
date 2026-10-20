@@ -45,7 +45,7 @@ public class CatalogoService : ICatalogoService
 
         var errores = new List<string>();
         var codigosEnMalla = malla.Asignaturas
-            .Select(a => a.Codigo)
+            .Select(a => a.Codigo.Trim().ToUpperInvariant())
             .ToHashSet(StringComparer.OrdinalIgnoreCase);
 
         var importadas = 0;
@@ -53,29 +53,35 @@ public class CatalogoService : ICatalogoService
 
         foreach (var item in request.Asignaturas)
         {
-            if (string.IsNullOrWhiteSpace(item.Codigo) || string.IsNullOrWhiteSpace(item.Nombre))
+            if (item is null)
             {
                 rechazadas++;
-                errores.Add("Asignatura rechazada: el código y el nombre son obligatorios.");
+                errores.Add("Asignatura rechazada: la entrada no puede ser nula.");
                 continue;
             }
 
-            if (codigosEnMalla.Contains(item.Codigo))
+            var unidades = item.Unidades ?? Array.Empty<UnidadTematicaRequest>();
+            var (error, advertencias) = ValidacionCatalogo.Validar(
+                item.Codigo, item.Nombre, item.Creditos, item.Horas, item.Semestre, unidades);
+            if (error is not null)
+            {
+                rechazadas++;
+                errores.Add($"Asignatura {item.Codigo} rechazada: {error}");
+                continue;
+            }
+
+            var codigo = item.Codigo.Trim().ToUpperInvariant();
+            if (codigosEnMalla.Contains(codigo))
             {
                 rechazadas++;
                 errores.Add($"Código duplicado en la malla {malla.Version}: {item.Codigo}.");
                 continue;
             }
 
-            var unidades = item.Unidades ?? Array.Empty<UnidadTematicaRequest>();
-            var numerosDuplicados = unidades
-                .GroupBy(u => u.Numero)
-                .Any(g => g.Count() > 1);
-
             var asignatura = new Asignatura
             {
                 MallaId = malla.Id,
-                Codigo = item.Codigo.Trim(),
+                Codigo = codigo,
                 Nombre = item.Nombre.Trim(),
                 Creditos = item.Creditos,
                 Horas = item.Horas,
@@ -87,48 +93,14 @@ public class CatalogoService : ICatalogoService
                 asignatura.Unidades.Add(new UnidadTematica
                 {
                     Numero = unidad.Numero,
-                    Nombre = unidad.Nombre,
+                    Nombre = unidad.Nombre.Trim(),
                     Horas = unidad.Horas,
                     Contenidos = unidad.Contenidos ?? string.Empty
                 });
             }
 
-            var completo = true;
-
-            if (item.Creditos <= 0)
-            {
-                completo = false;
-                errores.Add($"Advertencia: {item.Codigo} no declara créditos válidos; queda pendiente.");
-            }
-            else if (item.Horas != item.Creditos * HorasPorCreditoUta)
-            {
-                completo = false;
-                errores.Add(
-                    $"Advertencia: {item.Codigo} no cumple la equivalencia de {HorasPorCreditoUta} h/crédito UTA " +
-                    $"(esperado {item.Creditos * HorasPorCreditoUta} h, recibido {item.Horas} h); queda pendiente.");
-            }
-
-            if (unidades.Count == 0)
-            {
-                completo = false;
-                errores.Add($"Advertencia: {item.Codigo} no tiene unidades temáticas; queda pendiente.");
-            }
-
-            if (numerosDuplicados)
-            {
-                completo = false;
-                errores.Add($"Advertencia: {item.Codigo} repite el número de unidad; queda pendiente.");
-            }
-
-            var horasUnidades = unidades.Sum(u => (long)u.Horas);
-            if (horasUnidades > item.Horas)
-            {
-                completo = false;
-                errores.Add(
-                    $"Advertencia: {item.Codigo} suma {horasUnidades} h en unidades y supera las {item.Horas} h declaradas; queda pendiente.");
-            }
-
-            asignatura.PlanCompleto = completo;
+            asignatura.PlanCompleto = advertencias.Count == 0;
+            errores.AddRange(advertencias.Select(a => $"Advertencia: {codigo} {a}; queda pendiente."));
 
             _db.Asignaturas.Add(asignatura);
             codigosEnMalla.Add(asignatura.Codigo);
