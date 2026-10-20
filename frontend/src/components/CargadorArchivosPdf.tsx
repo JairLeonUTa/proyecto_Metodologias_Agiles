@@ -3,16 +3,19 @@ import { Boton, Etiqueta } from './ui';
 import { PDF } from '../types/comunes';
 import { formatearBytes, abreviarHash } from '../utils/formato';
 import { calcularSha256, validarArchivoPdf } from '../utils/validaciones';
+import type { DocumentoExpediente } from '../types/expedientes';
 
-/** Documento listo para enviarse al Microservicio B. */
+/** Documento seleccionado, con el archivo original y el estado de recepción del servidor. */
 export interface ArchivoAdjunto {
   /** Identificador local, solo para las claves de React. */
   id: string;
   nombreArchivo: string;
   tamanoBytes: number;
   hashSha256: string | null;
-  /** Archivo original (no se envía: el backend recibe la referencia de almacenamiento). */
   archivo: File;
+  estadoCarga?: 'pendiente' | 'cargando' | 'cargado' | 'error';
+  errorCarga?: string;
+  documentoServidor?: DocumentoExpediente;
 }
 
 interface PropsCargador {
@@ -155,7 +158,7 @@ export function CargadorArchivosPdf({ archivos, onCambiar, deshabilitado = false
       {archivos.length === 0 ? (
         <p className="text-xs text-slate-500">Aún no se han adjuntado documentos al expediente.</p>
       ) : (
-        <div className="overflow-hidden rounded-md border border-slate-200">
+        <div className="overflow-x-auto rounded-md border border-slate-200">
           <table className="min-w-full text-left text-sm">
             <caption className="sr-only">Documentos PDF adjuntos al expediente</caption>
             <thead className="bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
@@ -170,6 +173,9 @@ export function CargadorArchivosPdf({ archivos, onCambiar, deshabilitado = false
                   SHA-256
                 </th>
                 <th scope="col" className="px-3 py-2 font-semibold">
+                  Estado
+                </th>
+                <th scope="col" className="px-3 py-2 font-semibold">
                   Acciones
                 </th>
               </tr>
@@ -177,14 +183,34 @@ export function CargadorArchivosPdf({ archivos, onCambiar, deshabilitado = false
             <tbody className="divide-y divide-slate-100">
               {archivos.map((archivo) => (
                 <tr key={archivo.id}>
-                  <td className="px-3 py-2 text-slate-700">{archivo.nombreArchivo}</td>
-                  <td className="px-3 py-2 text-slate-600">{formatearBytes(archivo.tamanoBytes)}</td>
+                  <td className="px-3 py-2 text-slate-700">
+                    {archivo.documentoServidor?.nombreArchivo ?? archivo.nombreArchivo}
+                    {archivo.documentoServidor ? (
+                      <span className="mt-1 block font-mono text-[11px] text-slate-500">
+                        ID servidor: {archivo.documentoServidor.id}
+                      </span>
+                    ) : null}
+                    {archivo.errorCarga ? (
+                      <span role="alert" className="mt-1 block text-xs text-rose-700">{archivo.errorCarga}</span>
+                    ) : null}
+                  </td>
+                  <td className="px-3 py-2 text-slate-600">
+                    {formatearBytes(archivo.documentoServidor?.tamanoBytes ?? archivo.tamanoBytes)}
+                  </td>
                   <td className="px-3 py-2 font-mono text-xs text-slate-500">
-                    {archivo.hashSha256 ? (
-                      <span title={archivo.hashSha256}>{abreviarHash(archivo.hashSha256, 8)}</span>
+                    {(archivo.documentoServidor?.hashSha256 ?? archivo.hashSha256) ? (
+                      <span title={archivo.documentoServidor?.hashSha256 ?? archivo.hashSha256 ?? undefined}>
+                        {abreviarHash(archivo.documentoServidor?.hashSha256 ?? archivo.hashSha256 ?? '', 8)}
+                      </span>
                     ) : (
                       <Etiqueta tono="advertencia">no calculado</Etiqueta>
                     )}
+                  </td>
+                  <td className="px-3 py-2">
+                    {archivo.estadoCarga === 'cargando' ? <Etiqueta tono="marca">Subiendo…</Etiqueta> : null}
+                    {archivo.documentoServidor ? <Etiqueta tono="exito">Recibido</Etiqueta> : null}
+                    {archivo.estadoCarga === 'error' ? <Etiqueta tono="error">Pendiente de reintento</Etiqueta> : null}
+                    {!archivo.estadoCarga && !archivo.documentoServidor ? <Etiqueta tono="advertencia">Pendiente</Etiqueta> : null}
                   </td>
                   <td className="px-3 py-2">
                     <Boton
@@ -202,7 +228,7 @@ export function CargadorArchivosPdf({ archivos, onCambiar, deshabilitado = false
             </tbody>
             <tfoot>
               <tr>
-                <td colSpan={4} className="bg-slate-50 px-3 py-2 text-xs text-slate-500">
+                <td colSpan={5} className="bg-slate-50 px-3 py-2 text-xs text-slate-500">
                   {archivos.length} documento(s) · {formatearBytes(totalBytes)} en total
                 </td>
               </tr>

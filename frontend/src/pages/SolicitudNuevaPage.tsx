@@ -86,6 +86,7 @@ export function SolicitudNuevaPage(): JSX.Element {
   const [institucionPersonalizada, setInstitucionPersonalizada] = useState(false);
   const [enviando, setEnviando] = useState(false);
   const [aceptado, setAceptado] = useState<ExpedienteAceptado | null>(null);
+  const [expedientePendiente, setExpedientePendiente] = useState<ExpedienteAceptado | null>(null);
   const { mensaje, error: reportarError, limpiar } = useMensajes();
 
   const carreras = usePeticion(() => carrerasApi.listar(), []);
@@ -188,38 +189,86 @@ export function SolicitudNuevaPage(): JSX.Element {
     limpiar();
     setAceptado(null);
 
-    const nuevos = validar();
-    setErrores(nuevos);
-    if (Object.keys(nuevos).length > 0) {
-      reportarError('Revise los campos marcados antes de registrar la solicitud.');
-      return;
+    if (!expedientePendiente) {
+      const nuevos = validar();
+      setErrores(nuevos);
+      if (Object.keys(nuevos).length > 0) {
+        reportarError('Revise los campos marcados antes de registrar la solicitud.');
+        return;
+      }
     }
-
-    const filasValidas = filas.filter((fila) => fila.codigoOrigen.trim() && fila.nombreOrigen.trim());
 
     setEnviando(true);
     try {
-      const respuesta = await expedientesApi.registrar({
-        tipoTramite: formulario.tipoTramite,
-        rutaNormativa: formulario.rutaNormativa,
-        carreraOrigenCodigo: formulario.carreraOrigenCodigo.trim(),
-        carreraDestinoCodigo: formulario.carreraDestinoCodigo.trim(),
-        institucionOrigen: formulario.institucionOrigen.trim() || null,
-        documentos: archivos.map((archivo) => ({
-          nombreArchivo: archivo.nombreArchivo,
-          rutaAlmacenamiento: `expedientes/${formulario.tipoTramite.toLowerCase()}/${formulario.carreraDestinoCodigo}/${archivo.nombreArchivo}`,
-          hashSha256: archivo.hashSha256,
-          tamanoBytes: archivo.tamanoBytes,
-        })),
-        asignaturas: filasValidas.map((fila) => ({
-          codigoOrigen: fila.codigoOrigen.trim(),
-          nombreOrigen: fila.nombreOrigen.trim(),
-          codigoDestino: fila.codigoDestino || null,
-          nota: fila.nota.trim() === '' ? null : aNumero(fila.nota),
-        })),
-      });
+      let expediente = expedientePendiente;
+      if (!expediente) {
+        const filasValidas = filas.filter((fila) => fila.codigoOrigen.trim() && fila.nombreOrigen.trim());
+        expediente = await expedientesApi.registrar({
+          tipoTramite: formulario.tipoTramite,
+          rutaNormativa: formulario.rutaNormativa,
+          carreraOrigenCodigo: formulario.carreraOrigenCodigo.trim(),
+          carreraDestinoCodigo: formulario.carreraDestinoCodigo.trim(),
+          institucionOrigen: formulario.institucionOrigen.trim() || null,
+          asignaturas: filasValidas.map((fila) => ({
+            codigoOrigen: fila.codigoOrigen.trim(),
+            nombreOrigen: fila.nombreOrigen.trim(),
+            codigoDestino: fila.codigoDestino || null,
+            nota: fila.nota.trim() === '' ? null : aNumero(fila.nota),
+          })),
+        });
+        setExpedientePendiente(expediente);
+      }
 
+      let archivosActualizados = archivos;
+      if (expedientePendiente) {
+        // Una respuesta de red perdida puede ocultar una carga que sí llegó al servidor.
+        const expedienteActual = await expedientesApi.obtener(expediente.id);
+        archivosActualizados = archivos.map((archivo) => {
+          const documentoServidor = expedienteActual.documentos.find((documento) =>
+            documento.nombreArchivo === archivo.nombreArchivo &&
+            documento.tamanoBytes === archivo.tamanoBytes &&
+            documento.hashSha256.toLowerCase() === (archivo.hashSha256 ?? '').toLowerCase(),
+          );
+          return documentoServidor
+            ? { ...archivo, estadoCarga: 'cargado', errorCarga: undefined, documentoServidor }
+            : archivo;
+        });
+        setArchivos(archivosActualizados);
+      }
+
+      for (const archivo of archivosActualizados.filter((item) => !item.documentoServidor)) {
+        setArchivos((actuales) => actuales.map((item) =>
+          item.id === archivo.id ? { ...item, estadoCarga: 'cargando', errorCarga: undefined } : item,
+        ));
+        try {
+          const documentoServidor = await expedientesApi.subirDocumento(expediente.id, archivo.archivo);
+          archivosActualizados = archivosActualizados.map((item) =>
+            item.id === archivo.id
+              ? { ...item, estadoCarga: 'cargado', errorCarga: undefined, documentoServidor }
+              : item,
+          );
+          setArchivos(archivosActualizados);
+        } catch (fallo) {
+          const errorCarga = mensajeDeError(fallo);
+          archivosActualizados = archivosActualizados.map((item) =>
+            item.id === archivo.id ? { ...item, estadoCarga: 'error', errorCarga } : item,
+          );
+          setArchivos(archivosActualizados);
+          throw fallo;
+        }
+      }
+
+      const documentosCompletos = archivosActualizados.every((archivo) => Boolean(archivo.documentoServidor));
+      if (!documentosCompletos) {
+        throw new Error('Hay documentos obligatorios pendientes de carga. Reintente antes de publicar el expediente.');
+      }
+
+      const respuesta = await expedientesApi.republicar(expediente.id);
+      if (!respuesta.publicado) {
+        throw new Error(`${respuesta.mensaje} El expediente y sus documentos están guardados; la publicación sigue pendiente.`);
+      }
       setAceptado(respuesta);
+      setExpedientePendiente(null);
     } catch (fallo) {
       reportarError(mensajeDeError(fallo), detallesDeError(fallo));
     } finally {
@@ -234,6 +283,7 @@ export function SolicitudNuevaPage(): JSX.Element {
     setErrores({});
     setInstitucionPersonalizada(false);
     setAceptado(null);
+    setExpedientePendiente(null);
     limpiar();
   };
 
@@ -249,15 +299,31 @@ export function SolicitudNuevaPage(): JSX.Element {
       />
 
       {mensaje ? (
-        <Alerta tono="error" titulo="No se pudo registrar la solicitud" detalles={mensaje.detalles}>
+        <Alerta
+          tono="error"
+          titulo={expedientePendiente ? 'El expediente quedó pendiente' : 'No se pudo registrar la solicitud'}
+          detalles={mensaje.detalles}
+        >
           {mensaje.texto}
+        </Alerta>
+      ) : null}
+
+      {expedientePendiente ? (
+        <Alerta tono="advertencia" titulo="Envío pendiente: expediente aún no publicado">
+          <p>Expediente {expedientePendiente.codigo} ({expedientePendiente.id}).</p>
+          <p>
+            Documentos recibidos: {archivos.filter((archivo) => Boolean(archivo.documentoServidor)).length} de {archivos.length}.
+            {archivos.every((archivo) => Boolean(archivo.documentoServidor))
+              ? ' Todos los planes están completos; falta publicar el expediente.'
+              : ' Corrija o reintente los documentos pendientes antes de publicar.'}
+          </p>
         </Alerta>
       ) : null}
 
       {aceptado ? (
         <Tarjeta
           titulo="Solicitud registrada (HTTP 202 Accepted)"
-          descripcion="El expediente fue persistido y enviado al procesamiento asíncrono."
+          descripcion="El expediente y sus documentos fueron guardados antes de su publicación asíncrona."
         >
           <div className="space-y-4">
             <Alerta tono={aceptado.publicado ? 'exito' : 'advertencia'} titulo={`Expediente ${aceptado.codigo}`}>
@@ -316,6 +382,7 @@ export function SolicitudNuevaPage(): JSX.Element {
           void registrar();
         }}
       >
+        <fieldset disabled={Boolean(expedientePendiente || aceptado)} className="contents">
         <SeccionFormulario
           titulo="1. Datos del trámite"
           descripcion="El tipo de trámite determina la ruta normativa sugerida (CAU-P-011 o CAU-P-122)."
@@ -576,15 +643,25 @@ export function SolicitudNuevaPage(): JSX.Element {
           descripcion="Validación local de tipo y tamaño antes de enviar el expediente; el hash SHA-256 se calcula en el navegador."
         >
           {errores.documentos ? <Alerta tono="error">{errores.documentos}</Alerta> : null}
-          <CargadorArchivosPdf archivos={archivos} onCambiar={setArchivos} deshabilitado={enviando} />
+          <CargadorArchivosPdf
+            archivos={archivos}
+            onCambiar={setArchivos}
+            deshabilitado={enviando || Boolean(expedientePendiente || aceptado)}
+          />
         </SeccionFormulario>
+        </fieldset>
 
         <div className="flex flex-wrap items-center justify-end gap-2">
-          <Boton variante="secundario" onClick={reiniciar} disabled={enviando}>
+          <Boton variante="secundario" onClick={reiniciar} disabled={enviando || Boolean(expedientePendiente || aceptado)}>
             Limpiar formulario
           </Boton>
-          <Boton type="submit" cargando={enviando} textoCargando="Registrando expediente…">
-            Registrar solicitud
+          <Boton
+            type="submit"
+            cargando={enviando}
+            disabled={Boolean(aceptado)}
+            textoCargando="Registrando, cargando documentos y publicando…"
+          >
+            {expedientePendiente ? 'Reintentar carga y publicación' : 'Registrar solicitud'}
           </Boton>
         </div>
       </form>

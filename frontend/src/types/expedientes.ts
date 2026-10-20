@@ -1,12 +1,12 @@
 /** Contratos de expedientes (Microservicio B — `/api/expedientes`). */
 
 export interface DocumentoExpediente {
-  id?: string;
+  id: string;
   nombreArchivo: string;
   rutaAlmacenamiento: string;
-  hashSha256: string | null;
+  hashSha256: string;
   tamanoBytes: number;
-  fechaCargaUtc?: string;
+  fechaCargaUtc: string;
 }
 
 export interface AsignaturaExpediente {
@@ -16,19 +16,13 @@ export interface AsignaturaExpediente {
   nota: number | null;
 }
 
-/** Cuerpo de `POST /api/expedientes`. */
+/** Cuerpo de `POST /api/expedientes`; los documentos se cargan después por multipart. */
 export interface CrearExpediente {
   tipoTramite: string;
   rutaNormativa: string;
   carreraOrigenCodigo: string;
   carreraDestinoCodigo: string;
   institucionOrigen: string | null;
-  documentos: Array<{
-    nombreArchivo: string;
-    rutaAlmacenamiento: string;
-    hashSha256: string | null;
-    tamanoBytes: number;
-  }>;
   asignaturas: AsignaturaExpediente[];
 }
 

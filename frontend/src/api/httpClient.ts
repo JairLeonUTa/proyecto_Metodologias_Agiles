@@ -160,7 +160,8 @@ export async function peticion<T>(ruta: string, opciones: OpcionesPeticion = {})
     cabeceras.Authorization = `Bearer ${token}`;
   }
 
-  if (cuerpo !== undefined) {
+  const esFormulario = typeof FormData !== 'undefined' && cuerpo instanceof FormData;
+  if (cuerpo !== undefined && !esFormulario) {
     cabeceras['Content-Type'] = 'application/json';
   }
 
@@ -168,7 +169,8 @@ export async function peticion<T>(ruta: string, opciones: OpcionesPeticion = {})
   try {
     const opcionesFetch: RequestInit = { method: metodo, headers: cabeceras };
     if (cuerpo !== undefined) {
-      opcionesFetch.body = JSON.stringify(cuerpo);
+      // El navegador debe establecer el boundary de multipart/form-data.
+      opcionesFetch.body = esFormulario ? cuerpo : JSON.stringify(cuerpo);
     }
     if (senal) {
       opcionesFetch.signal = senal;
