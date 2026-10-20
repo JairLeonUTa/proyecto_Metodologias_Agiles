@@ -142,7 +142,10 @@ public class FlujoDocumentosRealTests
         mensaje.Evento.Version.Should().Be("1.1");
         mensaje.Evento.DocumentoIds.Should().Equal(documento.Id);
         mensaje.Evento.Documentos.Should().ContainSingle(d =>
-            d.DocumentoId == documento.Id && d.HashSha256 == Sha256(pdf) && d.TamanoBytes == pdf.Length);
+            d.DocumentoId == documento.Id && d.RutaAlmacenamiento == documento.RutaAlmacenamiento &&
+            d.HashSha256 == Sha256(pdf) && d.TamanoBytes == pdf.Length);
+        (await ConsultarAsync<string>(ms, $"SELECT RutaAlmacenamiento FROM EXPEDIENTE_DOC WHERE Id = '{documento.Id}'"))
+            .Should().Be(documento.RutaAlmacenamiento);
 
         (await ConsultarAsync<string>(ms, $"SELECT Estado FROM EXPEDIENTE WHERE Id = '{borrador.Id}'"))
             .Should().Be(ExpedienteEstados.PendienteContenidos);
@@ -236,6 +239,45 @@ public class FlujoDocumentosRealTests
         (await espia.EsperarAsync(borrador.Id, TimeSpan.FromSeconds(3))).Should().BeEmpty();
         (await ConsultarAsync<string>(ms, $"SELECT EstadoRecepcion FROM EXPEDIENTE_DOC WHERE Id = '{documento.Id}'"))
             .Should().Be("NO_DISPONIBLE");
+    }
+
+    [Fact]
+    public async Task Dos_adjuntos_uno_corrupto_del_mismo_tamano_no_publican_un_subconjunto()
+    {
+        await using var espia = await SuscriptorEspia.IniciarAsync(_infra);
+        await using var ms = new MsBReal(_infra);
+        var cliente = ms.ClienteOperador();
+        var borrador = await RegistrarAsync(cliente);
+        var original = Pdf("AAAA");
+        var corrupto = (await (await SubirAsync(cliente, borrador.Id, original)).Content.ReadFromJsonAsync<DocumentoResponse>())!;
+        var valido = (await (await SubirAsync(cliente, borrador.Id, Pdf("valido"))).Content.ReadFromJsonAsync<DocumentoResponse>())!;
+        var alterado = Pdf("BBBB");
+        alterado.Length.Should().Be(original.Length);
+        await File.WriteAllBytesAsync(Path.Combine(ms.RutaAlmacenamiento, corrupto.RutaAlmacenamiento), alterado);
+
+        for (var intento = 0; intento < 2; intento++)
+        {
+            var envio = await cliente.PostAsync($"/api/expedientes/{borrador.Id}/enviar", null);
+            envio.StatusCode.Should().Be(HttpStatusCode.UnprocessableEntity, await envio.Content.ReadAsStringAsync());
+            (await espia.EsperarAsync(borrador.Id, TimeSpan.FromSeconds(3))).Should().BeEmpty();
+            (await ConsultarAsync<string>(ms, $"SELECT Estado FROM EXPEDIENTE WHERE Id = '{borrador.Id}'"))
+                .Should().Be(ExpedienteEstados.PendienteDocumentos);
+            (await ConsultarAsync<string>(ms, $"SELECT EstadoRecepcion FROM EXPEDIENTE_DOC WHERE Id = '{corrupto.Id}'"))
+                .Should().Be("NO_DISPONIBLE");
+            (await ConsultarAsync<int>(ms, $"SELECT IntentosPublicacion FROM EXPEDIENTE WHERE Id = '{borrador.Id}'"))
+                .Should().Be(0);
+        }
+
+        var reemplazo = (await (await SubirAsync(cliente, borrador.Id, original)).Content.ReadFromJsonAsync<DocumentoResponse>())!;
+        (await cliente.PostAsync($"/api/expedientes/{borrador.Id}/enviar", null)).StatusCode.Should().Be(HttpStatusCode.Accepted);
+        var mensaje = (await espia.EsperarAsync(borrador.Id, EsperaMensaje)).Should().ContainSingle().Subject;
+        mensaje.Evento.DocumentoIds.Should().BeEquivalentTo(new[] { valido.Id, reemplazo.Id });
+        foreach (var referencia in mensaje.Evento.Documentos)
+        {
+            referencia.RutaAlmacenamiento.Should().Be(await ConsultarAsync<string>(ms,
+                $"SELECT RutaAlmacenamiento FROM EXPEDIENTE_DOC WHERE Id = '{referencia.DocumentoId}'"));
+        }
+        mensaje.Evento.CorrelationId.Should().Be(borrador.CorrelationId);
     }
 
     [Fact]

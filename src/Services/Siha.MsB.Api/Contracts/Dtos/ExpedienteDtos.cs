@@ -54,8 +54,8 @@ public record ExpedienteResponse(
     IReadOnlyCollection<AsignaturaResponse> Asignaturas);
 
 /// <summary>
-/// Respuesta del registro: la API devuelve HTTP 202 Accepted con el estado de procesamiento
-/// (US-06, CA2) y el identificador de correlación para el seguimiento (CA3).
+/// Registro: 201 con borrador sin publicar. Envío: 202 con resultado de publicación
+/// y correlación; no acredita recepción ni procesamiento por otro consumidor.
 /// </summary>
 public record ExpedienteAceptadoResponse(
     Guid Id,

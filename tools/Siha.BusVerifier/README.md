@@ -105,6 +105,7 @@ dotnet run --project tools/Siha.BusVerifier -- --uri rabbitmq://192.168.1.50:567
 # Autoprueba: no requiere que el Microservicio B esté levantado.
 # Publica un SolicitudCreadaEvent sintético, comprueba que el contrato viaja íntegro
 # y termina con código 0 (útil en CI o para validar credenciales del bus).
+# No demuestra almacenamiento/validación de PDF por B ni recepción por C.
 dotnet run --project tools/Siha.BusVerifier -- --prueba
 ```
 
@@ -121,7 +122,7 @@ Terminal 1 — verificador a la escucha:
 dotnet run --project tools/Siha.BusVerifier
 ```
 
-Terminal 2 — registro de un expediente contra el API Gateway:
+Terminal 2 — borrador → carga → envío contra el API Gateway (PowerShell 7):
 
 ```powershell
 $login = Invoke-RestMethod -Method Post -Uri http://localhost:5000/api/auth/login `
@@ -133,14 +134,23 @@ $resp = Invoke-WebRequest -Method Post -Uri http://localhost:5000/api/expediente
   -ContentType "application/json" -Body '{
     "tipoTramite":"INTERNO","rutaNormativa":"CAU-P-011",
     "carreraOrigenCodigo":"SW","carreraDestinoCodigo":"TI","institucionOrigen":"UTA",
-    "documentos":[{"nombreArchivo":"record.pdf","rutaAlmacenamiento":"/data/record.pdf","hashSha256":"abc","tamanoBytes":1024}],
-    "asignaturas":[{"codigoOrigen":"SW101","nombreOrigen":"Fundamentos de Programación","codigoDestino":"TI101","nota":18}]}'
+    "asignaturas":[{"codigoOrigen":"SW101","nombreOrigen":"Fundamentos de Programación","codigoDestino":"TI101","nota":8.5,"fechaAprobacionCertificada":"2025-07-15"}]}'
 
-$resp.StatusCode                                     # 202 Accepted
-($resp.Content | ConvertFrom-Json).correlationId      # igual al CorrelationId que imprime el verificador
+$resp.StatusCode # 201 Created, sin evento
+$borrador = $resp.Content | ConvertFrom-Json
+$documento = Invoke-RestMethod -Method Post -Uri "http://localhost:5000/api/expedientes/$($borrador.id)/documentos" `
+  -Headers $headers -Form @{ archivo = Get-Item './docs/postman/muestras/record-academico.pdf' }
+$envio = Invoke-RestMethod -Method Post -Uri "http://localhost:5000/api/expedientes/$($borrador.id)/enviar" -Headers $headers
+$envio # 202 no prueba recepción; publicado=false indica fallo del bus
 ```
 
-El verificador muestra el evento con este formato (extracto real de una ejecución del Sprint 1):
+**Verificar recepción**, no solo HTTP: esperar el evento en esta consola independiente y comparar `ExpedienteId=$borrador.id`, `CorrelationId=$borrador.correlationId`, `MessageId=$borrador.id`, `Version=1.1` y las referencias `Documentos` (ID/ruta/hash/tamaño) con la carga y DB B/disco. El verificador no acredita consumo por C.
+
+Si falta un PDF previamente validado o cambia tamaño/hash, B devuelve **422** y no publica ni siquiera el subconjunto que alcance el mínimo. Queda `NO_DISPONIBLE`; recargar el mismo contenido y usar `/enviar`. Reintentar sin corregir sigue bloqueado. `RECHAZADO`/`RETIRADO` no se incluyen ni bloquean.
+
+**Coordinación pendiente con Sebastián y Alex:** no hay canal en esta sesión, no se realizó contacto ni se obtuvo aceptación. El acceso autorizado de C al binario sigue pendiente: `RutaAlmacenamiento` no es URL pública ni permiso de acceso; no se añade endpoint de descarga. La regresión real nueva está preparada, **no ejecutada por Docker no disponible**; pruebas InMemory/Moq se etiquetan simuladas.
+
+El siguiente es un **extracto histórico v1.0**, no evidencia del nuevo flujo v1.1 ni de esta revisión. Para el contrato vigente, ver `docs/contrato-solicitud-creada-event.md`:
 
 ```
 ======================================================================================

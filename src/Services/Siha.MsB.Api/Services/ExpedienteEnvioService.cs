@@ -46,7 +46,7 @@ public sealed record ResultadoEnvio(
 ///  1. El expediente se registra como <c>PENDIENTE_DOCUMENTOS</c> (sin evento).
 ///  2. Los PDF se cargan y validan en el servidor (<c>POST /api/expedientes/{id}/documentos</c>).
 ///  3. Al enviar, este servicio comprueba en disco cada documento VALIDADO (existencia, tamaño y
-///     SHA-256 recalculado). Solo si se cumple el mínimo documental reserva el expediente con
+///     SHA-256 recalculado). Solo si todos siguen íntegros y se cumple el mínimo documental reserva el expediente con
 ///     concurrencia optimista (<c>PUBLICACION_EN_CURSO</c>) y publica <see cref="SolicitudCreadaEvent"/>
 ///     con las referencias verificadas. Ningún dato del cliente llega al bus.
 ///  4. Si el bus falla, queda <c>REGISTRADO_PENDIENTE_PUBLICACION</c> y se reintenta conservando el
@@ -106,7 +106,7 @@ public class ExpedienteEnvioService
         var (verificados, problemas) = await VerificarDocumentosAsync(expediente, cancellationToken);
         var minimo = Math.Max(1, _opcionesArchivos.MinimoDocumentosRequeridos);
 
-        if (verificados.Count < minimo)
+        if (problemas.Count > 0 || verificados.Count < minimo)
         {
             // Si el expediente venía de un fallo de publicación y sus archivos ya no están, vuelve a
             // borrador para que el operador los cargue de nuevo.
@@ -119,8 +119,11 @@ public class ExpedienteEnvioService
                     "El expediente fue modificado por otra operación. Consulte su estado e intente de nuevo.");
             }
 
-            var detalles = problemas.Prepend(
-                $"Se requieren al menos {minimo} documento(s) PDF validado(s) y disponible(s); hay {verificados.Count}.").ToList();
+            var detalles = problemas.ToList();
+            if (verificados.Count < minimo)
+            {
+                detalles.Insert(0, $"Se requieren al menos {minimo} documento(s) PDF validado(s) y disponible(s); hay {verificados.Count}.");
+            }
 
             _logger.LogWarning(
                 "Envío rechazado por requisitos documentales. ExpedienteId={ExpedienteId} CorrelationId={CorrelationId} Verificados={Verificados} Minimo={Minimo}",
@@ -246,11 +249,20 @@ public class ExpedienteEnvioService
 
             documento.EstadoRecepcion = EstadosRecepcionDocumento.NoDisponible;
             documento.ObservacionValidacion = Recortar(verificacion.Motivo, 500);
-            problemas.Add($"'{documento.NombreArchivo}' ({documento.Id}): {verificacion.Motivo}");
 
             _logger.LogWarning(
                 "Documento no disponible al verificar antes de publicar. ExpedienteId={ExpedienteId} DocumentoId={DocumentoId} Motivo={Motivo}",
                 expediente.Id, documento.Id, verificacion.Motivo);
+        }
+
+        // NO_DISPONIBLE no desaparece de los requisitos al reintentar. La recarga del mismo
+        // contenido (hash y tamaño del servidor) sustituye la referencia fallida para el envío.
+        // ponytail: búsqueda O(n²) para pocos adjuntos; usar HashSet de (hash, tamaño) si aumenta el volumen.
+        foreach (var documento in expediente.Documentos.Where(d =>
+                     d.EstadoRecepcion == EstadosRecepcionDocumento.NoDisponible &&
+                     !verificados.Any(v => v.HashSha256 == d.HashSha256 && v.TamanoBytes == d.TamanoBytes)))
+        {
+            problemas.Add($"'{documento.NombreArchivo}' ({documento.Id}): {documento.ObservacionValidacion} Recargue el mismo PDF antes de enviar.");
         }
 
         return (verificados, problemas);

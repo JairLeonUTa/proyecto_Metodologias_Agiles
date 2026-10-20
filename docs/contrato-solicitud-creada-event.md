@@ -4,7 +4,7 @@
 **Institución:** Universidad Técnica de Ambato — FISEI — Metodologías Ágiles
 **Sprint:** 1 (Base del Sistema) · **Tarea:** S1-P01
 **Autor:** Paul Medardo Acurio López — Product Owner Proxy & QA/AI Lead
-**Versión del documento:** 1.1 · **Versión del contrato:** 1.1 · **Estado:** Aprobado para Sprint 1
+**Versión del documento:** 1.1 · **Versión del contrato:** 1.1 · **Estado:** Implementado; coordinación de esta revisión pendiente
 **Fecha:** 18 de octubre de 2026 · **Revisión 1.1:** 19 de octubre de 2026 (Sebastián Miranda — integración de documentos)
 
 > **Cambios de la versión 1.1 (aditivos, regla EV-02):**
@@ -17,6 +17,19 @@
 > 3. `MessageId` del envelope = `ExpedienteId`: si un reintento llegara a publicar dos veces, el
 >    consumidor puede descartar el duplicado. El `CorrelationId` sigue siendo el original.
 > 4. `Version` = `"1.1"`.
+
+---
+
+## Coordinación pendiente (20 de octubre de 2026)
+
+No hay canal de contacto disponible en esta sesión: **no se contactó a Sebastián ni a Alex y no consta su aceptación**. Pendiente revisar con ambos el flujo borrador → carga → enviar, la presentación de errores 422 y la evidencia de recepción independiente.
+
+- Registrar devuelve **201** y no publica. Cargar PDF devuelve **201** (o **200** por contenido repetido). Solo `/enviar` o `/republicar` publican mediante `ExpedienteEnvioService`.
+- Si un adjunto previamente `VALIDADO` falta o cambia de tamaño/SHA-256, devuelve **422 sin publicar un subconjunto**, aunque otro PDF cumpla el mínimo. Queda `NO_DISPONIBLE`, con motivo consultable; el expediente vuelve a `PENDIENTE_DOCUMENTOS`.
+- Reintentar no omite ese fallo: recargar el mismo contenido (hash y tamaño calculados por B) y usar `/enviar`. La referencia antigua se conserva como auditoría y solo la nueva validada viaja. `RECHAZADO` y `RETIRADO` no bloquean. No hay relación explícita de reemplazo por contenido diferente.
+- **202 no demuestra recepción**: puede incluir `publicado=false` por fallo del bus. Incluso `publicado=true` no prueba consumo por C. Exigir recepción en suscriptor independiente con `ExpedienteId`, `CorrelationId`, `MessageId` y referencias contrastadas con DB B/disco.
+- `RutaAlmacenamiento` es relativa al almacenamiento de B, no una URL pública ni autorización de acceso. **El mecanismo autorizado de acceso de C sigue pendiente de decisión** con el equipo; no se agrega ni se promete un endpoint de descarga.
+- Verificación local de esta revisión: pruebas con InMemory/Moq son **simuladas**; la nueva regresión SQL Server/RabbitMQ queda preparada, **no ejecutada** por Docker no disponible. No hay nueva evidencia E2E ni aceptación de C.
 
 ---
 
@@ -55,7 +68,7 @@ Tipo .NET: `public sealed record SolicitudCreadaEvent` (`Siha.Contracts.Events`,
 | 5 | `RutaNormativa` | `string` | string | **Sí** | Ruta normativa institucional aplicable. Dominio cerrado: `CAU-P-011` \| `CAU-P-122` (`RutasNormativas`). | `CAU-P-011` |
 | 6 | `CarreraOrigenCodigo` | `string` | string | **Sí** | Código de la carrera de origen (malla origen del catálogo del MS A). | `SW` |
 | 7 | `CarreraDestinoCodigo` | `string` | string | **Sí** | Código de la carrera receptora (malla destino). | `TI` |
-| 8 | `DocumentoIds` | `IReadOnlyCollection<Guid>` | array&lt;string&gt; | **Sí** (puede ir vacía) | **Referencias** a los registros `EXPEDIENTE_DOC` de DB B (no binarios, no rutas compartidas en claro). C resuelve el archivo por su cuenta. | `["ffa6954a-…", "c5d4685e-…"]` |
+| 8 | `DocumentoIds` | `IReadOnlyCollection<Guid>` | array&lt;string&gt; | **Sí** | Referencias a `EXPEDIENTE_DOC` de DB B, coincidentes 1:1 con `Documentos`; el flujo de envío exige mínimo 1. | `["ffa6954a-…"]` |
 | 9 | `AsignaturasOrigen` | `IReadOnlyCollection<string>` | array&lt;string&gt; | **Sí** (puede ir vacía) | Códigos de las asignaturas de origen seleccionadas para homologación. | `["SW101", "SW201"]` |
 | 10 | `Estado` | `string` | string | **Sí** | Estado del expediente al publicar. En el flujo normal es `PENDIENTE_CONTENIDOS`. | `PENDIENTE_CONTENIDOS` |
 | 11 | `FechaCreacionUtc` | `DateTimeOffset` | string (ISO-8601) | **Sí** | Marca temporal de creación del expediente, **siempre en UTC**. | `2026-10-18T15:09:15.3705354+00:00` |
@@ -64,16 +77,16 @@ Tipo .NET: `public sealed record SolicitudCreadaEvent` (`Siha.Contracts.Events`,
 
 ### 2.1 Reglas de obligatoriedad
 
-1. Los 12 campos viajan **siempre**: el contrato no tiene propiedades opcionales ni campos que se
+1. Los 13 campos viajan **siempre** en v1.1: el contrato no tiene propiedades opcionales ni campos que se
    omitan por `null` (las colecciones vacías se serializan como `[]`, nunca como `null`).
-2. `DocumentoIds` y `AsignaturasOrigen` pueden ser **colecciones vacías**, pero **siempre presentes**.
+2. Las colecciones siempre están presentes. B exige al menos `max(1, Archivos:MinimoDocumentosRequeridos)` documentos íntegros al enviar; los valores vacíos por defecto del tipo no autorizan un envío vacío.
 3. Los dominios cerrados (`TipoTramite`, `RutaNormativa`, `Estado`) se validan en B **antes** de
    publicar: un evento en el bus nunca contiene un valor fuera de dominio.
 4. `CorrelationId` es obligatorio y **no nulo** (`Guid.Empty` se considera inválido).
 
 ### 2.2 Ejemplo JSON del mensaje (cuerpo del evento)
 
-Serialización **verificada en el bus** (captura real del Sprint 1, envelope MassTransit, clave `message`):
+Ejemplo ilustrativo v1.1 (no es una nueva captura de recepción; clave `message` del envelope MassTransit):
 
 ```json
 {
@@ -85,8 +98,7 @@ Serialización **verificada en el bus** (captura real del Sprint 1, envelope Mas
   "carreraOrigenCodigo": "SW",
   "carreraDestinoCodigo": "TI",
   "documentoIds": [
-    "ffa6954a-64c4-472e-9aab-3bfd5c3b4e91",
-    "c5d4685e-189c-49a8-9004-ac448416ddce"
+    "ffa6954a-64c4-472e-9aab-3bfd5c3b4e91"
   ],
   "asignaturasOrigen": ["SW101", "SW201"],
   "estado": "PENDIENTE_CONTENIDOS",
@@ -124,7 +136,7 @@ Fundamento y consecuencias:
 | Base64 en el cuerpo | **Prohibido** | Infla el mensaje ~33 % y evita la validación antivirus/formato en el punto de ingreso. |
 | Rutas de red compartidas | **Prohibido** | Acopla C a la topología de disco de B y rompe el aislamiento de microservicios. |
 | Referencia válida | `Guid` de `EXPEDIENTE_DOC` en DB B | C resuelve el documento por su propia vía de acceso autorizada. |
-| Integridad | `HashSha256` + `TamanoBytes` quedan en DB B (no en el evento) | Permite auditar la evidencia sin transportarla. |
+| Integridad | `HashSha256` + `TamanoBytes` en DB B y en `Documentos` del evento v1.1 | Permite contrastar referencias sin transportar binarios. |
 | Tamaño esperado del evento | **< 4 KB** (típico < 2 KB) | Garantiza publicación en < 100 ms y *ack* inmediato. |
 | Límite duro operativo | **256 KB** | Si se supera, es un error de diseño: B debe rechazar la publicación. |
 | Retención/expiración | `ExpirationTime` nulo (sin TTL por mensaje) | La cola del consumidor define su política de retención y *dead-letter*. |
@@ -145,7 +157,7 @@ El `CorrelationId` es el **hilo conductor de la trazabilidad extremo a extremo**
 | **Dónde se persiste** | `EXPEDIENTE.CorrelationId` (DB B). Es un dato del expediente, no del mensaje: sobrevive a reinicios, fallos del bus y republicaciones. |
 | **Cuándo se propaga** | En cada publicación y en **cada reintento**. El publicador lo asigna también al contexto de MassTransit: `Publish(evento, ctx => ctx.CorrelationId = evento.CorrelationId)`. |
 | **Qué NO debe pasar** | Que un reintento genere un `CorrelationId` nuevo. Un `CorrelationId` distinto en un reintento del mismo expediente rompe la conciliación y **es un defecto bloqueante**. |
-| **Qué recibe el usuario** | El `CorrelationId` viaja en la respuesta `202 Accepted` (`ExpedienteAceptadoResponse.CorrelationId`) y en `GET /api/expedientes/{id}`. |
+| **Qué recibe el usuario** | El `CorrelationId` viaja desde el registro **201**, en el envío **202** (`ExpedienteAceptadoResponse.CorrelationId`) y en `GET /api/expedientes/{id}`. |
 | **Qué imprime el sistema** | B lo registra en cada log de publicación (`CorrelationId={CorrelationId}`), el suscriptor de verificación lo imprime y el verificador de QA (`tools/Siha.BusVerifier`) lo muestra en pantalla. |
 | **Qué hace C** | Lo conserva en su contexto (`ConsumeContext.CorrelationId`), lo usa como clave de sus trazas y lo devuelve en el evento de resultado del Sprint 2. |
 | **Nivel de transporte** | MassTransit lo copia a la cabecera AMQP `correlation_id` de la publicación, de modo que el propio RabbitMQ lo conoce (visible en el panel: *Get Message → Properties*). |
@@ -193,7 +205,7 @@ MassTransit** (cuerpo del mensaje AMQP) y los últimos son **propiedades AMQP** 
 ```mermaid
 flowchart LR
     subgraph MSB["Microservicio B · Expedientes (US-05/US-06)"]
-        API["ExpedientesController.Registrar\n202 Accepted"]
+        API["Registrar 201 → cargar PDF → Enviar\nExpedienteEnvioService verifica disco"]
         PUB["ExpedienteEventPublisher\n3 reintentos + CorrelationId"]
         API --> PUB
     end
@@ -236,8 +248,15 @@ sequenceDiagram
     GW->>GW: valida JWT y RBAC (OPERADOR|ADMINISTRADOR)
     GW->>B: reenvía la petición
     B->>B: valida dominio (TipoTramite, RutaNormativa)
-    B->>DB: INSERT EXPEDIENTE (Estado=REGISTRADO, CorrelationId=nuevo)
+    B->>DB: INSERT EXPEDIENTE (Estado=PENDIENTE_DOCUMENTOS, CorrelationId=nuevo)
     DB-->>B: expediente persistido (ExpedienteId)
+    B-->>OP: 201 Created (sin publicación)
+    OP->>B: POST /api/expedientes/{id}/documentos (PDF multipart)
+    B->>DB: Metadatos calculados por B tras almacenar el PDF
+    B-->>OP: 201 Created (200 si contenido ya validado)
+    OP->>B: POST /api/expedientes/{id}/enviar
+    B->>B: Verifica existencia, tamaño y SHA-256 de todos los adjuntos aceptados
+    Note over B: Si falla alguno o no alcanza mínimo: 422, sin publicación
 
     Note over B,DB: 1º se persiste, después se publica (CA3 de US-06)
 
@@ -254,7 +273,7 @@ sequenceDiagram
 
     MQ->>C: entrega en la cola del Microservicio C
     C->>C: deserializa IConsumer<SolicitudCreadaEvent>
-    C->>DB: (vía su propio acceso autorizado) resuelve DocumentoIds
+    Note over C,DB: Acceso autorizado al binario pendiente de decisión; la ruta relativa no lo concede
     Note over C: NO recibe binarios: solo referencias (R-01)
     C->>C: extracción y análisis semántico (Sprint 2/3)
     C-->>MQ: publica evento de resultado (Sprint 2)
@@ -265,9 +284,10 @@ Secuencia resumida en texto (para la sustentación):
 ```
 Operador → Gateway (JWT + RBAC) → MS B
    1. valida dominio (INTERNO/EXTERNO, CAU-P-011/CAU-P-122)
-   2. persiste en DB B (Estado=REGISTRADO, CorrelationId nuevo)   ← 1º persistir
-   3. publica SolicitudCreadaEvent en RabbitMQ                    ← 2º publicar
-   4. actualiza Estado=PENDIENTE_CONTENIDOS y responde 202 Accepted
+   2. persiste borrador PENDIENTE_DOCUMENTOS, CorrelationId nuevo → 201 (sin evento)
+   3. carga PDF en B → valida y almacena → 201/200
+   4. /enviar verifica todos los adjuntos y el mínimo → 422 sin evento si falla
+   5. publica SolicitudCreadaEvent y actualiza PENDIENTE_CONTENIDOS → 202 (no prueba recepción)
    └─ si el bus falla: Estado=REGISTRADO_PENDIENTE_PUBLICACION (conserva CorrelationId) y permite /republicar
 RabbitMQ → MS C: entrega el evento (solo referencias), C procesa y publica el resultado.
 ```
@@ -291,12 +311,12 @@ RabbitMQ → MS C: entrega el evento (solo referencias), C procesa y publica el 
 
 | # | Verificación | Cómo se comprueba | Caso del plan |
 |---|---|---|---|
-| V-01 | El evento contiene los 12 campos con los valores del expediente | `tools/Siha.BusVerifier` imprime el cuerpo JSON completo | PT-23 |
+| V-01 | El evento contiene los 13 campos v1.1 con los valores del expediente | Suscriptor independiente; contrastar IDs/rutas/hash/tamaño con DB B y disco | PT-23 |
 | V-02 | **No hay binarios**: solo `N` referencias de documento | Mensaje < 4 KB; `documentoIds` con UUID; sin `content` ni *attachment* | PT-23, PT-22 |
 | V-03 | `Content-Type` = `application/vnd.masstransit+json` | Propiedades del mensaje en el panel de RabbitMQ | PT-23 |
 | V-04 | El `CorrelationId` del evento = el devuelto por la API | Comparar `202.correlationId` con la salida del verificador | PT-23, PT-24 |
 | V-05 | Tras un fallo del bus, el expediente queda recuperable con el **mismo** `CorrelationId` | Prueba de recuperación (S1-P09) | PT-24 |
-| V-06 | El consumidor C no necesita binarios ni rutas compartidas | Revisión de `documentoIds` y del origen del expediente | PT-22, PT-23 |
+| V-06 | El bus no lleva binarios; el acceso autorizado de C sigue pendiente | Revisión de `documentoIds`/`documentos`; no confundir referencia con acceso | PT-22, PT-23 |
 
 Procedimiento rápido (copiable):
 
@@ -307,7 +327,7 @@ docker compose up -d rabbitmq
 # 2) Suscribir el verificador del contrato (S1-P04) en una terminal
 dotnet run --project tools/Siha.BusVerifier
 
-# 3) En otra terminal, registrar un expediente contra el Gateway
+# 3) En otra terminal (PowerShell 7), registrar, cargar y enviar contra el Gateway
 $login = Invoke-RestMethod -Method Post -Uri http://localhost:5000/api/auth/login `
   -ContentType "application/json" `
   -Body '{"correoInstitucional":"admin@uta.edu.ec","password":"<SIHA_ADMIN_PASSWORD>"}'
@@ -317,11 +337,15 @@ $resp = Invoke-WebRequest -Method Post -Uri http://localhost:5000/api/expediente
   -ContentType "application/json" -Body '{
     "tipoTramite":"INTERNO","rutaNormativa":"CAU-P-011",
     "carreraOrigenCodigo":"SW","carreraDestinoCodigo":"TI","institucionOrigen":"UTA",
-    "documentos":[{"nombreArchivo":"record.pdf","rutaAlmacenamiento":"/data/record.pdf","hashSha256":"abc","tamanoBytes":1024}],
-    "asignaturas":[{"codigoOrigen":"SW101","nombreOrigen":"Fundamentos de Programación","codigoDestino":"TI101","nota":18}]}'
+    "asignaturas":[{"codigoOrigen":"SW101","nombreOrigen":"Fundamentos de Programación","codigoDestino":"TI101","nota":8.5,"fechaAprobacionCertificada":"2025-07-15"}]}'
 
-$resp.StatusCode                      # 202 Accepted
-($resp.Content | ConvertFrom-Json).correlationId   # debe coincidir con el del verificador
+$resp.StatusCode                      # 201 Created: todavía no hay evento
+$borrador = $resp.Content | ConvertFrom-Json
+$pdf = Get-Item './docs/postman/muestras/record-academico.pdf'
+Invoke-RestMethod -Method Post -Uri "http://localhost:5000/api/expedientes/$($borrador.id)/documentos" `
+  -Headers $headers -Form @{ archivo = $pdf }
+$envio = Invoke-RestMethod -Method Post -Uri "http://localhost:5000/api/expedientes/$($borrador.id)/enviar" -Headers $headers
+$envio # 202 no demuestra recepción: contrastar IDs/correlación/referencias en el suscriptor
 ```
 
 Evidencia a adjuntar: captura del verificador con el evento completo y captura del panel de RabbitMQ
@@ -334,8 +358,8 @@ consumidor enlazado).
 
 | Requisito | Sección de este documento | Implementación en código |
 |---|---|---|
-| US-06 · CA1 — evento con referencias mínimas, sin binarios | §2, §3 | `SolicitudCreadaEvent`, `ExpedientesController.ConstruirEvento` |
-| US-06 · CA2 — HTTP 202 y `PENDIENTE_CONTENIDOS` | §2 (campo `Estado`), §6 | `ExpedientesController.Registrar`, `ExpedienteAceptadoResponse` |
+| US-06 · CA1 — evento con referencias mínimas, sin binarios | §2, §3 | `SolicitudCreadaEvent`, `ExpedienteEnvioService.ConstruirEvento` |
+| US-06 · CA2 — HTTP 202 del envío (no prueba recepción) | §2 (campo `Estado`), §6 | `ExpedientesController.Enviar`, `ExpedienteEnvioService`, `ExpedienteAceptadoResponse` |
 | US-06 · CA3 — estado recuperable y correlación preservada | §4, §6 | `ExpedienteEventPublisher` (3 reintentos), `ExpedientesController.Republicar` |
 | US-05 · CA3 — consulta del estado de recepción | §4 | `GET /api/expedientes/{id}` con `CorrelationId` y `IntentosPublicacion` |
 | Sprint 2 · MS C — consumo del contrato | §5, §6 | `VerificacionSolicitudConsumer` (referencia) y `tools/Siha.BusVerifier` (S1-P04) |
@@ -347,6 +371,6 @@ consumidor enlazado).
 - `src/BuildingBlocks/Siha.Contracts/Events/SolicitudCreadaEvent.cs` — definición canónica.
 - `src/BuildingBlocks/Siha.Contracts/SihaContratos.cs` — `ExpedienteEstados`, `RutasNormativas`, `TiposTramite`, `RolesSistema`.
 - `src/Services/Siha.MsB.Api/Events/ExpedienteEventPublisher.cs` — publicación con reintentos.
-- `src/Services/Siha.MsB.Api/Controllers/ExpedientesController.cs` — flujo persistir → publicar → 202.
+- `src/Services/Siha.MsB.Api/Controllers/ExpedientesController.cs` y `Services/ExpedienteEnvioService.cs` — borrador 201 → carga → envío verificado 202/422.
 - `tools/Siha.BusVerifier/README.md` — suscriptor de prueba del bus (S1-P04).
 - `docs/matriz-rbac.md`, `docs/plan-de-pruebas-sprint-1.md` — verificación funcional del Sprint 1.
