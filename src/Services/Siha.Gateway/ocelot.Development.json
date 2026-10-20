@@ -194,7 +194,7 @@
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [ { "Host": "localhost", "Port": 5082 } ],
       "UpstreamPathTemplate": "/api/expedientes/{everything}",
-      "UpstreamHttpMethod": [ "GET", "POST" ],
+      "UpstreamHttpMethod": [ "GET", "POST", "DELETE" ],
       "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer", "AllowedScopes": [] }
     }
   ]

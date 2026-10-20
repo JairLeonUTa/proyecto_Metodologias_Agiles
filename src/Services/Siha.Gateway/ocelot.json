@@ -194,7 +194,7 @@
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [ { "Host": "ms-b", "Port": 8080 } ],
       "UpstreamPathTemplate": "/api/expedientes/{everything}",
-      "UpstreamHttpMethod": [ "GET", "POST" ],
+      "UpstreamHttpMethod": [ "GET", "POST", "DELETE" ],
       "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer", "AllowedScopes": [] }
     }
   ]

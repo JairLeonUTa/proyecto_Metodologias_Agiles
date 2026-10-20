@@ -1,0 +1,477 @@
+newman
+
+SIHA-IA · Sprint 1 · Contrato, RBAC y expedientes
+
+❏ 00 · Preparación y autenticación (US-01)
+↳ Login administrador (200) · captura tokenAdmin
+  POST http://localhost:5000/api/auth/login [200 OK, 1.21kB, 372ms]
+  ✓  Login 200 OK
+  ✓  El token y el rol son los esperados
+
+↳ Alta de cuenta OPERADOR de QA (201 o 409)
+  POST http://localhost:5000/api/usuarios [201 Created, 404B, 441ms]
+  ✓  201 creada o 409 ya existía
+
+↳ Alta de cuenta DOCENTE de QA (201 o 409)
+  POST http://localhost:5000/api/usuarios [201 Created, 401B, 366ms]
+  ✓  201 creada o 409 ya existía
+
+↳ Login operador (200) · captura tokenOperador
+  POST http://localhost:5000/api/auth/login [200 OK, 1.2kB, 345ms]
+  ✓  Login 200 OK
+  ✓  Rol OPERADOR
+
+↳ Login docente (200) · captura tokenDocente
+  POST http://localhost:5000/api/auth/login [200 OK, 1.19kB, 332ms]
+  ✓  Login 200 OK
+  ✓  Rol DOCENTE
+
+↳ Login con contraseña incorrecta (401)
+  POST http://localhost:5000/api/auth/login [401 Unauthorized, 214B, 352ms]
+  ✓  401 Unauthorized
+  ✓  Mensaje de credenciales inválidas
+
+↳ Identidad del token vigente (200)
+  GET http://localhost:5000/api/auth/yo [200 OK, 241B, 21ms]
+  ✓  200 OK
+  ✓  El token corresponde al administrador
+
+❏ 01 · Usuarios y roles (US-01)
+↳ Listar usuarios (admin → 200)
+  GET http://localhost:5000/api/usuarios [200 OK, 872B, 38ms]
+  ✓  200 OK
+  ✓  No expone passwordHash
+  ✓  Existe la cuenta administradora
+
+↳ Alta de cuenta de prueba (201) · captura usuarioId
+  POST http://localhost:5000/api/usuarios [201 Created, 420B, 457ms]
+  ✓  201 Created
+  ✓  Rol OPERADOR y sin hash
+
+↳ Alta duplicada (409 Conflict)
+  POST http://localhost:5000/api/usuarios [409 Conflict, 218B, 15ms]
+  ✓  409 Conflict
+  ✓  Mensaje de correo duplicado
+
+↳ Alta con rol inexistente (400)
+  POST http://localhost:5000/api/usuarios [400 Bad Request, 239B, 9ms]
+  ✓  400 Bad Request
+  ✓  Lista los roles permitidos
+
+↳ Alta con contraseña corta (400)
+  POST http://localhost:5000/api/usuarios [400 Bad Request, 463B, 6ms]
+  ✓  400 Bad Request
+
+↳ Consultar la cuenta de prueba (200)
+  GET http://localhost:5000/api/usuarios/4 [200 OK, 372B, 40ms]
+  ✓  200 OK
+  ✓  Coincide el identificador
+
+↳ Consultar cuenta inexistente (404)
+  GET http://localhost:5000/api/usuarios/999999 [404 Not Found, 325B, 15ms]
+  ✓  404 Not Found
+
+↳ Baja lógica de la cuenta (204)
+  DELETE http://localhost:5000/api/usuarios/4 [204 No Content, 81B, 24ms]
+  ✓  204 No Content
+
+↳ La cuenta inactiva no puede autenticarse (401)
+  POST http://localhost:5000/api/auth/login [401 Unauthorized, 214B, 8ms]
+  ✓  401 Unauthorized
+
+↳ Reactivar la cuenta (200)
+  PATCH http://localhost:5000/api/usuarios/4/estado [200 OK, 372B, 26ms]
+  ✓  200 OK
+  ✓  Cuenta activa
+
+↳ Catálogo de roles (admin → 200)
+  GET http://localhost:5000/api/roles [200 OK, 412B, 21ms]
+  ✓  200 OK
+  ✓  Tres roles del sistema
+
+↳ Listar usuarios con OPERADOR (403)
+  GET http://localhost:5000/api/usuarios [403 Forbidden, 99B, 7ms]
+  ✓  403 Forbidden
+
+↳ Catálogo de roles con DOCENTE (403)
+  GET http://localhost:5000/api/roles [403 Forbidden, 99B, 5ms]
+  ✓  403 Forbidden
+
+↳ Listar usuarios sin token (401)
+  GET http://localhost:5000/api/usuarios [401 Unauthorized, 102B, 6ms]
+  ✓  401 Unauthorized
+
+❏ 02 · Reglas y umbrales θ, δ, τ (US-02)
+↳ Listar reglas (200)
+  GET http://localhost:5000/api/reglas [200 OK, 1.83kB, 39ms]
+  ✓  200 OK
+  ✓  Reglas normativas sembradas
+
+↳ Listar reglas filtradas CAU-P-122 / EXTERNO (200)
+  GET http://localhost:5000/api/reglas?rutaNormativa=CAU-P-122&tipoTramite=EXTERNO [200 OK, 1.17kB, 26ms]
+  ✓  200 OK
+  ✓  Devuelve solo la ruta solicitada
+
+↳ Parámetros vigentes CAU-P-011 (200)
+  GET http://localhost:5000/api/reglas/parametros/CAU-P-011 [200 OK, 307B, 38ms]
+  ✓  200 OK
+  ✓  Estructura de parámetros
+
+↳ Actualización válida 82/12/71 (200)
+  PUT http://localhost:5000/api/reglas/parametros/CAU-P-011 [200 OK, 321B, 52ms]
+  ✓  200 OK
+  ✓  Nuevos valores con versión incrementada
+
+↳ Rechazo δ > θ (400)
+  PUT http://localhost:5000/api/reglas/parametros/CAU-P-011 [400 Bad Request, 245B, 6ms]
+  ✓  400 Bad Request
+  ✓  Mensaje de banda inválida
+
+↳ Rechazo de θ negativo (400)
+  PUT http://localhost:5000/api/reglas/parametros/CAU-P-011 [400 Bad Request, 423B, 7ms]
+  ✓  400 Bad Request
+
+↳ Rechazo de θ > 100 % (400)
+  PUT http://localhost:5000/api/reglas/parametros/CAU-P-011 [400 Bad Request, 423B, 7ms]
+  ✓  400 Bad Request
+
+↳ Rechazo de τ > 100 % (400)
+  PUT http://localhost:5000/api/reglas/parametros/CAU-P-011 [400 Bad Request, 419B, 13ms]
+  ✓  400 Bad Request
+
+↳ Verificación de no mutación (200 · conserva 82/12/71)
+  GET http://localhost:5000/api/reglas/parametros/CAU-P-011 [200 OK, 321B, 13ms]
+  ✓  200 OK
+  ✓  Conserva la última actualización válida
+
+↳ Actualización de parámetros con OPERADOR (403)
+  PUT http://localhost:5000/api/reglas/parametros/CAU-P-011 [403 Forbidden, 99B, 9ms]
+  ✓  403 Forbidden
+
+↳ Actualización de parámetros sin token (401)
+  PUT http://localhost:5000/api/reglas/parametros/CAU-P-011 [401 Unauthorized, 102B, 3ms]
+  ✓  401 Unauthorized
+
+↳ Parámetros de una ruta sin configuración (404)
+  GET http://localhost:5000/api/reglas/parametros/CAU-P-999 [404 Not Found, 224B, 8ms]
+  ✓  404 Not Found
+
+↳ Crear regla normativa (201) · captura reglaCodigo
+  POST http://localhost:5000/api/reglas [201 Created, 501B, 41ms]
+  ✓  201 Created
+  ✓  Versión y fuente registradas
+
+↳ Crear regla duplicada (400)
+  POST http://localhost:5000/api/reglas [400 Bad Request, 239B, 11ms]
+  ✓  400 Bad Request
+  ✓  Mensaje de regla duplicada
+
+↳ Crear regla con ruta normativa inválida (400)
+  POST http://localhost:5000/api/reglas [400 Bad Request, 220B, 5ms]
+  ✓  400 Bad Request
+  ✓  Indica las rutas válidas
+
+↳ Crear regla con DOCENTE (403)
+  POST http://localhost:5000/api/reglas [403 Forbidden, 99B, 5ms]
+  ✓  403 Forbidden
+
+❏ 03 · Catálogo académico e importación (US-03)
+↳ Listar carreras (200)
+  GET http://localhost:5000/api/carreras [200 OK, 613B, 22ms]
+  ✓  200 OK
+  ✓  Carreras de la semilla
+
+↳ Crear carrera QA (201) · captura carreraId
+  POST http://localhost:5000/api/carreras [201 Created, 289B, 39ms]
+  ✓  201 Created
+  1. Código en mayúsculas
+
+↳ Crear carrera duplicada (409)
+  POST http://localhost:5000/api/carreras [409 Conflict, 214B, 10ms]
+  ✓  409 Conflict
+  ✓  Mensaje de código duplicado
+
+↳ Crear carrera con OPERADOR (403)
+  POST http://localhost:5000/api/carreras [403 Forbidden, 99B, 7ms]
+  ✓  403 Forbidden
+
+↳ Consultar la carrera creada (200)
+  GET http://localhost:5000/api/carreras/6 [200 OK, 241B, 20ms]
+  ✓  200 OK
+  ✓  Devuelve la carrera QA
+
+↳ Consultar carrera inexistente (404)
+  GET http://localhost:5000/api/carreras/999999 [404 Not Found, 325B, 9ms]
+  ✓  404 Not Found
+
+↳ Crear malla QA (201) · captura mallaId
+  POST http://localhost:5000/api/mallas [201 Created, 378B, 37ms]
+  ✓  201 Created
+  ✓  Malla sin asignaturas aún
+
+↳ Crear malla duplicada (409)
+  POST http://localhost:5000/api/mallas [409 Conflict, 235B, 8ms]
+  ✓  409 Conflict
+
+↳ Crear malla con carrera inexistente (400)
+  POST http://localhost:5000/api/mallas [400 Bad Request, 199B, 7ms]
+  ✓  400 Bad Request
+  ✓  Indica que la carrera no existe
+
+↳ Listar mallas de la carrera QA (200)
+  GET http://localhost:5000/api/mallas?carreraId=6 [200 OK, 334B, 66ms]
+  ✓  200 OK
+  ✓  Contiene la malla creada
+
+↳ Consultar malla inexistente (404)
+  GET http://localhost:5000/api/mallas/999999 [404 Not Found, 325B, 35ms]
+  ✓  404 Not Found
+
+↳ PT-11 · Importar los 43 planes analíticos (200)
+  POST http://localhost:5000/api/asignaturas/importar [200 OK, 204B, 115ms]
+  ✓  200 OK
+  ✓  43 planes analizados
+  ✓  Los 43 planes se importan sin rechazos
+  ✓  Sin advertencias de completitud
+
+↳ PT-12 · Importar con códigos duplicados (200 · rechazadas ≥ 1)
+  POST http://localhost:5000/api/asignaturas/importar [200 OK, 328B, 22ms]
+  ✓  200 OK
+  ✓  Rechaza los duplicados sin abortar el lote
+  ✓  Informa el motivo de cada rechazo
+
+↳ PT-13 · Equivalencia 48 h/crédito UTA (200 · plan incompleto)
+  POST http://localhost:5000/api/asignaturas/importar [200 OK, 327B, 25ms]
+  ✓  200 OK
+  ✓  Advierte el incumplimiento de 48 h/crédito
+  ✓  El plan queda pendiente pero importado
+
+↳ PT-14 · Plan incompleto sin unidades temáticas (200)
+  POST http://localhost:5000/api/asignaturas/importar [200 OK, 279B, 10ms]
+  ✓  200 OK
+  ✓  Advierte la ausencia de unidades temáticas
+
+↳ PT-14g · Importar en una malla inexistente (400)
+  POST http://localhost:5000/api/asignaturas/importar [400 Bad Request, 213B, 6ms]
+  ✓  400 Bad Request
+  ✓  Indica que la malla no existe
+
+↳ PT-15 · Hallazgo H-01 · Importar por el API Gateway (404)
+  POST http://localhost:5000/api/asignaturas/importar [200 OK, 202B, 21ms]
+  2. 404 Not Found (hallazgo H-01 pendiente de corrección)
+  3. Documentar el hallazgo H-01 en el informe de QA
+
+↳ Listar asignaturas de la malla QA (200)
+  GET http://localhost:5000/api/asignaturas?mallaId=2 [200 OK, 15.41kB, 38ms]
+  ✓  200 OK
+  ✓  Hay planes importados
+
+↳ Consultar asignatura inexistente (404)
+  GET http://localhost:5000/api/asignaturas/999999 [404 Not Found, 325B, 22ms]
+  ✓  404 Not Found
+
+❏ 04 · Expedientes y bus (US-05 / US-06)
+↳ PT-19 · Alta expediente INTERNO CAU-P-011 como borrador (201) · captura id y correlación
+  POST http://localhost:5000/api/expedientes [201 Created, 516B, 20ms]
+  ✓  201 Created
+  ✓  Borrador PENDIENTE_DOCUMENTOS sin publicar
+
+↳ PT-19b · Registro con documentos declarados por el cliente (400)
+  POST http://localhost:5000/api/expedientes [400 Bad Request, 341B, 15ms]
+  ✓  400 Bad Request: no se confía en rutas/hashes del cliente
+
+↳ PT-19c · Enviar sin documentos (422)
+  POST http://localhost:5000/api/expedientes/2a20db27-e32e-4f9d-8c69-88f7d169bdaa/enviar [422 Unprocessable Entity, 426B, 17ms]
+  ✓  422 requisitos documentales incumplidos
+  ✓  Detalle del requisito
+
+↳ PT-19d · Cargar archivo que no es PDF (400 y queda RECHAZADO)
+  POST http://localhost:5000/api/expedientes/2a20db27-e32e-4f9d-8c69-88f7d169bdaa/documentos (node:23477) [DEP0044] DeprecationWarning: The `util.isArray` API is deprecated. Please use `Array.isArray()` instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+[400 Bad Request, 341B, 17ms]
+  ✓  400 Bad Request
+  ✓  Motivo: firma %PDF
+
+↳ PT-19e · Cargar PDF real (201) · hash calculado por el servidor
+  POST http://localhost:5000/api/expedientes/2a20db27-e32e-4f9d-8c69-88f7d169bdaa/documentos [201 Created, 691B, 18ms]
+  ✓  201 Created
+  ✓  VALIDADO con SHA-256 del servidor
+
+↳ PT-19f · Reintentar la misma carga (200, sin duplicar)
+  POST http://localhost:5000/api/expedientes/2a20db27-e32e-4f9d-8c69-88f7d169bdaa/documentos [200 OK, 594B, 11ms]
+  ✓  200 OK (idempotente)
+  ✓  Devuelve el mismo documento
+
+↳ PT-19g · Enviar con documentos verificados (202) · publica en el bus
+  POST http://localhost:5000/api/expedientes/2a20db27-e32e-4f9d-8c69-88f7d169bdaa/enviar [202 Accepted, 401B, 21ms]
+  ✓  202 Accepted
+  ✓  Publicado y PENDIENTE_CONTENIDOS
+  ✓  Mismo CorrelationId del borrador
+
+↳ PT-19h · Segundo envío idempotente (200, no republica)
+  POST http://localhost:5000/api/expedientes/2a20db27-e32e-4f9d-8c69-88f7d169bdaa/enviar [200 OK, 405B, 15ms]
+  ✓  200 OK
+  ✓  Sigue publicado una sola vez
+
+↳ PT-20 · Alta expediente EXTERNO CAU-P-122 como borrador (201)
+  POST http://localhost:5000/api/expedientes [201 Created, 516B, 14ms]
+  ✓  201 Created
+  ✓  Borrador PENDIENTE_DOCUMENTOS
+
+↳ PT-20c · Tipo de trámite inválido (400)
+  POST http://localhost:5000/api/expedientes [400 Bad Request, 236B, 6ms]
+  ✓  400 Bad Request
+  ✓  Enumera los tipos válidos
+
+↳ PT-20c · Ruta normativa inválida (400)
+  POST http://localhost:5000/api/expedientes [400 Bad Request, 238B, 5ms]
+  ✓  400 Bad Request
+  ✓  Enumera las rutas válidas
+
+↳ PT-21 · Consultar el expediente creado (200)
+  GET http://localhost:5000/api/expedientes/2a20db27-e32e-4f9d-8c69-88f7d169bdaa [200 OK, 1.74kB, 9ms]
+  ✓  200 OK
+  ✓  Conserva el CorrelationId devuelto al crear
+  ✓  El evento quedó publicado
+  ✓  Documentos y asignaturas persistidos
+
+↳ PT-21 · Consultar expediente inexistente (404)
+  GET http://localhost:5000/api/expedientes/00000000-0000-0000-0000-000000000000 [404 Not Found, 325B, 90ms]
+  ✓  404 Not Found
+
+↳ PT-21 · Listar expedientes por estado (200)
+  GET http://localhost:5000/api/expedientes?estado=PENDIENTE_CONTENIDOS [200 OK, 4.27kB, 42ms]
+  ✓  200 OK
+  ✓  Lista con la estructura del contrato
+
+↳ PT-24 · Republicar un expediente ya publicado (200, idempotente, mismo CorrelationId)
+  POST http://localhost:5000/api/expedientes/2a20db27-e32e-4f9d-8c69-88f7d169bdaa/republicar [200 OK, 405B, 26ms]
+  ✓  200 OK (no se publica dos veces)
+  ✓  Mismo CorrelationId que en el alta
+  ✓  Estado PENDIENTE_CONTENIDOS
+
+↳ Republicar un expediente inexistente (404)
+  POST http://localhost:5000/api/expedientes/00000000-0000-0000-0000-000000000000/republicar [404 Not Found, 232B, 11ms]
+  ✓  404 Not Found
+
+↳ PT-20/PT-21 · Expediente con DOCENTE (403)
+  POST http://localhost:5000/api/expedientes [403 Forbidden, 99B, 5ms]
+  ✓  403 Forbidden
+
+↳ PT-16 · Expediente sin token (401)
+  POST http://localhost:5000/api/expedientes [401 Unauthorized, 102B, 3ms]
+  ✓  401 Unauthorized
+
+↳ PT-16 · Listado de expedientes sin token (401)
+  GET http://localhost:5000/api/expedientes [401 Unauthorized, 102B, 3ms]
+  ✓  401 Unauthorized
+
+❏ 05 · Regresión y recuperación (S1-P09 / S1-P10)
+↳ PT-24 · Alta del borrador para la prueba de caída del bus (201)
+  POST http://localhost:5000/api/expedientes [201 Created, 516B, 16ms]
+  ✓  201 Created
+
+↳ PT-24 · Cargar PDF al borrador (201)
+  POST http://localhost:5000/api/expedientes/78a7b454-e9e2-4b90-901f-4e32e297507f/documentos [201 Created, 691B, 18ms]
+  ✓  201 Created
+
+↳ PT-24 · Enviar con el bus DETENIDO (202 recuperable) · detener RabbitMQ antes
+  POST http://localhost:5000/api/expedientes/78a7b454-e9e2-4b90-901f-4e32e297507f/enviar [202 Accepted, 401B, 40ms]
+  ✓  202 Accepted (el fallo del bus no rompe la API)
+  ✓  Estado recuperable o publicado si el bus está arriba
+  ✓  Conserva el CorrelationId
+
+↳ PT-24 · Estado del expediente recuperable (200)
+  GET http://localhost:5000/api/expedientes/78a7b454-e9e2-4b90-901f-4e32e297507f [200 OK, 1.36kB, 14ms]
+  ✓  200 OK
+  ✓  Conserva el CorrelationId y el detalle del fallo
+
+↳ PT-24 · Listar expedientes en estado recuperable (200)
+  GET http://localhost:5000/api/expedientes?estado=REGISTRADO_PENDIENTE_PUBLICACION [200 OK, 150B, 11ms]
+  ✓  200 OK
+  ✓  Lista coherente con el estado consultado
+
+↳ PT-24 · Republicar con el bus levantado (202, o 200 si el reintento automático ya publicó)
+  POST http://localhost:5000/api/expedientes/78a7b454-e9e2-4b90-901f-4e32e297507f/republicar [200 OK, 405B, 15ms]
+  ✓  202 Accepted o 200 OK
+  ✓  Publicado
+  ✓  Mismo CorrelationId (trazabilidad preservada)
+  ✓  Estado PENDIENTE_CONTENIDOS
+
+↳ PT-R01 · Regresión RBAC: sin token (401)
+  GET http://localhost:5000/api/usuarios [401 Unauthorized, 102B, 5ms]
+  ✓  401 Unauthorized
+
+↳ PT-R01 · Regresión RBAC: rol insuficiente (403)
+  PUT http://localhost:5000/api/reglas/parametros/CAU-P-011 [403 Forbidden, 99B, 10ms]
+  ✓  403 Forbidden
+
+↳ PT-R02 · Regresión umbrales: δ ≤ θ vigente (200)
+  GET http://localhost:5000/api/reglas/parametros/CAU-P-011 [200 OK, 321B, 10ms]
+  ✓  200 OK
+  ✓  Invariante δ ≤ θ
+
+↳ PT-R03 · Regresión catálogo: consulta de carreras (200)
+  GET http://localhost:5000/api/carreras [200 OK, 707B, 7ms]
+  ✓  200 OK
+
+↳ PT-R04 · Regresión expedientes: borrador, PDF y envío (201 → 201 → 202)
+  POST http://localhost:5000/api/expedientes [201 Created, 516B, 39ms]
+  ✓  201 Created
+  ✓  Borrador PENDIENTE_DOCUMENTOS
+
+↳ PT-R04 · Regresión: cargar PDF (201)
+  POST http://localhost:5000/api/expedientes/029eb5a8-c51e-41c1-9115-f715138a71f0/documentos [201 Created, 691B, 21ms]
+  ✓  201 Created
+
+↳ PT-R04 · Regresión: enviar (202 PENDIENTE_CONTENIDOS)
+  POST http://localhost:5000/api/expedientes/029eb5a8-c51e-41c1-9115-f715138a71f0/enviar [202 Accepted, 401B, 21ms]
+  ✓  202 Accepted
+  ✓  Estado PENDIENTE_CONTENIDOS
+
+↳ PT-R05 · Regresión contrato: expediente consultable con correlación (200)
+  GET http://localhost:5000/api/expedientes/029eb5a8-c51e-41c1-9115-f715138a71f0 [200 OK, 1.36kB, 10ms]
+  ✓  200 OK
+  ✓  Contrato de consulta completo
+
+↳ PT-R05 · Regresión contrato: evento en el bus (verificación manual)
+  GET http://localhost:5000/health [200 OK, 273B, 22ms]
+  ✓  200 OK del Gateway
+  ✓  El Gateway está operativo (los servicios son alcanzables)
+
+┌─────────────────────────┬───────────────────┬──────────────────┐
+│                         │          executed │           failed │
+├─────────────────────────┼───────────────────┼──────────────────┤
+│              iterations │                 1 │                0 │
+├─────────────────────────┼───────────────────┼──────────────────┤
+│                requests │                90 │                0 │
+├─────────────────────────┼───────────────────┼──────────────────┤
+│            test-scripts │                90 │                0 │
+├─────────────────────────┼───────────────────┼──────────────────┤
+│      prerequest-scripts │                97 │                0 │
+├─────────────────────────┼───────────────────┼──────────────────┤
+│              assertions │               159 │                3 │
+├─────────────────────────┴───────────────────┴──────────────────┤
+│ total run duration: 6.7s                                       │
+├────────────────────────────────────────────────────────────────┤
+│ total data received: 42.66kB (approx)                          │
+├────────────────────────────────────────────────────────────────┤
+│ average response time: 47ms [min: 3ms, max: 457ms, s.d.: 99ms] │
+└────────────────────────────────────────────────────────────────┘
+
+  #  failure         detail
+
+ 1.  AssertionError  Código en mayúsculas
+                     expected 'QA946554' to deeply equal '{{PREFIJO}}'
+                     at assertion:1 in test-script
+                     inside "03 · Catálogo académico e importación (US-03) / Crear carrera QA (201) · captura carreraId"
+
+ 2.  AssertionError  404 Not Found (hallazgo H-01 pendiente de corrección)
+                     expected response to have status code 404 but got 200
+                     at assertion:0 in test-script
+                     inside "03 · Catálogo académico e importación (US-03) / PT-15 · Hallazgo H-01 · Importar por el API Gateway (404)"
+
+ 3.  AssertionError  Documentar el hallazgo H-01 en el informe de QA
+                     expected 200 to deeply equal 404
+                     at assertion:1 in test-script
+                     inside "03 · Catálogo académico e importación (US-03) / PT-15 · Hallazgo H-01 · Importar por el API Gateway (404)"

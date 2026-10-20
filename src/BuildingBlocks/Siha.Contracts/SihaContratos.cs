@@ -9,6 +9,18 @@ public static class ExpedienteEstados
     /// <summary>El expediente fue recibido y validado, pero aún no se publicó en el bus.</summary>
     public const string Registrado = "REGISTRADO";
 
+    /// <summary>
+    /// Borrador: el expediente existe en DB B y espera la carga y validación de sus PDF en el servidor.
+    /// No se publica ningún evento mientras permanezca en este estado.
+    /// </summary>
+    public const string PendienteDocumentos = "PENDIENTE_DOCUMENTOS";
+
+    /// <summary>
+    /// Transición protegida por concurrencia optimista: un único envío reservó el expediente y está
+    /// publicando el evento. Evita publicaciones duplicadas ante dobles clics o reintentos simultáneos.
+    /// </summary>
+    public const string PublicacionEnCurso = "PUBLICACION_EN_CURSO";
+
     /// <summary>El evento fue publicado; el operador puede continuar mientras C procesa.</summary>
     public const string PendienteContenidos = "PENDIENTE_CONTENIDOS";
 

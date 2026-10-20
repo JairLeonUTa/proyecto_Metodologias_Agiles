@@ -1,0 +1,52 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Pruebas con INFRAESTRUCTURA REAL (no simulada): SQL Server 2022 y RabbitMQ 3.13 en contenedores
+    Docker levantados por Testcontainers, el Microservicio B real (WebApplicationFactory) y un
+    suscriptor RabbitMQ independiente. Requieren Docker en ejecución.
+
+    Todas llevan el rasgo Categoria=InfraestructuraReal, de modo que:
+      dotnet test SIHA-IA.sln con filtro Categoria!=InfraestructuraReal : solo pruebas simuladas
+      dotnet test SIHA-IA.sln con filtro Categoria=InfraestructuraReal  : solo infraestructura real
+  -->
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="FluentAssertions" Version="6.12.0" />
+    <PackageReference Include="Google.Protobuf" Version="3.27.0" />
+    <PackageReference Include="Grpc.Net.Client" Version="2.65.0" />
+    <PackageReference Include="Grpc.Tools" Version="2.65.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="8.0.10" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.8.0" />
+    <PackageReference Include="Testcontainers.MsSql" Version="4.11.0" />
+    <PackageReference Include="Testcontainers.RabbitMq" Version="4.11.0" />
+    <PackageReference Include="xunit" Version="2.5.3" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.5.3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="Xunit" />
+  </ItemGroup>
+
+  <!-- Cliente gRPC generado desde el MISMO contrato que publica el Microservicio A (S1-S04). -->
+  <ItemGroup>
+    <Protobuf Include="..\..\src\Services\Siha.MsA.Api\Protos\reglas.proto" GrpcServices="Client" Link="Protos\reglas.proto" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Services\Siha.MsB.Api\Siha.MsB.Api.csproj" />
+    <!-- Alias: Siha.MsA.Api también define 'Program'. Se usa su DbContext y su host completo (MsAReal) para las pruebas gRPC. -->
+    <ProjectReference Include="..\..\src\Services\Siha.MsA.Api\Siha.MsA.Api.csproj" Aliases="msa" />
+  </ItemGroup>
+
+</Project>

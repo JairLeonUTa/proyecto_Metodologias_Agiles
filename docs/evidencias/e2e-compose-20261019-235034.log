@@ -1,0 +1,207 @@
+23:50:34 == 1. Arranque desde cero ==
+Docker 29.9.1
+Docker Compose version v5.6.0
+ Network siha-ia_siha Creating 
+ Network siha-ia_siha Creating 
+ Volume siha-ia_siha-archivos Creating 
+ Volume siha-ia_siha-archivos Creating 
+ Volume siha-ia_siha-sqla Creating 
+ Volume siha-ia_siha-sqla Creating 
+ Volume siha-ia_siha-sqlb Creating 
+ Volume siha-ia_siha-sqlb Creating 
+ Volume siha-ia_siha-rabbit Creating 
+ Volume siha-ia_siha-rabbit Creating 
+ Volume siha-ia_siha-archivos Created 
+ Volume siha-ia_siha-archivos Created 
+ Volume siha-ia_siha-sqlb Created 
+ Volume siha-ia_siha-sqlb Created 
+ Volume siha-ia_siha-sqla Created 
+ Volume siha-ia_siha-sqla Created 
+ Volume siha-ia_siha-rabbit Created 
+ Volume siha-ia_siha-rabbit Created 
+ Network siha-ia_siha Created 
+ Network siha-ia_siha Created 
+ Container siha-sqlserver-b Creating 
+ Container siha-sqlserver-a Creating 
+ Container siha-rabbitmq Creating 
+ Container siha-sqlserver-a Created 
+ Container siha-ms-a Creating 
+ Container siha-sqlserver-b Created 
+ Container siha-rabbitmq Created 
+ Container siha-ms-b Creating 
+ Container siha-ms-a Created 
+ Container siha-ms-b Created 
+ Container siha-gateway Creating 
+ Container siha-gateway Created 
+ Container siha-frontend Creating 
+ Container siha-frontend Created 
+ Container siha-sqlserver-b Starting 
+ Container siha-rabbitmq Starting 
+ Container siha-sqlserver-a Starting 
+ Container siha-sqlserver-b Started 
+ Container siha-rabbitmq Started 
+ Container siha-rabbitmq Waiting 
+ Container siha-sqlserver-b Waiting 
+ Container siha-sqlserver-a Started 
+ Container siha-sqlserver-a Waiting 
+ Container siha-rabbitmq Healthy 
+ Container siha-sqlserver-a Healthy 
+ Container siha-ms-a Starting 
+ Container siha-ms-a Started 
+ Container siha-sqlserver-b Healthy 
+ Container siha-ms-b Starting 
+ Container siha-ms-b Started 
+ Container siha-ms-b Waiting 
+ Container siha-ms-a Waiting 
+ Container siha-ms-b Healthy 
+ Container siha-ms-a Healthy 
+ Container siha-gateway Starting 
+ Container siha-gateway Started 
+ Container siha-frontend Starting 
+ Container siha-frontend Started 
+23:51:08   [OK]    docker compose up -d (volúmenes vacíos)
+23:51:11   Listo: Gateway respondiendo (3 s)
+23:51:11   Listo: ms-a sano (0 s)
+23:51:11   Listo: ms-b sano (0 s)
+23:51:12   Listo: login del administrador (1 s)
+NAME               IMAGE                                        COMMAND                  SERVICE       CREATED          STATUS                            PORTS
+siha-frontend      siha-ia-frontend                             "/docker-entrypoint.…"   frontend      37 seconds ago   Up 4 seconds (health: starting)   0.0.0.0:5173->80/tcp
+siha-gateway       siha-ia-gateway                              "dotnet Siha.Gateway…"   gateway       37 seconds ago   Up 4 seconds                      0.0.0.0:5000->8080/tcp
+siha-ms-a          siha-ia-ms-a                                 "dotnet Siha.MsA.Api…"   ms-a          38 seconds ago   Up 25 seconds (healthy)           0.0.0.0:5081->8080/tcp, 0.0.0.0:5083->8081/tcp
+siha-ms-b          siha-ia-ms-b                                 "dotnet Siha.MsB.Api…"   ms-b          38 seconds ago   Up 21 seconds (healthy)           0.0.0.0:5082->8080/tcp
+siha-rabbitmq      rabbitmq:3.13-management                     "docker-entrypoint.s…"   rabbitmq      38 seconds ago   Up 36 seconds (healthy)           4369/tcp, 5671/tcp, 0.0.0.0:5672->5672/tcp, 15671/tcp, 15691-15692/tcp, 25672/tcp, 0.0.0.0:15672->15672/tcp
+siha-sqlserver-a   mcr.microsoft.com/mssql/server:2022-latest   "/opt/mssql/bin/laun…"   sqlserver-a   38 seconds ago   Up 36 seconds (healthy)           0.0.0.0:1433->1433/tcp
+siha-sqlserver-b   mcr.microsoft.com/mssql/server:2022-latest   "/opt/mssql/bin/laun…"   sqlserver-b   38 seconds ago   Up 36 seconds (healthy)           0.0.0.0:14330->1433/tcp
+23:51:12 == 2. Migraciones reales ==
+23:51:12   [OK]    DB A migrada en SQL Server real
+23:51:12   [OK]    DB B migrada en SQL Server real (3 migraciones)
+23:51:13   [OK]    Índice único filtrado de documentos en DB B
+23:51:13 == 3. Autenticación a través del Gateway ==
+23:51:13   [OK]    Login vía Gateway (JWT emitido por MsA)
+23:51:13 == 3b. Servicio gRPC de reglas (S1-S04) por la red de Docker ==
+{
+  "rutaNormativa": "CAU-P-011",
+  "parametrosConfigurados": true,
+  "parametros": {
+    "id": 1,
+    "rutaNormativa": "CAU-P-011",
+    "theta": 80,
+    "delta": 10,
+    "tau": 70,
+    "version": 1,
+    "actualizadoUtc": "2026-10-19T23:51:03.0629468+00:00",
+    "actualizadoPor": "semilla"
+  },
+  "reglas": [
+    {
+      "id": 1,
+      "codigo": "RN-01",
+      "rutaNormativa": "CAU-P-011",
+      "tipoTramite": "INTERNO",
+      "descripcion": "Solo se admiten materias aprobadas de la malla de origen vigente.",
+      "version": "1.0",
+      "fuente": "Resolución CAU-P-011",
+      "esNormativa": true,
+      "vigenteDesde": "2026-01-01",
+      "activa": true
+    },
+    {
+      "id": 2,
+      "codigo": "RN-02",
+      "rutaNormativa": "CAU-P-011",
+      "tipoTramite": "INTERNO",
+      "descripcion": "La proporción mínima de créditos homologables es un parámetro heurístico configurable.",
+      "expresion": "theta\u003e=80",
+      "version": "1.0",
+      "fuente": "Parámetro heurístico del proyecto",
+      "vigenteDesde": "2026-01-01",
+      "activa": true
+    }
+  ]
+}
+23:51:14   [OK]    gRPC ObtenerConfiguracionRuta(CAU-P-011) responde OK
+23:51:14   [OK]    θ por gRPC = θ por REST vía Gateway (misma fuente de verdad)
+23:51:14   [OK]    gRPC rechaza ruta inválida con InvalidArgument
+23:51:14 == 4. Flujo documental ==
+23:51:15   [OK]    Rechazo de documentos declarados por el cliente
+23:51:15   [OK]    Registro del borrador vía Gateway
+23:51:15   [OK]    Envío sin documentos bloqueado
+23:51:15   [OK]    Carga rechazada (firma %PDF ausente)
+23:51:15   [OK]    Carga de PDF real vía Gateway
+23:51:15   [OK]    SHA-256 calculado por el servidor = SHA-256 local
+23:51:15   [OK]    Reintento de la misma carga: 200 sin duplicar
+23:51:16   [OK]    Una sola fila VALIDADO en DB B
+23:51:16   [OK]    Archivo en el volumen siha-archivos con el mismo hash
+23:51:16   [OK]    Envío con documento verificado (202 Accepted)
+23:51:16   [OK]    Segundo envío idempotente (200, sin republicar)
+23:51:16 == 5. Recepción en RabbitMQ ==
+23:51:16   Listo: mensaje recibido por el suscriptor de verificación (0 s)
+23:51:16   [OK]    Mensaje recibido en RabbitMQ con el mismo CorrelationId
+23:51:16   [OK]    Exactamente un mensaje para el expediente
+23:51:16   [OK]    Intercambio del contrato declarado en RabbitMQ
+23:51:16 == 6. Persistencia del almacenamiento ==
+ Container siha-ms-b Recreate 
+ Container siha-ms-b Recreated 
+ Container siha-ms-b Starting 
+ Container siha-ms-b Started 
+23:51:23   Listo: ms-b recreado y sano (6 s)
+23:51:23   [OK]    PDF intacto tras recrear el contenedor ms-b
+23:51:24   [OK]    Expediente consultable tras el reinicio
+23:51:24 == 7. Caída y recuperación del bus ==
+ Container siha-rabbitmq Stopping 
+ Container siha-rabbitmq Stopped 
+23:51:26   RabbitMQ DETENIDO (23:51:26)
+23:51:42   [OK]    Con el bus caído: 202 y estado recuperable
+23:51:42   [OK]    CorrelationId conservado durante la caída
+ Container siha-rabbitmq Starting 
+ Container siha-rabbitmq Started 
+23:51:42   RabbitMQ INICIADO (23:51:42)
+23:51:55   Listo: reintento automático publicó el expediente (13 s)
+23:51:55   [OK]    Recuperación automática tras reiniciar RabbitMQ
+23:51:55   [OK]    CorrelationId idéntico tras la recuperación
+23:51:58   Listo: mensaje recuperado recibido (3 s)
+23:51:58   [OK]    Mensaje recibido tras la recuperación con el mismo CorrelationId
+23:51:58 == 8. Frontend (Nginx) ==
+23:51:58   [OK]    SPA servida por Nginx
+23:51:58   [OK]    Carga de PDF de ~2 MB a través de Nginx -> Gateway -> MsB
+23:51:58 Evidencia: docs/evidencias/e2e-compose-20261019-235034.md
+23:51:58 Resultado: 31/31 comprobaciones superadas
+23:51:58 Apagando el entorno (docker compose down -v)…
+ Container siha-frontend Stopping 
+ Container siha-frontend Stopped 
+ Container siha-frontend Removing 
+ Container siha-frontend Removed 
+ Container siha-gateway Stopping 
+ Container siha-gateway Stopped 
+ Container siha-gateway Removing 
+ Container siha-gateway Removed 
+ Container siha-ms-b Stopping 
+ Container siha-ms-a Stopping 
+ Container siha-ms-a Stopped 
+ Container siha-ms-a Removing 
+ Container siha-ms-a Removed 
+ Container siha-sqlserver-a Stopping 
+ Container siha-ms-b Stopped 
+ Container siha-ms-b Removing 
+ Container siha-ms-b Removed 
+ Container siha-rabbitmq Stopping 
+ Container siha-sqlserver-b Stopping 
+ Container siha-rabbitmq Stopped 
+ Container siha-rabbitmq Removing 
+ Container siha-rabbitmq Removed 
+ Container siha-sqlserver-a Stopped 
+ Container siha-sqlserver-a Removing 
+ Container siha-sqlserver-a Removed 
+ Container siha-sqlserver-b Stopped 
+ Container siha-sqlserver-b Removing 
+ Container siha-sqlserver-b Removed 
+ Volume siha-ia_siha-sqla Removing 
+ Volume siha-ia_siha-archivos Removing 
+ Volume siha-ia_siha-sqlb Removing 
+ Volume siha-ia_siha-rabbit Removing 
+ Network siha-ia_siha Removing 
+ Volume siha-ia_siha-sqlb Removed 
+ Network siha-ia_siha Removed 
+ Volume siha-ia_siha-sqla Removed 
+ Volume siha-ia_siha-rabbit Removed 
+ Volume siha-ia_siha-archivos Removed 

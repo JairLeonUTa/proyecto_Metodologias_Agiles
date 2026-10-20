@@ -46,6 +46,12 @@ if (string.IsNullOrWhiteSpace(jwt.Key) || Encoding.UTF8.GetByteCount(jwt.Key) < 
 
 builder.Services.AddScoped<IExpedienteEventPublisher, ExpedienteEventPublisher>();
 
+// --- Flujo borrador -> documentos verificados -> publicación, y reintento automático tras caídas del bus ---
+builder.Services.AddScoped<ExpedienteEnvioService>();
+builder.Services.Configure<RepublicacionOptions>(builder.Configuration.GetSection(RepublicacionOptions.SectionName));
+builder.Services.AddSingleton<RepublicacionAutomaticaWorker>();
+builder.Services.AddHostedService(sp => sp.GetRequiredService<RepublicacionAutomaticaWorker>());
+
 // --- Bus de eventos: MassTransit + RabbitMQ (US-06, tarea S1-J07) ---
 var rabbitUri = builder.Configuration["RabbitMq:Uri"] ?? "rabbitmq://localhost";
 var rabbitUsuario = builder.Configuration["RabbitMq:Usuario"] ?? "guest";
@@ -139,6 +145,9 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
+// Fallo temprano y visible si el volumen de documentos no es escribible (p. ej. permisos del contenedor).
+VerificarAlmacenamiento(app, archivos);
+
 await MigrarAsync(app);
 
 app.UseSwagger();
@@ -160,6 +169,26 @@ app.MapGet("/health", () => Results.Ok(new
 }));
 
 app.Run();
+
+static void VerificarAlmacenamiento(WebApplication app, ArchivosOptions archivos)
+{
+    var logger = app.Services.GetRequiredService<ILogger<Program>>();
+    var raiz = Path.GetFullPath(archivos.RutaAlmacenamiento);
+
+    try
+    {
+        Directory.CreateDirectory(raiz);
+        var sonda = Path.Combine(raiz, $".sonda-{Guid.NewGuid():N}");
+        File.WriteAllText(sonda, "ok");
+        File.Delete(sonda);
+        logger.LogInformation("Almacenamiento de documentos listo en {Raiz}.", raiz);
+    }
+    catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+    {
+        // No se detiene el servicio: las cargas responderán 503 hasta que el volumen esté disponible.
+        logger.LogError(ex, "El almacenamiento de documentos en {Raiz} no es escribible.", raiz);
+    }
+}
 
 static async Task MigrarAsync(WebApplication app)
 {
@@ -193,4 +222,9 @@ static async Task MigrarAsync(WebApplication app)
             await Task.Delay(TimeSpan.FromSeconds(5));
         }
     }
+}
+
+/// <summary>Expuesto para las pruebas de integración con <c>WebApplicationFactory</c>.</summary>
+public partial class Program
+{
 }

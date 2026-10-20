@@ -45,5 +45,30 @@ public sealed record SolicitudCreadaEvent
     public DateTimeOffset FechaCreacionUtc { get; init; } = DateTimeOffset.UtcNow;
 
     /// <summary>Versión del contrato del evento.</summary>
-    public string Version { get; init; } = "1.0";
+    public string Version { get; init; } = "1.1";
+
+    /// <summary>
+    /// Referencias verificadas por el servidor (v1.1, agregado al final según EV-02): cada entrada corresponde a un documento en estado
+    /// VALIDADO cuyo archivo existe en el almacenamiento y cuyo SHA-256 se recalculó desde disco justo
+    /// antes de publicar. Ningún valor proviene del cliente.
+    /// </summary>
+    public IReadOnlyCollection<DocumentoReferencia> Documentos { get; init; } = Array.Empty<DocumentoReferencia>();
+}
+
+/// <summary>
+/// Referencia a un documento PDF ya almacenado y verificado por el Microservicio B (contrato v1.1).
+/// No contiene el binario: el consumidor lo localiza por <see cref="RutaAlmacenamiento"/> en el
+/// almacenamiento compartido y puede comprobar su integridad con <see cref="HashSha256"/>.
+/// </summary>
+public sealed record DocumentoReferencia
+{
+    public Guid DocumentoId { get; init; }
+
+    /// <summary>Ruta relativa al directorio de almacenamiento (generada por el servidor).</summary>
+    public string RutaAlmacenamiento { get; init; } = string.Empty;
+
+    /// <summary>SHA-256 recalculado desde el archivo en disco (hexadecimal en minúsculas).</summary>
+    public string HashSha256 { get; init; } = string.Empty;
+
+    public long TamanoBytes { get; init; }
 }

@@ -156,19 +156,33 @@ Verificar "Listado de asignaturas" "US-03" 200 (Invoke-Api -Method GET -Path "/a
 # --- 4) US-04: enrutamiento del Gateway ----------------------------------
 Verificar "Ruta desconocida en el Gateway" "US-04" 404 (Invoke-Api -Method GET -Path "/api/ruta-inexistente" -Headers $hAdmin)
 
-# --- 5) US-05 / US-06: expediente y publicación en el bus ----------------
-$expediente = Invoke-Api -Method POST -Path "/api/expedientes" -Headers $hOperador -Body @{
+# --- 5) US-05 / US-06: borrador -> PDF validado en el servidor -> envío -> bus ----
+function Send-Pdf {
+    param([string]$ExpedienteId, [byte[]]$Contenido, [string]$Nombre, $Headers)
+
+    # HttpClient de .NET: funciona igual en Windows PowerShell 5.1 y en PowerShell 7.
+    Add-Type -AssemblyName System.Net.Http
+    $cliente = New-Object System.Net.Http.HttpClient
+    $cliente.DefaultRequestHeaders.Authorization =
+        New-Object System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", $Headers.Authorization.Substring(7))
+    $formulario = New-Object System.Net.Http.MultipartFormDataContent
+    $archivo = New-Object System.Net.Http.ByteArrayContent(,$Contenido)
+    $archivo.Headers.ContentType = [System.Net.Http.Headers.MediaTypeHeaderValue]::Parse("application/pdf")
+    $formulario.Add($archivo, "archivo", $Nombre)
+    try {
+        $resp = $cliente.PostAsync("$BaseUrl/api/expedientes/$ExpedienteId/documentos", $formulario).Result
+        return @{ Codigo = [int]$resp.StatusCode; Cuerpo = $resp.Content.ReadAsStringAsync().Result }
+    }
+    catch { return @{ Codigo = 0; Cuerpo = $_.Exception.Message } }
+    finally { $cliente.Dispose() }
+}
+
+$cuerpoExpediente = @{
     tipoTramite          = "INTERNO"
     rutaNormativa        = "CAU-P-011"
     carreraOrigenCodigo  = "SW"
     carreraDestinoCodigo = "TI"
     institucionOrigen    = "UTA"
-    documentos           = @(@{
-        nombreArchivo     = "record-academico.pdf"
-        rutaAlmacenamiento = "/data/record-academico.pdf"
-        hashSha256        = "0000000000000000000000000000000000000000000000000000000000000000"
-        tamanoBytes       = 2048
-    })
     asignaturas          = @(@{
         codigoOrigen  = "SW101"
         nombreOrigen  = "Fundamentos de Programación"
@@ -176,12 +190,32 @@ $expediente = Invoke-Api -Method POST -Path "/api/expedientes" -Headers $hOperad
         nota          = 18.5
     })
 }
-Verificar "Registro de expediente (202 Accepted)" "US-06" 202 $expediente
 
-if ($expediente.Codigo -eq 202) {
-    $aceptado = $expediente.Cuerpo | ConvertFrom-Json
-    Write-Host ("     Expediente {0} | estado {1} | correlacion {2} | publicado {3}" -f $aceptado.codigo, $aceptado.estado, $aceptado.correlationId, $aceptado.publicado) -ForegroundColor DarkGray
-    Verificar "Consulta del estado del expediente" "US-05" 200 (Invoke-Api -Method GET -Path "/api/expedientes/$($aceptado.id)" -Headers $hOperador)
+# El cliente ya no puede declarar rutas/hashes: el registro con "documentos" se rechaza.
+$conDeclarados = $cuerpoExpediente.Clone()
+$conDeclarados.documentos = @(@{ nombreArchivo = "x.pdf"; rutaAlmacenamiento = "/etc/passwd"; hashSha256 = "0"; tamanoBytes = 1 })
+Verificar "Documentos declarados por el cliente" "US-05" 400 (Invoke-Api -Method POST -Path "/api/expedientes" -Headers $hOperador -Body $conDeclarados)
+
+$expediente = Invoke-Api -Method POST -Path "/api/expedientes" -Headers $hOperador -Body $cuerpoExpediente
+Verificar "Registro de expediente como borrador (201)" "US-05" 201 $expediente
+
+if ($expediente.Codigo -eq 201) {
+    $borrador = $expediente.Cuerpo | ConvertFrom-Json
+    Write-Host ("     Borrador {0} | estado {1} | correlacion {2}" -f $borrador.codigo, $borrador.estado, $borrador.correlationId) -ForegroundColor DarkGray
+
+    Verificar "Envío sin documentos (422)" "US-05" 422 (Invoke-Api -Method POST -Path "/api/expedientes/$($borrador.id)/enviar" -Headers $hOperador)
+
+    $noPdf = [System.Text.Encoding]::ASCII.GetBytes("esto no es un pdf")
+    Verificar "Carga de un archivo que no es PDF (400)" "US-05" 400 (Send-Pdf $borrador.id $noPdf "falso.pdf" $hOperador)
+
+    $pdf = [System.Text.Encoding]::ASCII.GetBytes("%PDF-1.7`n1 0 obj << /Type /Catalog >> endobj`n%%EOF`n")
+    Verificar "Carga de PDF real validado en el servidor (201)" "US-05" 201 (Send-Pdf $borrador.id $pdf "record-academico.pdf" $hOperador)
+    Verificar "Reintento de la misma carga sin duplicar (200)" "US-05" 200 (Send-Pdf $borrador.id $pdf "record-academico.pdf" $hOperador)
+
+    $envio = Invoke-Api -Method POST -Path "/api/expedientes/$($borrador.id)/enviar" -Headers $hOperador
+    Verificar "Envío con documentos verificados (202 Accepted)" "US-06" 202 $envio
+    Verificar "Segundo envío idempotente (200, sin republicar)" "US-06" 200 (Invoke-Api -Method POST -Path "/api/expedientes/$($borrador.id)/enviar" -Headers $hOperador)
+    Verificar "Consulta del estado del expediente" "US-05" 200 (Invoke-Api -Method GET -Path "/api/expedientes/$($borrador.id)" -Headers $hOperador)
 }
 
 Verificar "Tipo de trámite inválido" "US-06" 400 (Invoke-Api -Method POST -Path "/api/expedientes" -Headers $hOperador -Body @{

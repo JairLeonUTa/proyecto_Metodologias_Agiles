@@ -41,7 +41,16 @@ public class Expediente
 
     public DateTimeOffset? FechaPublicacionUtc { get; set; }
 
+    /// <summary>Momento del último intento de publicación (permite detectar envíos abandonados).</summary>
+    public DateTimeOffset? FechaUltimoIntentoUtc { get; set; }
+
     public string? Observaciones { get; set; }
+
+    /// <summary>
+    /// Sello de concurrencia optimista. Se renueva en cada transición de estado relevante para que dos
+    /// envíos simultáneos del mismo expediente no publiquen dos veces (el segundo recibe 409).
+    /// </summary>
+    public Guid SelloConcurrencia { get; set; } = Guid.NewGuid();
 
     public ICollection<ExpedienteDocumento> Documentos { get; set; } = new List<ExpedienteDocumento>();
 

@@ -4,8 +4,19 @@
 **Institución:** Universidad Técnica de Ambato — FISEI — Metodologías Ágiles
 **Sprint:** 1 (Base del Sistema) · **Tarea:** S1-P01
 **Autor:** Paul Medardo Acurio López — Product Owner Proxy & QA/AI Lead
-**Versión del documento:** 1.0 · **Versión del contrato:** 1.0 · **Estado:** Aprobado para Sprint 1
-**Fecha:** 18 de octubre de 2026
+**Versión del documento:** 1.1 · **Versión del contrato:** 1.1 · **Estado:** Aprobado para Sprint 1
+**Fecha:** 18 de octubre de 2026 · **Revisión 1.1:** 19 de octubre de 2026 (Sebastián Miranda — integración de documentos)
+
+> **Cambios de la versión 1.1 (aditivos, regla EV-02):**
+> 1. El evento se publica solo cuando el expediente pasa de `PENDIENTE_DOCUMENTOS` a enviado y
+>    todos los documentos referenciados están en estado `VALIDADO`, existen en el almacenamiento y su
+>    SHA-256 se **recalculó desde disco** justo antes de publicar. Ningún dato del cliente llega al bus.
+> 2. Nuevo campo 13 `Documentos` (al final del contrato): referencia verificada de cada PDF
+>    (`DocumentoId`, `RutaAlmacenamiento` relativa al volumen de B, `HashSha256`, `TamanoBytes`).
+>    No transporta binarios (R-01 se mantiene). `DocumentoIds` se conserva por compatibilidad.
+> 3. `MessageId` del envelope = `ExpedienteId`: si un reintento llegara a publicar dos veces, el
+>    consumidor puede descartar el duplicado. El `CorrelationId` sigue siendo el original.
+> 4. `Version` = `"1.1"`.
 
 ---
 
@@ -48,7 +59,8 @@ Tipo .NET: `public sealed record SolicitudCreadaEvent` (`Siha.Contracts.Events`,
 | 9 | `AsignaturasOrigen` | `IReadOnlyCollection<string>` | array&lt;string&gt; | **Sí** (puede ir vacía) | Códigos de las asignaturas de origen seleccionadas para homologación. | `["SW101", "SW201"]` |
 | 10 | `Estado` | `string` | string | **Sí** | Estado del expediente al publicar. En el flujo normal es `PENDIENTE_CONTENIDOS`. | `PENDIENTE_CONTENIDOS` |
 | 11 | `FechaCreacionUtc` | `DateTimeOffset` | string (ISO-8601) | **Sí** | Marca temporal de creación del expediente, **siempre en UTC**. | `2026-10-18T15:09:15.3705354+00:00` |
-| 12 | `Version` | `string` | string | **Sí** | Versión del contrato del evento. Permite evolución compatible. | `1.0` |
+| 12 | `Version` | `string` | string | **Sí** | Versión del contrato del evento. Permite evolución compatible. | `1.1` |
+| 13 | `Documentos` | `IReadOnlyCollection<DocumentoReferencia>` | array&lt;object&gt; | **Sí** (v1.1) | Referencias **verificadas por B** (existencia, tamaño y SHA-256 recalculado desde disco). Cada entrada: `documentoId`, `rutaAlmacenamiento` (relativa al volumen `siha-archivos`), `hashSha256`, `tamanoBytes`. Coincide 1:1 con `DocumentoIds`. | `[{"documentoId":"ffa6954a-…","rutaAlmacenamiento":"2026/10/3f2c….pdf","hashSha256":"9b1e…","tamanoBytes":4171}]` |
 
 ### 2.1 Reglas de obligatoriedad
 
@@ -79,7 +91,15 @@ Serialización **verificada en el bus** (captura real del Sprint 1, envelope Mas
   "asignaturasOrigen": ["SW101", "SW201"],
   "estado": "PENDIENTE_CONTENIDOS",
   "fechaCreacionUtc": "2026-10-18T15:09:15.3705354+00:00",
-  "version": "1.0"
+  "version": "1.1",
+  "documentos": [
+    {
+      "documentoId": "ffa6954a-64c4-472e-9aab-3bfd5c3b4e91",
+      "rutaAlmacenamiento": "2026/10/3f2c9a0e5b7d4c1f8e6a2b9d0c4e7f11.pdf",
+      "hashSha256": "9b1e3c0f7a5d2e8b4c6f1a0d9e7b3c5a2f8d6e4b1c9a7f5e3d2b0c8a6e4f2d1b",
+      "tamanoBytes": 4171
+    }
+  ]
 }
 ```
 

@@ -112,6 +112,10 @@
       "key": "correoPrueba",
       "value": "",
       "type": "string"
+    },
+    {
+      "key": "documentoId",
+      "value": ""
     }
   ],
   "item": [
@@ -131,6 +135,51 @@
         }
       ],
       "item": [
+        {
+          "name": "Login administrador (200) · captura tokenAdmin",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Login 200 OK', function () { pm.response.to.have.status(200); });",
+                  "const json = pm.response.json();",
+                  "pm.collectionVariables.set('tokenAdmin', json.token);",
+                  "pm.test('El token y el rol son los esperados', function () { pm.expect(json.token).to.be.a('string').and.not.empty; pm.expect(json.usuario.rol).to.eql('ADMINISTRADOR'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/auth/login",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"correoInstitucional\": \"admin@uta.edu.ec\",\n  \"password\": \"{{adminPassword}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "auth": {
+              "type": "noauth"
+            },
+            "description": "Cuenta semilla del Sprint 1: admin@uta.edu.ec / {{adminPassword}}."
+          },
+          "response": []
+        },
         {
           "name": "Alta de cuenta OPERADOR de QA (201 o 409)",
           "event": [
@@ -205,51 +254,6 @@
                 }
               }
             }
-          },
-          "response": []
-        },
-        {
-          "name": "Login administrador (200) · captura tokenAdmin",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test('Login 200 OK', function () { pm.response.to.have.status(200); });",
-                  "const json = pm.response.json();",
-                  "pm.collectionVariables.set('tokenAdmin', json.token);",
-                  "pm.test('El token y el rol son los esperados', function () { pm.expect(json.token).to.be.a('string').and.not.empty; pm.expect(json.usuario.rol).to.eql('ADMINISTRADOR'); });"
-                ]
-              }
-            }
-          ],
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Accept",
-                "value": "application/json"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": "{{baseUrl}}/api/auth/login",
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"correoInstitucional\": \"admin@uta.edu.ec\",\n  \"password\": \"{{adminPassword}}\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "auth": {
-              "type": "noauth"
-            },
-            "description": "Cuenta semilla del Sprint 1: admin@uta.edu.ec / {{adminPassword}}."
           },
           "response": []
         },
@@ -2171,20 +2175,19 @@
       "description": "Alta de expedientes INTERNO (CAU-P-011) y EXTERNO (CAU-P-122) con 202 Accepted, consulta de estado, publicación del evento, RBAC y casos de error 400/403/404.",
       "item": [
         {
-          "name": "PT-19 · Alta expediente INTERNO CAU-P-011 (202) · captura id y correlación",
+          "name": "PT-19 · Alta expediente INTERNO CAU-P-011 como borrador (201) · captura id y correlación",
           "event": [
             {
               "listen": "test",
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test('202 Accepted', function () { pm.response.to.have.status(202); });",
+                  "pm.test('201 Created', function () { pm.response.to.have.status(201); });",
                   "const json = pm.response.json();",
                   "pm.collectionVariables.set('expedienteId', json.id);",
                   "pm.collectionVariables.set('correlationId', json.correlationId);",
                   "pm.collectionVariables.set('codigoExpediente', json.codigo);",
-                  "pm.test('Estado PENDIENTE_CONTENIDOS', function () { pm.expect(json.estado).to.eql('PENDIENTE_CONTENIDOS'); });",
-                  "pm.test('Publicado en el bus con correlación', function () { pm.expect(json.publicado).to.be.true; pm.expect(json.correlationId).to.match(/^[0-9a-f-]{36}$/); });"
+                  "pm.test('Borrador PENDIENTE_DOCUMENTOS sin publicar', function () { pm.expect(json.estado).to.eql('PENDIENTE_DOCUMENTOS'); pm.expect(json.publicado).to.be.false; pm.expect(json.correlationId).to.match(/^[0-9a-f-]{36}$/); });"
                 ]
               }
             }
@@ -2204,7 +2207,7 @@
             "url": "{{baseUrl}}/api/expedientes",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"tipoTramite\": \"INTERNO\",\n  \"rutaNormativa\": \"CAU-P-011\",\n  \"carreraOrigenCodigo\": \"SW\",\n  \"carreraDestinoCodigo\": \"TI\",\n  \"institucionOrigen\": \"UTA\",\n  \"documentos\": [\n    {\n      \"nombreArchivo\": \"record-academico.pdf\",\n      \"rutaAlmacenamiento\": \"/data/qa/record-academico.pdf\",\n      \"hashSha256\": \"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\n      \"tamanoBytes\": 184320\n    }\n  ],\n  \"asignaturas\": [\n    {\n      \"codigoOrigen\": \"SW101\",\n      \"nombreOrigen\": \"Fundamentos de Programación\",\n      \"codigoDestino\": \"TI101\",\n      \"nota\": 18\n    },\n    {\n      \"codigoOrigen\": \"SW201\",\n      \"nombreOrigen\": \"Estructuras de Datos\",\n      \"codigoDestino\": \"TI201\",\n      \"nota\": 16.5\n    }\n  ]\n}",
+              "raw": "{\n  \"tipoTramite\": \"INTERNO\",\n  \"rutaNormativa\": \"CAU-P-011\",\n  \"carreraOrigenCodigo\": \"SW\",\n  \"carreraDestinoCodigo\": \"TI\",\n  \"institucionOrigen\": \"UTA\",\n  \"asignaturas\": [\n    {\n      \"codigoOrigen\": \"SW101\",\n      \"nombreOrigen\": \"Fundamentos de Programación\",\n      \"codigoDestino\": \"TI101\",\n      \"nota\": 18\n    },\n    {\n      \"codigoOrigen\": \"SW201\",\n      \"nombreOrigen\": \"Estructuras de Datos\",\n      \"codigoDestino\": \"TI201\",\n      \"nota\": 16.5\n    }\n  ]\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -2226,7 +2229,256 @@
           "response": []
         },
         {
-          "name": "PT-20 · Alta expediente EXTERNO CAU-P-122 (202)",
+          "name": "PT-19b · Registro con documentos declarados por el cliente (400)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('400 Bad Request: no se confía en rutas/hashes del cliente', function () { pm.response.to.have.status(400); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/expedientes",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tipoTramite\": \"INTERNO\",\n  \"rutaNormativa\": \"CAU-P-011\",\n  \"carreraOrigenCodigo\": \"SW\",\n  \"carreraDestinoCodigo\": \"TI\",\n  \"institucionOrigen\": \"UTA\",\n  \"asignaturas\": [\n    {\n      \"codigoOrigen\": \"SW101\",\n      \"nombreOrigen\": \"Fundamentos de Programación\",\n      \"codigoDestino\": \"TI101\",\n      \"nota\": 18\n    },\n    {\n      \"codigoOrigen\": \"SW201\",\n      \"nombreOrigen\": \"Estructuras de Datos\",\n      \"codigoDestino\": \"TI201\",\n      \"nota\": 16.5\n    }\n  ],\n  \"documentos\": [\n    {\n      \"nombreArchivo\": \"x.pdf\",\n      \"rutaAlmacenamiento\": \"/etc/passwd\",\n      \"hashSha256\": \"0\",\n      \"tamanoBytes\": 1\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenOperador}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "description": "US-06/CA2: la API responde 202 Accepted (no 201) porque el procesamiento es asíncrono; el estado inicial es PENDIENTE_CONTENIDOS y se devuelve el CorrelationId para la trazabilidad (CA3)."
+          },
+          "response": []
+        },
+        {
+          "name": "PT-19c · Enviar sin documentos (422)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenOperador}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/expedientes/{{expedienteId}}/enviar",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "expedientes",
+                "{{expedienteId}}",
+                "enviar"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('422 requisitos documentales incumplidos', function () { pm.response.to.have.status(422); });",
+                  "pm.test('Detalle del requisito', function () { pm.expect(pm.response.json().detalles.length).to.be.above(0); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "PT-19d · Cargar archivo que no es PDF (400 y queda RECHAZADO)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenOperador}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/expedientes/{{expedienteId}}/documentos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "expedientes",
+                "{{expedienteId}}",
+                "documentos"
+              ]
+            },
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "archivo",
+                  "type": "file",
+                  "src": "docs/postman/muestras/no-es-pdf.pdf",
+                  "contentType": "application/pdf"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('400 Bad Request', function () { pm.response.to.have.status(400); });",
+                  "pm.test('Motivo: firma %PDF', function () { pm.expect(pm.response.json().mensaje).to.contain('%PDF'); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "PT-19e · Cargar PDF real (201) · hash calculado por el servidor",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenOperador}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/expedientes/{{expedienteId}}/documentos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "expedientes",
+                "{{expedienteId}}",
+                "documentos"
+              ]
+            },
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "archivo",
+                  "type": "file",
+                  "src": "docs/postman/muestras/record-academico.pdf",
+                  "contentType": "application/pdf"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('201 Created', function () { pm.response.to.have.status(201); });",
+                  "const json = pm.response.json();",
+                  "pm.collectionVariables.set('documentoId', json.id);",
+                  "pm.test('VALIDADO con SHA-256 del servidor', function () { pm.expect(json.estadoRecepcion).to.eql('VALIDADO'); pm.expect(json.hashSha256).to.match(/^[0-9a-f]{64}$/); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "PT-19f · Reintentar la misma carga (200, sin duplicar)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenOperador}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/expedientes/{{expedienteId}}/documentos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "expedientes",
+                "{{expedienteId}}",
+                "documentos"
+              ]
+            },
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "archivo",
+                  "type": "file",
+                  "src": "docs/postman/muestras/record-academico.pdf",
+                  "contentType": "application/pdf"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 OK (idempotente)', function () { pm.response.to.have.status(200); });",
+                  "pm.test('Devuelve el mismo documento', function () { pm.expect(pm.response.json().id).to.eql(pm.collectionVariables.get('documentoId')); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "PT-19g · Enviar con documentos verificados (202) · publica en el bus",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenOperador}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/expedientes/{{expedienteId}}/enviar",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "expedientes",
+                "{{expedienteId}}",
+                "enviar"
+              ]
+            }
+          },
           "event": [
             {
               "listen": "test",
@@ -2235,7 +2487,60 @@
                 "exec": [
                   "pm.test('202 Accepted', function () { pm.response.to.have.status(202); });",
                   "const json = pm.response.json();",
-                  "pm.test('Estado PENDIENTE_CONTENIDOS y tipo EXTERNO', function () { pm.expect(json.estado).to.eql('PENDIENTE_CONTENIDOS'); });",
+                  "pm.test('Publicado y PENDIENTE_CONTENIDOS', function () { pm.expect(json.publicado).to.be.true; pm.expect(json.estado).to.eql('PENDIENTE_CONTENIDOS'); });",
+                  "pm.test('Mismo CorrelationId del borrador', function () { pm.expect(json.correlationId).to.eql(pm.collectionVariables.get('correlationId')); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "PT-19h · Segundo envío idempotente (200, no republica)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenOperador}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/expedientes/{{expedienteId}}/enviar",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "expedientes",
+                "{{expedienteId}}",
+                "enviar"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 OK', function () { pm.response.to.have.status(200); });",
+                  "pm.test('Sigue publicado una sola vez', function () { pm.expect(pm.response.json().publicado).to.be.true; });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "PT-20 · Alta expediente EXTERNO CAU-P-122 como borrador (201)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('201 Created', function () { pm.response.to.have.status(201); });",
+                  "const json = pm.response.json();",
+                  "pm.test('Borrador PENDIENTE_DOCUMENTOS', function () { pm.expect(json.estado).to.eql('PENDIENTE_DOCUMENTOS'); });",
                   "pm.collectionVariables.set('expedienteExternoId', json.id);"
                 ]
               }
@@ -2256,7 +2561,7 @@
             "url": "{{baseUrl}}/api/expedientes",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"tipoTramite\": \"EXTERNO\",\n  \"rutaNormativa\": \"CAU-P-122\",\n  \"carreraOrigenCodigo\": \"SW\",\n  \"carreraDestinoCodigo\": \"ROB\",\n  \"institucionOrigen\": \"Universidad de Cuenca\",\n  \"documentos\": [\n    {\n      \"nombreArchivo\": \"certificado-notas.pdf\",\n      \"rutaAlmacenamiento\": \"/data/qa/certificado-notas.pdf\",\n      \"hashSha256\": \"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\",\n      \"tamanoBytes\": 240128\n    }\n  ],\n  \"asignaturas\": [\n    {\n      \"codigoOrigen\": \"EXT-101\",\n      \"nombreOrigen\": \"Algoritmos y Estructuras\",\n      \"codigoDestino\": \"ROB101\",\n      \"nota\": 17\n    }\n  ]\n}",
+              "raw": "{\n  \"tipoTramite\": \"EXTERNO\",\n  \"rutaNormativa\": \"CAU-P-122\",\n  \"carreraOrigenCodigo\": \"SW\",\n  \"carreraDestinoCodigo\": \"ROB\",\n  \"institucionOrigen\": \"Universidad de Cuenca\",\n  \"asignaturas\": [\n    {\n      \"codigoOrigen\": \"EXT-101\",\n      \"nombreOrigen\": \"Algoritmos y Estructuras\",\n      \"codigoDestino\": \"ROB101\",\n      \"nota\": 17\n    }\n  ]\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -2306,7 +2611,7 @@
             "url": "{{baseUrl}}/api/expedientes",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"tipoTramite\": \"EXTRANJERO\",\n  \"rutaNormativa\": \"CAU-P-011\",\n  \"carreraOrigenCodigo\": \"SW\",\n  \"carreraDestinoCodigo\": \"TI\",\n  \"institucionOrigen\": \"UTA\",\n  \"documentos\": [\n    {\n      \"nombreArchivo\": \"record-academico.pdf\",\n      \"rutaAlmacenamiento\": \"/data/qa/record-academico.pdf\",\n      \"hashSha256\": \"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\n      \"tamanoBytes\": 184320\n    }\n  ],\n  \"asignaturas\": [\n    {\n      \"codigoOrigen\": \"SW101\",\n      \"nombreOrigen\": \"Fundamentos de Programación\",\n      \"codigoDestino\": \"TI101\",\n      \"nota\": 18\n    },\n    {\n      \"codigoOrigen\": \"SW201\",\n      \"nombreOrigen\": \"Estructuras de Datos\",\n      \"codigoDestino\": \"TI201\",\n      \"nota\": 16.5\n    }\n  ]\n}",
+              "raw": "{\n  \"tipoTramite\": \"EXTRANJERO\",\n  \"rutaNormativa\": \"CAU-P-011\",\n  \"carreraOrigenCodigo\": \"SW\",\n  \"carreraDestinoCodigo\": \"TI\",\n  \"institucionOrigen\": \"UTA\",\n  \"asignaturas\": [\n    {\n      \"codigoOrigen\": \"SW101\",\n      \"nombreOrigen\": \"Fundamentos de Programación\",\n      \"codigoDestino\": \"TI101\",\n      \"nota\": 18\n    },\n    {\n      \"codigoOrigen\": \"SW201\",\n      \"nombreOrigen\": \"Estructuras de Datos\",\n      \"codigoDestino\": \"TI201\",\n      \"nota\": 16.5\n    }\n  ]\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -2346,7 +2651,7 @@
             "url": "{{baseUrl}}/api/expedientes",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"tipoTramite\": \"INTERNO\",\n  \"rutaNormativa\": \"CAU-P-999\",\n  \"carreraOrigenCodigo\": \"SW\",\n  \"carreraDestinoCodigo\": \"TI\",\n  \"institucionOrigen\": \"UTA\",\n  \"documentos\": [\n    {\n      \"nombreArchivo\": \"record-academico.pdf\",\n      \"rutaAlmacenamiento\": \"/data/qa/record-academico.pdf\",\n      \"hashSha256\": \"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\n      \"tamanoBytes\": 184320\n    }\n  ],\n  \"asignaturas\": [\n    {\n      \"codigoOrigen\": \"SW101\",\n      \"nombreOrigen\": \"Fundamentos de Programación\",\n      \"codigoDestino\": \"TI101\",\n      \"nota\": 18\n    },\n    {\n      \"codigoOrigen\": \"SW201\",\n      \"nombreOrigen\": \"Estructuras de Datos\",\n      \"codigoDestino\": \"TI201\",\n      \"nota\": 16.5\n    }\n  ]\n}",
+              "raw": "{\n  \"tipoTramite\": \"INTERNO\",\n  \"rutaNormativa\": \"CAU-P-999\",\n  \"carreraOrigenCodigo\": \"SW\",\n  \"carreraDestinoCodigo\": \"TI\",\n  \"institucionOrigen\": \"UTA\",\n  \"asignaturas\": [\n    {\n      \"codigoOrigen\": \"SW101\",\n      \"nombreOrigen\": \"Fundamentos de Programación\",\n      \"codigoDestino\": \"TI101\",\n      \"nota\": 18\n    },\n    {\n      \"codigoOrigen\": \"SW201\",\n      \"nombreOrigen\": \"Estructuras de Datos\",\n      \"codigoDestino\": \"TI201\",\n      \"nota\": 16.5\n    }\n  ]\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -2438,17 +2743,17 @@
           "response": []
         },
         {
-          "name": "PT-24 · Republicar conservando el CorrelationId (202)",
+          "name": "PT-24 · Republicar un expediente ya publicado (200, idempotente, mismo CorrelationId)",
           "event": [
             {
               "listen": "test",
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test('202 Accepted', function () { pm.response.to.have.status(202); });",
+                  "pm.test('200 OK (no se publica dos veces)', function () { pm.response.to.have.status(200); });",
                   "const json = pm.response.json();",
                   "pm.test('Mismo CorrelationId que en el alta', function () { pm.expect(json.correlationId).to.eql(pm.collectionVariables.get('correlationId')); });",
-                  "pm.test('Estado PENDIENTE_CONTENIDOS tras republicar', function () { pm.expect(json.estado).to.eql('PENDIENTE_CONTENIDOS'); });"
+                  "pm.test('Estado PENDIENTE_CONTENIDOS', function () { pm.expect(json.estado).to.eql('PENDIENTE_CONTENIDOS'); });"
                 ]
               }
             }
@@ -2529,7 +2834,7 @@
             "url": "{{baseUrl}}/api/expedientes",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"tipoTramite\": \"INTERNO\",\n  \"rutaNormativa\": \"CAU-P-011\",\n  \"carreraOrigenCodigo\": \"SW\",\n  \"carreraDestinoCodigo\": \"TI\",\n  \"institucionOrigen\": \"UTA\",\n  \"documentos\": [\n    {\n      \"nombreArchivo\": \"record-academico.pdf\",\n      \"rutaAlmacenamiento\": \"/data/qa/record-academico.pdf\",\n      \"hashSha256\": \"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\n      \"tamanoBytes\": 184320\n    }\n  ],\n  \"asignaturas\": [\n    {\n      \"codigoOrigen\": \"SW101\",\n      \"nombreOrigen\": \"Fundamentos de Programación\",\n      \"codigoDestino\": \"TI101\",\n      \"nota\": 18\n    },\n    {\n      \"codigoOrigen\": \"SW201\",\n      \"nombreOrigen\": \"Estructuras de Datos\",\n      \"codigoDestino\": \"TI201\",\n      \"nota\": 16.5\n    }\n  ]\n}",
+              "raw": "{\n  \"tipoTramite\": \"INTERNO\",\n  \"rutaNormativa\": \"CAU-P-011\",\n  \"carreraOrigenCodigo\": \"SW\",\n  \"carreraDestinoCodigo\": \"TI\",\n  \"institucionOrigen\": \"UTA\",\n  \"asignaturas\": [\n    {\n      \"codigoOrigen\": \"SW101\",\n      \"nombreOrigen\": \"Fundamentos de Programación\",\n      \"codigoDestino\": \"TI101\",\n      \"nota\": 18\n    },\n    {\n      \"codigoOrigen\": \"SW201\",\n      \"nombreOrigen\": \"Estructuras de Datos\",\n      \"codigoDestino\": \"TI201\",\n      \"nota\": 16.5\n    }\n  ]\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -2577,7 +2882,7 @@
             "url": "{{baseUrl}}/api/expedientes",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"tipoTramite\": \"INTERNO\",\n  \"rutaNormativa\": \"CAU-P-011\",\n  \"carreraOrigenCodigo\": \"SW\",\n  \"carreraDestinoCodigo\": \"TI\",\n  \"institucionOrigen\": \"UTA\",\n  \"documentos\": [\n    {\n      \"nombreArchivo\": \"record-academico.pdf\",\n      \"rutaAlmacenamiento\": \"/data/qa/record-academico.pdf\",\n      \"hashSha256\": \"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\n      \"tamanoBytes\": 184320\n    }\n  ],\n  \"asignaturas\": [\n    {\n      \"codigoOrigen\": \"SW101\",\n      \"nombreOrigen\": \"Fundamentos de Programación\",\n      \"codigoDestino\": \"TI101\",\n      \"nota\": 18\n    },\n    {\n      \"codigoOrigen\": \"SW201\",\n      \"nombreOrigen\": \"Estructuras de Datos\",\n      \"codigoDestino\": \"TI201\",\n      \"nota\": 16.5\n    }\n  ]\n}",
+              "raw": "{\n  \"tipoTramite\": \"INTERNO\",\n  \"rutaNormativa\": \"CAU-P-011\",\n  \"carreraOrigenCodigo\": \"SW\",\n  \"carreraDestinoCodigo\": \"TI\",\n  \"institucionOrigen\": \"UTA\",\n  \"asignaturas\": [\n    {\n      \"codigoOrigen\": \"SW101\",\n      \"nombreOrigen\": \"Fundamentos de Programación\",\n      \"codigoDestino\": \"TI101\",\n      \"nota\": 18\n    },\n    {\n      \"codigoOrigen\": \"SW201\",\n      \"nombreOrigen\": \"Estructuras de Datos\",\n      \"codigoDestino\": \"TI201\",\n      \"nota\": 16.5\n    }\n  ]\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -2625,19 +2930,17 @@
       "description": "Prueba de fallo y recuperación del bus (PT-24) y batería de regresión funcional (PT-R01…PT-R08).\n\nIMPORTANTE (paso manual): antes de ejecutar esta carpeta, detener RabbitMQ con `docker compose stop rabbitmq` para reproducir el escenario de fallo. La primera petición debe responder 202 con estado REGISTRADO_PENDIENTE_PUBLICACION y conservar el CorrelationId; luego, con el bus levantado (`docker compose start rabbitmq`), la republicación debe publicar el mensaje con el MISMO CorrelationId. Si el bus está arriba, el primer expediente quedará en PENDIENTE_CONTENIDOS: el caso sigue siendo válido para verificar la republicación, pero la evidencia de recuperación requiere el bus detenido.",
       "item": [
         {
-          "name": "PT-24 · Alta con el bus detenido (202 recuperable)",
+          "name": "PT-24 · Alta del borrador para la prueba de caída del bus (201)",
           "event": [
             {
               "listen": "test",
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test('202 Accepted (el fallo del bus no rompe la API)', function () { pm.response.to.have.status(202); });",
+                  "pm.test('201 Created', function () { pm.response.to.have.status(201); });",
                   "const json = pm.response.json();",
                   "pm.collectionVariables.set('expedienteRecuperableId', json.id);",
-                  "pm.collectionVariables.set('correlationIdRecuperable', json.correlationId);",
-                  "pm.test('Estado recuperable o publicado si el bus está arriba', function () { pm.expect(['REGISTRADO_PENDIENTE_PUBLICACION', 'PENDIENTE_CONTENIDOS']).to.include(json.estado); });",
-                  "pm.test('El CorrelationId se devuelve siempre', function () { pm.expect(json.correlationId).to.match(/^[0-9a-f-]{36}$/); });"
+                  "pm.collectionVariables.set('correlationIdRecuperable', json.correlationId);"
                 ]
               }
             }
@@ -2657,7 +2960,7 @@
             "url": "{{baseUrl}}/api/expedientes",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"tipoTramite\": \"INTERNO\",\n  \"rutaNormativa\": \"CAU-P-011\",\n  \"carreraOrigenCodigo\": \"SW\",\n  \"carreraDestinoCodigo\": \"TI\",\n  \"institucionOrigen\": \"UTA · prueba de recuperación\",\n  \"documentos\": [\n    {\n      \"nombreArchivo\": \"record-academico.pdf\",\n      \"rutaAlmacenamiento\": \"/data/qa/record-academico.pdf\",\n      \"hashSha256\": \"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\n      \"tamanoBytes\": 184320\n    }\n  ],\n  \"asignaturas\": [\n    {\n      \"codigoOrigen\": \"SW101\",\n      \"nombreOrigen\": \"Fundamentos de Programación\",\n      \"codigoDestino\": \"TI101\",\n      \"nota\": 18\n    },\n    {\n      \"codigoOrigen\": \"SW201\",\n      \"nombreOrigen\": \"Estructuras de Datos\",\n      \"codigoDestino\": \"TI201\",\n      \"nota\": 16.5\n    }\n  ]\n}",
+              "raw": "{\n  \"tipoTramite\": \"INTERNO\",\n  \"rutaNormativa\": \"CAU-P-011\",\n  \"carreraOrigenCodigo\": \"SW\",\n  \"carreraDestinoCodigo\": \"TI\",\n  \"institucionOrigen\": \"UTA · prueba de recuperación\",\n  \"asignaturas\": [\n    {\n      \"codigoOrigen\": \"SW101\",\n      \"nombreOrigen\": \"Fundamentos de Programación\",\n      \"codigoDestino\": \"TI101\",\n      \"nota\": 18\n    },\n    {\n      \"codigoOrigen\": \"SW201\",\n      \"nombreOrigen\": \"Estructuras de Datos\",\n      \"codigoDestino\": \"TI201\",\n      \"nota\": 16.5\n    }\n  ]\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -2677,6 +2980,90 @@
             "description": "Con RabbitMQ detenido: el expediente debe persistirse igualmente y quedar en estado recuperable."
           },
           "response": []
+        },
+        {
+          "name": "PT-24 · Cargar PDF al borrador (201)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenOperador}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/expedientes/{{expedienteRecuperableId}}/documentos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "expedientes",
+                "{{expedienteRecuperableId}}",
+                "documentos"
+              ]
+            },
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "archivo",
+                  "type": "file",
+                  "src": "docs/postman/muestras/record-academico.pdf",
+                  "contentType": "application/pdf"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('201 Created', function () { pm.response.to.have.status(201); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "PT-24 · Enviar con el bus DETENIDO (202 recuperable) · detener RabbitMQ antes",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenOperador}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/expedientes/{{expedienteRecuperableId}}/enviar",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "expedientes",
+                "{{expedienteRecuperableId}}",
+                "enviar"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('202 Accepted (el fallo del bus no rompe la API)', function () { pm.response.to.have.status(202); });",
+                  "const json = pm.response.json();",
+                  "pm.test('Estado recuperable o publicado si el bus está arriba', function () { pm.expect(['REGISTRADO_PENDIENTE_PUBLICACION', 'PENDIENTE_CONTENIDOS']).to.include(json.estado); });",
+                  "pm.test('Conserva el CorrelationId', function () { pm.expect(json.correlationId).to.eql(pm.collectionVariables.get('correlationIdRecuperable')); });"
+                ]
+              }
+            }
+          ]
         },
         {
           "name": "PT-24 · Estado del expediente recuperable (200)",
@@ -2733,16 +3120,16 @@
           "response": []
         },
         {
-          "name": "PT-24 · Republicar con el bus levantado (202 · mismo CorrelationId)",
+          "name": "PT-24 · Republicar con el bus levantado (202, o 200 si el reintento automático ya publicó)",
           "event": [
             {
               "listen": "test",
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test('202 Accepted', function () { pm.response.to.have.status(202); });",
+                  "pm.test('202 Accepted o 200 OK', function () { pm.expect(pm.response.code).to.be.oneOf([200, 202]); });",
                   "const json = pm.response.json();",
-                  "pm.test('Republicación exitosa', function () { pm.expect(json.publicado).to.be.true; });",
+                  "pm.test('Publicado', function () { pm.expect(json.publicado).to.be.true; });",
                   "pm.test('Mismo CorrelationId (trazabilidad preservada)', function () { pm.expect(json.correlationId).to.eql(pm.collectionVariables.get('correlationIdRecuperable')); });",
                   "pm.test('Estado PENDIENTE_CONTENIDOS', function () { pm.expect(json.estado).to.eql('PENDIENTE_CONTENIDOS'); });"
                 ]
@@ -2901,17 +3288,17 @@
           "response": []
         },
         {
-          "name": "PT-R04 · Regresión expedientes: alta y consulta (202 → 200)",
+          "name": "PT-R04 · Regresión expedientes: borrador, PDF y envío (201 → 201 → 202)",
           "event": [
             {
               "listen": "test",
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test('202 Accepted', function () { pm.response.to.have.status(202); });",
+                  "pm.test('201 Created', function () { pm.response.to.have.status(201); });",
                   "const json = pm.response.json();",
                   "pm.collectionVariables.set('expedienteRegresionId', json.id);",
-                  "pm.test('Estado PENDIENTE_CONTENIDOS', function () { pm.expect(json.estado).to.eql('PENDIENTE_CONTENIDOS'); });"
+                  "pm.test('Borrador PENDIENTE_DOCUMENTOS', function () { pm.expect(json.estado).to.eql('PENDIENTE_DOCUMENTOS'); });"
                 ]
               }
             }
@@ -2931,7 +3318,7 @@
             "url": "{{baseUrl}}/api/expedientes",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"tipoTramite\": \"INTERNO\",\n  \"rutaNormativa\": \"CAU-P-011\",\n  \"carreraOrigenCodigo\": \"SW\",\n  \"carreraDestinoCodigo\": \"IND\",\n  \"institucionOrigen\": \"UTA\",\n  \"documentos\": [\n    {\n      \"nombreArchivo\": \"record-academico.pdf\",\n      \"rutaAlmacenamiento\": \"/data/qa/record-academico.pdf\",\n      \"hashSha256\": \"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\n      \"tamanoBytes\": 184320\n    }\n  ],\n  \"asignaturas\": [\n    {\n      \"codigoOrigen\": \"SW101\",\n      \"nombreOrigen\": \"Fundamentos de Programación\",\n      \"codigoDestino\": \"TI101\",\n      \"nota\": 18\n    },\n    {\n      \"codigoOrigen\": \"SW201\",\n      \"nombreOrigen\": \"Estructuras de Datos\",\n      \"codigoDestino\": \"TI201\",\n      \"nota\": 16.5\n    }\n  ]\n}",
+              "raw": "{\n  \"tipoTramite\": \"INTERNO\",\n  \"rutaNormativa\": \"CAU-P-011\",\n  \"carreraOrigenCodigo\": \"SW\",\n  \"carreraDestinoCodigo\": \"IND\",\n  \"institucionOrigen\": \"UTA\",\n  \"asignaturas\": [\n    {\n      \"codigoOrigen\": \"SW101\",\n      \"nombreOrigen\": \"Fundamentos de Programación\",\n      \"codigoDestino\": \"TI101\",\n      \"nota\": 18\n    },\n    {\n      \"codigoOrigen\": \"SW201\",\n      \"nombreOrigen\": \"Estructuras de Datos\",\n      \"codigoDestino\": \"TI201\",\n      \"nota\": 16.5\n    }\n  ]\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -2950,6 +3337,88 @@
             }
           },
           "response": []
+        },
+        {
+          "name": "PT-R04 · Regresión: cargar PDF (201)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenOperador}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/expedientes/{{expedienteRegresionId}}/documentos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "expedientes",
+                "{{expedienteRegresionId}}",
+                "documentos"
+              ]
+            },
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "archivo",
+                  "type": "file",
+                  "src": "docs/postman/muestras/record-academico.pdf",
+                  "contentType": "application/pdf"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('201 Created', function () { pm.response.to.have.status(201); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "PT-R04 · Regresión: enviar (202 PENDIENTE_CONTENIDOS)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenOperador}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/expedientes/{{expedienteRegresionId}}/enviar",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "expedientes",
+                "{{expedienteRegresionId}}",
+                "enviar"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('202 Accepted', function () { pm.response.to.have.status(202); });",
+                  "pm.test('Estado PENDIENTE_CONTENIDOS', function () { pm.expect(pm.response.json().estado).to.eql('PENDIENTE_CONTENIDOS'); });"
+                ]
+              }
+            }
+          ]
         },
         {
           "name": "PT-R05 · Regresión contrato: expediente consultable con correlación (200)",

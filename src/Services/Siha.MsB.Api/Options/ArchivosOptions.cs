@@ -23,4 +23,31 @@ public sealed class ArchivosOptions
 
     /// <summary>Tipos MIME aceptados para un PDF (el cliente puede enviar variantes).</summary>
     public string[] MimePermitidos { get; set; } = { "application/pdf", "application/x-pdf" };
+
+    /// <summary>
+    /// Requisito documental mínimo para enviar el expediente: cantidad de PDF en estado VALIDADO,
+    /// presentes en disco y con hash íntegro (por defecto 1).
+    /// </summary>
+    public int MinimoDocumentosRequeridos { get; set; } = 1;
+}
+
+/// <summary>
+/// Reintento automático de publicaciones pendientes (sección <c>Republicacion</c>). Recupera los
+/// expedientes que quedaron en REGISTRADO_PENDIENTE_PUBLICACION por una caída del bus, o atascados en
+/// PUBLICACION_EN_CURSO por un reinicio del proceso, conservando siempre su CorrelationId.
+/// </summary>
+public sealed class RepublicacionOptions
+{
+    public const string SectionName = "Republicacion";
+
+    public bool Habilitada { get; set; } = true;
+
+    /// <summary>Intervalo entre barridos, en segundos.</summary>
+    public int IntervaloSegundos { get; set; } = 30;
+
+    /// <summary>Antigüedad a partir de la cual un PUBLICACION_EN_CURSO se considera abandonado.</summary>
+    public int EnCursoAbandonadoSegundos { get; set; } = 120;
+
+    /// <summary>Máximo de expedientes procesados por barrido.</summary>
+    public int LoteMaximo { get; set; } = 20;
 }

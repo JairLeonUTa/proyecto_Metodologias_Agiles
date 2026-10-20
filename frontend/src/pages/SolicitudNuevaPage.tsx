@@ -71,9 +71,14 @@ const FILA_VACIA = (): FilaAsignatura => ({
 /**
  * Registro de solicitudes de homologación internas y externas (S1-A06, S1-A07 y S1-A09).
  *
- * Integra el catálogo real (carreras, mallas y asignaturas) a través del Gateway, valida
- * localmente los documentos PDF, envía el expediente y muestra el identificador generado
- * junto con los errores devueltos por el servidor.
+ * Integra el catálogo real (carreras, mallas y asignaturas) a través del Gateway y sigue el
+ * flujo acordado con el Microservicio B:
+ *  1. registra el expediente como borrador (PENDIENTE_DOCUMENTOS, sin evento);
+ *  2. carga cada PDF real en `POST /api/expedientes/{id}/documentos` (el servidor valida, almacena
+ *     y calcula el SHA-256);
+ *  3. envía el expediente (`POST /api/expedientes/{id}/enviar`); el servidor verifica los PDF en disco
+ *     y publica el evento solo si se cumplen los requisitos documentales.
+ * Si una carga falla, el borrador se conserva y el operador reintenta solo lo pendiente.
  */
 export function SolicitudNuevaPage(): JSX.Element {
   useTituloPagina('Registrar solicitud');
@@ -86,6 +91,9 @@ export function SolicitudNuevaPage(): JSX.Element {
   const [institucionPersonalizada, setInstitucionPersonalizada] = useState(false);
   const [enviando, setEnviando] = useState(false);
   const [aceptado, setAceptado] = useState<ExpedienteAceptado | null>(null);
+  /** Borrador ya registrado en el servidor: permite reintentar cargas sin duplicar el expediente. */
+  const [borrador, setBorrador] = useState<ExpedienteAceptado | null>(null);
+  const [paso, setPaso] = useState('');
   const { mensaje, error: reportarError, limpiar } = useMensajes();
 
   const carreras = usePeticion(() => carrerasApi.listar(), []);
@@ -115,6 +123,10 @@ export function SolicitudNuevaPage(): JSX.Element {
   );
 
   const esExterno = formulario.tipoTramite === TIPOS_TRAMITE.EXTERNO;
+
+  // Una vez registrado el borrador, los datos del trámite ya están en el servidor: solo se
+  // pueden reintentar las cargas de documentos y el envío.
+  const bloqueado = enviando || borrador !== null;
 
   const cambiarTipoTramite = (tipo: string): void => {
     setInstitucionPersonalizada(false);
@@ -184,6 +196,42 @@ export function SolicitudNuevaPage(): JSX.Element {
     return nuevos;
   };
 
+  const marcarArchivo = (id: string, cambios: Partial<ArchivoAdjunto>): void => {
+    setArchivos((actuales) => actuales.map((archivo) => (archivo.id === id ? { ...archivo, ...cambios } : archivo)));
+  };
+
+  /** Carga en el servidor los PDF que aún no están validados. Devuelve cuántos fallaron. */
+  const cargarDocumentos = async (expedienteId: string): Promise<number> => {
+    let fallidos = 0;
+
+    for (const adjunto of archivos) {
+      if (adjunto.estado === 'cargado') {
+        continue;
+      }
+
+      setPaso(`Cargando ${adjunto.nombreArchivo}…`);
+      marcarArchivo(adjunto.id, { estado: 'subiendo', error: undefined });
+
+      try {
+        const documento = await expedientesApi.subirDocumento(expedienteId, adjunto.archivo);
+
+        // El hash válido es el del servidor; si difiere del calculado en el navegador, el archivo
+        // se alteró en tránsito y se retira para volver a cargarlo.
+        if (adjunto.hashSha256 && documento.hashSha256 !== adjunto.hashSha256) {
+          await expedientesApi.retirarDocumento(expedienteId, documento.id);
+          throw new Error('El SHA-256 calculado por el servidor no coincide con el del navegador. Vuelva a cargarlo.');
+        }
+
+        marcarArchivo(adjunto.id, { estado: 'cargado', documentoId: documento.id, error: undefined });
+      } catch (fallo) {
+        fallidos += 1;
+        marcarArchivo(adjunto.id, { estado: 'error', error: mensajeDeError(fallo) });
+      }
+    }
+
+    return fallidos;
+  };
+
   const registrar = async (): Promise<void> => {
     limpiar();
     setAceptado(null);
@@ -199,31 +247,60 @@ export function SolicitudNuevaPage(): JSX.Element {
 
     setEnviando(true);
     try {
-      const respuesta = await expedientesApi.registrar({
-        tipoTramite: formulario.tipoTramite,
-        rutaNormativa: formulario.rutaNormativa,
-        carreraOrigenCodigo: formulario.carreraOrigenCodigo.trim(),
-        carreraDestinoCodigo: formulario.carreraDestinoCodigo.trim(),
-        institucionOrigen: formulario.institucionOrigen.trim() || null,
-        documentos: archivos.map((archivo) => ({
-          nombreArchivo: archivo.nombreArchivo,
-          rutaAlmacenamiento: `expedientes/${formulario.tipoTramite.toLowerCase()}/${formulario.carreraDestinoCodigo}/${archivo.nombreArchivo}`,
-          hashSha256: archivo.hashSha256,
-          tamanoBytes: archivo.tamanoBytes,
-        })),
-        asignaturas: filasValidas.map((fila) => ({
-          codigoOrigen: fila.codigoOrigen.trim(),
-          nombreOrigen: fila.nombreOrigen.trim(),
-          codigoDestino: fila.codigoDestino || null,
-          nota: fila.nota.trim() === '' ? null : aNumero(fila.nota),
-        })),
-      });
+      // 1) Borrador (solo la primera vez; los reintentos reutilizan el mismo expediente).
+      let expediente = borrador;
+      if (!expediente) {
+        setPaso('Registrando el expediente…');
+        expediente = await expedientesApi.registrar({
+          tipoTramite: formulario.tipoTramite,
+          rutaNormativa: formulario.rutaNormativa,
+          carreraOrigenCodigo: formulario.carreraOrigenCodigo.trim(),
+          carreraDestinoCodigo: formulario.carreraDestinoCodigo.trim(),
+          institucionOrigen: formulario.institucionOrigen.trim() || null,
+          asignaturas: filasValidas.map((fila) => ({
+            codigoOrigen: fila.codigoOrigen.trim(),
+            nombreOrigen: fila.nombreOrigen.trim(),
+            codigoDestino: fila.codigoDestino || null,
+            nota: fila.nota.trim() === '' ? null : aNumero(fila.nota),
+          })),
+        });
+        setBorrador(expediente);
+      }
 
+      // 2) Carga real de los PDF.
+      const fallidos = await cargarDocumentos(expediente.id);
+      if (fallidos > 0) {
+        reportarError(
+          `El expediente ${expediente.codigo} quedó guardado como borrador, pero ${fallidos} documento(s) no se cargaron. ` +
+            'Retire o reemplace los marcados como "No cargado" y pulse "Reintentar y enviar". No se publicó ningún evento.',
+        );
+        return;
+      }
+
+      // 3) Envío: el servidor verifica los PDF en disco y publica.
+      setPaso('Verificando documentos y enviando…');
+      const respuesta = await expedientesApi.enviar(expediente.id);
       setAceptado(respuesta);
     } catch (fallo) {
       reportarError(mensajeDeError(fallo), detallesDeError(fallo));
     } finally {
+      setPaso('');
       setEnviando(false);
+    }
+  };
+
+  /** Retira en el servidor un PDF ya cargado en el borrador antes de quitarlo de la lista. */
+  const retirarDelServidor = async (adjunto: ArchivoAdjunto): Promise<boolean> => {
+    if (!borrador || !adjunto.documentoId) {
+      return true;
+    }
+
+    try {
+      await expedientesApi.retirarDocumento(borrador.id, adjunto.documentoId);
+      return true;
+    } catch (fallo) {
+      reportarError(mensajeDeError(fallo));
+      return false;
     }
   };
 
@@ -234,6 +311,7 @@ export function SolicitudNuevaPage(): JSX.Element {
     setErrores({});
     setInstitucionPersonalizada(false);
     setAceptado(null);
+    setBorrador(null);
     limpiar();
   };
 
@@ -242,7 +320,7 @@ export function SolicitudNuevaPage(): JSX.Element {
       <EncabezadoPagina
         contexto="Expedientes"
         titulo="Registrar solicitud de homologación"
-        descripcion="Alta de una solicitud interna (cambio de carrera dentro de la UTA) o externa (movilidad desde otra institución). El expediente se persiste y se publica de forma asíncrona en el bus de eventos."
+        descripcion="Alta de una solicitud interna (cambio de carrera dentro de la UTA) o externa (movilidad desde otra institución). El expediente se registra, se cargan y validan sus PDF en el servidor y solo entonces se publica en el bus de eventos."
         acciones={
           usuario ? <Etiqueta tono="marca">Operador: {usuario.nombreCompleto}</Etiqueta> : null
         }
@@ -256,8 +334,12 @@ export function SolicitudNuevaPage(): JSX.Element {
 
       {aceptado ? (
         <Tarjeta
-          titulo="Solicitud registrada (HTTP 202 Accepted)"
-          descripcion="El expediente fue persistido y enviado al procesamiento asíncrono."
+          titulo={aceptado.publicado ? 'Solicitud enviada (HTTP 202 Accepted)' : 'Solicitud registrada, publicación pendiente'}
+          descripcion={
+            aceptado.publicado
+              ? 'Los documentos se verificaron en el servidor y el expediente se publicó para su procesamiento asíncrono.'
+              : 'Los documentos se verificaron, pero el bus no respondió. El sistema reintentará automáticamente conservando la correlación.'
+          }
         >
           <div className="space-y-4">
             <Alerta tono={aceptado.publicado ? 'exito' : 'advertencia'} titulo={`Expediente ${aceptado.codigo}`}>
@@ -325,7 +407,7 @@ export function SolicitudNuevaPage(): JSX.Element {
               <Selector
                 id="tipo-tramite"
                 value={formulario.tipoTramite}
-                disabled={enviando}
+                disabled={bloqueado}
                 onChange={(evento) => cambiarTipoTramite(evento.target.value)}
               >
                 {TIPOS_TRAMITE_TODOS.map((tipo) => (
@@ -346,7 +428,7 @@ export function SolicitudNuevaPage(): JSX.Element {
               <Selector
                 id="ruta-normativa-solicitud"
                 value={formulario.rutaNormativa}
-                disabled={enviando}
+                disabled={bloqueado}
                 invalido={Boolean(errores.rutaNormativa)}
                 onChange={(evento) => setFormulario({ ...formulario, rutaNormativa: evento.target.value })}
               >
@@ -405,7 +487,7 @@ export function SolicitudNuevaPage(): JSX.Element {
                 id="institucion-origen-otra"
                 value={formulario.institucionOrigen}
                 maxLength={150}
-                disabled={enviando}
+                disabled={bloqueado}
                 invalido={Boolean(errores.institucionOrigen)}
                 placeholder="Ej.: Universidad Estatal Amazónica"
                 onChange={(evento) => setFormulario({ ...formulario, institucionOrigen: evento.target.value })}
@@ -423,7 +505,7 @@ export function SolicitudNuevaPage(): JSX.Element {
               <Selector
                 id="carrera-origen"
                 value={formulario.carreraOrigenCodigo}
-                disabled={enviando}
+                disabled={bloqueado}
                 invalido={Boolean(errores.carreraOrigenCodigo)}
                 onChange={(evento) => setFormulario({ ...formulario, carreraOrigenCodigo: evento.target.value })}
               >
@@ -446,7 +528,7 @@ export function SolicitudNuevaPage(): JSX.Element {
               <Selector
                 id="carrera-destino"
                 value={formulario.carreraDestinoCodigo}
-                disabled={enviando}
+                disabled={bloqueado}
                 invalido={Boolean(errores.carreraDestinoCodigo)}
                 onChange={(evento) => setFormulario({ ...formulario, carreraDestinoCodigo: evento.target.value })}
               >
@@ -507,7 +589,7 @@ export function SolicitudNuevaPage(): JSX.Element {
                         list="sugerencias-origen"
                         value={fila.codigoOrigen}
                         maxLength={30}
-                        disabled={enviando}
+                        disabled={bloqueado}
                         placeholder="Ej.: PRG-101"
                         onChange={(evento) => actualizarFila(indice, { codigoOrigen: evento.target.value })}
                       />
@@ -518,7 +600,7 @@ export function SolicitudNuevaPage(): JSX.Element {
                         id={idNombre}
                         value={fila.nombreOrigen}
                         maxLength={200}
-                        disabled={enviando}
+                        disabled={bloqueado}
                         placeholder="Ej.: Programación I"
                         onChange={(evento) => actualizarFila(indice, { nombreOrigen: evento.target.value })}
                       />
@@ -550,7 +632,7 @@ export function SolicitudNuevaPage(): JSX.Element {
                         max={20}
                         step="0.01"
                         value={fila.nota}
-                        disabled={enviando}
+                        disabled={bloqueado}
                         placeholder="18.50"
                         onChange={(evento) => actualizarFila(indice, { nota: evento.target.value })}
                       />
@@ -564,7 +646,7 @@ export function SolicitudNuevaPage(): JSX.Element {
           <Boton
             variante="secundario"
             tamano="sm"
-            disabled={enviando}
+            disabled={bloqueado}
             onClick={() => setFilas((actuales) => [...actuales, FILA_VACIA()])}
           >
             Agregar materia
@@ -573,26 +655,42 @@ export function SolicitudNuevaPage(): JSX.Element {
 
         <SeccionFormulario
           titulo="3. Documentos de respaldo (PDF)"
-          descripcion="Validación local de tipo y tamaño antes de enviar el expediente; el hash SHA-256 se calcula en el navegador."
+          descripcion="Validación local previa; cada PDF se carga y valida en el servidor, que calcula su ruta y SHA-256 definitivos."
         >
           {errores.documentos ? <Alerta tono="error">{errores.documentos}</Alerta> : null}
-          <CargadorArchivosPdf archivos={archivos} onCambiar={setArchivos} deshabilitado={enviando} />
+          {borrador && !aceptado ? (
+            <Alerta tono="advertencia" titulo={`Borrador ${borrador.codigo}`}>
+              El expediente ya está registrado. Puede retirar o agregar documentos y reintentar el envío.
+            </Alerta>
+          ) : null}
+          <CargadorArchivosPdf
+            archivos={archivos}
+            onCambiar={setArchivos}
+            deshabilitado={enviando || aceptado !== null}
+            onRetirar={retirarDelServidor}
+          />
         </SeccionFormulario>
 
         <div className="flex flex-wrap items-center justify-end gap-2">
           <Boton variante="secundario" onClick={reiniciar} disabled={enviando}>
-            Limpiar formulario
+            {borrador ? 'Nueva solicitud' : 'Limpiar formulario'}
           </Boton>
-          <Boton type="submit" cargando={enviando} textoCargando="Registrando expediente…">
-            Registrar solicitud
+          <Boton
+            type="submit"
+            cargando={enviando}
+            textoCargando={paso || 'Procesando…'}
+            disabled={aceptado !== null}
+          >
+            {borrador ? 'Reintentar y enviar' : 'Registrar y enviar solicitud'}
           </Boton>
         </div>
       </form>
 
       <Tarjeta titulo="Alcance del registro" descripcion="Consideraciones del Sprint 1.">
         <ul className="list-inside list-disc space-y-1 text-xs text-slate-600">
-          <li>El expediente se persiste antes de publicarse, por lo que nunca se pierde una solicitud válida.</li>
-          <li>La publicación del evento es asíncrona (MassTransit / RabbitMQ); la respuesta es 202 Accepted.</li>
+          <li>El expediente se persiste como borrador antes de cargar los PDF, por lo que nunca se pierde una solicitud válida.</li>
+          <li>El evento solo se publica cuando todos los PDF están almacenados y verificados por el servidor (SHA-256 recalculado).</li>
+          <li>La publicación es asíncrona (MassTransit / RabbitMQ); si el bus falla se reintenta automáticamente con la misma correlación.</li>
           <li>
             Roles autorizados para registrar expedientes: {(ROLES_EXPEDIENTES as string[]).join(', ')}.
           </li>

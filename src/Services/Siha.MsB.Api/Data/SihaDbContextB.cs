@@ -33,6 +33,8 @@ public class SihaDbContextB : DbContext
             e.Property(x => x.Estado).HasMaxLength(40).IsRequired();
             e.Property(x => x.UltimoErrorPublicacion).HasMaxLength(1000);
             e.Property(x => x.Observaciones).HasMaxLength(1000);
+            e.Property(x => x.SelloConcurrencia).IsConcurrencyToken();
+            e.HasIndex(x => x.Estado);
         });
 
         modelBuilder.Entity<ExpedienteDocumento>(e =>
@@ -47,6 +49,13 @@ public class SihaDbContextB : DbContext
             e.Property(x => x.EstadoRecepcion).HasMaxLength(30).IsRequired();
             e.Property(x => x.ObservacionValidacion).HasMaxLength(500);
             e.HasIndex(x => x.HashSha256);
+
+            // Un mismo contenido (SHA-256) solo puede estar VALIDADO una vez por expediente: evita
+            // duplicados aunque dos reintentos de carga lleguen a la vez.
+            e.HasIndex(x => new { x.ExpedienteId, x.HashSha256 })
+                .IsUnique()
+                .HasDatabaseName("IX_EXPEDIENTE_DOC_Unico_Validado")
+                .HasFilter("[EstadoRecepcion] = 'VALIDADO'");
             e.HasOne(x => x.Expediente)
                 .WithMany(x => x.Documentos)
                 .HasForeignKey(x => x.ExpedienteId)

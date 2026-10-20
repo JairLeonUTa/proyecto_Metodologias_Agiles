@@ -1,7 +1,13 @@
 name: CI
 
-# Integración continua del SIHA-IA (Sprint 1 - S1-S08).
-# Se ejecuta en cada push y en cada pull request contra la solución completa.
+# Integración continua del SIHA-IA (Sprint 1).
+#
+# Se separan explícitamente tres niveles de prueba para que la evidencia no mezcle simulaciones
+# con infraestructura real:
+#   1. unitarias      -> Siha.MsA.Tests y Siha.MsB.Tests (EF Core InMemory, mocks, inspección de configuración).
+#   2. integracion    -> Siha.Integracion.Tests con SQL Server 2022 y RabbitMQ 3.13 REALES (Testcontainers).
+#   3. e2e-compose    -> docker compose desde cero (SQL A/B, RabbitMQ, ms-a, ms-b, gateway, frontend)
+#                        con caída/recuperación del bus; publica la evidencia como artefacto.
 on:
   push:
     branches: [ main, master, develop, "feature/**", "sprint*" ]
@@ -14,16 +20,13 @@ env:
   DOTNET_SKIP_FIRST_TIME_EXPERIENCE: "true"
 
 jobs:
-  build-test:
-    name: Restore, build y pruebas (net8.0)
+  unitarias:
+    name: 1 · Build + pruebas unitarias (simuladas)
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout del repositorio
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Instalar .NET 8
-        uses: actions/setup-dotnet@v4
+      - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: "8.0.x"
 
@@ -31,7 +34,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.nuget/packages
-          key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj', '**/Directory.Packages.props') }}
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
           restore-keys: |
             ${{ runner.os }}-nuget-
 
@@ -41,18 +44,102 @@ jobs:
       - name: Compilar la solución
         run: dotnet build SIHA-IA.sln --no-restore --configuration Release
 
-      - name: Ejecutar las pruebas
-        run: dotnet test SIHA-IA.sln --no-build --configuration Release --logger "trx;LogFileName=resultados.trx" --results-directory ./TestResults
+      - name: Pruebas unitarias MsA (simuladas)
+        run: dotnet test tests/Siha.MsA.Tests/Siha.MsA.Tests.csproj --no-build -c Release --logger "trx;LogFileName=unitarias-msa.trx" --results-directory ./TestResults
 
-      # Siha.MsB.Tests se ejecuta explícitamente: la solución aún no referencia este proyecto,
-      # de modo que esta invocación garantiza que sus pruebas (S1-S03/S1-S09) corran en CI.
-      - name: Compilar y ejecutar las pruebas de Siha.MsB.Tests
-        run: dotnet test tests/Siha.MsB.Tests/Siha.MsB.Tests.csproj --configuration Release --logger "trx;LogFileName=msb-resultados.trx" --results-directory ./TestResults
+      - name: Pruebas unitarias MsB (simuladas)
+        run: dotnet test tests/Siha.MsB.Tests/Siha.MsB.Tests.csproj --no-build -c Release --logger "trx;LogFileName=unitarias-msb.trx" --results-directory ./TestResults
 
-      - name: Publicar los resultados de las pruebas
+      - name: Publicar resultados
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: resultados-pruebas
+          name: resultados-unitarias
           path: ./TestResults
+          if-no-files-found: ignore
+
+  frontend:
+    name: 1b · Build del frontend
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci
+      - run: npm run build
+
+  integracion:
+    name: 2 · Integración con SQL Server y RabbitMQ reales
+    runs-on: ubuntu-latest
+    needs: unitarias
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+
+      - name: Caché de paquetes NuGet
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget-
+
+      # Testcontainers levanta SQL Server 2022 y RabbitMQ 3.13 en el Docker del runner.
+      - name: Pruebas de integración (infraestructura real)
+        run: dotnet test tests/Siha.Integracion.Tests/Siha.Integracion.Tests.csproj -c Release --logger "trx;LogFileName=integracion-real.trx" --logger "console;verbosity=normal" --results-directory ./TestResults
+
+      - name: Publicar resultados
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: resultados-integracion-real
+          path: ./TestResults
+          if-no-files-found: ignore
+
+  e2e-compose:
+    name: 3 · E2E Docker Compose desde cero
+    runs-on: ubuntu-latest
+    needs: [ unitarias, frontend ]
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Credenciales desechables para el entorno E2E
+        shell: bash
+        run: |
+          for variable in SIHA_SQL_PASSWORD SIHA_RABBITMQ_PASSWORD SIHA_JWT_KEY SIHA_ADMIN_PASSWORD; do
+            valor="Aa1!$(openssl rand -hex 32)"
+            echo "::add-mask::$valor"
+            echo "$variable=$valor" >> "$GITHUB_ENV"
+          done
+
+      - name: Verificar configuración E2E sin contenedores
+        run: bash scripts/test-e2e-config.sh
+
+      - name: Recorrido completo (migraciones, Gateway, PDF, RabbitMQ, caída y recuperación del bus)
+        run: bash scripts/e2e-docker-compose.sh
+
+      - name: Logs de los contenedores (si falla)
+        if: failure()
+        run: docker compose logs --no-color > docs/evidencias/compose-logs.txt 2>&1 || true
+
+      - name: Publicar evidencia
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: evidencia-e2e-compose
+          path: docs/evidencias
           if-no-files-found: ignore
