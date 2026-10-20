@@ -1,3 +1,4 @@
+using System.Data;
 using Microsoft.EntityFrameworkCore;
 using Siha.MsA.Api.Contracts.Dtos;
 using Siha.MsA.Api.Data;
@@ -9,7 +10,11 @@ public interface IReglasService
 {
     Task<IReadOnlyCollection<ReglaDto>> ListarReglasAsync(string? rutaNormativa, string? tipoTramite);
 
+    Task<IReadOnlyCollection<ReglaDto>> ListarHistorialReglasAsync(string? rutaNormativa, string? tipoTramite);
+
     Task<(bool Ok, string? Error, ReglaDto? Regla)> CrearReglaAsync(CrearReglaRequest request);
+
+    Task<(bool Ok, string? Error, ReglaDto? Regla)> ActualizarReglaAsync(int id, CrearReglaRequest request);
 
     Task<ParametroEvaluacionDto?> ObtenerParametrosAsync(string rutaNormativa);
 
@@ -32,8 +37,21 @@ public class ReglasService : IReglasService
     }
 
     public async Task<IReadOnlyCollection<ReglaDto>> ListarReglasAsync(string? rutaNormativa, string? tipoTramite)
+        => await ConsultarReglasAsync(rutaNormativa, tipoTramite, soloVigentes: true);
+
+    public async Task<IReadOnlyCollection<ReglaDto>> ListarHistorialReglasAsync(string? rutaNormativa, string? tipoTramite)
+        => await ConsultarReglasAsync(rutaNormativa, tipoTramite, soloVigentes: false);
+
+    private async Task<IReadOnlyCollection<ReglaDto>> ConsultarReglasAsync(
+        string? rutaNormativa, string? tipoTramite, bool soloVigentes)
     {
         var query = _db.Reglas.AsNoTracking().AsQueryable();
+        if (soloVigentes)
+        {
+            var hoy = DateOnly.FromDateTime(DateTime.UtcNow);
+            query = query.Where(r => r.Activa && r.VigenteDesde <= hoy &&
+                (r.VigenteHasta == null || r.VigenteHasta >= hoy));
+        }
 
         if (!string.IsNullOrWhiteSpace(rutaNormativa))
         {
@@ -46,29 +64,73 @@ public class ReglasService : IReglasService
         }
 
         return await query
-            .OrderBy(r => r.RutaNormativa).ThenBy(r => r.Codigo)
+            .OrderBy(r => r.RutaNormativa).ThenBy(r => r.Codigo).ThenBy(r => r.VigenteDesde).ThenBy(r => r.Id)
             .Select(r => ToDto(r))
             .ToListAsync();
     }
 
     public async Task<(bool Ok, string? Error, ReglaDto? Regla)> CrearReglaAsync(CrearReglaRequest request)
     {
-        if (!RutasNormativasValidas(request.RutaNormativa))
-        {
-            return (false, "La ruta normativa debe ser CAU-P-011 o CAU-P-122.", null);
-        }
+        var error = ValidarRegla(request);
+        if (error is not null) return (false, error, null);
+
+        // SQL Server serializa las escrituras de una identidad sin cambiar el esquema.
+        await using var transaction = _db.Database.IsRelational()
+            ? await _db.Database.BeginTransactionAsync(IsolationLevel.Serializable) : null;
 
         var duplicada = await _db.Reglas.AnyAsync(r =>
             r.Codigo == request.Codigo &&
-            r.RutaNormativa == request.RutaNormativa &&
-            r.Version == request.Version);
+            r.RutaNormativa == request.RutaNormativa);
 
         if (duplicada)
         {
-            return (false, "Ya existe una regla con el mismo código, ruta normativa y versión.", null);
+            return (false, "Ya existe una regla con el mismo código y ruta normativa. Use PUT sobre su última versión.", null);
         }
 
-        var regla = new Regla
+        var regla = NuevaRegla(request);
+        _db.Reglas.Add(regla);
+        await _db.SaveChangesAsync();
+        if (transaction is not null) await transaction.CommitAsync();
+
+        return (true, null, ToDto(regla));
+    }
+
+    public async Task<(bool Ok, string? Error, ReglaDto? Regla)> ActualizarReglaAsync(int id, CrearReglaRequest request)
+    {
+        await using var transaction = _db.Database.IsRelational()
+            ? await _db.Database.BeginTransactionAsync(IsolationLevel.Serializable) : null;
+        var actual = await _db.Reglas.FindAsync(id);
+        // Error null distingue ausencia (404) de petición inválida (400).
+        if (actual is null) return (false, null, null);
+
+        var error = ValidarRegla(request);
+        if (error is not null) return (false, error, null);
+        if (request.Codigo != actual.Codigo || request.RutaNormativa != actual.RutaNormativa ||
+            request.EsNormativa != actual.EsNormativa || request.TipoTramite != actual.TipoTramite)
+            return (false, "No se puede cambiar código, ruta normativa, tipo de trámite ni naturaleza de la regla.", null);
+
+        var versiones = _db.Reglas.Where(r => r.Codigo == actual.Codigo && r.RutaNormativa == actual.RutaNormativa);
+        var ultimaId = await versiones.OrderByDescending(r => r.VigenteDesde).ThenByDescending(r => r.Id)
+            .Select(r => r.Id).FirstAsync();
+        if (!actual.Activa || ultimaId != id)
+            return (false, "Solo se puede versionar la última regla activa de esta identidad.", null);
+        if (await versiones.AnyAsync(r => r.Version == request.Version))
+            return (false, "La versión debe ser distinta de todas las versiones históricas de la regla.", null);
+        if (request.VigenteDesde <= actual.VigenteDesde)
+            return (false, "La nueva vigencia debe comenzar después del inicio de la versión anterior.", null);
+
+        // Fechas inclusivas: conserva la anterior para consultas históricas y evita solapamientos.
+        var finAnterior = request.VigenteDesde.AddDays(-1);
+        if (actual.VigenteHasta is null || actual.VigenteHasta > finAnterior)
+            actual.VigenteHasta = finAnterior;
+        var nueva = NuevaRegla(request);
+        _db.Reglas.Add(nueva);
+        await _db.SaveChangesAsync();
+        if (transaction is not null) await transaction.CommitAsync();
+        return (true, null, ToDto(nueva));
+    }
+
+    private static Regla NuevaRegla(CrearReglaRequest request) => new()
         {
             Codigo = request.Codigo,
             RutaNormativa = request.RutaNormativa,
@@ -83,10 +145,24 @@ public class ReglasService : IReglasService
             Activa = true
         };
 
-        _db.Reglas.Add(regla);
-        await _db.SaveChangesAsync();
-
-        return (true, null, ToDto(regla));
+    private static string? ValidarRegla(CrearReglaRequest request)
+    {
+        // Los atributos del record validan parámetros MVC, no propiedades de entidad.
+        var campos = new (string? Valor, int Maximo)[]
+        {
+            (request.Codigo, 20), (request.RutaNormativa, 20), (request.TipoTramite, 20),
+            (request.Descripcion, 400), (request.Version, 20), (request.Fuente, 200)
+        };
+        if (campos.Any(c => string.IsNullOrWhiteSpace(c.Valor) || c.Valor.Length > c.Maximo) ||
+            request.Expresion?.Length > 400)
+            return "Complete los campos obligatorios y respete las longitudes máximas del contrato.";
+        if (!RutasNormativasValidas(request.RutaNormativa))
+            return "La ruta normativa debe ser CAU-P-011 o CAU-P-122.";
+        if (!Siha.Contracts.TiposTramite.Todos.Contains(request.TipoTramite))
+            return "El tipo de trámite debe ser INTERNO o EXTERNO.";
+        if (request.VigenteDesde == default || request.VigenteHasta < request.VigenteDesde)
+            return "La vigencia debe tener un inicio válido y su fin no puede ser anterior al inicio.";
+        return null;
     }
 
     public async Task<ParametroEvaluacionDto?> ObtenerParametrosAsync(string rutaNormativa)
@@ -115,30 +191,29 @@ public class ReglasService : IReglasService
             return (false, error, null);
         }
 
+        await using var transaction = _db.Database.IsRelational()
+            ? await _db.Database.BeginTransactionAsync(IsolationLevel.Serializable) : null;
         var actual = await _db.ParametrosEvaluacion
             .Where(p => p.RutaNormativa == rutaNormativa)
             .OrderByDescending(p => p.Version)
             .FirstOrDefaultAsync();
 
-        if (actual is null)
+        var nueva = new ParametroEvaluacion
         {
-            actual = new ParametroEvaluacion { RutaNormativa = rutaNormativa, Version = 1 };
-            _db.ParametrosEvaluacion.Add(actual);
-        }
-        else
-        {
-            actual.Version += 1;
-        }
-
-        actual.Theta = request.Theta;
-        actual.Delta = request.Delta;
-        actual.Tau = request.Tau;
-        actual.ActualizadoUtc = DateTimeOffset.UtcNow;
-        actual.ActualizadoPor = usuario;
+            RutaNormativa = rutaNormativa,
+            Version = (actual?.Version ?? 0) + 1,
+            Theta = request.Theta,
+            Delta = request.Delta,
+            Tau = request.Tau,
+            ActualizadoUtc = DateTimeOffset.UtcNow,
+            ActualizadoPor = usuario
+        };
+        _db.ParametrosEvaluacion.Add(nueva);
 
         await _db.SaveChangesAsync();
+        if (transaction is not null) await transaction.CommitAsync();
 
-        return (true, null, ToDto(actual));
+        return (true, null, ToDto(nueva));
     }
 
     private static bool RutasNormativasValidas(string ruta)

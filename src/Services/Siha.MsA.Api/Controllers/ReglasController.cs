@@ -23,6 +23,7 @@ public class ReglasController : ControllerBase
         _reglas = reglas;
     }
 
+    /// <summary>Lista solo reglas activas cuya vigencia incluye la fecha UTC actual.</summary>
     [HttpGet]
     [ProducesResponseType(typeof(IEnumerable<ReglaDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<IEnumerable<ReglaDto>>> Listar(
@@ -33,6 +34,14 @@ public class ReglasController : ControllerBase
         return Ok(reglas);
     }
 
+    /// <summary>Lista todas las versiones, incluidas futuras, vencidas e inactivas.</summary>
+    [HttpGet("historial")]
+    [ProducesResponseType(typeof(IEnumerable<ReglaDto>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<IEnumerable<ReglaDto>>> Historial(
+        [FromQuery] string? rutaNormativa, [FromQuery] string? tipoTramite)
+        => Ok(await _reglas.ListarHistorialReglasAsync(rutaNormativa, tipoTramite));
+
+    /// <summary>Crea una identidad nueva; para versionar una existente use PUT /api/reglas/{id}.</summary>
     [HttpPost]
     [Authorize(Roles = RolesSistema.Administrador)]
     [ProducesResponseType(typeof(ReglaDto), StatusCodes.Status201Created)]
@@ -47,6 +56,23 @@ public class ReglasController : ControllerBase
         }
 
         return CreatedAtAction(nameof(Listar), new { rutaNormativa = regla!.RutaNormativa }, regla);
+    }
+
+    /// <summary>Crea una nueva fila de versión y cierra la vigencia anterior sin borrar su contenido.</summary>
+    [HttpPut("{id:int}")]
+    [Authorize(Roles = RolesSistema.Administrador)]
+    [ProducesResponseType(typeof(ReglaDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<ReglaDto>> Actualizar(int id, [FromBody] CrearReglaRequest request)
+    {
+        var (ok, error, regla) = await _reglas.ActualizarReglaAsync(id, request);
+        if (!ok)
+            return error is null
+                ? NotFound(new { mensaje = "Regla no encontrada." })
+                : BadRequest(new { mensaje = error });
+        return Ok(regla);
     }
 
     /// <summary>Consulta los umbrales heurísticos θ, δ, τ vigentes de una ruta normativa.</summary>

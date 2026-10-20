@@ -69,18 +69,18 @@ public static class DbSeederA
             {
                 RutaNormativa = RutasNormativas.CambioCarreraOu,
                 Theta = 80d,
-                Delta = 10d,
-                Tau = 70d,
+                Delta = 15d,
+                Tau = 75d,
                 Version = 1,
                 ActualizadoPor = "semilla"
             },
             new ParametroEvaluacion
             {
-                // CAU-P-122, Art. 20: al menos 80 % de correspondencia en resultados de aprendizaje.
+                // Defaults heurísticos del modelo; no son el mínimo normativo de RA.
                 RutaNormativa = RutasNormativas.Movilidad,
                 Theta = 80d,
                 Delta = 15d,
-                Tau = 65d,
+                Tau = 75d,
                 Version = 1,
                 ActualizadoPor = "semilla"
             });
@@ -101,7 +101,7 @@ public static class DbSeederA
         db.Reglas.AddRange(
             new Regla
             {
-                Codigo = "RN-01",
+                Codigo = "RN-09",
                 RutaNormativa = RutasNormativas.CambioCarreraOu,
                 TipoTramite = TiposTramite.Interno,
                 Descripcion = "Solo se admiten materias aprobadas de la malla de origen vigente.",
@@ -113,11 +113,11 @@ public static class DbSeederA
             },
             new Regla
             {
-                Codigo = "RN-02",
+                Codigo = "RN-13",
                 RutaNormativa = RutasNormativas.CambioCarreraOu,
                 TipoTramite = TiposTramite.Interno,
                 Descripcion = "La proporción mínima de créditos homologables es un parámetro heurístico configurable.",
-                Expresion = "theta>=80",
+                Expresion = "creditosHomologables>=theta",
                 Version = "1.0",
                 Fuente = "Parámetro heurístico del proyecto",
                 EsNormativa = false,
@@ -126,7 +126,7 @@ public static class DbSeederA
             },
             new Regla
             {
-                Codigo = "RN-03",
+                Codigo = "RN-10",
                 RutaNormativa = RutasNormativas.Movilidad,
                 TipoTramite = TiposTramite.Externo,
                 Descripcion = "La documentación debe acreditar la aprobación certificada en la institución de origen.",
@@ -138,11 +138,11 @@ public static class DbSeederA
             },
             new Regla
             {
-                Codigo = "RN-04",
+                Codigo = "RN-14",
                 RutaNormativa = RutasNormativas.Movilidad,
                 TipoTramite = TiposTramite.Externo,
                 Descripcion = "Cobertura temática mínima configurable para sugerir homologación.",
-                Expresion = "tau>=65",
+                Expresion = "cobertura>=tau",
                 Version = "1.0",
                 Fuente = "Parámetro heurístico del proyecto",
                 EsNormativa = false,
@@ -151,11 +151,11 @@ public static class DbSeederA
             },
             new Regla
             {
-                Codigo = "RN-05",
+                Codigo = "RN-02",
                 RutaNormativa = RutasNormativas.Movilidad,
                 TipoTramite = TiposTramite.Externo,
                 Descripcion = "Para homologar una asignatura se exige al menos 80 % de correspondencia en resultados de aprendizaje.",
-                Expresion = "theta>=80",
+                Expresion = "ra>=80",
                 Version = "1.0",
                 Fuente = "Resolución CAU-P-122, Art. 20",
                 EsNormativa = true,
@@ -164,7 +164,7 @@ public static class DbSeederA
             });
 
         await db.SaveChangesAsync();
-        logger.LogInformation("Semilla de reglas aplicada (RN-01 a RN-05).");
+        logger.LogInformation("Semilla de reglas aplicada (RN-09, RN-13, RN-10, RN-14 y RN-02; referencia secundaria: revisión Paul §5).");
     }
 
     private static async Task SembrarCatalogoAsync(SihaDbContextA db, ILogger logger)
@@ -231,8 +231,7 @@ public static class DbSeederA
             Nombre = nombre,
             Creditos = creditos,
             Horas = creditos * Services.CatalogoService.HorasPorCreditoUta,
-            Semestre = semestre,
-            PlanCompleto = true
+            Semestre = semestre
         };
 
         var numero = 1;
@@ -247,6 +246,8 @@ public static class DbSeederA
             });
         }
 
+        var (error, advertencias) = Services.ValidacionCatalogo.Evaluar(asignatura);
+        asignatura.PlanCompleto = error is null && advertencias.Count == 0;
         return asignatura;
     }
 }
