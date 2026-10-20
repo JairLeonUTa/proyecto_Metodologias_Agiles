@@ -1,0 +1,14 @@
+﻿=== Auditoria Gateway (S1-P08 / US-04) 2026-10-20 10:41 ===
+[ruta desconocida sin token] http://localhost:5000/api/ruta-que-no-existe/123 => HTTP 404
+[ruta desconocida con token] http://localhost:5000/api/ruta-que-no-existe/123 => HTTP 404
+[expedientes con ms-b arriba] http://localhost:5000/api/expedientes?estado=PENDIENTE_CONTENIDOS => HTTP 200
+
+--- Parando siha-ms-b (20-30 s) para probar servicio no disponible ---
+[expedientes con ms-b CAIDO] http://localhost:5000/api/expedientes?estado=PENDIENTE_CONTENIDOS => HTTP 502
+
+--- Reactivando siha-ms-b ---
+Estado ms-b: siha-ms-b Up 5 seconds (healthy)
+[expedientes tras recuperar ms-b] http://localhost:5000/api/expedientes?estado=PENDIENTE_CONTENIDOS => HTTP 200
+
+RESULTADO: ruta-desconocida sin token=404 (esperado 404), con token=404 (esperado 404), servicio arriba=200 (200), servicio caido=502 (5xx controlado, NO 200), recuperado=200 (200)
+US-04 CA1/CA3 VERIFICADO: 404 en ruta desconocida y 5xx controlado (no 200 simulado) con el servicio caido; recuperacion completa.

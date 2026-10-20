@@ -1,0 +1,18 @@
+﻿=== Estado de hallazgos H-01..H-06 vs pila real (2026-10-20 10:44) ===
+
+[H-01] POST /api/asignaturas/importar via Gateway:
+       evidencia previa: h01-rbac-gateway-20261020.log -> sin token 401 / DOCENTE 403 / OPERADOR 403 / ADMIN 200
+
+[H-02] Lecturas GET /api/carreras/{id} y /api/asignaturas/{id} via Gateway (borde vs controlador):
+       DOCENTE  GET carreras/1    via Gateway => HTTP 200 (en 19-oct: 403; hoy esperado 200 = consistente con el controlador)
+       DOCENTE  GET asignaturas/1 via Gateway => HTTP 200
+       OPERADOR GET carreras/1    via Gateway => HTTP 200
+       OPERADOR GET asignaturas/1 via Gateway => HTTP 200
+       DOCENTE  POST carreras     via Gateway => HTTP 403 (esperado 403: el rol se conserva en escritura)
+
+[H-03] POST /api/reglas duplicado: ver newman-carpetas00-04-20261020.log -> 'Crear regla duplicada (400)' = 400 (excepcion documentada, abierto)
+[H-04] Validacion binaria PDF: src/Services/Siha.MsB.Api/Services/ArchivoStorageService.cs valida vacio, TamanoMaximoBytes (10 MB),
+       extension, MIME y firma %PDF + hash SHA-256 calculado por el servidor; pila real: PT-19d rechaza 400 (motivo firma %PDF)
+       y PT-19e acepta 201 con SHA-256 del servidor (newman-carpetas00-04-20261020.log)
+[H-05] GET /api/expedientes con DOCENTE: ver newman-carpetas00-04-20261020.log -> 'Expediente con DOCENTE (403)' (abierto por diseno, dictamen en S2)
+[H-06] Sin refresh token: sin cambios en el Sprint 1 (abierto, evaluar revocacion por jti en S2)

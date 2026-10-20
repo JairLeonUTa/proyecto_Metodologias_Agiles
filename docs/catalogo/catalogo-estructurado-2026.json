@@ -1,0 +1,2537 @@
+{
+  "$schemaDescripcion": "Catalogo estructurado generado desde los 64 PDF oficiales de la carpeta ddd (PLAN ANALITICO). Cada 'malla' es el payload exacto de POST /api/asignaturas/importar (sin mallaId: asignarlo al crear la malla en el sistema destino). Los codigos, creditos, horas y unidades provienen del texto de los PDF; la columna contenidos queda vacia porque no se transcribe para no inventar datos.",
+  "generadoEl": "2026-10-20",
+  "origen": "Carpeta ddd/PLAN ANALITICO (64 PDF firmados por FISEI 2026)",
+  "mallas": [
+    {
+      "carreraCodigo": "SF",
+      "carreraNombre": "Ingeniería de Software",
+      "version": "2026-DDD",
+      "anio": 2026,
+      "fuente": "Planes analíticos oficiales FISEI 2026 (carpeta ddd, PDF firmados)",
+      "rutaNormativa": "CAU-P-011",
+      "totalAsignaturas": 24,
+      "asignaturas": [
+        {
+          "codigo": "UTA-FISEI-SF-MP-UB-01-04",
+          "nombre": "ALGORITMOS Y LOGICA DE PROGRAMACION",
+          "creditos": 4,
+          "horas": 192,
+          "semestre": 1,
+          "unidadesValidadas": true,
+          "planCompletoEsperado": true,
+          "unidades": [
+            {
+              "numero": 1,
+              "nombre": "Introducción a los Algoritmos y Lógica de Programación Introducción a la lógica de programación.",
+              "horas": 36,
+              "contenidos": ""
+            },
+            {
+              "numero": 2,
+              "nombre": "Programación básica Programación básica Tipos de datos. Operadores. Sentencias de entrada y salida",
+              "horas": 60,
+              "contenidos": ""
+            },
+            {
+              "numero": 3,
+              "nombre": "Clases, Objetos y Métodos Herencia, encapsulamiento y polimorfismo.",
+              "horas": 48,
+              "contenidos": ""
+            },
+            {
+              "numero": 4,
+              "nombre": "Estructuras básicas de datos Estructuras básicas de datos: Introducción",
+              "horas": 48,
+              "contenidos": ""
+            }
+          ],
+          "origenPdf": {
+            "archivo": "PlanAlitico ALGORITMOS Y LOGICA DE PROGRAMACION.pdf",
+            "paginas": 9
+          }
+        },
+        {
+          "codigo": "UTA-FISEI-SF-MP-UB-02-01",
+          "nombre": "FUNDAMENTOS DE INGENIERIA DE SOFTWARE",
+          "creditos": 3,
+          "horas": 144,
+          "semestre": 2,
+          "unidadesValidadas": true,
+          "planCompletoEsperado": true,
+          "unidades": [
+            {
+              "numero": 1,
+              "nombre": "Ciclo de vida del software Generalidades del ciclo de vida del software, Etapas del ciclo de vida del software, Modelos del ciclo de vida de un software, Beneficios del SDLC, El Software como producto",
+              "horas": 24,
+              "contenidos": ""
+            },
+            {
+              "numero": 2,
+              "nombre": "Gestión de proyectos Introducción a los proyectos de software. Planificación de proyectos de software., Gestión del Proyecto",
+              "horas": 48,
+              "contenidos": ""
+            },
+            {
+              "numero": 3,
+              "nombre": "Introducción a los requerimientos de software Ingeniería de requisitos Requerimientos del software. Procesos de la ingeniería de requerimientos. Introducción a Los Requerimientos y Diseño De Software",
+              "horas": 42,
+              "contenidos": ""
+            },
+            {
+              "numero": 4,
+              "nombre": "Principios de Validación de software Introducción a la validación y verificación del software. Pruebas del software. Validación de sistemas críticos. Principios de Verificación y Validación",
+              "horas": 30,
+              "contenidos": ""
+            }
+          ],
+          "origenPdf": {
+            "archivo": "PlanAlitico FUNDAMENTOS DE INGENIERIA DE SOFTWARE.pdf",
+            "paginas": 9
+          }
+        },
+        {
+          "codigo": "UTA-FISEI-SF-MP-UB-03-04",
+          "nombre": "INTRODUCCION A REDES",
+          "creditos": 3,
+          "horas": 144,
+          "semestre": 3,
+          "unidadesValidadas": true,
+          "planCompletoEsperado": true,
+          "unidades": [
+            {
+              "numero": 1,
+              "nombre": "Introducción y Uso de las redes",
+              "horas": 36,
+              "contenidos": ""
+            },
+            {
+              "numero": 2,
+              "nombre": "Principios de redes y Modelos de Referencia",
+              "horas": 36,
+              "contenidos": ""
+            },
+            {
+              "numero": 3,
+              "nombre": "Elementos Hardware y Software de una red",
+              "horas": 36,
+              "contenidos": ""
+            },
+            {
+              "numero": 4,
+              "nombre": "Diseño de una red básica",
+              "horas": 36,
+              "contenidos": ""
+            }
+          ],
+          "origenPdf": {
+            "archivo": "PlanAlitico INTRODUCCION A REDES.pdf",
+            "paginas": 9
+          }
+        },
+        {
+          "codigo": "UTA-FISEI-SF-MP-UB-03-05",
+          "nombre": "MODELAMIENTO Y DISEñO DE SOFTWARE",
+          "creditos": 3,
+          "horas": 144,
+          "semestre": 3,
+          "unidadesValidadas": true,
+          "planCompletoEsperado": true,
+          "unidades": [
+            {
+              "numero": 1,
+              "nombre": "Ingeniería de software: Enfoque al análisis y diseño La necesidad de modelar Desarrollo de Software basado en modelos Modelado de objetos UML Lenguaje unificado de modelado Herramientas CASE",
+              "horas": 18,
+              "contenidos": ""
+            },
+            {
+              "numero": 2,
+              "nombre": "Modelado de requisitos del Cliente Ingeniería de Requisitos Casos de Uso Diagramas de Casos de uso Modelado del comportamiento en requisitos Diagramas de clases para modelado conceptual Casos de uso c",
+              "horas": 72,
+              "contenidos": ""
+            },
+            {
+              "numero": 3,
+              "nombre": "Desarrollo de software dirigido por modelos. Ingeniería dirigida por modelos Introducción Metamodelo de sistemas MDA DSL Refinamientos de modelos con OCL Transformaciones de modelos",
+              "horas": 36,
+              "contenidos": ""
+            },
+            {
+              "numero": 4,
+              "nombre": "Ingeniería de Software: Ontologías Ontologías en la Ingeniería de software Enlace entre las ontologías y la ingeniería de software. Contribución de las Ontologías en la Ingeniería de Software para la ",
+              "horas": 18,
+              "contenidos": ""
+            }
+          ],
+          "origenPdf": {
+            "archivo": "PlanAlitico MODELAMIENTO Y DISEñO DE SOFTWARE.pdf",
+            "paginas": 9
+          }
+        },
+        {
+          "codigo": "UTA-FISEI-SF-MP-UP-04-01",
+          "nombre": "METODOLOGIAS AGILES",
+          "creditos": 4,
+          "horas": 192,
+          "semestre": 4,
+          "unidadesValidadas": true,
+          "planCompletoEsperado": true,
+          "unidades": [
+            {
+              "numero": 1,
+              "nombre": "Evolución de software Paradigmas tradicionales Modelos Tradicionales Características del software mantenible Reingeniería y Reusabilidad de sistemas",
+              "horas": 48,
+              "contenidos": ""
+            },
+            {
+              "numero": 2,
+              "nombre": "Filosofía Ágil Filosofía y enfoques ágiles Beneficios Estadísticas Impacto Casos de Éxito",
+              "horas": 48,
+              "contenidos": ""
+            },
+            {
+              "numero": 3,
+              "nombre": "XP, Programación Extrema Definición XP Utilización de Metodología XP Beneficios de XP Implementación de XP en el desarrollo de un producto",
+              "horas": 48,
+              "contenidos": ""
+            },
+            {
+              "numero": 4,
+              "nombre": "Herramientas para el manejo de Scrum Beneficios Oportunidades Limitaciones",
+              "horas": 48,
+              "contenidos": ""
+            }
+          ],
+          "origenPdf": {
+            "archivo": "PlanAlitico METODOLOGIAS AGILES.pdf",
+            "paginas": 10
+          }
+        },
+        {
+          "codigo": "UTA-FISEI-SF-MP-UP-04-02",
+          "nombre": "REDES",
+          "creditos": 3,
+          "horas": 144,
+          "semestre": 4,
+          "unidadesValidadas": true,
+          "planCompletoEsperado": true,
+          "unidades": [
+            {
+              "numero": 1,
+              "nombre": "Introducción a las redes",
+              "horas": 12,
+              "contenidos": ""
+            },
+            {
+              "numero": 2,
+              "nombre": "Conmutación en redes",
+              "horas": 33,
+              "contenidos": ""
+            },
+            {
+              "numero": 3,
+              "nombre": "Redes inalámbricas",
+              "horas": 33,
+              "contenidos": ""
+            },
+            {
+              "numero": 4,
+              "nombre": "Direccionamiento y enrutamiento en redes",
+              "horas": 33,
+              "contenidos": ""
+            },
+            {
+              "numero": 5,
+              "nombre": "Servicios de capa de aplicación",
+              "horas": 33,
+              "contenidos": ""
+            }
+          ],
+          "origenPdf": {
+            "archivo": "PlanAlitico REDES.pdf",
+            "paginas": 9
+          }
+        },
+        {
+          "codigo": "UTA-FISEI-SF-MP-UP-04-03",
+          "nombre": "BASE DE DATOS",
+          "creditos": 3,
+          "horas": 144,
+          "semestre": 4,
+          "unidadesValidadas": true,
+          "planCompletoEsperado": true,
+          "unidades": [
+            {
+              "numero": 1,
+              "nombre": "Esquema Conceptual -Introducción a los Sistemas de Bases de Datos. -SGBD. -Esquema Conceptual -Modelo Entidad Relación. -Aplicaciones.",
+              "horas": 18,
+              "contenidos": ""
+            },
+            {
+              "numero": 2,
+              "nombre": "Esquema Lógico. -Esquema Lógico -Modelo Relacional. -Aplicaciones",
+              "horas": 18,
+              "contenidos": ""
+            },
+            {
+              "numero": 3,
+              "nombre": "Normalización. -Normalización. -Dependencias Funcionales. - Implementación del Modelo Normalizado. - Integridad Referencial -Anomalías de Inserción -Anomalías de Actualización -Anomalías de Eliminació",
+              "horas": 36,
+              "contenidos": ""
+            },
+            {
+              "numero": 4,
+              "nombre": "Esquema Físico. - Esquema Físico. - Implementación del Esquema Físico. - Sentencias DDL - Sentencias DML - Sentencias DQL . - Sentencias DCL.",
+              "horas": 36,
+              "contenidos": ""
+            },
+            {
+              "numero": 5,
+              "nombre": "Bloques PLSQL -Bloques PLSQL. -Procedures -Functions -Triggers -Cursors",
+              "horas": 36,
+              "contenidos": ""
+            }
+          ],
+          "origenPdf": {
+            "archivo": "PlanAlitico BASE DE DATOS.pdf",
+            "paginas": 9
+          }
+        },
+        {
+          "codigo": "UTA-FISEI-SF-MP-UP-04-04",
+          "nombre": "COMPUTACION VISUAL",
+          "creditos": 3,
+          "horas": 144,
+          "semestre": 4,
+          "unidadesValidadas": true,
+          "planCompletoEsperado": true,
+          "unidades": [
+            {
+              "numero": 1,
+              "nombre": "Definiciones y fundamentos interfaz grafica",
+              "horas": 24,
+              "contenidos": ""
+            },
+            {
+              "numero": 2,
+              "nombre": "Introducción. al Desarrollo de Software, Modelos apropiados para cliente/servidor",
+              "horas": 42,
+              "contenidos": ""
+            },
+            {
+              "numero": 3,
+              "nombre": "Manejo de html y htaml5",
+              "horas": 39,
+              "contenidos": ""
+            },
+            {
+              "numero": 4,
+              "nombre": "Definición de la Arquitectura Patrones de Arquitectura Web",
+              "horas": 39,
+              "contenidos": ""
+            }
+          ],
+          "origenPdf": {
+            "archivo": "PlanAlitico COMPUTACION VISUAL.pdf",
+            "paginas": 9
+          }
+        },
+        {
+          "codigo": "UTA-FISEI-SF-MP-UP-04-05",
+          "nombre": "MANEJO Y CONFIGURACION DEL SOFTWARE",
+          "creditos": 2,
+          "horas": 96,
+          "semestre": 4,
+          "unidadesValidadas": true,
+          "planCompletoEsperado": true,
+          "unidades": [
+            {
+              "numero": 1,
+              "nombre": "Introducción de ACS Administración de la configuración del software Escenario y elementos de un sistema de administración de la configuración (ACS). Líneas de referencia e ítems de configuración del s",
+              "horas": 18,
+              "contenidos": ""
+            },
+            {
+              "numero": 2,
+              "nombre": "Sistema de Control de Versiones El repositorio ACS (sistema control versiones) El papel del repositorio ACS. Características y herramientas del repositorio ACS.",
+              "horas": 30,
+              "contenidos": ""
+            },
+            {
+              "numero": 3,
+              "nombre": "Proceso ACS El proceso ACS Identificación de objetos en la configuración del software. Control de versión. Control de cambio. Auditoría de configuración. Reporte de estado.",
+              "horas": 30,
+              "contenidos": ""
+            },
+            {
+              "numero": 4,
+              "nombre": "ACS para WebApps. Administración de la configuración para WebApps Página Web, Sitio Web, Aplicación Web. Configuración de WebApps. Administración de Contenido. Hipervisores y Contenedores.",
+              "horas": 18,
+              "contenidos": ""
+            }
+          ],
+          "origenPdf": {
+            "archivo": "PlanAlitico MANEJO Y CONFIGURACION DEL SOFTWARE.pdf",
+            "paginas": 9
+          }
+        },
+        {
+          "codigo": "UTA-FISEI-SF-MP-UP-05-01",
+          "nombre": "INVESTIGACIÓN OPERATIVA",
+          "creditos": 3,
+          "horas": 144,
+          "semestre": 5,
+          "unidadesValidadas": true,
+          "planCompletoEsperado": true,
+          "unidades": [
+            {
+              "numero": 1,
+              "nombre": "Modelos de optimización para la toma de decisiones con Investigación Operativa. Aplicaciones Modelos matemáticos para la toma de decisiones",
+              "horas": 18,
+              "contenidos": ""
+            },
+            {
+              "numero": 2,
+              "nombre": "Modelo de Programación Lineal y Algoritmo del Transporte Modelo de programación lineal, algoritmo simplex. modelo de transporte",
+              "horas": 54,
+              "contenidos": ""
+            },
+            {
+              "numero": 3,
+              "nombre": "Modelo de Diseño y Programación de REDES/PERT-CPM/RUTA CRÍTICA-DIAGRAMA/GANTT Modelo PERT-CPM-GANTT",
+              "horas": 54,
+              "contenidos": ""
+            },
+            {
+              "numero": 4,
+              "nombre": "Modelo de planeación, revisión y evaluación de operaciones y gestión de proyectos. MS/PROJECT esencial y avanzado Modelo de gestión de proyectos PERT-CPM-GANTT-PROJECT",
+              "horas": 18,
+              "contenidos": ""
+            }
+          ],
+          "origenPdf": {
+            "archivo": "PlanAlitico INVESTIGACIÓN OPERATIVA.pdf",
+            "paginas": 9
+          }
+        },
+        {
+          "codigo": "UTA-FISEI-SF-MP-UP-05-03",
+          "nombre": "PATRONES DE SOFTWARE",
+          "creditos": 3,
+          "horas": 144,
+          "semestre": 5,
+          "unidadesValidadas": true,
+          "planCompletoEsperado": true,
+          "unidades": [
+            {
+              "numero": 1,
+              "nombre": "Introducción a los Patrones de Software Patrones de Diseño de Software: Conceptos fundamentales.. Otros Patrones de Software. Anti- patrones. Deuda técnica. Refactorización. Seguridad en código. Princ",
+              "horas": 36,
+              "contenidos": ""
+            },
+            {
+              "numero": 2,
+              "nombre": "Patrones Creacionales. Patrones Creacionales: Introducción. Patrones: Abstract Factory, Builder, Factory Method, Prototype, Singleton. Patrones: Repository, Unit of Work y CQRS Práctica: Clean Archite",
+              "horas": 27,
+              "contenidos": ""
+            },
+            {
+              "numero": 3,
+              "nombre": "Patrones Estructurales. Patrones Estructurales: Introducción. Patrones: Adapter, Bridge, Composite, Decorator, Facade, Flyweight, Proxy. Repository, Unit of Work y CQRS. Implementación Práctica: Clean",
+              "horas": 36,
+              "contenidos": ""
+            },
+            {
+              "numero": 4,
+              "nombre": "Patrones Comportamentales. Patrones Comportamentales:",
+              "horas": 45,
+              "contenidos": ""
+            }
+          ],
+          "origenPdf": {
+            "archivo": "PlanAlitico PATRONES DE SOFTWARE.pdf",
+            "paginas": 10
+          }
+        },
+        {
+          "codigo": "UTA-FISEI-SF-MP-UP-05-04",
+          "nombre": "APLICACIONES ORIENTADAS A SERVICIOS",
+          "creditos": 3,
+          "horas": 144,
+          "semestre": 5,
+          "unidadesValidadas": true,
+          "planCompletoEsperado": true,
+          "unidades": [
+            {
+              "numero": 1,
+              "nombre": "Introducción a la Programación Gráfica Clientes de Escritorio Clientes Web Clientes Móviles Manejo de Datos",
+              "horas": 36,
+              "contenidos": ""
+            },
+            {
+              "numero": 2,
+              "nombre": "Introducción a SOA Definiciones Pilares de SOA Arquitectura Interna Tipos de Datos de Objetos a Comunicar",
+              "horas": 36,
+              "contenidos": ""
+            },
+            {
+              "numero": 3,
+              "nombre": "Introducción a las WEB API Interfaz de Programación de Aplicaciones (API) Definiciones MVC Método Get/Post /put/ Delete Trabajo de datos con Entity Framework",
+              "horas": 36,
+              "contenidos": ""
+            },
+            {
+              "numero": 4,
+              "nombre": "Consumo del webservice en aplicación de escritorio Planteamiento del Caso de Estudio Implementación Integración de una aplicación orientada a servicios",
+              "horas": 36,
+              "contenidos": ""
+            }
+          ],
+          "origenPdf": {
+            "archivo": "PlanAlitico APLICACIONES ORIENTADAS A SERVICIOS.pdf",
+            "paginas": 9
+          }
+        },
+        {
+          "codigo": "UTA-FISEI-SF-MP-UP-05-05",
+          "nombre": "INTERACCION HUMANO / COMPUTADOR",
+          "creditos": 3,
+          "horas": 144,
+          "semestre": 5,
+          "unidadesValidadas": true,
+          "planCompletoEsperado": true,
+          "unidades": [
+            {
+              "numero": 1,
+              "nombre": "Introducción a la interacción humano computador Introducción a la interacción Disciplinas que apoyan a la IHC. La interacción.",
+              "horas": 36,
+              "contenidos": ""
+            },
+            {
+              "numero": 2,
+              "nombre": "Diseño centrado en el usuario Teoría del diseño centrado en el usuario. Modelo de diseño centrado en el usuario.",
+              "horas": 27,
+              "contenidos": ""
+            },
+            {
+              "numero": 3,
+              "nombre": "Emoción y experiencia La experiencia de usuario. UX vs Usabilidad.",
+              "horas": 54,
+              "contenidos": ""
+            },
+            {
+              "numero": 4,
+              "nombre": "Teoría de la evaluación y validación Introducción y objetivos de la evaluación. Lugares donde se realiza la evaluación.",
+              "horas": 27,
+              "contenidos": ""
+            }
+          ],
+          "origenPdf": {
+            "archivo": "PlanAlitico INTERACCION HUMANO -COMPUTADOR.pdf",
+            "paginas": 9
+          }
+        },
+        {
+          "codigo": "UTA-FISEI-SF-MP-UP-06-02",
+          "nombre": "APLICACIONES WEB Y MOVILES",
+          "creditos": 4,
+          "horas": 192,
+          "semestre": 6,
+          "unidadesValidadas": true,
+          "planCompletoEsperado": true,
+          "unidades": [
+            {
+              "numero": 1,
+              "nombre": "Introducción al desarrollo de aplicaciones web y móviles",
+              "horas": 18,
+              "contenidos": ""
+            },
+            {
+              "numero": 2,
+              "nombre": "Metodologías de Diseño y Tecnologías de Desarrollo de Aplicaciones Web y Móviles",
+              "horas": 78,
+              "contenidos": ""
+            },
+            {
+              "numero": 3,
+              "nombre": "Arquitectura de Aplicaciones Web y Móviles",
+              "horas": 72,
+              "contenidos": ""
+            },
+            {
+              "numero": 4,
+              "nombre": "Accesibilidad y Usabilidad de Aplicaciones Web y Móviles",
+              "horas": 24,
+              "contenidos": ""
+            }
+          ],
+          "origenPdf": {
+            "archivo": "PlanAlitico APLICACIONES WEB Y MOVILES.pdf",
+            "paginas": 9
+          }
+        },
+        {
+          "codigo": "UTA-FISEI-SF-MP-UP-06-03",
+          "nombre": "APLICACIONES DISTRIBUIDAS",
+          "creditos": 3,
+          "horas": 144,
+          "semestre": 6,
+          "unidadesValidadas": true,
+          "planCompletoEsperado": true,
+          "unidades": [
+            {
+              "numero": 1,
+              "nombre": "Introducción a los Sistemas/Aplicaciones Distribuidos Principios de la programación distribuida. Modelos básicos de sistemas distribuidos. Características y propiedades de los sistemas distribuidos. A",
+              "horas": 36,
+              "contenidos": ""
+            },
+            {
+              "numero": 2,
+              "nombre": "Procesos, Comunicación y Modelos de Arquitecturas Programación distribuida a nivel de sistema operativo Comunicación en sistemas distribuidos (modelos cliente- servidor, TCP/IP y protocolos HTTP). Mod",
+              "horas": 36,
+              "contenidos": ""
+            },
+            {
+              "numero": 3,
+              "nombre": "Computo en la Nube y Seguridad Computación en un Grid. Modelos de despliegue y servicio en la nube (IaaS, PaaS, SaaS). Arquitectura de infraestructura distribuida en la nube. Principios de seguridad e",
+              "horas": 36,
+              "contenidos": ""
+            },
+            {
+              "numero": 4,
+              "nombre": "Arquitectura Orientada a Servicios Arquitectura Orientada a servicios Principios y componentes de SOA (servicios, contratos, interoperabilidad). Implementación de servicios web (REST y/o SOAP). Uso de",
+              "horas": 36,
+              "contenidos": ""
+            }
+          ],
+          "origenPdf": {
+            "archivo": "PlanAlitico APLICACIONES DISTRIBUIDAS.pdf",
+            "paginas": 9
+          }
+        },
+        {
+          "codigo": "UTA-FISEI-SF-MP-UP-06-04",
+          "nombre": "GESTION DE PRUEBAS E IMPLANTACIÓN DE SOFTWARE",
+          "creditos": 3,
+          "horas": 144,
+          "semestre": 6,
+          "unidadesValidadas": true,
+          "planCompletoEsperado": true,
+          "unidades": [
+            {
+              "numero": 1,
+              "nombre": "Gestión y tipos de pruebas de software",
+              "horas": 36,
+              "contenidos": ""
+            },
+            {
+              "numero": 2,
+              "nombre": "Metodología y Herramientas de pruebas",
+              "horas": 36,
+              "contenidos": ""
+            },
+            {
+              "numero": 3,
+              "nombre": "Procesos de Implantación",
+              "horas": 36,
+              "contenidos": ""
+            },
+            {
+              "numero": 4,
+              "nombre": "Metodologías de implantación de software",
+              "horas": 36,
+              "contenidos": ""
+            }
+          ],
+          "origenPdf": {
+            "archivo": "PlanAlitico GESTION DE PRUEBAS E IMPLANTACIÓN DE SOFTWARE.pdf",
+            "paginas": 9
+          }
+        },
+        {
+          "codigo": "UTA-FISEI-SF-MP-UP-07-02",
+          "nombre": "DESARROLLO ASISTIDO POR SOFTWARE",
+          "creditos": 2,
+          "horas": 96,
+          "semestre": 7,
+          "unidadesValidadas": true,
+          "planCompletoEsperado": true,
+          "unidades": [
+            {
+              "numero": 1,
+              "nombre": "Ingeniería de software asistida por software. Introducción y conceptos básicos. Ingeniería de software automática Construcción de bloques básicos para CASE. Una taxonomía de herramientas CASE. Entorno",
+              "horas": 18,
+              "contenidos": ""
+            },
+            {
+              "numero": 2,
+              "nombre": "Herramientas de planificación, análisis y diseño de software. Gestión de proyectos, planificación de proyectos. Herramientas de desarrollo y diseño. Desarrollo y diseño de interfaz. Construcción de pr",
+              "horas": 30,
+              "contenidos": ""
+            },
+            {
+              "numero": 3,
+              "nombre": "Herramientas para la gestión del desarrollo de software. Herramientas de control de versiones Herramientas de gestión de cambios Editores de texto, IDEs Frameworks",
+              "horas": 24,
+              "contenidos": ""
+            },
+            {
+              "numero": 4,
+              "nombre": "Herramientas para la documentación, pruebas y evaluación de software. Documentación de usuario, desarrollador y API. Herramientas de documentación, prueba y rendimiento. Herramientas de evaluación.",
+              "horas": 24,
+              "contenidos": ""
+            }
+          ],
+          "origenPdf": {
+            "archivo": "PlanAlitico DESARROLLO ASISTIDO POR SOFTWARE.pdf",
+            "paginas": 9
+          }
+        },
+        {
+          "codigo": "UTA-FISEI-SF-MP-UP-07-03",
+          "nombre": "AUDITORIA DE SISTEMAS DE INFORMACION",
+          "creditos": 3,
+          "horas": 144,
+          "semestre": 7,
+          "unidadesValidadas": true,
+          "planCompletoEsperado": true,
+          "unidades": [
+            {
+              "numero": 1,
+              "nombre": "Introducción a los sistemas de Información y el rol de la Auditoría Informática Introducción a los sistemas de información y su auditoría",
+              "horas": 36,
+              "contenidos": ""
+            },
+            {
+              "numero": 2,
+              "nombre": "Estructuración de un Centro de Proceso de Datos e implantación de controles generales Controles internos de los Sistemas de Información",
+              "horas": 36,
+              "contenidos": ""
+            },
+            {
+              "numero": 3,
+              "nombre": "Auditoría Técnica de seguridad en sistemas y redes El proceso y las fases de la auditoría de Sistemas de Información",
+              "horas": 36,
+              "contenidos": ""
+            },
+            {
+              "numero": 4,
+              "nombre": "Auditoría Técnica de seguridad Internet y Dispositivos Móviles Auditoría técnica de seguridad en sistemas, redes, internet y dispositivos móviles",
+              "horas": 36,
+              "contenidos": ""
+            }
+          ],
+          "origenPdf": {
+            "archivo": "PlanAlitico AUDITORIA DE SISTEMAS DE INFORMACION.pdf",
+            "paginas": 9
+          }
+        },
+        {
+          "codigo": "UTA-FISEI-SF-MP-UP-07-04",
+          "nombre": "GESTION DE PROYECTOS DE SOFTWARE",
+          "creditos": 3,
+          "horas": 144,
+          "semestre": 7,
+          "unidadesValidadas": true,
+          "planCompletoEsperado": true,
+          "unidades": [
+            {
+              "numero": 1,
+              "nombre": "Gestión de Proyectos de Software *Introducción a la Gestión de Proyectos de Software *¿Qué es un proyecto? *Dimensiones de un proyecto *Ciclo de vida de un proyecto *Factores críticos de éxito de un p",
+              "horas": 36,
+              "contenidos": ""
+            },
+            {
+              "numero": 2,
+              "nombre": "Procesos de un Proyecto de Software *Procesos de Inicio *Etapas de aprobación *Selección y aprobación *Selección de requerimientos *Análisis de riesgos",
+              "horas": 36,
+              "contenidos": ""
+            },
+            {
+              "numero": 3,
+              "nombre": "Planificación del Proyecto *Procesos de Planificación. *Planificación orientada a objetivos. *Etapas de la planificación. *Definición de objetivos, hitos y responsabilidades. *Preparación de plan defi",
+              "horas": 36,
+              "contenidos": ""
+            },
+            {
+              "numero": 4,
+              "nombre": "Control de Proyectos *Procesos de Ejecución y Control. *Componentes principales de la ejecución. *Gestión del proyecto en el día a día. *Seguimiento y control del proyecto. *Herramientas de apoyo dura",
+              "horas": 36,
+              "contenidos": ""
+            }
+          ],
+          "origenPdf": {
+            "archivo": "PlanAlitico GESTION DE PROYECTOS DE SOFTWARE.pdf",
+            "paginas": 9
+          }
+        },
+        {
+          "codigo": "UTA-FISEI-SF-MP-UP-07-05",
+          "nombre": "GESTION DE CALIDAD DEL SOFTWARE",
+          "creditos": 3,
+          "horas": 144,
+          "semestre": 7,
+          "unidadesValidadas": true,
+          "planCompletoEsperado": true,
+          "unidades": [
+            {
+              "numero": 1,
+              "nombre": "Fundamentos generales de la calidad de software Fundamentos generales de la calidad de software Dilema de la calidad del software. Lograr la calidad del software. Tendencia y garantia de la calidad de",
+              "horas": 24,
+              "contenidos": ""
+            },
+            {
+              "numero": 2,
+              "nombre": "Fundamentos y herramientas para la calidad del producto. Calidad del producto de software aplicando los fundamentos y herramientas. Herramientas para la mejora de la calidad del software. Herramientas",
+              "horas": 48,
+              "contenidos": ""
+            },
+            {
+              "numero": 3,
+              "nombre": "Aseguramiento de la calidad de software Calidad del proceso empleando metodologías y estándares Elementos de aseguramiento de la calidad del software. Tareas, objetivos y métricas del aseguramiento de",
+              "horas": 36,
+              "contenidos": ""
+            },
+            {
+              "numero": 4,
+              "nombre": "Métricas de software Medición y métricas del software para la calidad. Indicadores para la evaluación de la calidad del software. Análisis e interpretación de métricas para la mejora continua. Herrami",
+              "horas": 36,
+              "contenidos": ""
+            }
+          ],
+          "origenPdf": {
+            "archivo": "PlanAlitico GESTION DE CALIDAD DEL SOFTWARE.pdf",
+            "paginas": 10
+          }
+        },
+        {
+          "codigo": "UTA-FISEI-SF-MP-UP-07-06",
+          "nombre": "INTELIGENCIA ARTIFICIAL",
+          "creditos": 2,
+          "horas": 96,
+          "semestre": 7,
+          "unidadesValidadas": true,
+          "planCompletoEsperado": true,
+          "unidades": [
+            {
+              "numero": 1,
+              "nombre": "Aprendizaje basado en reglas Aprendizaje basado en reglas. Sistemas expertos basados en reglas, definición y componentes. Lógica proposicional y lógica de primer orden. Base de conocimientos y motor d",
+              "horas": 12,
+              "contenidos": ""
+            },
+            {
+              "numero": 2,
+              "nombre": "Lógica difusa Lógica difusa y algoritmos genéticos Introducción a lógica difusa. Creación de reglas difusas. Definir conjuntos difusos. Aplicar reglas difusas.",
+              "horas": 24,
+              "contenidos": ""
+            },
+            {
+              "numero": 3,
+              "nombre": "Machine learning Machine Learning Introducción a machine learning. Tipos de aprendizaje. Clasificadores y métricas de evaluación. K vecinos mas cercanos (kNN). Arboles de decisión. Redes neuronales ar",
+              "horas": 36,
+              "contenidos": ""
+            },
+            {
+              "numero": 4,
+              "nombre": "Visión por computadora Visión por computadora Introducción Procesamiento digital de imágenes. Clasificación de imágenes.",
+              "horas": 24,
+              "contenidos": ""
+            }
+          ],
+          "origenPdf": {
+            "archivo": "PlanAlitico INTELIGENCIA ARTIFICIAL.pdf",
+            "paginas": 10
+          }
+        },
+        {
+          "codigo": "UTA-FISEI-SF-MP-UP-08-02",
+          "nombre": "EMPRENDIMIENTO Y LEGISLACION LABORAL",
+          "creditos": 2,
+          "horas": 96,
+          "semestre": 8,
+          "unidadesValidadas": true,
+          "planCompletoEsperado": true,
+          "unidades": [
+            {
+              "numero": 1,
+              "nombre": "Plan de Negocios para PYMES Emprendimiento e idea de negocio Modelo de negocio Estudio de mercado Organización y operación de la PYME Análisis económico- financiero y elaboración del plan de negocios",
+              "horas": 24,
+              "contenidos": ""
+            },
+            {
+              "numero": 2,
+              "nombre": "Obligaciones Tributarias de los Emprendedores Marco tributario de los emprendedores y PYMES RUC y regímenes tributarios Facturación y comprobantes de venta Principales obligaciones y declaraciones tri",
+              "horas": 24,
+              "contenidos": ""
+            },
+            {
+              "numero": 3,
+              "nombre": "Contratación Laboral: Deberes y Derechos Marco normativo de las relaciones laborales Contrato individual de trabajo y modalidades de contratación Derechos y obligaciones del empleador y trabajador Rem",
+              "horas": 24,
+              "contenidos": ""
+            },
+            {
+              "numero": 4,
+              "nombre": "Despidos y Liquidaciones Laborales Terminación de la relación laboral Causales y formas de terminación del contrato de trabajo Desahucio y despido intempestivo Indemnizaciones laborales Liquidación la",
+              "horas": 24,
+              "contenidos": ""
+            }
+          ],
+          "origenPdf": {
+            "archivo": "PlanAlitico EMPRENDIMIENTO Y LEGISLACION LABORAL.pdf",
+            "paginas": 9
+          }
+        },
+        {
+          "codigo": "UTA-FISEI-SF-MP-UP-08-03",
+          "nombre": "SEGURIDAD EN EL DESARROLLO DEL SOFTWARE",
+          "creditos": 3,
+          "horas": 144,
+          "semestre": 8,
+          "unidadesValidadas": true,
+          "planCompletoEsperado": true,
+          "unidades": [
+            {
+              "numero": 1,
+              "nombre": "Principios de la seguridad informática. Panorama nacional einternacional de la seguridad informática. Pilares de la seguridad informática. Introducción a la seguridad en el desarrollo de Software.",
+              "horas": 18,
+              "contenidos": ""
+            },
+            {
+              "numero": 2,
+              "nombre": "La seguridad en las bases de datos Normalización de bases de datos. Integridad referencial. Bitácora de acciones de usuario. Seguridad en análisis, diseño y codificación de Software",
+              "horas": 54,
+              "contenidos": ""
+            },
+            {
+              "numero": 3,
+              "nombre": "Ataques a aplicaciones web Ataques más comunes a aplicaciones web. OWASP (Open Web Application Security Project)",
+              "horas": 45,
+              "contenidos": ""
+            },
+            {
+              "numero": 4,
+              "nombre": "Control de versiones Git como herramienta de control de versiones. Testing de seguridad de software Implementación segura de aplicaciones",
+              "horas": 27,
+              "contenidos": ""
+            }
+          ],
+          "origenPdf": {
+            "archivo": "PlanAlitico SEGURIDAD EN EL DESARROLLO DEL SOFTWARE.pdf",
+            "paginas": 9
+          }
+        },
+        {
+          "codigo": "UTA-FISEI-SF-MP-UP-08-04",
+          "nombre": "INGENIERIA ECONOMICA PARA SOFTWARE",
+          "creditos": 2,
+          "horas": 96,
+          "semestre": 8,
+          "unidadesValidadas": true,
+          "planCompletoEsperado": true,
+          "unidades": [
+            {
+              "numero": 1,
+              "nombre": "Ingeniería Económica • Introducción • Valor del dinero en el tiempo • Alternativas de inversión • Indicadores de evaluación de proyectos • Métodos de depreciación",
+              "horas": 30,
+              "contenidos": ""
+            },
+            {
+              "numero": 2,
+              "nombre": "Finanzas Personales • Introducción • Finanzas Personales • Plan Financiero Personal • Estrategias del Plan Financiero",
+              "horas": 18,
+              "contenidos": ""
+            },
+            {
+              "numero": 3,
+              "nombre": "Finanzas para Startups • Finanzas para Emprendedores • Estado de Situación Financiera • Estado de Resultados • Flujo de Caja",
+              "horas": 24,
+              "contenidos": ""
+            },
+            {
+              "numero": 4,
+              "nombre": "Comercio Exterior Ecuador • Legislación Internacional • Legislación Nacional • INCOTERMS • Cálculo de importación en el Ecuador • Casos prácticos",
+              "horas": 24,
+              "contenidos": ""
+            }
+          ],
+          "origenPdf": {
+            "archivo": "PlanAlitico INGENIERIA ECONOMICA PARA SOFTWARE.pdf",
+            "paginas": 9
+          }
+        }
+      ]
+    },
+    {
+      "carreraCodigo": "TI",
+      "carreraNombre": "Tecnologías de la Información",
+      "version": "2026-DDD",
+      "anio": 2026,
+      "fuente": "Planes analíticos oficiales FISEI 2026 (carpeta ddd, PDF firmados)",
+      "rutaNormativa": "CAU-P-122",
+      "totalAsignaturas": 40,
+      "asignaturas": [
+        {
+          "codigo": "UTA-FISEI-TI-MP-UB-01-01",
+          "nombre": "ALGEBRA LINEAL",
+          "creditos": 3,
+          "horas": 144,
+          "semestre": 1,
+          "unidadesValidadas": true,
+          "planCompletoEsperado": true,
+          "unidades": [
+            {
+              "numero": 1,
+              "nombre": "Introducción al estudio matricial y clases. Operaciones con matrices. Matriz inversa. Determinantes. Sistemas de ecuaciones lineales. Sistemas de ecuaciones lineales y matrices.",
+              "horas": 36,
+              "contenidos": ""
+            },
+            {
+              "numero": 2,
+              "nombre": "Operación binaria. Operaciones con estructuras algebraicas. Estructuras algebraicas.",
+              "horas": 36,
+              "contenidos": ""
+            },
+            {
+              "numero": 3,
+              "nombre": "Vectores en el plano, Vectores en el espacio. Vectores en R2 y R3.",
+              "horas": 36,
+              "contenidos": ""
+            },
+            {
+              "numero": 4,
+              "nombre": "Introducción a los espacios y subespacios vectoriales, combinaciones lineales, Independencia lineal y bases. Espacios vectoriales.",
+              "horas": 36,
+              "contenidos": ""
+            }
+          ],
+          "origenPdf": {
+            "archivo": "PlanAlitico ALGEBRA LINEAL.pdf",
+            "paginas": 9
+          }
+        },
+        {
+          "codigo": "UTA-FISEI-TI-MP-UB-01-02",
+          "nombre": "FUNDAMENTOS DE PROGRAMACION",
+          "creditos": 4,
+          "horas": 192,
+          "semestre": 1,
+          "unidadesValidadas": true,
+          "planCompletoEsperado": true,
+          "unidades": [
+            {
+              "numero": 1,
+              "nombre": "Introducción y Metodología a los Fundamentos de Programación Base de la programación Pasos de la metodología de programación Problemas generales de programación Herramientas para desarrollo de Softwar",
+              "horas": 36,
+              "contenidos": ""
+            },
+            {
+              "numero": 2,
+              "nombre": "Sentencias condicionales y cíclicas Programación Básica Programación con condicionales Sentencias if, switch Ciclos for, while, do-while",
+              "horas": 60,
+              "contenidos": ""
+            },
+            {
+              "numero": 3,
+              "nombre": "Métodos definidos por el usuario Programación Básica Programación con condicionales Definición de un método Paso de parámetros y valor de retorno en un método",
+              "horas": 48,
+              "contenidos": ""
+            },
+            {
+              "numero": 4,
+              "nombre": "Arreglos Unidireccionales y Bidireccionales Estructuras básicas de datos Entrada, salida y procesos con vectores Entrada, salida y procesos con matrices",
+              "horas": 48,
+              "contenidos": ""
+            }
+          ],
+          "origenPdf": {
+            "archivo": "PlanAlitico FUNDAMENTOS DE PROGRAMACION.pdf",
+            "paginas": 9
+          }
+        },
+        {
+          "codigo": "UTA-FISEI-TI-MP-UB-01-03",
+          "nombre": "CALCULO DIFERENCIAL",
+          "creditos": 3,
+          "horas": 144,
+          "semestre": 1,
+          "unidadesValidadas": true,
+          "planCompletoEsperado": true,
+          "unidades": [
+            {
+              "numero": 1,
+              "nombre": "Límites *Límites de funciones *Propiedades de límites Teoremas Indeterminaciones *Límites al infinito, infinitos, algebraicos, trigonométricos, exponenciales, logarítmico.",
+              "horas": 18,
+              "contenidos": ""
+            },
+            {
+              "numero": 2,
+              "nombre": "Derivadas *Derivación *Definiciones Incrementos. *Interpretación Geométrica. *Reglas básicas de derivación de funciones algebraicas. *Derivación de funciones trascendentes (logarítmicas y trigonométri",
+              "horas": 54,
+              "contenidos": ""
+            },
+            {
+              "numero": 3,
+              "nombre": "Aplicaciones *Aplicaciones de las derivadas *Aplicaciones a problemas de máximos y mínimos *Aplicaciones generales",
+              "horas": 18,
+              "contenidos": ""
+            },
+            {
+              "numero": 4,
+              "nombre": "Integrales *Antiderivada *Generalidades Reglas de integración *Integración por sustitución o cambio de variable *Integración de funciones de la forma ax2+bx+c *Integración de funciones con reducciones",
+              "horas": 54,
+              "contenidos": ""
+            }
+          ],
+          "origenPdf": {
+            "archivo": "PlanAlitico CALCULO DIFERENCIAL.pdf",
+            "paginas": 9
+          }
+        },
+        {
+          "codigo": "UTA-FISEI-TI-MP-UB-01-04",
+          "nombre": "FISICA",
+          "creditos": 3,
+          "horas": 144,
+          "semestre": 1,
+          "unidadesValidadas": true,
+          "planCompletoEsperado": true,
+          "unidades": [
+            {
+              "numero": 1,
+              "nombre": "Fuerza, primera Ley de Newton Dinámica de la partícula. Fuerza (clases y unidades). Leyes de Newton.",
+              "horas": 36,
+              "contenidos": ""
+            },
+            {
+              "numero": 2,
+              "nombre": "Energía y su conservación, cantidad de movimiento y su conservación Energía Cinética, Energía Potencial. Cantidad de movimiento y su conservación. Choques.",
+              "horas": 30,
+              "contenidos": ""
+            },
+            {
+              "numero": 3,
+              "nombre": "Dinámica del movimiento circular Dinámica rotacional y gravitación universal. Momento de inercia. Segunda ley de Newton para la rotación. Fuerzas en el movimiento circular.",
+              "horas": 36,
+              "contenidos": ""
+            },
+            {
+              "numero": 4,
+              "nombre": "Electroestática Energía Eléctrica. Cargas eléctricas. Fuerza eléctrica. Ley de Coulomb. Campo Eléctrico. Potencial Eléctrico. Capacitores. Asociación de capacitores.",
+              "horas": 42,
+              "contenidos": ""
+            }
+          ],
+          "origenPdf": {
+            "archivo": "PlanAlitico FISICA.pdf",
+            "paginas": 9
+          }
+        },
+        {
+          "codigo": "UTA-FISEI-TI-MP-UB-01-05",
+          "nombre": "METODOLOGIA DE LA INVESTIGACION",
+          "creditos": 2,
+          "horas": 96,
+          "semestre": 1,
+          "unidadesValidadas": true,
+          "planCompletoEsperado": true,
+          "unidades": [
+            {
+              "numero": 1,
+              "nombre": "Fundamentos de la metodología de la investigación científica Fundamentos de la metodología de la investigación científica Investigación Ciencia Tecnología Desarrollo y concepto de ciencia Aspectos gen",
+              "horas": 12,
+              "contenidos": ""
+            },
+            {
+              "numero": 2,
+              "nombre": "Tipos y métodos de Investigación Tipos y métodos de Investigación Tipos de Investigación Niveles de Investigación Fases de la investigación Métodos de la Investigación científica El método científico ",
+              "horas": 18,
+              "contenidos": ""
+            },
+            {
+              "numero": 3,
+              "nombre": "Técnicas e instrumentos de recolección de datos Técnicas e instrumentos de recolección de datos Técnicas de investigación Instrumentos de recopilación de datos Criterios de selección de técnicas e ins",
+              "horas": 18,
+              "contenidos": ""
+            },
+            {
+              "numero": 4,
+              "nombre": "Componentes del perfil de investigación Componentes del perfil de investigación Introducción Estado del arte El Problema Justificación Objetivos de la investigación Metodología Análisis e Interpretaci",
+              "horas": 48,
+              "contenidos": ""
+            }
+          ],
+          "origenPdf": {
+            "archivo": "PlanAlitico METODOLOGIA DE LA INVESTIGACION.pdf",
+            "paginas": 9
+          }
+        },
+        {
+          "codigo": "UTA-FISEI-TI-MP-UB-02-01",
+          "nombre": "CALCULO INTEGRAL",
+          "creditos": 2,
+          "horas": 96,
+          "semestre": 2,
+          "unidadesValidadas": true,
+          "planCompletoEsperado": true,
+          "unidades": [
+            {
+              "numero": 1,
+              "nombre": "Integración Integral definida Fórmulas Integral indefinida Integral impropia",
+              "horas": 24,
+              "contenidos": ""
+            },
+            {
+              "numero": 2,
+              "nombre": "Longitud de arco de una curva plana en coordenadas cartesianas. Aplicaciones geométricas Deducción de fórmulas de cálculo",
+              "horas": 24,
+              "contenidos": ""
+            },
+            {
+              "numero": 3,
+              "nombre": "Integrales múltiples Integrales múltiples Integral doble Integral Triple",
+              "horas": 24,
+              "contenidos": ""
+            },
+            {
+              "numero": 4,
+              "nombre": "Ecuaciones diferenciales ordinarias Ecuaciones diferenciales Ecuaciones ordinarias, Concepto Estructura de una ecuación diferencial",
+              "horas": 24,
+              "contenidos": ""
+            }
+          ],
+          "origenPdf": {
+            "archivo": "PlanAlitico CALCULO INTEGRAL.pdf",
+            "paginas": 9
+          }
+        },
+        {
+          "codigo": "UTA-FISEI-TI-MP-UB-02-02",
+          "nombre": "LOGICA MATEMATICA",
+          "creditos": 2,
+          "horas": 96,
+          "semestre": 2,
+          "unidadesValidadas": true,
+          "planCompletoEsperado": true,
+          "unidades": [
+            {
+              "numero": 1,
+              "nombre": "Lógica Proposicional",
+              "horas": 24,
+              "contenidos": ""
+            },
+            {
+              "numero": 2,
+              "nombre": "Inferencia lógica",
+              "horas": 24,
+              "contenidos": ""
+            },
+            {
+              "numero": 3,
+              "nombre": "Lógica de predicados",
+              "horas": 24,
+              "contenidos": ""
+            },
+            {
+              "numero": 4,
+              "nombre": "Álgebra de Boole",
+              "horas": 24,
+              "contenidos": ""
+            }
+          ],
+          "origenPdf": {
+            "archivo": "PlanAlitico LOGICA MATEMATICA.pdf",
+            "paginas": 9
+          }
+        },
+        {
+          "codigo": "UTA-FISEI-TI-MP-UB-02-03",
+          "nombre": "MEDIDAS ELECTRICAS",
+          "creditos": 3,
+          "horas": 144,
+          "semestre": 2,
+          "unidadesValidadas": true,
+          "planCompletoEsperado": true,
+          "unidades": [
+            {
+              "numero": 1,
+              "nombre": "Errores en las medidas eléctricas Teoría del error: Introducción a la teoría de error (escribir una medida), Tipos de errores (Clasificación), Precisión vs Exactitud, Simbología Eléctrica.",
+              "horas": 36,
+              "contenidos": ""
+            },
+            {
+              "numero": 2,
+              "nombre": "Electricidad y electrónica Fundamentos de electricidad y electrónica, clases de Corriente Eléctrica, Ley de Ohm, Potencia Eléctrica, conexión y análisis de Circuitos, Instrumentos analógicos vs digita",
+              "horas": 36,
+              "contenidos": ""
+            },
+            {
+              "numero": 3,
+              "nombre": "Electrónica digital Circuitos Digitales, Definiciones básicas, Sistemas numéricos posicionales en base n, Conversión de Bases Numéricas, Compuertas lógicas, Algebra de Boole, lógica combinacional.",
+              "horas": 36,
+              "contenidos": ""
+            },
+            {
+              "numero": 4,
+              "nombre": "Principios de la robótica Robótica básica Primeros pasos con Arduino, Aplicaciones con Arduino, Partes y estructuras internas de los robots, Proyecto práctico con sensores y actuadores",
+              "horas": 36,
+              "contenidos": ""
+            }
+          ],
+          "origenPdf": {
+            "archivo": "PlanAlitico MEDIDAS ELECTRICAS.pdf",
+            "paginas": 9
+          }
+        },
+        {
+          "codigo": "UTA-FISEI-TI-MP-UB-02-04",
+          "nombre": "ESTRUCTURA DE DATOS",
+          "creditos": 3,
+          "horas": 144,
+          "semestre": 2,
+          "unidadesValidadas": true,
+          "planCompletoEsperado": true,
+          "unidades": [
+            {
+              "numero": 1,
+              "nombre": "Introducción a Estructuras de Datos en el ámbito de la programación orientada a objetos. Principios de las estructuras de datos.",
+              "horas": 18,
+              "contenidos": ""
+            },
+            {
+              "numero": 2,
+              "nombre": "Listas secuenciales. Listas enlazadas. Relación con listas secuenciales.",
+              "horas": 54,
+              "contenidos": ""
+            },
+            {
+              "numero": 3,
+              "nombre": "Introducción a los árboles como estructura de datos. Tipos,clasificación, modelación e implementación Árboles. Clasificaciones. Características y atributos de un árbol. Árbol general. Árbol binario.",
+              "horas": 36,
+              "contenidos": ""
+            },
+            {
+              "numero": 4,
+              "nombre": "Introducción a los grafos como estructura de datos. Grafos. Representación gráfica de grafos. Características de los grafos. Clasificación de grafos.",
+              "horas": 36,
+              "contenidos": ""
+            }
+          ],
+          "origenPdf": {
+            "archivo": "PlanAlitico ESTRUCTURA DE DATOS.pdf",
+            "paginas": 11
+          }
+        },
+        {
+          "codigo": "UTA-FISEI-TI-MP-UB-02-05",
+          "nombre": "REALIDAD NACIONAL",
+          "creditos": 2,
+          "horas": 96,
+          "semestre": 2,
+          "unidadesValidadas": true,
+          "planCompletoEsperado": true,
+          "unidades": [
+            {
+              "numero": 1,
+              "nombre": "El nuevo orden mundial.",
+              "horas": 24,
+              "contenidos": ""
+            },
+            {
+              "numero": 2,
+              "nombre": "Historia del Ecuador en la época Colonial y Republicana. Características generales de la época Colonial y Republicana.",
+              "horas": 24,
+              "contenidos": ""
+            },
+            {
+              "numero": 3,
+              "nombre": "Poder y organización del estado.",
+              "horas": 24,
+              "contenidos": ""
+            },
+            {
+              "numero": 4,
+              "nombre": "Plan nacional de desarrollo. Estrategia territorial de desarrollo.",
+              "horas": 24,
+              "contenidos": ""
+            }
+          ],
+          "origenPdf": {
+            "archivo": "PlanAlitico REALIDAD NACIONAL.pdf",
+            "paginas": 10
+          }
+        },
+        {
+          "codigo": "UTA-FISEI-TI-MP-UB-02-06",
+          "nombre": "PROGRAMACION ORIENTADA A OBJETOS",
+          "creditos": 3,
+          "horas": 144,
+          "semestre": 2,
+          "unidadesValidadas": true,
+          "planCompletoEsperado": true,
+          "unidades": [
+            {
+              "numero": 1,
+              "nombre": "Evolución de los lenguajes de programación. Introduccion a la Programacion Orientada a Objetos Paradigma de programación orientado a objetos. Características y beneficios.",
+              "horas": 36,
+              "contenidos": ""
+            },
+            {
+              "numero": 2,
+              "nombre": "Abstracción y encapsulamiento. Estructura de clase. Propiedades estáticas y dinámicas. Definición de métodos. Nivel de visibilidad",
+              "horas": 36,
+              "contenidos": ""
+            },
+            {
+              "numero": 3,
+              "nombre": "Interface, Clases Abstractas Herencia Definición y uso de herencia. Visibilidad en comportamiento heredado. Definición y uso de polimorfismo.",
+              "horas": 36,
+              "contenidos": ""
+            },
+            {
+              "numero": 4,
+              "nombre": "Excepciones Abstracción y encapsulación. Patrones de diseño. Análisis de eficiencia de código.",
+              "horas": 36,
+              "contenidos": ""
+            }
+          ],
+          "origenPdf": {
+            "archivo": "PlanAlitico PROGRAMACION ORIENTADA A OBJETOS.pdf",
+            "paginas": 9
+          }
+        },
+        {
+          "codigo": "UTA-FISEI-TI-MP-UB-03-01",
+          "nombre": "PROGRAMACION AVANZADA",
+          "creditos": 3,
+          "horas": 144,
+          "semestre": 3,
+          "unidadesValidadas": true,
+          "planCompletoEsperado": true,
+          "unidades": [
+            {
+              "numero": 1,
+              "nombre": "Introducción a los Ambientes Gráficos de Programación Introducción al manejo de controles en entornos gráficos. Introducción a Microsoft. Net Componentes del NET Framework Uso del diseñador de Visual ",
+              "horas": 36,
+              "contenidos": ""
+            },
+            {
+              "numero": 2,
+              "nombre": "Controles y características en entornos Gráficos Desarrollo de Aplicaciones en entornos gráficos Descripción Ejemplos",
+              "horas": 36,
+              "contenidos": ""
+            },
+            {
+              "numero": 3,
+              "nombre": "Indizadores, delegados y eventos Definición Implementación Ejercicios",
+              "horas": 36,
+              "contenidos": ""
+            },
+            {
+              "numero": 4,
+              "nombre": "Ado.Net Introducción a Arquitecturas en la construcción de Aplicaciones Implementación de procesos CRUD Transacciones",
+              "horas": 36,
+              "contenidos": ""
+            }
+          ],
+          "origenPdf": {
+            "archivo": "PlanAlitico PROGRAMACION AVANZADA.pdf",
+            "paginas": 9
+          }
+        },
+        {
+          "codigo": "UTA-FISEI-TI-MP-UB-03-02",
+          "nombre": "PROBABILIDAD Y ESTADISTICA",
+          "creditos": 3,
+          "horas": 144,
+          "semestre": 3,
+          "unidadesValidadas": true,
+          "planCompletoEsperado": true,
+          "unidades": [
+            {
+              "numero": 1,
+              "nombre": "Aplicación de la estadística descriptiva *Estadística descriptiva. Tablas de distribución de frecuencias. Grafos estadísticos. Medidas de tendencia central. Medidas de desviación y dispersión. Sesgo y",
+              "horas": 36,
+              "contenidos": ""
+            },
+            {
+              "numero": 2,
+              "nombre": "Teoría elemental de Probabilidades *Probabilidades elementales. Clasificación de Eventos aleatorios. Eventos compuestos. Suma y producto de probabilidades. Probabilidad condicional. Teorema de Bayes.",
+              "horas": 36,
+              "contenidos": ""
+            },
+            {
+              "numero": 3,
+              "nombre": "Distribuciones probabilísticas discretas *Distribuciones de Probabilidad. Distribuciones de Bernoulli, Poisson, hipergeométrica, binomial, geométrica.",
+              "horas": 36,
+              "contenidos": ""
+            },
+            {
+              "numero": 4,
+              "nombre": "Regresión y Correlación lineal y no lineal *Regresión y correlación. Mínimos cuadrados para ajustes de curvas. Correlación simple. Ajustes lineales y no lineales",
+              "horas": 36,
+              "contenidos": ""
+            }
+          ],
+          "origenPdf": {
+            "archivo": "PlanAlitico PROBABILIDAD Y ESTADISTICA.pdf",
+            "paginas": 9
+          }
+        },
+        {
+          "codigo": "UTA-FISEI-TI-MP-UB-03-03",
+          "nombre": "SISTEMAS OPERATIVOS",
+          "creditos": 3,
+          "horas": 144,
+          "semestre": 3,
+          "unidadesValidadas": true,
+          "planCompletoEsperado": true,
+          "unidades": [
+            {
+              "numero": 1,
+              "nombre": "Introducción a los Sistemas Operativos. Introducción a los sistemas operativos Concepto, funciones, evolución histórica, tipos y componentes fundamentales de los sistemas operativos.",
+              "horas": 36,
+              "contenidos": ""
+            },
+            {
+              "numero": 2,
+              "nombre": "Estructura de los sistemas operativos. Estructura de los sistemas operativos. Componentes internos del sistema operativo, funciones del núcleo (kernel), gestión de procesos, gestión de memoria, gestió",
+              "horas": 36,
+              "contenidos": ""
+            },
+            {
+              "numero": 3,
+              "nombre": "Gestión de los sistemas operativos Gestión de los sistemas operativos. Gestión de procesos, gestión de memoria, gestión de dispositivos de entrada/salida, gestión del sistema de archivos y mecanismos ",
+              "horas": 36,
+              "contenidos": ""
+            },
+            {
+              "numero": 4,
+              "nombre": "Configuración y uso de los servicios básicos de un sistema operativo Configuración y uso de los servicios básicos de un sistema operativo. Configuración de usuarios y permisos, gestión de archivos y d",
+              "horas": 36,
+              "contenidos": ""
+            }
+          ],
+          "origenPdf": {
+            "archivo": "PlanAlitico SISTEMAS OPERATIVOS.pdf",
+            "paginas": 9
+          }
+        },
+        {
+          "codigo": "UTA-FISEI-TI-MP-UB-03-04",
+          "nombre": "FUNDAMENTOS DE BASES DE DATOS",
+          "creditos": 3,
+          "horas": 144,
+          "semestre": 3,
+          "unidadesValidadas": true,
+          "planCompletoEsperado": true,
+          "unidades": [
+            {
+              "numero": 1,
+              "nombre": "Fundamentos de Gestión de la Información. - Fundamentos de Gestión de la Información. - Conceptos de Bases de Datos. -Sistemas de Archivos -Sistemas de Gestión de Bases de Datos.(SGBD) - Niveles de Vi",
+              "horas": 36,
+              "contenidos": ""
+            },
+            {
+              "numero": 2,
+              "nombre": "Modelado de Bases de datos - Modelado de Bases de datos - Modelo Entidad Relación(Esquema Conceptual). - Modelo Relacional (Esquema Lógico). - Normalización. - Implementación del Modelo Normalizado.",
+              "horas": 36,
+              "contenidos": ""
+            },
+            {
+              "numero": 3,
+              "nombre": "Integridad de la Base de Datos. - Integridad de la Base de Datos. - Integridad Referencial -Anomalías de Inserción -Anomalías de Actualización. -Anomalías de Eliminación. -Consistencia de la BD.",
+              "horas": 36,
+              "contenidos": ""
+            },
+            {
+              "numero": 4,
+              "nombre": "Lenguaje SQL -Lenguaje SQL -Sentencias DDL -Sentencias DML -Sentencias DQL -Sentencias DCL",
+              "horas": 36,
+              "contenidos": ""
+            }
+          ],
+          "origenPdf": {
+            "archivo": "PlanAlitico FUNDAMENTOS DE BASES DE DATOS.pdf",
+            "paginas": 9
+          }
+        },
+        {
+          "codigo": "UTA-FISEI-TI-MP-UB-03-05",
+          "nombre": "FUNDAMENTOS DE REDES Y COMUNICACION DE DATOS",
+          "creditos": 3,
+          "horas": 144,
+          "semestre": 3,
+          "unidadesValidadas": true,
+          "planCompletoEsperado": true,
+          "unidades": [
+            {
+              "numero": 1,
+              "nombre": "Exploración de la Red 1.- Exploración de la Red 2.- Configuración básica de switches y terminales 3.- Protocolos y modelos 4.- Capa Física",
+              "horas": 36,
+              "contenidos": ""
+            },
+            {
+              "numero": 2,
+              "nombre": "Protocolos y comunicaciones de red (Capa de enlace y control deacceso al medio) 1.- Protocolos y comunicaciones de red (Capa de enlace y control deacceso al medio) 2.- Sistemas numéricos 3.- Capa de e",
+              "horas": 36,
+              "contenidos": ""
+            },
+            {
+              "numero": 3,
+              "nombre": "Acceso a la red y medios de transmisión 1.- Acceso a la red y medios de transmisión 2.- Resolución de dirección 3.- Configuración básica de un router 4.- ICMP 5.- Capa de transporte",
+              "horas": 36,
+              "contenidos": ""
+            },
+            {
+              "numero": 4,
+              "nombre": "Direccionamiento IP 1.- Direccionamiento IP 2.- Asignación de direcciones IPv4 3.- Asignación de direcciones IPv6 4.- Capa de aplicación 5.- Fundamentos de seguridad de la red",
+              "horas": 36,
+              "contenidos": ""
+            }
+          ],
+          "origenPdf": {
+            "archivo": "PlanAlitico FUNDAMENTOS DE REDES Y COMUNICACION DE DATOS.pdf",
+            "paginas": 9
+          }
+        },
+        {
+          "codigo": "UTA-FISEI-TI-MP-UP-04-01",
+          "nombre": "METODOS NUMERICOS",
+          "creditos": 3,
+          "horas": 144,
+          "semestre": 4,
+          "unidadesValidadas": true,
+          "planCompletoEsperado": true,
+          "unidades": [
+            {
+              "numero": 1,
+              "nombre": "Métodos iterativos Teoría del error: Introducción a la teoría de error (escribir una medida), tipos de errores (Clasificación). Métodos Iterativos: Método de Newton Raphson, Método de Von-Mises, Métod",
+              "horas": 36,
+              "contenidos": ""
+            },
+            {
+              "numero": 2,
+              "nombre": "Interpolación e integración numérica Interpolación numérica: Método de Newton, método de Lagrange Integración Numérica: Rectángulos, punto medio, trapecios, parábola (Simpson).",
+              "horas": 36,
+              "contenidos": ""
+            },
+            {
+              "numero": 3,
+              "nombre": "Ecuaciones diferenciales, métodos de solución por integración Ecuaciones diferenciales ordinarias Métodos de solución por integración: Métodos de Runge Kutta",
+              "horas": 36,
+              "contenidos": ""
+            },
+            {
+              "numero": 4,
+              "nombre": "Aproximación funcional Ajustes de curvas por mínimos cuadrados: Ajuste lineal, ajuste polinomial.",
+              "horas": 36,
+              "contenidos": ""
+            }
+          ],
+          "origenPdf": {
+            "archivo": "PlanAlitico METODOS NUMERICOS.pdf",
+            "paginas": 9
+          }
+        },
+        {
+          "codigo": "UTA-FISEI-TI-MP-UP-04-02",
+          "nombre": "INGENIERIA DE SOFTWARE",
+          "creditos": 3,
+          "horas": 144,
+          "semestre": 4,
+          "unidadesValidadas": true,
+          "planCompletoEsperado": true,
+          "unidades": [
+            {
+              "numero": 1,
+              "nombre": "Introducción a la ingeniería del software Fundamentos y procesos de la ingeniería del software",
+              "horas": 21,
+              "contenidos": ""
+            },
+            {
+              "numero": 2,
+              "nombre": "Modelo de capacidad de madurez Modelos de ingeniería del software",
+              "horas": 21,
+              "contenidos": ""
+            },
+            {
+              "numero": 3,
+              "nombre": "Metodologías ágiles Metodologías de desarrollo de software",
+              "horas": 63,
+              "contenidos": ""
+            },
+            {
+              "numero": 4,
+              "nombre": "Gestión del riesgo y de personal en proyectos de ingeniería de software Gestión de proyecto de software",
+              "horas": 39,
+              "contenidos": ""
+            }
+          ],
+          "origenPdf": {
+            "archivo": "PlanAlitico INGENIERIA DE SOFTWARE.pdf",
+            "paginas": 9
+          }
+        },
+        {
+          "codigo": "UTA-FISEI-TI-MP-UP-04-03",
+          "nombre": "INTERACCION HOMBRE MAQUINA",
+          "creditos": 3,
+          "horas": 144,
+          "semestre": 4,
+          "unidadesValidadas": true,
+          "planCompletoEsperado": true,
+          "unidades": [
+            {
+              "numero": 1,
+              "nombre": "Introducción a la interacción hombre maquina. *Introducción a la interacción hombre máquina. Disciplinas que apoyan a la IHM. La interacción.",
+              "horas": 36,
+              "contenidos": ""
+            },
+            {
+              "numero": 2,
+              "nombre": "Diseño centrado en el usuario Teoría del diseño centrado en el usuario. Modelo de diseño centrado en el usuario",
+              "horas": 27,
+              "contenidos": ""
+            },
+            {
+              "numero": 3,
+              "nombre": "Emoción y experiencia La experiencia de usuario. UX vs Usabilidad.",
+              "horas": 54,
+              "contenidos": ""
+            },
+            {
+              "numero": 4,
+              "nombre": "Teoría de la evaluación y validación Introducción y objetivos de la evaluación Lugares donde se realiza la evaluación",
+              "horas": 27,
+              "contenidos": ""
+            }
+          ],
+          "origenPdf": {
+            "archivo": "PlanAlitico INTERACCION HOMBRE MAQUINA.pdf",
+            "paginas": 9
+          }
+        },
+        {
+          "codigo": "UTA-FISEI-TI-MP-UP-04-04",
+          "nombre": "ADMINISTRACION DE SISTEMAS OPERATIVOS",
+          "creditos": 3,
+          "horas": 144,
+          "semestre": 4,
+          "unidadesValidadas": true,
+          "planCompletoEsperado": true,
+          "unidades": [
+            {
+              "numero": 1,
+              "nombre": "Introducción y tipos de sistemas operativos",
+              "horas": 24,
+              "contenidos": ""
+            },
+            {
+              "numero": 2,
+              "nombre": "Usuarios y Grupos Creación de usuarios y creación de grupos",
+              "horas": 36,
+              "contenidos": ""
+            },
+            {
+              "numero": 3,
+              "nombre": "Configuración de servicios y tareas",
+              "horas": 48,
+              "contenidos": ""
+            },
+            {
+              "numero": 4,
+              "nombre": "Monitoreo Monitoreo de logs",
+              "horas": 36,
+              "contenidos": ""
+            }
+          ],
+          "origenPdf": {
+            "archivo": "PlanAlitico ADMINISTRACION DE SISTEMAS OPERATIVOS.pdf",
+            "paginas": 9
+          }
+        },
+        {
+          "codigo": "UTA-FISEI-TI-MP-UP-04-05",
+          "nombre": "GESTION DE BASES DE DATOS",
+          "creditos": 3,
+          "horas": 144,
+          "semestre": 4,
+          "unidadesValidadas": true,
+          "planCompletoEsperado": true,
+          "unidades": [
+            {
+              "numero": 1,
+              "nombre": "Procesamiento y Optimización de Consultas -Procesamiento y Optimización de Consultas -Dominios de datos y restricciones. -Indices, secuencias, sinónimos. -Lenguaje SQL para control de integridad refer",
+              "horas": 36,
+              "contenidos": ""
+            },
+            {
+              "numero": 2,
+              "nombre": "Programación en PLSQL -Programación en PLSQL -Stored Procedures. -Triggers -Functions -Cursors -Packages",
+              "horas": 36,
+              "contenidos": ""
+            },
+            {
+              "numero": 3,
+              "nombre": "Control y Gestión Transaccional. -Control y Gestión Transaccional. -Control Transaccional (commit,rollback, savepoint) -Control deTransacciones (propiedades ACID)",
+              "horas": 36,
+              "contenidos": ""
+            },
+            {
+              "numero": 4,
+              "nombre": "Administración de Usuarios -Administración de Usuarios -Administración de SGBD. -Gestión de Usuarios,Roles,Privilegios,Perfiles. -Auditorías de Transacciones",
+              "horas": 36,
+              "contenidos": ""
+            }
+          ],
+          "origenPdf": {
+            "archivo": "PlanAlitico GESTION DE BASES DE DATOS.pdf",
+            "paginas": 9
+          }
+        },
+        {
+          "codigo": "UTA-FISEI-TI-MP-UP-05-01",
+          "nombre": "SISTEMAS DE BASES DE DATOS DISTRIBUIDOS",
+          "creditos": 3,
+          "horas": 144,
+          "semestre": 5,
+          "unidadesValidadas": true,
+          "planCompletoEsperado": true,
+          "unidades": [
+            {
+              "numero": 1,
+              "nombre": "Fundamentos Base de Datos distribuidas Introducción a las BDD Fundamentos de los sistemas centralizados y distribuidos de Bases de Datos Arquitectura Centralizada y Distribuida Modelo Centralizado y D",
+              "horas": 36,
+              "contenidos": ""
+            },
+            {
+              "numero": 2,
+              "nombre": "Fragmentación en bases de datos Almacenamiento de las Bases de Datos Distribuidas Métodos de distribución a través de la fragmentación de la Base de Datos Fragmentación Horizontal Fragmentación Vertic",
+              "horas": 36,
+              "contenidos": ""
+            },
+            {
+              "numero": 3,
+              "nombre": "Replicación de base de datos Esquemas de replicación de Base de Datos Replicación activa/pasiva Replicación por Instantánea/Transaccional/Merge Replicación síncrona y asíncrona Replicación en distinto",
+              "horas": 36,
+              "contenidos": ""
+            },
+            {
+              "numero": 4,
+              "nombre": "Escenarios de replicación de BD Construcción de escenarios de replicación de Bases de Datos Control de Concurrencia I/T/M Disponibilidad I/T/M Procesamiento distribuido de consultas I/T/M Replicación ",
+              "horas": 36,
+              "contenidos": ""
+            }
+          ],
+          "origenPdf": {
+            "archivo": "PlanAlitico SISTEMAS DE BASES DE DATOS DISTRIBUIDOS.pdf",
+            "paginas": 9
+          }
+        },
+        {
+          "codigo": "UTA-FISEI-TI-MP-UP-05-02",
+          "nombre": "TECNOLOGIAS Y DESARROLLO WEB",
+          "creditos": 3,
+          "horas": 144,
+          "semestre": 5,
+          "unidadesValidadas": true,
+          "planCompletoEsperado": true,
+          "unidades": [
+            {
+              "numero": 1,
+              "nombre": "Introduccion a las Tecnologías Web Introducción al Desarrollo Web ¿Qué es la Web? Cómo funciona una página Web Introducción al Frontend básico: HTML (Estructura), CSS (Estilo), JavaScript (Interactivi",
+              "horas": 36,
+              "contenidos": ""
+            },
+            {
+              "numero": 2,
+              "nombre": "Frameworks Frontend Modelos de Desarrollo Web (Tecnologías y frameworks frontend) Introducción a los Frameworks Frontend. Frameworks para diseño y maquetación web. Frameworks para JavaScript.",
+              "horas": 36,
+              "contenidos": ""
+            },
+            {
+              "numero": 3,
+              "nombre": "Introducción a los servicios web Servicios Web Definición. Tipos. Casos de Estudio.",
+              "horas": 36,
+              "contenidos": ""
+            },
+            {
+              "numero": 4,
+              "nombre": "Desarrollo de lado del servidor (Backend) usando una Arquitectura de Software Capa: Infraestructura. Componentes de la capa Implementación.",
+              "horas": 36,
+              "contenidos": ""
+            }
+          ],
+          "origenPdf": {
+            "archivo": "PlanAlitico TECNOLOGIAS Y DESARROLLO WEB.pdf",
+            "paginas": 12
+          }
+        },
+        {
+          "codigo": "UTA-FISEI-TI-MP-UP-05-03",
+          "nombre": "INVESTIGACION OPERATIVA",
+          "creditos": 3,
+          "horas": 144,
+          "semestre": 5,
+          "unidadesValidadas": true,
+          "planCompletoEsperado": true,
+          "unidades": [
+            {
+              "numero": 1,
+              "nombre": "Modelos de optimización para la toma de decisiones con Investigación Operativa. Aplicaciones Modelos matemáticos para la toma de decisiones",
+              "horas": 18,
+              "contenidos": ""
+            },
+            {
+              "numero": 2,
+              "nombre": "Modelo de Programación Lineal y Algoritmo del Transporte Modelo de programación lineal, algoritmo simplex. modelo de transporte.",
+              "horas": 54,
+              "contenidos": ""
+            },
+            {
+              "numero": 3,
+              "nombre": "Modelo de Diseño y Programación de REDES/PERT-CPM/RUTA CRÍTICA-DIAGRAMA/GANTT Modelo PERT-CPM-GANTT",
+              "horas": 54,
+              "contenidos": ""
+            },
+            {
+              "numero": 4,
+              "nombre": "Modelo de planeación, revisión y evaluación de operaciones y gestión de proyectos. MS/PROJECT esencial y avanzado Modelo de gestión de proyectos PERT-CPM-GANTT-PROJECT",
+              "horas": 18,
+              "contenidos": ""
+            }
+          ],
+          "origenPdf": {
+            "archivo": "PlanAlitico INVESTIGACION OPERATIVA.pdf",
+            "paginas": 9
+          }
+        },
+        {
+          "codigo": "UTA-FISEI-TI-MP-UP-05-04",
+          "nombre": "CONMUTACION Y ENRUTAMIENTO BASICO",
+          "creditos": 3,
+          "horas": 144,
+          "semestre": 5,
+          "unidadesValidadas": true,
+          "planCompletoEsperado": true,
+          "unidades": [
+            {
+              "numero": 1,
+              "nombre": "Configuración de dispositivos de red aplicando conceptos de switching",
+              "horas": 36,
+              "contenidos": ""
+            },
+            {
+              "numero": 2,
+              "nombre": "Configuración estableciendo los conceptos de Vlans y enrutamiento entre inter Vlans",
+              "horas": 36,
+              "contenidos": ""
+            },
+            {
+              "numero": 3,
+              "nombre": "Configuración DHCPv4 y la seguridad del Switch aplicando conceptos de entornos seguros",
+              "horas": 27,
+              "contenidos": ""
+            },
+            {
+              "numero": 4,
+              "nombre": "Configurar redes inalámbricas WLAN y rutas IP estáticas",
+              "horas": 45,
+              "contenidos": ""
+            }
+          ],
+          "origenPdf": {
+            "archivo": "PlanAlitico CONMUTACION Y ENRUTAMIENTO BASICO.pdf",
+            "paginas": 9
+          }
+        },
+        {
+          "codigo": "UTA-FISEI-TI-MP-UP-05-05",
+          "nombre": "GESTION Y EVALUACION DE PROYECTOS TI",
+          "creditos": 3,
+          "horas": 144,
+          "semestre": 5,
+          "unidadesValidadas": true,
+          "planCompletoEsperado": true,
+          "unidades": [
+            {
+              "numero": 1,
+              "nombre": "Fundamentos y Marcos de Referencia Naturaleza de proyectos TI vs operaciones Principios universales en dirección de proyectos (personas, ciclo de vida, valor, contexto) Enfoque normativo y práctico pa",
+              "horas": 36,
+              "contenidos": ""
+            },
+            {
+              "numero": 2,
+              "nombre": "Ciclo de Vida de un Proyecto TI *Ciclo de un proyecto TI. *Características del ciclo de vida del proyecto. *Influencia de la organización en el ciclo de vida del proyecto. *Fases de un proyecto. Acta ",
+              "horas": 36,
+              "contenidos": ""
+            },
+            {
+              "numero": 3,
+              "nombre": "Gestión de Proyectos de TI Gestión de equipos y comunicación efectiva Control de tiempo, costos y calidad Identificación de riesgos y definición de respuestas Herramientas: tableros visuales, software",
+              "horas": 36,
+              "contenidos": ""
+            },
+            {
+              "numero": 4,
+              "nombre": "Metodologías para Proyectos de TI. *Metodologías para el análisis y diseño de procesos. *Metodologías. *Normas y Estándares. *Técnicas y Herramientas. Aceptación formal de entregables Evaluación del v",
+              "horas": 36,
+              "contenidos": ""
+            }
+          ],
+          "origenPdf": {
+            "archivo": "PlanAlitico GESTION Y EVALUACION DE PROYECTOS TI.pdf",
+            "paginas": 9
+          }
+        },
+        {
+          "codigo": "UTA-FISEI-TI-MP-UP-06-01",
+          "nombre": "ADMINISTRACION DE BASE DE DATOS",
+          "creditos": 3,
+          "horas": 144,
+          "semestre": 6,
+          "unidadesValidadas": true,
+          "planCompletoEsperado": true,
+          "unidades": [
+            {
+              "numero": 1,
+              "nombre": "Conceptos de Administración de Base de Datos",
+              "horas": 36,
+              "contenidos": ""
+            },
+            {
+              "numero": 2,
+              "nombre": "Autenticación, roles y privilegios",
+              "horas": 36,
+              "contenidos": ""
+            },
+            {
+              "numero": 3,
+              "nombre": "Monitoreo de bases de datos",
+              "horas": 36,
+              "contenidos": ""
+            },
+            {
+              "numero": 4,
+              "nombre": "Estrategias avanzadas de respaldo y recuperación",
+              "horas": 36,
+              "contenidos": ""
+            }
+          ],
+          "origenPdf": {
+            "archivo": "PlanAlitico ADMINISTRACION DE BASE DE DATOS.pdf",
+            "paginas": 10
+          }
+        },
+        {
+          "codigo": "UTA-FISEI-TI-MP-UP-06-02",
+          "nombre": "SISTEMAS DE SOPORTE DE DECISIONES",
+          "creditos": 3,
+          "horas": 144,
+          "semestre": 6,
+          "unidadesValidadas": true,
+          "planCompletoEsperado": true,
+          "unidades": [
+            {
+              "numero": 1,
+              "nombre": "Sistemas de Soporte de Decisiones Sistemas de Apoyo a la toma de decisiones Relación de los BI con negocios y sistemas Sistemas de Inteligencia de Negocios Diferencias OLTP / OLAP Datawarehouse / Data",
+              "horas": 36,
+              "contenidos": ""
+            },
+            {
+              "numero": 2,
+              "nombre": "Modelado y construcción de un data warehouse Modelo y construcción de un data warehouse Metodología de diseño e implementación de un data warehouse Modelado y construcción de datawarehouse Análisis de",
+              "horas": 36,
+              "contenidos": ""
+            },
+            {
+              "numero": 3,
+              "nombre": "Análisis de la información a través de estructuras multidimensionales - cubos Análisis de información a través de estructuras multidimencionales Creación de dimensiones Creación de cubos Creación avan",
+              "horas": 36,
+              "contenidos": ""
+            },
+            {
+              "numero": 4,
+              "nombre": "Análisis de la información a través de estructuras tabulares Análisis de la información através d el modelo tabulares Creación de modelos tabulares Comparativa con el modelo multidimensional Dashboard",
+              "horas": 36,
+              "contenidos": ""
+            }
+          ],
+          "origenPdf": {
+            "archivo": "PlanAlitico SISTEMAS DE SOPORTE DE DECISIONES.pdf",
+            "paginas": 9
+          }
+        },
+        {
+          "codigo": "UTA-FISEI-TI-MP-UP-06-03",
+          "nombre": "CONMUTACION Y ENRUTAMIENTO AVANZADO",
+          "creditos": 3,
+          "horas": 144,
+          "semestre": 6,
+          "unidadesValidadas": true,
+          "planCompletoEsperado": true,
+          "unidades": [
+            {
+              "numero": 1,
+              "nombre": "Conmutación avanzada en redes locales",
+              "horas": 36,
+              "contenidos": ""
+            },
+            {
+              "numero": 2,
+              "nombre": "Enrutamiento Dinámico IPv4 y IPv6",
+              "horas": 36,
+              "contenidos": ""
+            },
+            {
+              "numero": 3,
+              "nombre": "Técnicas de priorización de tráfico vía tecnologías de enrutamiento avanzado.",
+              "horas": 36,
+              "contenidos": ""
+            },
+            {
+              "numero": 4,
+              "nombre": "Virtualización y automatización de la red",
+              "horas": 36,
+              "contenidos": ""
+            }
+          ],
+          "origenPdf": {
+            "archivo": "PlanAlitico CONMUTACION Y ENRUTAMIENTO AVANZADO.pdf",
+            "paginas": 9
+          }
+        },
+        {
+          "codigo": "UTA-FISEI-TI-MP-UP-06-04",
+          "nombre": "GOBIERNOS TI",
+          "creditos": 3,
+          "horas": 144,
+          "semestre": 6,
+          "unidadesValidadas": true,
+          "planCompletoEsperado": true,
+          "unidades": [
+            {
+              "numero": 1,
+              "nombre": "Introducción al Gobierno TI Fundamentos de Gobierno de TI",
+              "horas": 36,
+              "contenidos": ""
+            },
+            {
+              "numero": 2,
+              "nombre": "Análisis de la organización. Visión y Misión Análisis de la organización. Visión. Misión",
+              "horas": 36,
+              "contenidos": ""
+            },
+            {
+              "numero": 3,
+              "nombre": "Normas y estándares para el gobierno TI.",
+              "horas": 36,
+              "contenidos": ""
+            },
+            {
+              "numero": 4,
+              "nombre": "Implementación del Gobierno de TI",
+              "horas": 36,
+              "contenidos": ""
+            }
+          ],
+          "origenPdf": {
+            "archivo": "PlanAlitico GOBIERNOS TI.pdf",
+            "paginas": 10
+          }
+        },
+        {
+          "codigo": "UTA-FISEI-TI-MP-UP-06-05",
+          "nombre": "APLICACIONES MOVILES",
+          "creditos": 3,
+          "horas": 144,
+          "semestre": 6,
+          "unidadesValidadas": true,
+          "planCompletoEsperado": true,
+          "unidades": [
+            {
+              "numero": 1,
+              "nombre": "Fundamentos de desarrollo de aplicaciones móviles. Arquitecturas y entorno de desarrollo. Arquitecturas móviles. Entornos para el desarrollo de aplicaciones móviles. Frameworks de aplicaciones móviles",
+              "horas": 18,
+              "contenidos": ""
+            },
+            {
+              "numero": 2,
+              "nombre": "Desarrollo de aplicaciones móviles con Android. Desarrollo de aplicaciones móviles. Introducción y primeros pasos con Android. Intents y navegación entre actividades. Introducción al diseño de interfa",
+              "horas": 63,
+              "contenidos": ""
+            },
+            {
+              "numero": 3,
+              "nombre": "Gestión de datos en dispositivos móviles con Android. Administración de datos en dispositivos móviles. Acceso a datos para móviles. CRUD para una aplicación móvil. acceso a datos. Arquitectura de Soft",
+              "horas": 27,
+              "contenidos": ""
+            },
+            {
+              "numero": 4,
+              "nombre": "Desarrollo de aplicaciones para dispositivos móviles multiplataforma. Aplicaciones móviles multiplataforma. Introducción al desarrollo multiplataforma para dispositivos móviles. Plataformas y arquitec",
+              "horas": 36,
+              "contenidos": ""
+            }
+          ],
+          "origenPdf": {
+            "archivo": "PlanAlitico APLICACIONES MOVILES.pdf",
+            "paginas": 9
+          }
+        },
+        {
+          "codigo": "UTA-FISEI-TI-MP-UP-07-02",
+          "nombre": "INTELIGENCIA DE NEGOCIOS",
+          "creditos": 3,
+          "horas": 144,
+          "semestre": 7,
+          "unidadesValidadas": true,
+          "planCompletoEsperado": true,
+          "unidades": [
+            {
+              "numero": 1,
+              "nombre": "Ciencia de datos, Análisis, Minería, descubrir conocimiento en base de datos Business intelligence cómo se integra a las organizaciones. Cuáles son la competencia de un científico de datos Herramienta",
+              "horas": 36,
+              "contenidos": ""
+            },
+            {
+              "numero": 2,
+              "nombre": "Minería de datos Data mining / Ciencia de datos Etapas del proceso de extracción de conocimiento Algoritmos de clasificación",
+              "horas": 36,
+              "contenidos": ""
+            },
+            {
+              "numero": 3,
+              "nombre": "Técnicas básicas de minería de datos Algoritmos para ciencia de datos Arboles de decisión Reglas de asociación K-Means",
+              "horas": 36,
+              "contenidos": ""
+            },
+            {
+              "numero": 4,
+              "nombre": "Proceso para descubrir conocimiento Crear un conjunto de datos objetivo Estudio de los datos / preprocesamiento Procesamiento de datos Transformación de datos",
+              "horas": 36,
+              "contenidos": ""
+            }
+          ],
+          "origenPdf": {
+            "archivo": "PlanAlitico INTELIGENCIA DE NEGOCIOS.pdf",
+            "paginas": 9
+          }
+        },
+        {
+          "codigo": "UTA-FISEI-TI-MP-UP-07-03",
+          "nombre": "EMPRENDIMIENTO Y GESTION FINANCIERA DE TI",
+          "creditos": 4,
+          "horas": 192,
+          "semestre": 7,
+          "unidadesValidadas": true,
+          "planCompletoEsperado": true,
+          "unidades": [
+            {
+              "numero": 1,
+              "nombre": "Conceptos básicos y plan decuentas de un emprendimiento Conceptos contables básicos, estructura y diseño de un plan de cuentas, clasificación y codificación de cuentas, y registro contable aplicado a ",
+              "horas": 48,
+              "contenidos": ""
+            },
+            {
+              "numero": 2,
+              "nombre": "Registros, auxiliares contables yestados financieros de pymes Registros y auxiliares contables básicos; elaboración de estados financieros: Balance General y Estado de Resultados; relación entre regis",
+              "horas": 48,
+              "contenidos": ""
+            },
+            {
+              "numero": 3,
+              "nombre": "Impuesto al valor agregado. Concepto y normativa básica del IVA; operaciones gravadas y exentas; cálculo del IVA generado y crédito tributario; registros contables del IVA; declaración y pago del IVA ",
+              "horas": 48,
+              "contenidos": ""
+            },
+            {
+              "numero": 4,
+              "nombre": "Componentes del plan denegocios Componentes esenciales del plan de negocios, uso del Business Model Canvas, análisis de mercado, aspectos operativos, marketing, finanzas y viabilidad del emprendimient",
+              "horas": 48,
+              "contenidos": ""
+            }
+          ],
+          "origenPdf": {
+            "archivo": "PlanAlitico EMPRENDIMIENTO Y GESTION FINANCIERA DE TI.pdf",
+            "paginas": 9
+          }
+        },
+        {
+          "codigo": "UTA-FISEI-TI-MP-UP-07-04",
+          "nombre": "ARQUITECTURA Y PLATAFORMAS DE SERVIDORES",
+          "creditos": 3,
+          "horas": 144,
+          "semestre": 7,
+          "unidadesValidadas": true,
+          "planCompletoEsperado": true,
+          "unidades": [
+            {
+              "numero": 1,
+              "nombre": "Infraestructura Despliegue de Aplicaciones Arquitectura Web",
+              "horas": 30,
+              "contenidos": ""
+            },
+            {
+              "numero": 2,
+              "nombre": "Virtualizaciï¿½n y computaciï¿½n en la nube Virtualizaciï¿½n Contenedores Computaciï¿½n en la nube",
+              "horas": 42,
+              "contenidos": ""
+            },
+            {
+              "numero": 3,
+              "nombre": "Servicios para servidores e infraestructura web DNS Server Mail Server Web Server Base de datos",
+              "horas": 36,
+              "contenidos": ""
+            },
+            {
+              "numero": 4,
+              "nombre": "Aplicaciones Web y Manejo de Contenidos Sistemas de Panel de control Aplicaciones y servicios Web",
+              "horas": 36,
+              "contenidos": ""
+            }
+          ],
+          "origenPdf": {
+            "archivo": "PlanAlitico ARQUITECTURA Y PLATAFORMAS DE SERVIDORES.pdf",
+            "paginas": 9
+          }
+        },
+        {
+          "codigo": "UTA-FISEI-TI-MP-UP-07-06",
+          "nombre": "ADMINISTRACION DE REDES",
+          "creditos": 3,
+          "horas": 144,
+          "semestre": 7,
+          "unidadesValidadas": true,
+          "planCompletoEsperado": true,
+          "unidades": [
+            {
+              "numero": 1,
+              "nombre": "Introducción a la Administración de redes - Conceptos básicos de administración de redes - Modelos OSI y TCP/IP en la gestión de redes - Funciones y objetivos de la administración de redes - Herramien",
+              "horas": 36,
+              "contenidos": ""
+            },
+            {
+              "numero": 2,
+              "nombre": "Protocolos de Transporte y Servicios de Aplicación - Protocolos de transporte: TCP, UDP y sus diferencias - Establecimiento y control de conexiones (puertos y sockets) - Servicios de aplicación: HTTP/",
+              "horas": 36,
+              "contenidos": ""
+            },
+            {
+              "numero": 3,
+              "nombre": "Gestión de una red - Conceptos de gestión de redes (FCAPS: Fault, Configuration, Accounting, Performance, Security) - Protocolos de gestión: SNMP, NetFlow, Syslog - Herramientas de monitoreo de redes ",
+              "horas": 36,
+              "contenidos": ""
+            },
+            {
+              "numero": 4,
+              "nombre": "Seguridad básica en redes locales - Principios de seguridad en redes: confidencialidad, integridad, disponibilidad - Amenazas y vulnerabilidades comunes en redes locales - Herramientas de seguridad en",
+              "horas": 36,
+              "contenidos": ""
+            }
+          ],
+          "origenPdf": {
+            "archivo": "PlanAlitico ADMINISTRACION DE REDES.pdf",
+            "paginas": 9
+          }
+        },
+        {
+          "codigo": "UTA-FISEI-TI-MP-UP-08-02",
+          "nombre": "INTEGRACION DE SISTEMAS",
+          "creditos": 2,
+          "horas": 96,
+          "semestre": 8,
+          "unidadesValidadas": true,
+          "planCompletoEsperado": true,
+          "unidades": [
+            {
+              "numero": 1,
+              "nombre": "Introducción a la integración de sistemas Introducción a la integración de sistemas Patrones para la integración de sistemas Estimación de tiempo y recursos Modelado de datos Arquitecturas de integrac",
+              "horas": 24,
+              "contenidos": ""
+            },
+            {
+              "numero": 2,
+              "nombre": "Integración horizontal mediante sistemas de información y business intelligence Integración horizontal mediante sistemas de información y business intelligence. Business Intelligence (BI): conceptos, ",
+              "horas": 24,
+              "contenidos": ""
+            },
+            {
+              "numero": 3,
+              "nombre": "Integración vertical mediante sistemas de información Integración vertical mediante sistemas de información. Procesos ETL (Extracción, Transformación y Carga). Data Warehousing como repositorio para l",
+              "horas": 24,
+              "contenidos": ""
+            },
+            {
+              "numero": 4,
+              "nombre": "Integración orientada a soluciones de negocio Integración orientado a soluciones de negocio. El problema de la extracción de patrones. Algoritmos de reconocimiento de patrones. Modelo OLAP y análisis ",
+              "horas": 24,
+              "contenidos": ""
+            }
+          ],
+          "origenPdf": {
+            "archivo": "PlanAlitico INTEGRACION DE SISTEMAS.pdf",
+            "paginas": 9
+          }
+        },
+        {
+          "codigo": "UTA-FISEI-TI-MP-UP-08-03",
+          "nombre": "SEGURIDAD DE LA INFORMACION EN REDES DE COMUNICACION DE DATOS",
+          "creditos": 3,
+          "horas": 144,
+          "semestre": 8,
+          "unidadesValidadas": true,
+          "planCompletoEsperado": true,
+          "unidades": [
+            {
+              "numero": 1,
+              "nombre": "Criptografía Introducción Sistemas Criptográficos Tipos de encriptación",
+              "horas": 30,
+              "contenidos": ""
+            },
+            {
+              "numero": 2,
+              "nombre": "Protocolos de autenticación Sistemas de autenticación de mensaje Sistemas de autenticación de entidad",
+              "horas": 42,
+              "contenidos": ""
+            },
+            {
+              "numero": 3,
+              "nombre": "Aplicaciones Seguras a nivel de red SSH Server Mail Server seguro Web Server seguro",
+              "horas": 36,
+              "contenidos": ""
+            },
+            {
+              "numero": 4,
+              "nombre": "Medidas y contramedidas de seguidad en redes de comunicación de datos Firewall Sistemas de detección y prevención de intrusos Monitoreo y análisis de log",
+              "horas": 36,
+              "contenidos": ""
+            }
+          ],
+          "origenPdf": {
+            "archivo": "PlanAlitico SEGURIDAD DE LA INFORMACION EN REDES DE COM.pdf",
+            "paginas": 9
+          }
+        },
+        {
+          "codigo": "UTA-FISEI-TI-MP-UP-08-04",
+          "nombre": "AUDITORIA DE TI",
+          "creditos": 2,
+          "horas": 96,
+          "semestre": 8,
+          "unidadesValidadas": true,
+          "planCompletoEsperado": true,
+          "unidades": [
+            {
+              "numero": 1,
+              "nombre": "Introducción y marco jurídico de la auditoría de TI",
+              "horas": 12,
+              "contenidos": ""
+            },
+            {
+              "numero": 2,
+              "nombre": "Preparación y planeación de la auditoría de TI",
+              "horas": 36,
+              "contenidos": ""
+            },
+            {
+              "numero": 3,
+              "nombre": "Aplicación de la auditoría de TI",
+              "horas": 36,
+              "contenidos": ""
+            },
+            {
+              "numero": 4,
+              "nombre": "Evaluación de la información y elaboración del Informe de Auditoría",
+              "horas": 12,
+              "contenidos": ""
+            }
+          ],
+          "origenPdf": {
+            "archivo": "PlanAlitico AUDITORIA DE TI.pdf",
+            "paginas": 9
+          }
+        },
+        {
+          "codigo": "UTA-FISEI-TI-MP-UP-08-05",
+          "nombre": "DISEÑO DE PROYECTOS",
+          "creditos": 3,
+          "horas": 144,
+          "semestre": 8,
+          "unidadesValidadas": true,
+          "planCompletoEsperado": true,
+          "unidades": [
+            {
+              "numero": 1,
+              "nombre": "La investigación Antecedentes Que es la investigación Funciones de la investigación",
+              "horas": 30,
+              "contenidos": ""
+            },
+            {
+              "numero": 2,
+              "nombre": "La situación problemática El problema de investigación La idea del tema El tema de investigación",
+              "horas": 36,
+              "contenidos": ""
+            },
+            {
+              "numero": 3,
+              "nombre": "Aspectos metodológicos Tipos Alcances Diferencia entre los alcances Diseños Fundamentación teórica-científica",
+              "horas": 42,
+              "contenidos": ""
+            },
+            {
+              "numero": 4,
+              "nombre": "Preguntas y respuestas Diseño de la metodología Preguntas metodológicas Estructuras",
+              "horas": 36,
+              "contenidos": ""
+            }
+          ],
+          "origenPdf": {
+            "archivo": "PlanAlitico DISEÑO DE PROYECTOS.pdf",
+            "paginas": 11
+          }
+        },
+        {
+          "codigo": "UTA-FISEI-TI-MP-UP-09-02",
+          "nombre": "DESARROLLO DE PROYECTOS",
+          "creditos": 6,
+          "horas": 288,
+          "semestre": 9,
+          "unidadesValidadas": true,
+          "planCompletoEsperado": true,
+          "unidades": [
+            {
+              "numero": 1,
+              "nombre": "Lineamientos para el desarrollo Formatos",
+              "horas": 57,
+              "contenidos": ""
+            },
+            {
+              "numero": 2,
+              "nombre": "Marco teórico de la investigación Funciones Antecedentes Bases teóricas Bases conceptuales",
+              "horas": 72,
+              "contenidos": ""
+            },
+            {
+              "numero": 3,
+              "nombre": "Planificación detallada Desarrollo o tutoría del proyecto Ordenamiento de la información Recursos Alcance",
+              "horas": 96,
+              "contenidos": ""
+            },
+            {
+              "numero": 4,
+              "nombre": "Comprobación de la hipótesis Filosofía Métodos de comprobación ejercicios",
+              "horas": 63,
+              "contenidos": ""
+            }
+          ],
+          "origenPdf": {
+            "archivo": "PlanAlitico DESARROLLO DE PROYECTOS.pdf",
+            "paginas": 11
+          }
+        }
+      ]
+    }
+  ]
+}

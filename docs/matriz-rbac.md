@@ -32,7 +32,8 @@ transportados en el JWT como `ClaimTypes.Role` (`http://schemas.microsoft.com/ws
 
 > Regla de QA: la matriz se cumple **en el borde**. Si un endpoint se invoca directamente al
 > microservicio (puerto 5081/5082), la capa de servicio decide; los códigos pueden diferir solo en los
-> casos marcados con ⚠ en §7.
+> casos marcados con ⚠ en §7. *Actualización 20-oct-2026: ya no queda ninguna celda ⚠ en §2.4 — H-01
+> y H-02 fueron corregidos y verificados contra la pila real (ver §7 y `hallazgos-h01-h06-estado-20261020.log`).*
 
 **Códigos de la matriz**
 
@@ -82,14 +83,14 @@ transportados en el JWT como `ClaimTypes.Role` (`http://schemas.microsoft.com/ws
 | Método y ruta | ADMINISTRADOR | DOCENTE | OPERADOR | Sin token |
 |---|---|---|---|---|
 | `GET /api/carreras` | `200` | `200` | `200` | `401` |
-| `GET /api/carreras/{id}` | `200` · `404` | `403` ⚠ | `403` ⚠ | `401` |
+| `GET /api/carreras/{id}` | `200` · `404` | `200` | `200` | `401` |
 | `POST /api/carreras` | `201` · `409` código duplicado | `403` | `403` | `401` |
 | `PUT /api/carreras/{id}` | `200` · `404` | `403` | `403` | `401` |
 | `GET /api/mallas` (`?carreraId=`) | `200` | `200` | `200` | `401` |
 | `GET /api/mallas/{id}` | `200` · `404` | `200` | `200` | `401` |
 | `POST /api/mallas` | `201` · `400` carrera inexistente · `409` versión duplicada | `403` | `403` | `401` |
 | `GET /api/asignaturas` (`?mallaId=`, `?codigo=`) | `200` | `200` | `200` | `401` |
-| `GET /api/asignaturas/{id}` | `200` · `404` | `403` ⚠ | `403` ⚠ | `401` |
+| `GET /api/asignaturas/{id}` | `200` · `404` | `200` | `200` | `401` |
 | `POST /api/asignaturas` | `201` · `400` malla inexistente · `409` código duplicado en la malla | `403` | `403` | `401` |
 | `PUT /api/asignaturas/{id}` | `200` · `404` | `403` | `403` | `401` |
 | `POST /api/asignaturas/importar` | `200` con `ImportacionResultadoDto` · `400` malla inexistente o lote vacío | `403` | `403` | `401` |
@@ -233,14 +234,14 @@ Detalle de ejecución de E-10/E-11 en `plan-de-pruebas-sprint-1.md` (PT-24).
 
 ## 7. Hallazgos y observaciones (S1-P02 / S1-P03)
 
-| # | Hallazgo | Impacto | Recomendación |
-|---|---|---|---|
-| **H-01** | `POST /api/asignaturas/importar` **no está publicado en el Gateway**: la ruta `POST` es `/api/asignaturas` y la ruta `/api/asignaturas/{everything}` solo admite `GET` y `PUT`. Previsible: **`404`** en el borde. | Bloquea la importación de los 43 planes por el punto de entrada único (US-03/CA3) e invalida el ejemplo 7.4 del README. | Añadir `POST` a la ruta `/api/asignaturas/{everything}` (con `RouteClaimsRequirement: ADMINISTRADOR`) o crear una ruta dedicada `/api/asignaturas/importar`. Mientras tanto, la importación se ejecuta contra el Microservicio A (`:5081`) con el mismo JWT; QA lo deja registrado como caso PT-15 y verifica la corrección en la regresión. |
-| **H-02** | `GET /api/carreras/{id}` y `GET /api/asignaturas/{id}` exigen ADMINISTRADOR **en el borde** (plantilla `{everything}` con `RouteClaimsRequirement`), pero el controlador solo exige autenticación. | DOCENTE/OPERADOR reciben `403` por el Gateway y `200` si llaman directo al microservicio: matriz inconsistente (marcada ⚠ en §2.4). | Alinear la ruta del borde con el controlador (quitar el claim de rol en la lectura) y reservar el rol para `POST`/`PUT`. |
-| **H-03** | Un `POST /api/reglas` duplicado responde **`400`**, no `409`. | Inconsistencia con el resto del catálogo (carreras/mallas/asignaturas usan `409`). | Homologar a `409 Conflict` o documentar la excepción en la matriz (hoy documentada como `400`). |
-| **H-04** | La validación binaria de PDF (MIME, tamaño, hash, nombre malicioso) **no está implementada**: `DocumentoRequest` solo valida longitudes. | Riesgo de que un archivo no PDF entre al flujo; el evento transporta referencias a documentos no validados. | Cubrir en S1-S05/S1-S06 (Sebastián) y activar PT-22 como caso de regresión **obligatorio** desde el Sprint 2. |
-| **H-05** | No hay endpoint público para «listar mis expedientes» por rol: `GET /api/expedientes` exige OPERADOR/ADMINISTRADOR. | El DOCENTE no puede consultar la cola de trabajo hasta que exista el flujo de dictamen (Sprint 2). | Planificar `GET /api/expedientes/asignados` para el Sprint 2. |
-| **H-06** | Sin `refresh token` ni revocación: el token dura `ExpiraMinutos` y una cuenta desactivada conserva acceso hasta que expira. | Ventana de riesgo acotada al tiempo de vida del token. | Evaluar revocación por `jti` en el Sprint 2. |
+| # | Hallazgo | Impacto | Recomendación | Estado (20-oct-2026) |
+|---|---|---|---|---|
+| **H-01** | `POST /api/asignaturas/importar` **no está publicado en el Gateway**: la ruta `POST` es `/api/asignaturas` y la ruta `/api/asignaturas/{everything}` solo admite `GET` y `PUT`. Previsible: **`404`** en el borde. | Bloquea la importación de los 43 planes por el punto de entrada único (US-03/CA3) e invalida el ejemplo 7.4 del README. | Añadir `POST` a la ruta `/api/asignaturas/{everything}` (con `RouteClaimsRequirement: ADMINISTRADOR`) o crear una ruta dedicada `/api/asignaturas/importar`. Mientras tanto, la importación se ejecuta contra el Microservicio A (`:5081`) con el mismo JWT; QA lo deja registrado como caso PT-15 y verifica la corrección en la regresión. | ✅ **Corregido**: la ruta está publicada con `RouteClaimsRequirement: ADMINISTRADOR`; verificado en pila real `401` sin token / `403` DOCENTE / `403` OPERADOR / `200` ADMIN (`h01-rbac-gateway-20261020.log`) y el caso PT-15 quedó actualizado a esperar `200`. |
+| **H-02** | `GET /api/carreras/{id}` y `GET /api/asignaturas/{id}` exigen ADMINISTRADOR **en el borde** (plantilla `{everything}` con `RouteClaimsRequirement`), pero el controlador solo exige autenticación. | DOCENTE/OPERADOR reciben `403` por el Gateway y `200` si llaman directo al microservicio: matriz inconsistente (marcada ⚠ en §2.4). | Alinear la ruta del borde con el controlador (quitar el claim de rol en la lectura) y reservar el rol para `POST`/`PUT`. | ✅ **Corregido**: DOCENTE y OPERADOR reciben `200` en `GET /carreras/{id}` y `GET /asignaturas/{id}` vía Gateway (consistente con el controlador), y la escritura conserva `403`; celdas ⚠ de §2.4 actualizadas (`hallazgos-h01-h06-estado-20261020.log`). |
+| **H-03** | Un `POST /api/reglas` duplicado responde **`400`**, no `409`. | Inconsistencia con el resto del catálogo (carreras/mallas/asignaturas usan `409`). | Homologar a `409 Conflict` o documentar la excepción en la matriz (hoy documentada como `400`). | ⏳ **Abierto (excepción documentada)**: la regresión del 20-oct confirma `400` («Crear regla duplicada (400)» en `newman-carpetas00-04-20261020.log`). |
+| **H-04** | La validación binaria de PDF (MIME, tamaño, hash, nombre malicioso) **no está implementada**: `DocumentoRequest` solo valida longitudes. | Riesgo de que un archivo no PDF entre al flujo; el evento transporta referencias a documentos no validados. | Cubrir en S1-S05/S1-S06 (Sebastián) y activar PT-22 como caso de regresión **obligatorio** desde el Sprint 2. | ✅ **Cerrado**: `ArchivoStorageService` valida vacío, `TamanoMaximoBytes` (10 MB configurable), extensión, MIME y firma binaria `%PDF`, con SHA-256 calculado por el servidor; en pila real PT-19d rechaza con `400` (motivo «firma %PDF») y PT-19e acepta con `201` y hash del servidor. |
+| **H-05** | No hay endpoint público para «listar mis expedientes» por rol: `GET /api/expedientes` exige OPERADOR/ADMINISTRADOR. | El DOCENTE no puede consultar la cola de trabajo hasta que exista el flujo de dictamen (Sprint 2). | Planificar `GET /api/expedientes/asignados` para el Sprint 2. | ⏳ **Abierto por diseño**: la regresión del 20-oct confirma `403` para DOCENTE (depende del flujo de dictamen del Sprint 2). |
+| **H-06** | Sin `refresh token` ni revocación: el token dura `ExpiraMinutos` y una cuenta desactivada conserva acceso hasta que expira. | Ventana de riesgo acotada al tiempo de vida del token. | Evaluar revocación por `jti` en el Sprint 2. | ⏳ **Abierto**: sin cambios en el Sprint 1. |
 
 ---
 
@@ -253,5 +254,7 @@ Detalle de ejecución de E-10/E-11 en `plan-de-pruebas-sprint-1.md` (PT-24).
 | `tools/Siha.BusVerifier` | Verifica el contrato del evento y el `CorrelationId` (E-13, E-11) | `dotnet run --project tools/Siha.BusVerifier` |
 
 Cobertura de la matriz: **todas** las celdas `401`, `403`, `404`, `409` y `400` de §2 a §6 tienen un
-caso en la colección de Postman o en las pruebas automatizadas, salvo los hallazgos H-01…H-06, que
-quedan registrados como pendientes con su responsable.
+caso en la colección de Postman o en las pruebas automatizadas. Actualización 20-oct-2026 (validación
+funcional, Paul Acurio): H-01, H-02 y H-04 verificados **corregidos** contra la pila real; H-03, H-05 y
+H-06 siguen abiertos con su responsable (estado detallado en §7 y en
+`docs/evidencias/validacion-funcional-sprint1-paul-acurio.md`).

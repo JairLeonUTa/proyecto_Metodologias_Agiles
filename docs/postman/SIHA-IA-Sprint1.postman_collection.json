@@ -1529,7 +1529,7 @@
                   "pm.test('201 Created', function () { pm.response.to.have.status(201); });",
                   "const json = pm.response.json();",
                   "pm.collectionVariables.set('carreraId', json.id);",
-                  "pm.test('Código en mayúsculas', function () { pm.expect(json.codigo).to.eql('{{prefijo}}'.toUpperCase()); });"
+                  "pm.test('Código en mayúsculas', function () { pm.expect(json.codigo).to.eql(pm.collectionVariables.get('prefijo').toUpperCase()); });"
                 ]
               }
             }
@@ -2076,15 +2076,16 @@
           "response": []
         },
         {
-          "name": "PT-15 · Hallazgo H-01 · Importar por el API Gateway (404)",
+          "name": "PT-15 · Hallazgo H-01 corregido · Importar por el API Gateway (200 · ADMIN)",
           "event": [
             {
               "listen": "test",
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test('404 Not Found (hallazgo H-01 pendiente de corrección)', function () { pm.response.to.have.status(404); });",
-                  "pm.test('Documentar el hallazgo H-01 en el informe de QA', function () { pm.expect(pm.response.code).to.eql(404); });"
+                  "pm.test('200 OK · H-01 corregido: la ruta ya está publicada en el Gateway', function () { pm.response.to.have.status(200); });",
+                  "const json = pm.response.json();",
+                  "pm.test('La importación se ejecuta desde el borde con rol ADMINISTRADOR', function () { pm.expect(json.importadas).to.be.at.least(1); pm.expect(json.rechazadas).to.eql(0); });"
                 ]
               }
             }
