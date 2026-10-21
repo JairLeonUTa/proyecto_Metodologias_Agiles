@@ -87,7 +87,7 @@ export function Modal({
             <h2 className="text-base font-semibold text-slate-900">{titulo}</h2>
             {descripcion ? <p className="mt-0.5 text-xs text-slate-500">{descripcion}</p> : null}
           </div>
-          <Boton variante="fantasma" tamano="sm" onClick={onCerrar} aria-label="Cerrar el cuadro de diálogo">
+          <Boton variante="fantasma" tamano="sm" onClick={onCerrar} aria-label="Cerrar el cuadro de diálogo" tabIndex={-1}>
             Cerrar
           </Boton>
         </header>
