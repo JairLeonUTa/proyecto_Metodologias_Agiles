@@ -41,29 +41,29 @@ Proyecto integrado: Gateway, microservicios A/B, frontend y pruebas.
 
 ### 1. Variables de entorno (`.env`)
 
-Copiar `.env.example` a `.env` y completar:
+Copiar `.env.example` a `.env` y completar **con tus propios valores**:
 
 ```env
 # SQL Server (sa password - compleja, sin ;)
-SIHA_SQL_PASSWORD=SihaAdmin2026Segura123
+SIHA_SQL_PASSWORD=
 
 # RabbitMQ
-SIHA_RABBITMQ_PASSWORD=siha-rabbit-2026
+SIHA_RABBITMQ_PASSWORD=
 
 # JWT (mínimo 32 bytes, igual en A, B, Gateway)
-SIHA_JWT_KEY=SIHA-IA-clave-de-firma-JWT-para-el-Sprint-1-2026-256bits
+SIHA_JWT_KEY=
 JWT_ISSUER=SIHA-IA
 JWT_AUDIENCE=SIHA-IA-Clients
 
 # Admin inicial (Microservicio A)
 SEED_ADMIN_CORREO=admin@uta.edu.ec
-SIHA_ADMIN_PASSWORD=Admin123*
+SIHA_ADMIN_PASSWORD=
 
 # Archivos (Microservicio B)
 ARCHIVOS_TAMANO_MAXIMO_BYTES=10485760
 ```
 
-> **Nota:** Si un valor contiene `$`, encerrarlo entre comillas simples. No versionar `.env` (está en `.gitignore`).
+> **Nota:** No versionar `.env` (está en `.gitignore`). Usa contraseñas complejas para SQL Server. Si un valor contiene `$`, encerrarlo entre comillas simples. Las credenciales de ejemplo **no deben usarse en producción**.
 
 ### 2. Levantar la pila
 
@@ -97,11 +97,11 @@ Todos deben estar `healthy` o `Up`:
 | **Frontend (SPA)** | http://localhost:5173 |
 | **API Gateway** | http://localhost:5000 |
 | **Health Gateway** | http://localhost:5000/health |
-| **RabbitMQ Management** | http://localhost:15672 (`siha` / `siha-rabbit-2026`) |
+| **RabbitMQ Management** | http://localhost:15672 (`siha` / *valor de `SIHA_RABBITMQ_PASSWORD`*) |
 | **MsA Swagger** | http://localhost:5081/swagger |
 | **MsB Swagger** | http://localhost:5082/swagger |
 
-**Login inicial:** `admin@uta.edu.ec` / `Admin123*` (valor de `SIHA_ADMIN_PASSWORD`)
+**Login inicial:** `admin@uta.edu.ec` / *valor de `SIHA_ADMIN_PASSWORD`*
 
 ---
 
@@ -109,8 +109,8 @@ Todos deben estar `healthy` o `Up`:
 
 | Base | Server name | Puerto | Login | Password |
 |---|---|---|---|---|
-| **SihaDbA** | `localhost,1434` | 1434 | `sa` | `SihaAdmin2026Segura123` |
-| **SihaDbB** | `localhost,14330` | 14330 | `sa` | `SihaAdmin2026Segura123` |
+| **SihaDbA** | `localhost,1434` | 1434 | `sa` | *valor de `SIHA_SQL_PASSWORD`* |
+| **SihaDbB** | `localhost,14330` | 14330 | `sa` | *valor de `SIHA_SQL_PASSWORD`* |
 
 - Authentication: **SQL Server Authentication**
 - ✅ **Trust Server Certificate** (o "Encrypt connection" → "Trust server certificate")
