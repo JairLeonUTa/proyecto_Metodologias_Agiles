@@ -37,42 +37,16 @@ Proyecto integrado: Gateway, microservicios A/B, frontend y pruebas.
 
 ---
 
-## Configuración local con Docker
+## Uso con Docker
 
-### 1. Variables de entorno (`.env`)
-
-Copiar `.env.example` a `.env` y completar **con tus propios valores**:
-
-```env
-# SQL Server (sa password - compleja, sin ;)
-SIHA_SQL_PASSWORD=
-
-# RabbitMQ
-SIHA_RABBITMQ_PASSWORD=
-
-# JWT (mínimo 32 bytes, igual en A, B, Gateway)
-SIHA_JWT_KEY=
-JWT_ISSUER=SIHA-IA
-JWT_AUDIENCE=SIHA-IA-Clients
-
-# Admin inicial (Microservicio A)
-SEED_ADMIN_CORREO=admin@uta.edu.ec
-SIHA_ADMIN_PASSWORD=
-
-# Archivos (Microservicio B)
-ARCHIVOS_TAMANO_MAXIMO_BYTES=10485760
-```
-
-> **Nota:** No versionar `.env` (está en `.gitignore`). Usa contraseñas complejas para SQL Server. Si un valor contiene `$`, encerrarlo entre comillas simples. Las credenciales de ejemplo **no deben usarse en producción**.
-
-### 2. Levantar la pila
+### Levantar la pila
 
 ```bash
 docker compose config --quiet   # Valida sintaxis
 docker compose up -d --build    # Primera vez: 5-15 min (descarga imágenes + build)
 ```
 
-### 3. Verificar servicios
+### Verificar servicios
 
 ```bash
 docker compose ps
@@ -90,7 +64,7 @@ Todos deben estar `healthy` o `Up`:
 | **siha-gateway** | 5000 | — |
 | **siha-frontend** | **5173** | ✅ |
 
-### 4. Acceder
+### Acceder
 
 | Qué | URL |
 |---|---|
