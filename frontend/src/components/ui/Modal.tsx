@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useCallback } from 'react';
 import type { ReactNode } from 'react';
 import { Boton } from './Boton';
 
@@ -21,8 +21,11 @@ const ANCHOS = {
 } as const;
 
 /**
- * Cuadro de diálogo accesible: atrapa el foco al abrirse, se cierra con Escape
- * y devuelve el foco al elemento que lo abrió (S1-A10, navegación por teclado).
+ * Cuadro de diálogo accesible:
+ * - Atrapa el foco al abrirse (solo en inputs/select/textarea, no en botones)
+ * - Focus trapping: Tab/Shift+Tab ciclan dentro del modal
+ * - Se cierra con Escape
+ * - Devuelve el foco al elemento que lo abrió (S1-A10, navegación por teclado).
  */
 export function Modal({
   abierto,
@@ -35,38 +38,100 @@ export function Modal({
 }: PropsModal): JSX.Element | null {
   const contenedor = useRef<HTMLDivElement>(null);
   const referenciaPrevia = useRef<HTMLElement | null>(null);
+  const enfocadoInicialmente = useRef(false);
+  // Ref para onCerrar: evita que el effect se re-ejecute si el padre pasa inline function
+  const onCerrarRef = useRef(onCerrar);
+  onCerrarRef.current = onCerrar;
+
+  // Focus trapping handler
+  const manejarTab = useCallback((evento: KeyboardEvent) => {
+    if (evento.key !== 'Tab' || !contenedor.current) return;
+
+    const elementosEnfocables = contenedor.current.querySelectorAll<HTMLElement>(
+      'input:not([disabled]), select:not([disabled]), textarea:not([disabled]), button:not([disabled]):not([tabIndex="-1"]), [href], [tabindex]:not([tabindex="-1"])'
+    );
+
+    if (elementosEnfocables.length === 0) return;
+
+    const primero = elementosEnfocables[0];
+    const ultimo = elementosEnfocables[elementosEnfocables.length - 1];
+
+    if (evento.shiftKey) {
+      // Shift+Tab: ir al anterior, si estamos en el primero -> último
+      if (document.activeElement === primero) {
+        evento.preventDefault();
+        ultimo.focus();
+      }
+    } else {
+      // Tab: ir al siguiente, si estamos en el último -> primero
+      if (document.activeElement === ultimo) {
+        evento.preventDefault();
+        primero.focus();
+      }
+    }
+  }, []);
 
   useEffect(() => {
     if (!abierto) {
+      enfocadoInicialmente.current = false;
       return;
     }
 
+    // Guardar elemento que tenía el foco antes de abrir
     referenciaPrevia.current = document.activeElement as HTMLElement | null;
-    const id = window.setTimeout(() => {
-      const primero = contenedor.current?.querySelector<HTMLElement>(
-        'input, select, textarea, button, [tabindex]:not([tabindex="-1"])',
-      );
-      (primero ?? contenedor.current)?.focus();
-    }, 0);
 
-    const alPulsarTecla = (evento: KeyboardEvent): void => {
+    // Usar requestAnimationFrame doble para asegurar que el DOM esté completamente pintado
+    // (primero: next frame, segundo: después del paint)
+    let rafId1: number;
+    let rafId2: number;
+
+    rafId1 = requestAnimationFrame(() => {
+      rafId2 = requestAnimationFrame(() => {
+        if (!contenedor.current || enfocadoInicialmente.current) return;
+
+        // Solo inputs reales del formulario, NO botones
+        const primerInput = contenedor.current.querySelector<HTMLElement>(
+          'input:not([disabled]), select:not([disabled]), textarea:not([disabled])'
+        );
+
+        if (primerInput) {
+          primerInput.focus();
+        } else {
+          // Fallback: el propio contenedor (accesible para screen readers)
+          contenedor.current.focus();
+        }
+        enfocadoInicialmente.current = true;
+      });
+    });
+
+    // Focus trapping
+    document.addEventListener('keydown', manejarTab);
+
+    // Escape para cerrar - usa ref para no depender de onCerrar en deps
+    const alPulsarEscape = (evento: KeyboardEvent): void => {
       if (evento.key === 'Escape') {
         evento.stopPropagation();
-        onCerrar();
+        onCerrarRef.current();
       }
     };
+    document.addEventListener('keydown', alPulsarEscape);
 
-    document.addEventListener('keydown', alPulsarTecla);
     const overflowPrevio = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
 
     return () => {
-      window.clearTimeout(id);
-      document.removeEventListener('keydown', alPulsarTecla);
+      cancelAnimationFrame(rafId1);
+      cancelAnimationFrame(rafId2);
+      document.removeEventListener('keydown', manejarTab);
+      document.removeEventListener('keydown', alPulsarEscape);
       document.body.style.overflow = overflowPrevio;
-      referenciaPrevia.current?.focus();
+      // Restaurar foco al elemento anterior
+      if (referenciaPrevia.current && typeof referenciaPrevia.current.focus === 'function') {
+        referenciaPrevia.current.focus();
+      }
+      enfocadoInicialmente.current = false;
     };
-  }, [abierto, onCerrar]);
+  }, [abierto, manejarTab]);
 
   if (!abierto) {
     return null;
@@ -87,7 +152,13 @@ export function Modal({
             <h2 className="text-base font-semibold text-slate-900">{titulo}</h2>
             {descripcion ? <p className="mt-0.5 text-xs text-slate-500">{descripcion}</p> : null}
           </div>
-          <Boton variante="fantasma" tamano="sm" onClick={onCerrar} aria-label="Cerrar el cuadro de diálogo">
+          <Boton
+            variante="fantasma"
+            tamano="sm"
+            onClick={() => onCerrarRef.current()}
+            aria-label="Cerrar el cuadro de diálogo"
+            tabIndex={-1}
+          >
             Cerrar
           </Boton>
         </header>

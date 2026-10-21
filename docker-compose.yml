@@ -12,7 +12,7 @@ services:
       MSSQL_SA_PASSWORD: "${SIHA_SQL_PASSWORD:?Configura SIHA_SQL_PASSWORD en .env}"
       MSSQL_PID: "Developer"
     ports:
-      - "1433:1433"
+      - "1434:1433"
     volumes:
       - siha-sqla:/var/opt/mssql
     healthcheck:

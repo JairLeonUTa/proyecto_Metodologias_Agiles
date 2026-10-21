@@ -334,11 +334,11 @@ export function SolicitudNuevaPage(): JSX.Element {
 
       {aceptado ? (
         <Tarjeta
-          titulo={aceptado.publicado ? 'Solicitud enviada (HTTP 202 Accepted)' : 'Solicitud registrada, publicación pendiente'}
+          titulo={aceptado.publicado ? 'Solicitud enviada (HTTP 202 Accepted)' : 'Publicación fallida — expediente recuperable'}
           descripcion={
             aceptado.publicado
               ? 'Los documentos se verificaron en el servidor y el expediente se publicó para su procesamiento asíncrono.'
-              : 'Los documentos se verificaron, pero el bus no respondió. El sistema reintentará automáticamente conservando la correlación.'
+              : 'Los documentos se verificaron, pero la publicación en el bus falló. El expediente quedó en estado recuperable y se reintentará automáticamente conservando el CorrelationId.'
           }
         >
           <div className="space-y-4">
