@@ -39,6 +39,9 @@ export function Modal({
   const contenedor = useRef<HTMLDivElement>(null);
   const referenciaPrevia = useRef<HTMLElement | null>(null);
   const enfocadoInicialmente = useRef(false);
+  // Ref para onCerrar: evita que el effect se re-ejecute si el padre pasa inline function
+  const onCerrarRef = useRef(onCerrar);
+  onCerrarRef.current = onCerrar;
 
   // Focus trapping handler
   const manejarTab = useCallback((evento: KeyboardEvent) => {
@@ -104,11 +107,11 @@ export function Modal({
     // Focus trapping
     document.addEventListener('keydown', manejarTab);
 
-    // Escape para cerrar
+    // Escape para cerrar - usa ref para no depender de onCerrar en deps
     const alPulsarEscape = (evento: KeyboardEvent): void => {
       if (evento.key === 'Escape') {
         evento.stopPropagation();
-        onCerrar();
+        onCerrarRef.current();
       }
     };
     document.addEventListener('keydown', alPulsarEscape);
@@ -128,7 +131,7 @@ export function Modal({
       }
       enfocadoInicialmente.current = false;
     };
-  }, [abierto, onCerrar, manejarTab]);
+  }, [abierto, manejarTab]);
 
   if (!abierto) {
     return null;
@@ -152,7 +155,7 @@ export function Modal({
           <Boton
             variante="fantasma"
             tamano="sm"
-            onClick={onCerrar}
+            onClick={() => onCerrarRef.current()}
             aria-label="Cerrar el cuadro de diálogo"
             tabIndex={-1}
           >
