@@ -51,11 +51,17 @@ export const ETIQUETA_TIPO_TRAMITE: Record<string, string> = {
   EXTERNO: 'Externa (otra institución)',
 };
 
-/** Estados del ciclo de vida del expediente. */
+/** Estados del ciclo de vida del expediente (coincide con ExpedienteEstados en Siha.Contracts). */
 export const ESTADOS_EXPEDIENTE = {
   REGISTRADO: 'REGISTRADO',
+  /** Borrador: expediente existe en DB B y espera la carga y validación de sus PDF en el servidor. */
+  PENDIENTE_DOCUMENTOS: 'PENDIENTE_DOCUMENTOS',
+  /** Transición protegida por concurrencia optimista: un único envío reservó el expediente y está publicando el evento. */
+  PUBLICACION_EN_CURSO: 'PUBLICACION_EN_CURSO',
+  /** El evento fue publicado; el operador puede continuar mientras C procesa. */
   PENDIENTE_CONTENIDOS: 'PENDIENTE_CONTENIDOS',
   EN_PROCESO: 'EN_PROCESO',
+  /** Estado recuperable: la persistencia se completó pero la publicación en RabbitMQ falló (CA3 de US-06). */
   REGISTRADO_PENDIENTE_PUBLICACION: 'REGISTRADO_PENDIENTE_PUBLICACION',
   EVALUADO: 'EVALUADO',
 } as const;
@@ -64,6 +70,8 @@ export type EstadoExpediente = (typeof ESTADOS_EXPEDIENTE)[keyof typeof ESTADOS_
 
 export const ESTADOS_EXPEDIENTE_TODOS: EstadoExpediente[] = [
   ESTADOS_EXPEDIENTE.REGISTRADO,
+  ESTADOS_EXPEDIENTE.PENDIENTE_DOCUMENTOS,
+  ESTADOS_EXPEDIENTE.PUBLICACION_EN_CURSO,
   ESTADOS_EXPEDIENTE.PENDIENTE_CONTENIDOS,
   ESTADOS_EXPEDIENTE.EN_PROCESO,
   ESTADOS_EXPEDIENTE.REGISTRADO_PENDIENTE_PUBLICACION,
