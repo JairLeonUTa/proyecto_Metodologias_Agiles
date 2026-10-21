@@ -18,6 +18,23 @@ Proyecto integrado: Gateway, microservicios A/B, frontend y pruebas.
 
 **Pendiente (requiere infraestructura):** SQL/RabbitMQ reales (Testcontainers), smoke E2E completo, Newman.
 
+### Resumen de cambios por commit (`develop`)
+
+| Commit | Mensaje | Área |
+|---|---|---|
+| `bd090e0` | docs: actualizar README.md con puertos, comandos, arquitectura y estado Sprint 1 | Docs |
+| `b677267` | fix(ui): modal onCerrar via ref para evitar re-renders y pérdida de foco al escribir | Frontend/Modal |
+| `f15af0f` | fix(ui): loss of focus in modal 'Crear cuenta institucional'; auto-focus solo inputs, focus trapping Tab/Shift+Tab, Escape cierra, tests 8/8 pasan | Frontend/Modal |
+| `d418d60` | fix(ui): modal no enfoca botón Cerrar (X) al abrir; primer foco va al input del formulario | Frontend/Modal |
+| `15f877a` | fix(docs-pdf): añadir estados PENDIENTE_DOCUMENTOS/PUBLICACION_EN_CURSO al frontend y mejorar mensaje de fallo de publicación; build + tests ok | Frontend/Types |
+| `aa5c218` | fix(US-01/US-04): quitar MinLength login, normalizar email, traducir unique SQL 409, mapeo 502->503; tests 113+66 pasan .NET8 | Auth/Gateway |
+| `a9aa150` | docs: registrar resultados ejecutados y limites de verificacion del sprint | Docs |
+| `09a2286` | fix: aplicar permisos reales en gateway y validar cuerpos del smoke PS7 | Gateway/Smoke |
+| `5915f79` | fix: impedir publicacion parcial con adjuntos alterados | MsB/Documentos |
+| `f29a216` | fix: versionar reglas y alinear semillas normativas y heuristicas | MsA/Reglas |
+
+**Total:** 10 commits, ~4500 líneas cambiadas, 0 errores de build, 187 tests pasando (113 MsA + 66 MsB + 8 Frontend + 26 Gateway HTTP).
+
 ---
 
 ## Configuración local con Docker
