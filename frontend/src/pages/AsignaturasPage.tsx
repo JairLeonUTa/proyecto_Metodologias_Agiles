@@ -243,7 +243,6 @@ export function AsignaturasPage(): JSX.Element {
   return (
     <div className="space-y-6">
       <EncabezadoPagina
-        contexto="Catálogo académico"
         titulo="Asignaturas y unidades temáticas"
         descripcion="Planes analíticos del catálogo estructurado: asignaturas, créditos, horas y unidades temáticas con sus contenidos."
         acciones={

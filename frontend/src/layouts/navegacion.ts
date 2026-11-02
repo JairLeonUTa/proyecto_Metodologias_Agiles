@@ -1,4 +1,5 @@
 import { ROLES } from '../types/comunes';
+import type { NombreIcono } from '../components/ui/Icono';
 
 /** Rutas de la aplicación, centralizadas para evitar literales dispersos. */
 export const RUTAS = {
@@ -25,12 +26,9 @@ export const ROLES_EXPEDIENTES: string[] = [ROLES.OPERADOR, ROLES.ADMINISTRADOR]
 
 export interface ElementoNavegacion {
   etiqueta: string;
-  /** Descripción usada como `title` y ayuda contextual. */
   descripcion: string;
   ruta: string;
-  /** Símbolo decorativo (sin dependencias de iconos). */
-  simbolo: string;
-  /** Roles que pueden ver el elemento y entrar a la ruta. */
+  icono: NombreIcono;
   rolesPermitidos: string[];
 }
 
@@ -51,14 +49,14 @@ export const MENU: GrupoNavegacion[] = [
         etiqueta: 'Inicio',
         descripcion: 'Panel de resumen del sistema',
         ruta: RUTAS.inicio,
-        simbolo: '⌂',
+        icono: 'inicio',
         rolesPermitidos: TODOS_LOS_ROLES,
       },
       {
         etiqueta: 'Reglas y umbrales',
         descripcion: 'Configuración de θ, δ, τ y catálogo normativo',
         ruta: RUTAS.reglas,
-        simbolo: 'θ',
+        icono: 'reglas',
         rolesPermitidos: TODOS_LOS_ROLES,
       },
     ],
@@ -70,21 +68,21 @@ export const MENU: GrupoNavegacion[] = [
         etiqueta: 'Registrar solicitud',
         descripcion: 'Alta de una solicitud de homologación interna o externa',
         ruta: RUTAS.nuevaSolicitud,
-        simbolo: '＋',
+        icono: 'nueva-solicitud',
         rolesPermitidos: ROLES_EXPEDIENTES,
       },
       {
         etiqueta: 'Bandeja de expedientes',
         descripcion: 'Listado de expedientes por estado',
         ruta: RUTAS.expedientes,
-        simbolo: '☰',
+        icono: 'bandeja',
         rolesPermitidos: ROLES_EXPEDIENTES,
       },
       {
         etiqueta: 'Consultar estado',
         descripcion: 'Seguimiento de un expediente por su identificador',
         ruta: RUTAS.consultaExpediente,
-        simbolo: '⌕',
+        icono: 'consulta',
         rolesPermitidos: ROLES_EXPEDIENTES,
       },
     ],
@@ -96,28 +94,28 @@ export const MENU: GrupoNavegacion[] = [
         etiqueta: 'Carreras',
         descripcion: 'Registro y listado de carreras de la UTA',
         ruta: RUTAS.carreras,
-        simbolo: '⌸',
+        icono: 'carreras',
         rolesPermitidos: TODOS_LOS_ROLES,
       },
       {
         etiqueta: 'Mallas curriculares',
         descripcion: 'Versiones de malla por carrera',
         ruta: RUTAS.mallas,
-        simbolo: '⌗',
+        icono: 'mallas',
         rolesPermitidos: TODOS_LOS_ROLES,
       },
       {
         etiqueta: 'Asignaturas y unidades',
         descripcion: 'Planes analíticos y unidades temáticas',
         ruta: RUTAS.asignaturas,
-        simbolo: '≡',
+        icono: 'asignaturas',
         rolesPermitidos: TODOS_LOS_ROLES,
       },
       {
         etiqueta: 'Importar catálogo',
         descripcion: 'Carga masiva del catálogo estructurado',
         ruta: RUTAS.importarCatalogo,
-        simbolo: '↥',
+        icono: 'importar',
         rolesPermitidos: [ROLES.ADMINISTRADOR],
       },
     ],
@@ -129,7 +127,7 @@ export const MENU: GrupoNavegacion[] = [
         etiqueta: 'Usuarios y roles',
         descripcion: 'Cuentas institucionales y asignación de roles',
         ruta: RUTAS.usuarios,
-        simbolo: '☺',
+        icono: 'usuarios',
         rolesPermitidos: [ROLES.ADMINISTRADOR],
       },
     ],

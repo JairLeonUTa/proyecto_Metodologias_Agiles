@@ -79,7 +79,6 @@ export function ExpedienteDetallePage(): JSX.Element {
   return (
     <div className="space-y-6">
       <EncabezadoPagina
-        contexto="Expedientes"
         titulo={datos ? `Expediente ${datos.codigo}` : 'Detalle del expediente'}
         descripcion="Estado de recepción, publicación en el bus de eventos y contenido registrado."
         acciones={

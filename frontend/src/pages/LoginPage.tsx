@@ -15,11 +15,9 @@ interface EstadoUbicacion {
 
 /**
  * Inicio de sesión institucional (S1-A02 / S1-A08).
- * Consume `POST /api/auth/login` a través del API Gateway, guarda el JWT y el
- * usuario, y redirige a la ruta solicitada originalmente.
  */
 export function LoginPage(): JSX.Element {
-  useTituloPagina('Inicio de sesión');
+  useTituloPagina('Iniciar sesión');
 
   const { iniciarSesion, motivoCierre, limpiarMotivoCierre } = useAuth();
   const navegar = useNavigate();
@@ -33,7 +31,6 @@ export function LoginPage(): JSX.Element {
   const [enviando, setEnviando] = useState(false);
   const entradaCorreo = useRef<HTMLInputElement>(null);
 
-  // El foco inicial permite operar el formulario solo con el teclado (S1-A10).
   useEffect(() => {
     entradaCorreo.current?.focus();
   }, []);
@@ -73,8 +70,8 @@ export function LoginPage(): JSX.Element {
 
   return (
     <LayoutAutenticacion
-      titulo="Inicio de sesión institucional"
-      subtitulo="Acceda con sus credenciales de la Universidad Técnica de Ambato."
+      titulo="Iniciar sesión"
+      subtitulo="Acceda con su correo institucional de la UTA."
     >
       <div className="space-y-4">
         {motivoCierre ? <Alerta tono="advertencia">{motivoCierre}</Alerta> : null}

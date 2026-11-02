@@ -62,7 +62,6 @@ export function ConsultaExpedientePage(): JSX.Element {
   return (
     <div className="space-y-6">
       <EncabezadoPagina
-        contexto="Expedientes"
         titulo="Consultar estado de recepción"
         descripcion="Ingrese el identificador GUID o el código del expediente para conocer su estado de recepción, publicación y contenido registrado."
       />

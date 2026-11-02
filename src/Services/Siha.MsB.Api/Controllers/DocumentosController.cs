@@ -57,7 +57,7 @@ public class DocumentosController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<DocumentoResponse>> Subir(
         Guid id,
-        [FromForm] IFormFile? archivo,
+        IFormFile? archivo,
         CancellationToken cancellationToken)
     {
         var expediente = await _db.Expedientes

@@ -15,26 +15,26 @@ interface PropsAlerta {
 
 const ESTILOS: Record<TonoAlerta, { contenedor: string; titulo: string; icono: string; simbolo: string }> = {
   exito: {
-    contenedor: 'border-emerald-200 bg-emerald-50 text-emerald-900',
-    titulo: 'text-emerald-800',
-    icono: 'text-emerald-600',
+    contenedor: 'border-positive/30 bg-[#dcfae5] text-[#04250e]',
+    titulo: 'text-[#04250e]',
+    icono: 'text-positive',
     simbolo: '✓',
   },
   error: {
-    contenedor: 'border-rose-200 bg-rose-50 text-rose-900',
-    titulo: 'text-rose-800',
-    icono: 'text-rose-600',
+    contenedor: 'border-negative/30 bg-[#ffedea] text-[#831c1e]',
+    titulo: 'text-[#831c1e]',
+    icono: 'text-negative',
     simbolo: '!',
   },
   informacion: {
-    contenedor: 'border-sky-200 bg-sky-50 text-sky-900',
-    titulo: 'text-sky-800',
-    icono: 'text-sky-600',
+    contenedor: 'border-institucional-200 bg-institucional-50 text-institucional-900',
+    titulo: 'text-institucional-900',
+    icono: 'text-institucional-600',
     simbolo: 'i',
   },
   advertencia: {
-    contenedor: 'border-amber-200 bg-amber-50 text-amber-900',
-    titulo: 'text-amber-800',
+    contenedor: 'border-amber-200 bg-[#fffbeb] text-[#92400e]',
+    titulo: 'text-[#92400e]',
     icono: 'text-amber-600',
     simbolo: '⚠',
   },

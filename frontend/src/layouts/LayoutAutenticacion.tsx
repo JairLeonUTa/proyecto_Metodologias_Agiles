@@ -4,49 +4,70 @@ interface PropsLayoutAutenticacion {
   titulo: string;
   subtitulo: string;
   children: ReactNode;
-  /** Contenido adicional bajo el formulario (credenciales de prueba, avisos). */
   pie?: ReactNode;
 }
 
-/** Marco de las vistas públicas (inicio de sesión y acceso denegado). */
+/**
+ * Marco de las vistas públicas: composición centrada. Una cabecera con formas
+ * orgánicas superpuestas en los azules del logo sostiene la identidad
+ * (Homologa UTA · Universidad Técnica de Ambato) y la hoja blanca con el
+ * formulario se levanta sobre ese campo. Sin paneles oscuros — la hoja ES el
+ * documento.
+ */
 export function LayoutAutenticacion({ titulo, subtitulo, children, pie }: PropsLayoutAutenticacion): JSX.Element {
   return (
-    <div className="flex min-h-screen flex-col bg-gradient-to-br from-slate-900 via-institucional-900 to-slate-800">
+    <div className="flex min-h-screen flex-col bg-frame">
       <a className="salto-contenido" href="#contenido-autenticacion">
         Saltar al contenido principal
       </a>
 
-      <div className="flex flex-1 items-center justify-center px-4 py-10">
-        <div className="w-full max-w-md space-y-5">
-          <div className="flex items-center gap-3 text-white">
-            <span
-              aria-hidden="true"
-              className="flex h-11 w-11 items-center justify-center rounded-md bg-institucional-600 text-base font-bold"
-            >
-              IA
-            </span>
-            <div>
-              <p className="text-sm font-bold uppercase tracking-wide">SIHA-IA</p>
-              <p className="text-xs text-slate-300">Universidad Técnica de Ambato</p>
-            </div>
-          </div>
-
-          <div id="contenido-autenticacion" className="tarjeta p-6">
-            <header className="mb-5">
-              <h1 className="text-lg font-bold text-slate-900">{titulo}</h1>
-              <p className="mt-1 text-sm text-slate-600">{subtitulo}</p>
-            </header>
-
-            {children}
-          </div>
-
-          {pie}
+      <header className="relative isolate overflow-hidden bg-institucional-50 pb-48 pt-10 sm:pb-52 sm:pt-14">
+        {/* Formas pálidas del fondo de la cabecera */}
+        <div aria-hidden="true" className="absolute inset-0 -z-10 overflow-hidden">
+          <div className="absolute -left-[16%] -top-[24%] h-[62%] w-[46%] rounded-[56%_44%_48%_52%/46%_56%_44%_54%] bg-institucional-100" />
+          <div className="absolute -right-[14%] -top-[28%] h-[66%] w-[44%] rounded-[46%_54%_52%_48%/54%_46%_56%_44%] bg-institucional-100" />
         </div>
-      </div>
 
-      <footer className="px-4 py-4 text-center text-xs text-slate-400">
-        Sistema Inteligente de Homologación Académica Asistido por Agentes IA · Sprint 1
-      </footer>
+        {/* Campo de formas orgánicas superpuestas en la base de la cabecera */}
+        <div aria-hidden="true" className="absolute inset-x-0 bottom-0 z-0 h-44 overflow-hidden sm:h-48">
+          <div className="absolute left-[-8%] top-[18%] h-[130%] w-[38%] rounded-[46%_54%_58%_42%/52%_48%_58%_42%] bg-institucional-900" />
+          <div className="absolute left-[18%] top-[-4%] h-[126%] w-[32%] rounded-[56%_44%_46%_54%/42%_58%_44%_56%] bg-institucional-300" />
+          <div className="absolute left-[40%] top-[26%] h-[122%] w-[28%] rounded-[44%_56%_54%_46%/58%_42%_56%_44%] bg-institucional-600" />
+          <div className="absolute right-[24%] top-[34%] h-[112%] w-[22%] rounded-[48%_52%_58%_42%/56%_44%_58%_42%] bg-turquesa" />
+          <div className="absolute right-[-6%] top-[6%] h-[128%] w-[34%] rounded-[52%_48%_44%_56%/48%_52%_46%_54%] bg-institucional-700" />
+        </div>
+
+        <div className="relative mx-auto flex max-w-3xl flex-col items-center px-6 text-center">
+          <img src="/logo.png" alt="Homologa UTA" className="h-11 w-auto sm:h-12" />
+          <p className="mt-5 text-sm font-medium text-muted">Universidad Técnica de Ambato</p>
+
+          <p className="mt-7 max-w-xl text-[1.75rem] font-semibold leading-tight tracking-tight text-institucional-900 sm:text-[2rem]">
+            Homologación académica
+          </p>
+          <p className="mt-3 max-w-lg text-sm leading-relaxed text-muted sm:text-base">
+            Evaluación de solicitudes con reglas normativas, umbrales configurables y trazabilidad completa del
+            expediente.
+          </p>
+        </div>
+      </header>
+
+      {/* Formulario: hoja blanca centrada, levantada sobre el campo azul */}
+      <main
+        id="contenido-autenticacion"
+        tabIndex={-1}
+        className="flex flex-1 items-start justify-center px-4 pb-12 pt-8 sm:pt-0"
+      >
+        <div className="relative z-10 w-full max-w-md sm:-mt-16">
+          <div className="sheet-animate rounded-2xl border border-stone-200 bg-white p-6 sm:p-8">
+            <h1 className="text-xl font-semibold tracking-tight text-ink">{titulo}</h1>
+            <p className="mt-1.5 text-sm text-muted">{subtitulo}</p>
+
+            <div className="mt-6">{children}</div>
+
+            {pie ? <div className="mt-6">{pie}</div> : null}
+          </div>
+        </div>
+      </main>
     </div>
   );
 }
