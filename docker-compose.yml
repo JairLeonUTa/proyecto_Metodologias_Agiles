@@ -183,6 +183,8 @@ services:
         condition: service_healthy
       rabbitmq:
         condition: service_healthy
+      ms-a:
+        condition: service_healthy
     ports:
       - "5084:8080"
     healthcheck:

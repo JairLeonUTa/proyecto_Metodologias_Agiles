@@ -1,10 +1,15 @@
 using System.Text;
+using Grpc.Core;
+using Grpc.Net.Client;
 using MassTransit;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using Siha.MsA.Api.Grpc;
 using Siha.MsC.Api.Consumers;
 using Siha.MsC.Api.Data;
+using Siha.MsC.Api.Grpc;
 using Siha.MsC.Api.Options;
 using Siha.MsC.Api.Security;
 using Siha.MsC.Api.Services;
@@ -22,6 +27,30 @@ builder.Services.Configure<AlmacenOptions>(builder.Configuration.GetSection(Alma
 builder.Services.AddSingleton<IAlmacenDocumentos, AlmacenDocumentos>();
 builder.Services.AddScoped<ProcesarSolicitudCreadaService>();
 builder.Services.AddScoped<ExtraccionService>();
+
+// --- Cliente gRPC hacia Microservicio A (ReglasGrpc) ---
+builder.Services.Configure<ReglasGrpcOptions>(builder.Configuration.GetSection(ReglasGrpcOptions.SectionName));
+
+builder.Services.AddGrpcClient<ReglasGrpc.ReglasGrpcClient>((sp, options) =>
+{
+    var cfg = sp.GetRequiredService<IOptions<ReglasGrpcOptions>>().Value;
+    options.Address = new Uri(cfg.Url);
+})
+.ConfigureChannel(o =>
+{
+    // h2c (HTTP/2 sin TLS) en red Docker interna.
+    o.Credentials = ChannelCredentials.Insecure;
+})
+.ConfigurePrimaryHttpMessageHandler(() =>
+{
+    var handler = new HttpClientHandler
+    {
+        ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
+    };
+    return handler;
+});
+
+builder.Services.AddScoped<IReglasGrpcClient, ReglasGrpcClient>();
 
 // --- Seguridad: los endpoints de confirmación validan los JWT emitidos por el Microservicio A ---
 var jwtSection = builder.Configuration.GetSection(JwtSettings.SectionName);
