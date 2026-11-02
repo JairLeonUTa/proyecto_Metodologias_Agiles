@@ -220,7 +220,7 @@
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [ { "Host": "ms-c", "Port": 8080 } ],
       "UpstreamPathTemplate": "/api/extracciones/{everything}",
-      "UpstreamHttpMethod": [ "GET", "PUT" ],
+      "UpstreamHttpMethod": [ "GET", "PUT", "POST" ],
       "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer", "AllowedScopes": [] }
     }
   ]

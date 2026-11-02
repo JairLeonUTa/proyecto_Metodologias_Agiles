@@ -202,6 +202,23 @@ public class GatewayOcelotConfiguracionTests
         documentos.DownstreamPathTemplate.Should().Be("/api/expedientes/{everything}");
     }
 
+    [Fact]
+    public void La_configuracion_de_extracciones_permite_post_para_calcular_creditos()
+    {
+        foreach (var archivo in new[] { RutaProduccion, RutaDesarrollo })
+        {
+            var configuracion = Cargar(archivo);
+
+            var extracciones = configuracion.Routes.FirstOrDefault(r =>
+                r.UpstreamPathTemplate == "/api/extracciones/{everything}");
+
+            extracciones.Should().NotBeNull($"falta ruta /api/extracciones en {archivo}");
+            extracciones!.UpstreamHttpMethod.Should().Contain("POST", "el endpoint calcular-creditos requiere POST en {archivo}");
+            extracciones.UpstreamHttpMethod.Should().Contain("GET", "consulta de extracción requiere GET en {archivo}");
+            extracciones.UpstreamHttpMethod.Should().Contain("PUT", "confirmación de extracción requiere PUT en {archivo}");
+        }
+    }
+
     [Theory]
     [InlineData(RutaProduccion)]
     [InlineData(RutaDesarrollo)]

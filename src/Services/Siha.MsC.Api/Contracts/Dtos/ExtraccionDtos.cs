@@ -39,3 +39,20 @@ public record ExtraccionResponse(
     DateTimeOffset? ConfirmadoUtc,
     string? ConfirmadoPor,
     string? Observacion);
+
+/// <summary>Parámetros para calcular la proporción de créditos (Pcred) y controles normativos (US-09, S2-J04).</summary>
+public record CalcularCreditosRequest(
+    int CreditosOrigen,
+    int CreditosDestino,
+    int AnosTranscurridos,
+    int NumeroMatriculaDestino,
+    bool EsCreditoExterno,
+    string RutaNormativa);
+
+/// <summary>Resultado del cálculo de Pcred y evaluación normativa.</summary>
+public record EvaluacionCreditosResponse(
+    decimal Pcred,
+    string Categoria,
+    IReadOnlyCollection<string> Alertas,
+    bool BloqueoDuro,
+    string DetalleCalculo);

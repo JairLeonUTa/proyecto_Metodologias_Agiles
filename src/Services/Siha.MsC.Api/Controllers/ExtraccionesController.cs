@@ -12,16 +12,19 @@ namespace Siha.MsC.Api.Controllers;
 /// <summary>
 /// Consulta y confirmación humana de los datos extraídos de un PDF (US-07, S2-J02).
 /// El operador revisa créditos, horas y unidades; la evaluación no avanza hasta confirmarlos.
+/// También expone el cálculo de proporción de créditos y controles normativos (US-09, S2-J04).
 /// </summary>
 [ApiController]
 [Route("api/extracciones")]
 public class ExtraccionesController : ControllerBase
 {
     private readonly ExtraccionService _servicio;
+    private readonly IReglaCreditosStrategy _reglaCreditos;
 
-    public ExtraccionesController(ExtraccionService servicio)
+    public ExtraccionesController(ExtraccionService servicio, IReglaCreditosStrategy reglaCreditos)
     {
         _servicio = servicio;
+        _reglaCreditos = reglaCreditos;
     }
 
     [HttpGet("{id:guid}")]
@@ -93,6 +96,51 @@ public class ExtraccionesController : ControllerBase
                 estado = resultado.Extraccion!.Estado
             })
         };
+    }
+
+    /// <summary>
+    /// Calcula la proporción de créditos (Pcred) y evalúa controles normativos (US-09, S2-J04).
+    /// <para>Pcred = min(100, (credOrigen / credDestino) * 100). Solo dato de apoyo.</para>
+    /// <para>RN-03 (CAU-P-011): >10 años → VALIDACION_CONOCIMIENTOS.</para>
+    /// <para>RN-16: 3ra matrícula destino → BLOQUEO_3RA_MATRICULA (bloqueo duro).</para>
+    /// <para>RN-15: Créditos externos → sin 48h/crédito automático.</para>
+    /// </summary>
+    [HttpPost("calcular-creditos")]
+    [Authorize(Roles = $"{RolesSistema.Operador},{RolesSistema.Administrador},{RolesSistema.Docente}")]
+    [ProducesResponseType(typeof(EvaluacionCreditosResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public ActionResult<EvaluacionCreditosResponse> CalcularCreditos(
+        [FromBody] CalcularCreditosRequest request)
+    {
+        try
+        {
+            var parametros = new ParametrosCreditos(
+                CreditosOrigen: request.CreditosOrigen,
+                CreditosDestino: request.CreditosDestino,
+                AnosTranscurridos: request.AnosTranscurridos,
+                NumeroMatriculaDestino: request.NumeroMatriculaDestino,
+                EsCreditoExterno: request.EsCreditoExterno,
+                RutaNormativa: request.RutaNormativa);
+
+            var resultado = _reglaCreditos.Calcular(parametros);
+
+            return Ok(new EvaluacionCreditosResponse(
+                resultado.Pcred,
+                resultado.Categoria,
+                resultado.Alertas,
+                resultado.BloqueoDuro,
+                resultado.DetalleCalculo));
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new { mensaje = "Parámetros inválidos.", error = ex.Message });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { mensaje = "Error de cálculo.", error = ex.Message });
+        }
     }
 
     private static ExtraccionResponse ARespuesta(Extraccion extraccion) => new(

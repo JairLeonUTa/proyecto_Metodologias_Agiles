@@ -27,6 +27,7 @@ builder.Services.Configure<AlmacenOptions>(builder.Configuration.GetSection(Alma
 builder.Services.AddSingleton<IAlmacenDocumentos, AlmacenDocumentos>();
 builder.Services.AddScoped<ProcesarSolicitudCreadaService>();
 builder.Services.AddScoped<ExtraccionService>();
+builder.Services.AddScoped<IReglaCreditosStrategy, ReglaCreditosStrategy>();
 
 // --- Cliente gRPC hacia Microservicio A (ReglasGrpc) ---
 builder.Services.Configure<ReglasGrpcOptions>(builder.Configuration.GetSection(ReglasGrpcOptions.SectionName));
@@ -128,7 +129,12 @@ app.MapGet("/health", () => Results.Ok(new
     estado = "OK",
     sprint = "Sprint 2",
     consumidor = "solicitud-creada-ms-c",
-    endpoints = new[] { "GET /api/extracciones/{id}", "PUT /api/extracciones/{id}/confirmar" },
+    endpoints = new[]
+    {
+        "GET /api/extracciones/{id}",
+        "PUT /api/extracciones/{id}/confirmar",
+        "POST /api/extracciones/calcular-creditos"
+    },
     utc = DateTimeOffset.UtcNow
 }));
 

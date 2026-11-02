@@ -220,7 +220,7 @@
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [ { "Host": "localhost", "Port": 5084 } ],
       "UpstreamPathTemplate": "/api/extracciones/{everything}",
-      "UpstreamHttpMethod": [ "GET", "PUT" ],
+      "UpstreamHttpMethod": [ "GET", "PUT", "POST" ],
       "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer", "AllowedScopes": [] }
     }
   ]
