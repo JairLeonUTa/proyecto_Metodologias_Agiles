@@ -140,7 +140,6 @@ export function ExpedientesPage(): JSX.Element {
   return (
     <div className="space-y-6">
       <EncabezadoPagina
-        contexto="Expedientes"
         titulo="Bandeja de expedientes"
         descripcion="Expedientes recibidos por el Microservicio B, ordenados por fecha de creación (se muestran los últimos 100)."
       />

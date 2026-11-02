@@ -1,22 +1,21 @@
 import { Link } from 'react-router-dom';
 import { asignaturasApi, carrerasApi, expedientesApi, mallasApi } from '../api';
 import { EncabezadoPagina } from '../components/EncabezadoPagina';
-import { Alerta, Etiqueta, MetricaResumen, Tarjeta } from '../components/ui';
-import { ROLES_EXPEDIENTES, RUTAS } from '../layouts/navegacion';
+import { Alerta, Icono, MetricaResumen } from '../components/ui';
+import { ROLES_EXPEDIENTES, RUTAS, menuParaRol } from '../layouts/navegacion';
 import { useAuth } from '../hooks/useAuth';
 import { usePeticion } from '../hooks/usePeticion';
 import { useTituloPagina } from '../hooks/useTituloPagina';
-import { ESTADOS_EXPEDIENTE, ETIQUETA_ROL } from '../types/comunes';
-import { formatearFechaHora } from '../utils/formato';
+import { ESTADOS_EXPEDIENTE } from '../types/comunes';
 
 /**
- * Panel de inicio (S1-A08): muestra un resumen del sistema a partir de datos
- * reales obtenidos del API Gateway, más los accesos rápidos según el rol.
+ * Panel de inicio (S1-A08): datos reales del API Gateway, organizados
+ * por tareas del usuario. Sin saludo decorativo, sin alertas permanentes.
  */
 export function InicioPage(): JSX.Element {
   useTituloPagina('Inicio');
 
-  const { usuario, tieneRol } = useAuth();
+  const { tieneRol } = useAuth();
   const puedeGestionarExpedientes = tieneRol(...ROLES_EXPEDIENTES);
 
   const carreras = usePeticion(() => carrerasApi.listar(), []);
@@ -32,62 +31,39 @@ export function InicioPage(): JSX.Element {
   const pendientesPublicacion =
     expedientes.datos?.filter((item) => item.estado === ESTADOS_EXPEDIENTE.REGISTRADO_PENDIENTE_PUBLICACION).length ?? 0;
 
+  const grupos = menuParaRol(useAuth().usuario?.rol);
+  const tareas = grupos.flatMap((g) => g.elementos).filter((e) => e.ruta !== RUTAS.inicio);
+
   return (
     <div className="space-y-6">
-      <EncabezadoPagina
-        contexto="Panel general"
-        titulo={`Bienvenido(a), ${usuario?.nombreCompleto ?? 'usuario'}`}
-        descripcion="Estado del sistema de homologación académica y accesos rápidos según su rol."
-      />
+      <EncabezadoPagina titulo="Inicio" descripcion="Resumen del sistema de homologación académica." />
 
-      {falloGeneral ? (
-        <Alerta tono="error" titulo="No se pudo consultar el API Gateway">
-          {falloGeneral} Verifique que los servicios (MsA, MsB y Gateway) estén en ejecución en Docker.
-        </Alerta>
-      ) : (
-        <Alerta tono="exito" titulo="Conexión establecida con el API Gateway">
-          Los indicadores de este panel corresponden a datos reales de los servicios del Sprint 1.
-        </Alerta>
-      )}
-
-      <Tarjeta titulo="Sesión institucional" descripcion="Identidad y permisos contenidos en el token JWT.">
-        <dl className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <div>
-            <dt className="text-xs uppercase tracking-wide text-slate-500">Cuenta</dt>
-            <dd className="mt-1 text-sm font-semibold text-slate-800">{usuario?.correoInstitucional}</dd>
-          </div>
-          <div>
-            <dt className="text-xs uppercase tracking-wide text-slate-500">Rol</dt>
-            <dd className="mt-1">
-              <Etiqueta tono="marca">{usuario ? (ETIQUETA_ROL[usuario.rol] ?? usuario.rol) : '—'}</Etiqueta>
-            </dd>
-          </div>
-          <div>
-            <dt className="text-xs uppercase tracking-wide text-slate-500">Cuenta creada</dt>
-            <dd className="mt-1 text-sm text-slate-700">{formatearFechaHora(usuario?.fechaCreacionUtc)}</dd>
-          </div>
-          <div>
-            <dt className="text-xs uppercase tracking-wide text-slate-500">Último acceso</dt>
-            <dd className="mt-1 text-sm text-slate-700">{formatearFechaHora(usuario?.ultimoAccesoUtc)}</dd>
-          </div>
-        </dl>
-      </Tarjeta>
-
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <MetricaResumen etiqueta="Carreras" valor={carreras.cargando ? '…' : (carreras.datos?.length ?? 0)} descripcion="Catálogo académico UTA" />
-        <MetricaResumen etiqueta="Mallas" valor={mallas.cargando ? '…' : (mallas.datos?.length ?? 0)} descripcion="Versiones registradas" />
+      {/* KPI strip: one divided container, not four cards */}
+      <div className="flex flex-col divide-y divide-stone-200 rounded-lg border border-stone-200 bg-white sm:flex-row sm:divide-x sm:divide-y-0">
+        <MetricaResumen
+          etiqueta="Carreras"
+          valor={carreras.cargando ? '…' : (carreras.datos?.length ?? 0)}
+        />
+        <MetricaResumen
+          etiqueta="Mallas"
+          valor={mallas.cargando ? '…' : (mallas.datos?.length ?? 0)}
+        />
         <MetricaResumen
           etiqueta="Asignaturas"
           valor={asignaturas.cargando ? '…' : (asignaturas.datos?.length ?? 0)}
-          descripcion="Planes analíticos cargados"
         />
         <MetricaResumen
           etiqueta="Expedientes"
           valor={puedeGestionarExpedientes ? (expedientes.cargando ? '…' : (expedientes.datos?.length ?? 0)) : '—'}
-          descripcion={puedeGestionarExpedientes ? 'Solicitudes recibidas (últimas 100)' : 'No disponible para su rol'}
-          tono="neutro"
         />
       </div>
+
+      {/* Alerts only when there is something to report */}
+      {falloGeneral ? (
+        <Alerta tono="error" titulo="No se pudo consultar el API Gateway">
+          {falloGeneral} Verifique que los servicios (MsA, MsB y Gateway) estén en ejecución en Docker.
+        </Alerta>
+      ) : null}
 
       {puedeGestionarExpedientes && pendientesPublicacion > 0 ? (
         <Alerta tono="advertencia" titulo="Expedientes pendientes de publicación">
@@ -96,38 +72,29 @@ export function InicioPage(): JSX.Element {
         </Alerta>
       ) : null}
 
-      <Tarjeta titulo="Accesos rápidos" descripcion="Rutas habilitadas para su rol.">
-        <div className="flex flex-wrap gap-2">
-          <EnlaceRapido ruta={RUTAS.reglas} texto="Reglas y umbrales" />
-          <EnlaceRapido ruta={RUTAS.carreras} texto="Carreras" />
-          <EnlaceRapido ruta={RUTAS.mallas} texto="Mallas curriculares" />
-          <EnlaceRapido ruta={RUTAS.asignaturas} texto="Asignaturas y unidades" />
-          {puedeGestionarExpedientes ? (
-            <>
-              <EnlaceRapido ruta={RUTAS.nuevaSolicitud} texto="Registrar solicitud" />
-              <EnlaceRapido ruta={RUTAS.expedientes} texto="Bandeja de expedientes" />
-              <EnlaceRapido ruta={RUTAS.consultaExpediente} texto="Consultar estado" />
-            </>
-          ) : null}
-          {usuario?.rol === 'ADMINISTRADOR' ? (
-            <>
-              <EnlaceRapido ruta={RUTAS.importarCatalogo} texto="Importar catálogo" />
-              <EnlaceRapido ruta={RUTAS.usuarios} texto="Usuarios y roles" />
-            </>
-          ) : null}
-        </div>
-      </Tarjeta>
+      {/* Task-oriented actions: what can I do from here? */}
+      <section>
+        <h2 className="text-sm font-semibold text-ink">Tareas disponibles</h2>
+        <p className="mt-0.5 text-xs text-muted">Accesos habilitados para su rol.</p>
+        <ul className="mt-3 grid gap-1 sm:grid-cols-2">
+          {tareas.map((tarea) => (
+            <li key={tarea.ruta}>
+              <Link
+                to={tarea.ruta}
+                className="group flex items-start gap-3 rounded-md border border-transparent px-3 py-2.5 transition-colors hover:border-stone-200 hover:bg-stone-50"
+              >
+                <span className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-stone-100 text-muted transition-colors group-hover:bg-active group-hover:text-ink">
+                  <Icono nombre={tarea.icono} className="h-4 w-4" />
+                </span>
+                <span className="min-w-0">
+                  <span className="block text-sm font-medium text-ink">{tarea.etiqueta}</span>
+                  <span className="block text-xs text-muted">{tarea.descripcion}</span>
+                </span>
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </section>
     </div>
-  );
-}
-
-function EnlaceRapido({ ruta, texto }: { ruta: string; texto: string }): JSX.Element {
-  return (
-    <Link
-      to={ruta}
-      className="rounded-md border border-slate-300 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 hover:border-institucional-400 hover:bg-institucional-50 hover:text-institucional-800"
-    >
-      {texto}
-    </Link>
   );
 }

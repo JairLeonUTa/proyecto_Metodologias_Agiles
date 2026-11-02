@@ -166,7 +166,6 @@ export function MallasPage(): JSX.Element {
   return (
     <div className="space-y-6">
       <EncabezadoPagina
-        contexto="Catálogo académico"
         titulo="Mallas curriculares"
         descripcion="Versiones de malla por carrera. Cada versión agrupa las asignaturas y sus planes analíticos."
         acciones={

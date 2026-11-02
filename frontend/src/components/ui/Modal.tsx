@@ -138,19 +138,19 @@ export function Modal({
   }
 
   return (
-    <div className="fixed inset-0 z-40 flex items-start justify-center overflow-y-auto bg-slate-900/50 p-4 sm:items-center">
+    <div className="fixed inset-0 z-40 flex items-start justify-center overflow-y-auto bg-ink/40 p-4 sm:items-center">
       <div
         ref={contenedor}
         role="dialog"
         aria-modal="true"
         aria-label={titulo}
         tabIndex={-1}
-        className={['w-full rounded-lg bg-white shadow-xl animate-aparecer', ANCHOS[ancho]].join(' ')}
+        className={['sheet-animate w-full rounded-xl border border-stone-200 bg-white', ANCHOS[ancho]].join(' ')}
       >
-        <header className="flex items-start justify-between gap-4 border-b border-slate-200 px-4 py-3">
+        <header className="flex items-start justify-between gap-4 border-b border-stone-100 px-5 py-3.5">
           <div>
-            <h2 className="text-base font-semibold text-slate-900">{titulo}</h2>
-            {descripcion ? <p className="mt-0.5 text-xs text-slate-500">{descripcion}</p> : null}
+            <h2 className="text-base font-semibold tracking-tight text-ink">{titulo}</h2>
+            {descripcion ? <p className="mt-0.5 text-xs text-muted">{descripcion}</p> : null}
           </div>
           <Boton
             variante="fantasma"
@@ -163,10 +163,10 @@ export function Modal({
           </Boton>
         </header>
 
-        <div className="max-h-[70vh] overflow-y-auto px-4 py-4 desplazable">{children}</div>
+        <div className="max-h-[70vh] overflow-y-auto px-5 py-4 desplazable">{children}</div>
 
         {acciones ? (
-          <footer className="flex flex-wrap items-center justify-end gap-2 border-t border-slate-200 bg-slate-50 px-4 py-3">
+          <footer className="flex flex-wrap items-center justify-end gap-2 border-t border-stone-100 px-5 py-3">
             {acciones}
           </footer>
         ) : null}

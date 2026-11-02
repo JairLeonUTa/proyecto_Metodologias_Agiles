@@ -1,3 +1,5 @@
+export { Icono } from './Icono';
+export type { NombreIcono } from './Icono';
 export { Boton } from './Boton';
 export { Campo, descritoPor } from './Campo';
 export { EntradaTexto } from './EntradaTexto';

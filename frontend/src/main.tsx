@@ -8,7 +8,7 @@ import './index.css';
 const contenedor = document.getElementById('root');
 
 if (!contenedor) {
-  throw new Error('No se encontró el nodo #root para montar la aplicación SIHA-IA.');
+  throw new Error('No se encontró el nodo #root para montar el Sistema de Homologación Académica.');
 }
 
 createRoot(contenedor).render(

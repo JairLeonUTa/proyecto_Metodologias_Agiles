@@ -29,21 +29,21 @@ export function AccesoDenegadoPage(): JSX.Element {
       titulo="Acceso denegado"
       subtitulo="Su rol no tiene permisos para acceder a esta sección del sistema."
     >
-      <div className="space-y-4 text-sm text-slate-700">
-        <div className="rounded-md border border-amber-200 bg-amber-50 p-3">
-          <p className="font-semibold text-amber-900">Control de acceso basado en roles (RBAC)</p>
+      <div className="space-y-4 text-sm text-muted">
+        <div className="rounded-md border border-amber-200 bg-[#fffbeb] p-3">
+          <p className="font-semibold text-[#92400e]">Control de acceso basado en roles (RBAC)</p>
           <p className="mt-1 text-xs text-amber-800">
-            El menú lateral y las rutas del sistema se habilitan según el rol asignado a su cuenta institucional.
+            La navegación y las rutas del sistema se habilitan según el rol asignado a su cuenta institucional.
           </p>
         </div>
 
         <dl className="space-y-2">
           <div className="flex items-center justify-between gap-3">
-            <dt className="text-slate-500">Ruta solicitada</dt>
-            <dd className="font-mono text-xs text-slate-800">{estado.rutaIntentada ?? 'No especificada'}</dd>
+            <dt className="text-faint">Ruta solicitada</dt>
+            <dd className="font-mono text-xs text-ink">{estado.rutaIntentada ?? 'No especificada'}</dd>
           </div>
           <div className="flex items-center justify-between gap-3">
-            <dt className="text-slate-500">Rol autenticado</dt>
+            <dt className="text-faint">Rol autenticado</dt>
             <dd>
               <Etiqueta tono="informacion">
                 {usuario ? (ETIQUETA_ROL[usuario.rol] ?? usuario.rol) : (estado.rol ?? 'Sin rol')}
@@ -52,7 +52,7 @@ export function AccesoDenegadoPage(): JSX.Element {
           </div>
           {estado.rolesRequeridos && estado.rolesRequeridos.length > 0 ? (
             <div className="flex items-center justify-between gap-3">
-              <dt className="text-slate-500">Roles autorizados</dt>
+              <dt className="text-faint">Roles autorizados</dt>
               <dd className="flex flex-wrap gap-1">
                 {estado.rolesRequeridos.map((rol) => (
                   <Etiqueta key={rol} tono="neutro">
@@ -71,7 +71,7 @@ export function AccesoDenegadoPage(): JSX.Element {
           </Boton>
           <Link
             to={RUTAS.login}
-            className="inline-flex items-center rounded-md px-3 py-2 text-sm font-semibold text-institucional-700 hover:bg-institucional-50"
+            className="inline-flex items-center rounded-md px-3 py-2 text-sm font-medium text-muted hover:bg-stone-100 hover:text-ink"
           >
             Ir al inicio de sesión
           </Link>
@@ -86,16 +86,16 @@ export function NoEncontradoPage(): JSX.Element {
   useTituloPagina('Página no encontrada');
 
   return (
-    <div className="tarjeta mx-auto max-w-xl p-8 text-center">
-      <p className="text-4xl font-bold text-institucional-700">404</p>
-      <h1 className="mt-2 text-lg font-semibold text-slate-900">La página solicitada no existe</h1>
-      <p className="mt-1 text-sm text-slate-600">
+    <div className="mx-auto max-w-xl rounded-lg border border-stone-200 bg-white p-8 text-center">
+      <p className="num text-4xl font-semibold text-ink">404</p>
+      <h1 className="mt-2 text-lg font-semibold text-ink">La página solicitada no existe</h1>
+      <p className="mt-1 text-sm text-muted">
         Verifique la dirección o regrese al panel principal del sistema.
       </p>
-      <div className="mt-5 flex justify-center gap-2">
+      <div className="mt-5 flex justify-center">
         <Link
           to={RUTAS.inicio}
-          className="rounded-md bg-institucional-700 px-4 py-2 text-sm font-semibold text-white hover:bg-institucional-800"
+          className="rounded-md bg-ink px-4 py-2 text-sm font-medium text-white hover:bg-stone-800"
         >
           Volver al inicio
         </Link>

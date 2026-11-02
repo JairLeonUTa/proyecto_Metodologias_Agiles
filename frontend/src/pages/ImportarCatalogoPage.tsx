@@ -259,7 +259,7 @@ export function ImportarCatalogoPage(): JSX.Element {
     const url = URL.createObjectURL(blob);
     const enlace = document.createElement('a');
     enlace.href = url;
-    enlace.download = 'plantilla-catalogo-siha-ia.json';
+    enlace.download = 'plantilla-catalogo-homologa-uta.json';
     enlace.click();
     URL.revokeObjectURL(url);
   };
@@ -267,7 +267,6 @@ export function ImportarCatalogoPage(): JSX.Element {
   return (
     <div className="space-y-6">
       <EncabezadoPagina
-        contexto="Catálogo académico"
         titulo="Importar catálogo estructurado"
         descripcion="Carga masiva de planes analíticos (asignaturas y unidades temáticas) desde un archivo JSON validado localmente antes de su envío."
         acciones={
