@@ -1,0 +1,41 @@
+namespace Siha.MsC.Api.Contracts.Dtos;
+
+/// <summary>Unidad temática editable por el operador durante la confirmación.</summary>
+public record UnidadExtraccionRequest(
+    int Numero,
+    string Nombre,
+    int Horas,
+    string? Contenidos = null);
+
+/// <summary>
+/// Correcciones del operador sobre la extracción (S2-J02). Los créditos, las horas y al menos
+/// una unidad temática son obligatorios: sin ellos la evaluación no puede continuar.
+/// </summary>
+public record ConfirmarExtraccionRequest(
+    int Creditos,
+    int Horas,
+    IReadOnlyCollection<UnidadExtraccionRequest>? Unidades,
+    string? Observacion = null);
+
+public record UnidadExtraccionResponse(
+    int Numero,
+    string Nombre,
+    int Horas,
+    string Contenidos);
+
+public record ExtraccionResponse(
+    Guid Id,
+    Guid ExpedienteId,
+    Guid? DocumentoId,
+    string CodigoAsignaturaOrigen,
+    string NombreAsignaturaOrigen,
+    int? Creditos,
+    int? Horas,
+    decimal Confianza,
+    string Estado,
+    bool RequiereConfirmacion,
+    IReadOnlyCollection<UnidadExtraccionResponse> Unidades,
+    DateTimeOffset CreadoUtc,
+    DateTimeOffset? ConfirmadoUtc,
+    string? ConfirmadoPor,
+    string? Observacion);

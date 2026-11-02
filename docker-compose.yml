@@ -56,6 +56,12 @@ services:
       - "14331:1433"
     volumes:
       - siha-sqlc:/var/opt/mssql
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c '</dev/tcp/localhost/1433' || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+      start_period: 30s
     networks: [ siha ]
 
   # ==========================================================================
@@ -142,6 +148,43 @@ services:
         condition: service_healthy
     ports:
       - "5082:8080"
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c '</dev/tcp/localhost/8080' || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+      start_period: 30s
+    networks: [ siha ]
+
+  ms-c:
+    build:
+      context: .
+      dockerfile: src/Services/Siha.MsC.Api/Dockerfile
+    container_name: siha-ms-c
+    profiles: [ "sprint23" ]
+    environment:
+      ASPNETCORE_ENVIRONMENT: "Production"
+      # appsettings.json fija Urls=localhost:5084 para desarrollo local; dentro del contenedor
+      # debe escuchar en todas las interfaces para que el mapeo 5084:8080 y el healthcheck funcionen.
+      Urls: "http://+:8080"
+      ConnectionStrings__SihaDbC: "Server=sqlserver-c,1433;Database=SihaDbC;User Id=sa;Password=${SIHA_SQL_PASSWORD:?Configura SIHA_SQL_PASSWORD en .env};TrustServerCertificate=True;Encrypt=False"
+      RabbitMq__Uri: "rabbitmq://rabbitmq"
+      RabbitMq__Usuario: "siha"
+      RabbitMq__Password: "${SIHA_RABBITMQ_PASSWORD:?Configura SIHA_RABBITMQ_PASSWORD en .env}"
+      Jwt__Key: "${SIHA_JWT_KEY:?Configura SIHA_JWT_KEY en .env}"
+      Jwt__Issuer: "SIHA-IA"
+      Jwt__Audience: "SIHA-IA-Clients"
+      # Mismo volumen que ms-b: los PDF se leen del disco compartido, no por HTTP.
+      Archivos__RutaAlmacenamiento: "/app/archivos"
+    volumes:
+      - siha-archivos:/app/archivos
+    depends_on:
+      sqlserver-c:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    ports:
+      - "5084:8080"
     healthcheck:
       test: ["CMD-SHELL", "bash -c '</dev/tcp/localhost/8080' || exit 1"]
       interval: 10s
