@@ -41,6 +41,25 @@ public class ExtraccionesController : ControllerBase
         _agenteAnalizador = agenteAnalizador;
     }
 
+    /// <summary>
+    /// Bandeja de procesamiento (S2-A01, US-07): extracciones recientes con su confianza y estado.
+    /// La ruta es <c>/api/extracciones/bandeja</c> para que el Gateway la encamine con
+    /// <c>/api/extracciones/{everything}</c>.
+    /// </summary>
+    [HttpGet("bandeja")]
+    [Authorize(Roles = $"{RolesSistema.Operador},{RolesSistema.Administrador},{RolesSistema.Docente}")]
+    [ProducesResponseType(typeof(IReadOnlyCollection<ExtraccionResponse>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public async Task<ActionResult<IReadOnlyCollection<ExtraccionResponse>>> Bandeja(
+        [FromQuery] string? estado,
+        [FromQuery] Guid? expedienteId,
+        CancellationToken cancellationToken)
+    {
+        var extracciones = await _servicio.ListarAsync(estado, expedienteId, cancellationToken);
+        return Ok(extracciones.Select(ARespuesta).ToList());
+    }
+
     [HttpGet("{id:guid}")]
     [Authorize(Roles = $"{RolesSistema.Operador},{RolesSistema.Administrador},{RolesSistema.Docente}")]
     [ProducesResponseType(typeof(ExtraccionResponse), StatusCodes.Status200OK)]

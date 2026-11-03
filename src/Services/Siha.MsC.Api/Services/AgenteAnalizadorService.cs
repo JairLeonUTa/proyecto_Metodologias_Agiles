@@ -152,18 +152,22 @@ public sealed class AgenteAnalizadorService : IAgenteAnalizadorService
         }
 
         // 5) ReglaContenidoStrategy: Pcont + desglose + RN-19
-        // S2-S05: si el cliente no envía el vector de una unidad destino, se toma de la caché EMBEDDING_UNIDAD
-        // (o se genera una vez y se guarda). Sin vector no se calcula: no se inventan similitudes.
+        // S2-A08: la interfaz web envía las unidades del catálogo sin vector. Si una unidad de
+        // destino llega sin embedding, se genera aquí con Ollama a partir de sus contenidos.
         var unidadesDestino = new List<UnidadDestinoEmbedding>();
         foreach (var u in parametros.UnidadesDestino)
         {
             var vector = u.Embedding?.ToArray() ?? Array.Empty<float>();
-            if (vector.Length == 0 && _cacheEmbeddings is not null)
+            if (vector.Length == 0)
             {
-                vector = await _cacheEmbeddings.ObtenerAsync(parametros.CodigoAsignaturaDestino, u.Numero, u.Contenidos, cancellationToken)
-                    ?? throw new ArgumentException(
-                        $"No hay embedding para la unidad destino {u.Numero} ({u.Nombre}): no está en caché y Ollama no respondió.");
-                trazabilidad.Add($"Embedding destino {parametros.CodigoAsignaturaDestino} U{u.Numero} desde caché EMBEDDING_UNIDAD");
+                var texto = string.IsNullOrWhiteSpace(u.Contenidos) ? u.Nombre : u.Contenidos;
+                vector = await _ollamaEmbeddings.GenerarEmbeddingAsync(texto, cancellationToken) ?? Array.Empty<float>();
+            }
+
+            if (vector.Length == 0)
+            {
+                alertas.Add($"Unidad destino {u.Numero} ({u.Nombre}): no se pudo generar embedding.");
+                continue;
             }
 
             unidadesDestino.Add(new UnidadDestinoEmbedding(u.Numero, u.Nombre, u.Horas, u.Contenidos, vector));
