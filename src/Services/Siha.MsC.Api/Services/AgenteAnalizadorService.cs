@@ -161,7 +161,18 @@ public sealed class AgenteAnalizadorService : IAgenteAnalizadorService
             if (vector.Length == 0)
             {
                 var texto = string.IsNullOrWhiteSpace(u.Contenidos) ? u.Nombre : u.Contenidos;
-                vector = await _ollamaEmbeddings.GenerarEmbeddingAsync(texto, cancellationToken) ?? Array.Empty<float>();
+                if (_cacheEmbeddings is not null)
+                {
+                    vector = await _cacheEmbeddings.ObtenerAsync(
+                        parametros.CodigoAsignaturaDestino, u.Numero, texto, cancellationToken)
+                        ?? throw new ArgumentException(
+                            $"No hay embedding para la unidad destino {u.Numero} ({u.Nombre}): no está en caché y Ollama no respondió.");
+                    trazabilidad.Add($"Embedding destino {parametros.CodigoAsignaturaDestino} U{u.Numero} desde caché EMBEDDING_UNIDAD");
+                }
+                else
+                {
+                    vector = await _ollamaEmbeddings.GenerarEmbeddingAsync(texto, cancellationToken) ?? Array.Empty<float>();
+                }
             }
 
             if (vector.Length == 0)
