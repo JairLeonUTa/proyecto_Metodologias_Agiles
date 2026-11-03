@@ -30,6 +30,7 @@ builder.Services.AddScoped<ExtraccionService>();
 builder.Services.AddScoped<IReglaCreditosStrategy, ReglaCreditosStrategy>();
 builder.Services.AddScoped<IReglaContenidoStrategy, ReglaContenidoStrategy>();
 builder.Services.AddScoped<IPrecedenteService, PrecedenteService>();
+builder.Services.AddScoped<IAgenteAnalizadorService, AgenteAnalizadorService>();
 
 // --- Cliente gRPC hacia Microservicio A (ReglasGrpc) ---
 builder.Services.Configure<ReglasGrpcOptions>(builder.Configuration.GetSection(ReglasGrpcOptions.SectionName));
@@ -149,7 +150,8 @@ app.MapGet("/health", () => Results.Ok(new
         "PUT /api/extracciones/{id}/confirmar",
         "POST /api/extracciones/calcular-creditos",
         "POST /api/extracciones/calcular-contenido",
-        "POST /api/extracciones/precedentes/buscar"
+        "POST /api/extracciones/precedentes/buscar",
+        "POST /api/extracciones/{id}/analizar"
     },
     utc = DateTimeOffset.UtcNow
 }));

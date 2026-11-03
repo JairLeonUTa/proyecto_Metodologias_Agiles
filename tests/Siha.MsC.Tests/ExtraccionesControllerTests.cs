@@ -3,11 +3,17 @@ using FluentAssertions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Options;
+using Moq;
+using Siha.MsA.Api.Grpc;
 using Siha.MsC.Api.Contracts.Dtos;
 using Siha.MsC.Api.Controllers;
 using Siha.MsC.Api.Data;
 using Siha.MsC.Api.Domain;
 using Siha.MsC.Api.Domain.Entities;
+using Siha.MsC.Api.Grpc;
+using Siha.MsC.Api.Options;
 using Siha.MsC.Api.Services;
 
 namespace Siha.MsC.Tests;
@@ -186,8 +192,21 @@ public class ExtraccionesControllerTests
         var reglaCreditos = new ReglaCreditosStrategy();
         var reglaContenido = new ReglaContenidoStrategy();
         var precedenteService = new PrecedenteService(db ?? CrearDb());
+        
+        var mockAgenteAnalizador = new Mock<IAgenteAnalizadorService>();
+        mockAgenteAnalizador
+            .Setup(x => x.AnalizarAsync(It.IsAny<Guid>(), It.IsAny<ParametrosAnalisisCompleto>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new ResultadoAnalisisCompleto(
+                new ExtraccionResponse(Guid.NewGuid(), Guid.NewGuid(), null, "SW101", "Test", 3, 48, 0.8m, "CONFIRMADA", false,
+                    Array.Empty<UnidadExtraccionResponse>(), DateTimeOffset.UtcNow, DateTimeOffset.UtcNow, "test", null),
+                new EvaluacionCreditosResponse(100, "NORMAL", Array.Empty<string>(), false, "OK"),
+                new EvaluacionContenidoResponse(85.71m, Array.Empty<UnidadCoberturaResponse>(), Array.Empty<UnidadCoberturaResponse>(), 75, "OK", false, Array.Empty<int>()),
+                Array.Empty<PrecedenteResponse>(),
+                EstadoEvaluacionFinal.ListaParaDictamen,
+                Array.Empty<string>(),
+                "Test"));
 
-        return new ExtraccionesController(servicio, reglaCreditos, reglaContenido, precedenteService)
+        return new ExtraccionesController(servicio, reglaCreditos, reglaContenido, precedenteService, mockAgenteAnalizador.Object)
         {
             ControllerContext = new ControllerContext
             {

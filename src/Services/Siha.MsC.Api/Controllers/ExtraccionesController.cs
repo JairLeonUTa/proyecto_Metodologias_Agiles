@@ -15,6 +15,7 @@ namespace Siha.MsC.Api.Controllers;
 /// También expone el cálculo de proporción de créditos y controles normativos (US-09, S2-J04).
 /// Y la evaluación de similitud semántica de contenidos (US-10, S2-J05/J06).
 /// Y la búsqueda de precedentes homologatorios (US-11, S2-J08).
+/// Y el análisis completo orquestado (US-11, S2-J09).
 /// </summary>
 [ApiController]
 [Route("api/extracciones")]
@@ -24,17 +25,20 @@ public class ExtraccionesController : ControllerBase
     private readonly IReglaCreditosStrategy _reglaCreditos;
     private readonly IReglaContenidoStrategy _reglaContenido;
     private readonly IPrecedenteService _precedenteService;
+    private readonly IAgenteAnalizadorService _agenteAnalizador;
 
     public ExtraccionesController(
         ExtraccionService servicio,
         IReglaCreditosStrategy reglaCreditos,
         IReglaContenidoStrategy reglaContenido,
-        IPrecedenteService precedenteService)
+        IPrecedenteService precedenteService,
+        IAgenteAnalizadorService agenteAnalizador)
     {
         _servicio = servicio;
         _reglaCreditos = reglaCreditos;
         _reglaContenido = reglaContenido;
         _precedenteService = precedenteService;
+        _agenteAnalizador = agenteAnalizador;
     }
 
     [HttpGet("{id:guid}")]
@@ -246,6 +250,52 @@ public class ExtraccionesController : ControllerBase
         {
             var resultados = await _precedenteService.BuscarAsync(request, cancellationToken);
             return Ok(resultados);
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new { mensaje = "Parámetros inválidos.", error = ex.Message });
+        }
+    }
+
+    /// <summary>
+    /// Ejecuta el análisis completo orquestado (US-11, S2-J09).
+    /// <para>Secuencia: 1) Extracción confirmada → 2) gRPC reglas (θ, δ, τ) → 3) ReglaCreditosStrategy (Pcred + RN-03/15/16) → 4) ReglaContenidoStrategy (Pcont + RN-19) → 5) Búsqueda precedentes.</para>
+    /// <para>Devuelve resultado consolidado con estado final para el docente.</para>
+    /// </summary>
+    [HttpPost("{id:guid}/analizar")]
+    [Authorize(Roles = $"{RolesSistema.Operador},{RolesSistema.Administrador},{RolesSistema.Docente}")]
+    [ProducesResponseType(typeof(AnalisisCompletoResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<AnalisisCompletoResponse>> AnalizarCompleto(
+        Guid id,
+        [FromBody] AnalizarExtraccionRequest request,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            var parametros = new ParametrosAnalisisCompleto(
+                AnosTranscurridos: request.AnosTranscurridos,
+                NumeroMatriculaDestino: request.NumeroMatriculaDestino,
+                EsCreditoExterno: request.EsCreditoExterno,
+                RutaNormativa: request.RutaNormativa,
+                CodigoAsignaturaDestino: request.CodigoAsignaturaDestino,
+                InstitucionOrigen: request.InstitucionOrigen,
+                CreditosDestino: request.CreditosDestino,
+                UnidadesDestino: request.UnidadesDestino,
+                ValidarRN19: request.ValidarRN19);
+
+            var resultado = await _agenteAnalizador.AnalizarAsync(id, parametros, cancellationToken);
+            return Ok(new AnalisisCompletoResponse(
+                resultado.Extraccion,
+                resultado.Creditos,
+                resultado.Contenido,
+                resultado.Precedentes,
+                resultado.EstadoFinal,
+                resultado.AlertasGlobales,
+                resultado.DetalleTrazabilidad));
         }
         catch (ArgumentException ex)
         {
