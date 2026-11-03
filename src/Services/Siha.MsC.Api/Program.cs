@@ -27,10 +27,9 @@ builder.Services.Configure<AlmacenOptions>(builder.Configuration.GetSection(Alma
 builder.Services.AddSingleton<IAlmacenDocumentos, AlmacenDocumentos>();
 builder.Services.AddScoped<ProcesarSolicitudCreadaService>();
 builder.Services.AddScoped<ExtraccionService>();
-builder.Services.AddScoped<IReglaCreditosStrategy, ReglaCreditosStrategy>();
-builder.Services.AddScoped<IReglaContenidoStrategy, ReglaContenidoStrategy>();
-builder.Services.AddScoped<IPrecedenteService, PrecedenteService>();
-builder.Services.AddScoped<IAgenteAnalizadorService, AgenteAnalizadorService>();
+
+// --- Estrategias consolidadas (Strategy Registry S2-J10) ---
+builder.Services.AddStrategies();
 
 // --- Cliente gRPC hacia Microservicio A (ReglasGrpc) ---
 builder.Services.Configure<ReglasGrpcOptions>(builder.Configuration.GetSection(ReglasGrpcOptions.SectionName));
