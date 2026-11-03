@@ -31,6 +31,7 @@ public sealed class AgenteAnalizadorService : IAgenteAnalizadorService
     private readonly IPrecedenteService _precedenteService;
     private readonly IOllamaEmbeddingService _ollamaEmbeddings;
     private readonly ILogger<AgenteAnalizadorService> _logger;
+    private readonly IEmbeddingCacheService? _cacheEmbeddings;
 
     public AgenteAnalizadorService(
         SihaDbContextC db,
@@ -40,7 +41,8 @@ public sealed class AgenteAnalizadorService : IAgenteAnalizadorService
         IReglaContenidoStrategy reglaContenido,
         IPrecedenteService precedenteService,
         IOllamaEmbeddingService ollamaEmbeddings,
-        ILogger<AgenteAnalizadorService> logger)
+        ILogger<AgenteAnalizadorService> logger,
+        IEmbeddingCacheService? cacheEmbeddings = null)
     {
         _db = db;
         _extraccionService = extraccionService;
@@ -50,6 +52,7 @@ public sealed class AgenteAnalizadorService : IAgenteAnalizadorService
         _precedenteService = precedenteService;
         _ollamaEmbeddings = ollamaEmbeddings;
         _logger = logger;
+        _cacheEmbeddings = cacheEmbeddings;
     }
 
     public async Task<ResultadoAnalisisCompleto> AnalizarAsync(
@@ -149,9 +152,22 @@ public sealed class AgenteAnalizadorService : IAgenteAnalizadorService
         }
 
         // 5) ReglaContenidoStrategy: Pcont + desglose + RN-19
-        var unidadesDestino = parametros.UnidadesDestino
-            .Select(u => new UnidadDestinoEmbedding(u.Numero, u.Nombre, u.Horas, u.Contenidos, u.Embedding.ToArray()))
-            .ToList();
+        // S2-S05: si el cliente no envía el vector de una unidad destino, se toma de la caché EMBEDDING_UNIDAD
+        // (o se genera una vez y se guarda). Sin vector no se calcula: no se inventan similitudes.
+        var unidadesDestino = new List<UnidadDestinoEmbedding>();
+        foreach (var u in parametros.UnidadesDestino)
+        {
+            var vector = u.Embedding?.ToArray() ?? Array.Empty<float>();
+            if (vector.Length == 0 && _cacheEmbeddings is not null)
+            {
+                vector = await _cacheEmbeddings.ObtenerAsync(parametros.CodigoAsignaturaDestino, u.Numero, u.Contenidos, cancellationToken)
+                    ?? throw new ArgumentException(
+                        $"No hay embedding para la unidad destino {u.Numero} ({u.Nombre}): no está en caché y Ollama no respondió.");
+                trazabilidad.Add($"Embedding destino {parametros.CodigoAsignaturaDestino} U{u.Numero} desde caché EMBEDDING_UNIDAD");
+            }
+
+            unidadesDestino.Add(new UnidadDestinoEmbedding(u.Numero, u.Nombre, u.Horas, u.Contenidos, vector));
+        }
 
         var parametrosContenido = new ParametrosContenido(
             UnidadesOrigen: unidadesOrigenConEmbedding,
