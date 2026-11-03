@@ -32,6 +32,9 @@ builder.Services.AddScoped<IReglaCreditosStrategy, ReglaCreditosStrategy>();
 // --- Cliente gRPC hacia Microservicio A (ReglasGrpc) ---
 builder.Services.Configure<ReglasGrpcOptions>(builder.Configuration.GetSection(ReglasGrpcOptions.SectionName));
 
+// --- Agente IA local (Ollama, S2-S01): solo configuración; lo consumen las estrategias de US-10 ---
+builder.Services.Configure<OllamaOptions>(builder.Configuration.GetSection(OllamaOptions.SectionName));
+
 builder.Services.AddGrpcClient<ReglasGrpc.ReglasGrpcClient>((sp, options) =>
 {
     var cfg = sp.GetRequiredService<IOptions<ReglasGrpcOptions>>().Value;
@@ -107,7 +110,9 @@ builder.Services.AddMassTransit(x =>
             TimeSpan.FromSeconds(30),
             TimeSpan.FromSeconds(2)));
 
-        cfg.ReceiveEndpoint("solicitud-creada-ms-c", endpoint =>
+        // Nombre configurable para aislar las pruebas de integración; en Docker queda el valor por defecto.
+        var cola = builder.Configuration["RabbitMq:ColaSolicitudCreada"] ?? "solicitud-creada-ms-c";
+        cfg.ReceiveEndpoint(cola, endpoint =>
         {
             endpoint.ConfigureConsumer<SolicitudCreadaConsumer>(context);
         });
