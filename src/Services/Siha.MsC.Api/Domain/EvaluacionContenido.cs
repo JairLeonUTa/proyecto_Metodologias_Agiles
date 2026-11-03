@@ -1,6 +1,6 @@
 namespace Siha.MsC.Api.Domain;
 
-/// <summary>Resultado de la evaluación de similitud semántica de contenidos (US-10, S2-J06).</summary>
+/// <summary>Resultado de la evaluación de similitud semántica de contenidos (US-10, S2-J06/J07).</summary>
 public sealed record EvaluacionContenido(
     /// <summary>Porcentaje de cobertura temática ponderado por horas: Pcont = Σ(h_j * covered_j) / Σ(h_j) * 100.</summary>
     decimal Pcont,
@@ -15,7 +15,13 @@ public sealed record EvaluacionContenido(
     double TauUsado,
 
     /// <summary>Detalle de trazabilidad del cálculo.</summary>
-    string DetalleCalculo
+    string DetalleCalculo,
+
+    /// <summary>Validación RN-19: true si alguna unidad de origen se usa en más de una destino cubierto.</summary>
+    bool ViolacionRN19,
+
+    /// <summary>Unidades de origen que violan RN-19 (aparecen en múltiples destinos cubiertos).</summary>
+    IReadOnlyCollection<int> UnidadesOrigenDuplicadas
 );
 
 /// <summary>Cobertura de una unidad de destino por las unidades de origen.</summary>
@@ -43,7 +49,10 @@ public sealed record ParametrosContenido(
     double Tau,
 
     /// <summary>Ruta normativa para trazabilidad.</summary>
-    string RutaNormativa
+    string RutaNormativa,
+
+    /// <summary>Si true, valida RN-19 (no reutilizar origen en múltiples destinos). Default true.</summary>
+    bool ValidarRN19 = true
 );
 
 /// <summary>Unidad de origen con su embedding vectorial.</summary>

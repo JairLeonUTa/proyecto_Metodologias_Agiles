@@ -150,11 +150,11 @@ public class ExtraccionesController : ControllerBase
     }
 
     /// <summary>
-    /// Calcula la cobertura semántica de contenidos (Pcont) mediante similitud coseno de embeddings (US-10, S2-J06).
+    /// Calcula la cobertura semántica de contenidos (Pcont) mediante similitud coseno de embeddings (US-10, S2-J06/J07).
     /// <para>sj = max_u cos(t_j, u); cubierta si sj ≥ τ (ej. 75%).</para>
     /// <para>Pcont = Σ(h_j * covered_j) / Σ(h_j) * 100  — ponderado por horas.</para>
     /// <para>N:1: varias unidades origen → una destino (se toma max similitud).</para>
-    /// <para>RN-19: no reutilizar materia origen en dos destinos (se valida en orquestador).</para>
+    /// <para>RN-19: no reutilizar materia origen en dos destinos del mismo expediente.</para>
     /// </summary>
     [HttpPost("calcular-contenido")]
     [Authorize(Roles = $"{RolesSistema.Operador},{RolesSistema.Administrador},{RolesSistema.Docente}")]
@@ -181,7 +181,8 @@ public class ExtraccionesController : ControllerBase
                 UnidadesOrigen: unidadesOrigen,
                 UnidadesDestino: unidadesDestino,
                 Tau: request.Tau,
-                RutaNormativa: request.RutaNormativa);
+                RutaNormativa: request.RutaNormativa,
+                ValidarRN19: request.ValidarRN19);
 
             var resultado = _reglaContenido.Calcular(parametros);
 
@@ -192,7 +193,9 @@ public class ExtraccionesController : ControllerBase
                 resultado.UnidadesFaltantes.Select(u => new UnidadCoberturaResponse(
                     u.Numero, u.Nombre, u.Horas, u.SimilitudMaxima, u.Cubierta, u.UnidadesOrigenContribuyentes)).ToList(),
                 resultado.TauUsado,
-                resultado.DetalleCalculo));
+                resultado.DetalleCalculo,
+                resultado.ViolacionRN19,
+                resultado.UnidadesOrigenDuplicadas));
         }
         catch (ArgumentException ex)
         {

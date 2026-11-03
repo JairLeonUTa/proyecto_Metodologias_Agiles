@@ -20,8 +20,9 @@ public class ReglaContenidoStrategyTests
         IReadOnlyCollection<UnidadOrigenEmbedding> origen,
         IReadOnlyCollection<UnidadDestinoEmbedding> destino,
         double tau = 75,
-        string ruta = "CAU-P-011")
-        => new(origen, destino, tau, ruta);
+        string ruta = "CAU-P-011",
+        bool validarRN19 = true)
+        => new(origen, destino, tau, ruta, validarRN19);
 
     [Fact]
     public void Calcular_6_de_7_unidades_misma_duracion_da_85_71_porciento()
@@ -58,6 +59,8 @@ public class ReglaContenidoStrategyTests
         r.UnidadesFaltantes.Should().HaveCount(1);
         r.UnidadesFaltantes.Single().Numero.Should().Be(7);
         r.TauUsado.Should().Be(75);
+        r.ViolacionRN19.Should().BeFalse();
+        r.UnidadesOrigenDuplicadas.Should().BeEmpty();
     }
 
     [Fact]
@@ -197,5 +200,121 @@ public class ReglaContenidoStrategyTests
         r.DetalleCalculo.Should().Contain("Pcont");
         r.DetalleCalculo.Should().Contain("τ=75%");
         r.DetalleCalculo.Should().Contain("CAU-P-011");
+    }
+
+    // --- RN-19 tests (S2-J07) ---
+
+    [Fact]
+    public void Calcular_RN19_unidad_origen_en_dos_destinos_cubiertos_viola_regla()
+    {
+        // U1 cubre D1 y D2 (ambos idénticos a U1) -> RN-19 violado
+        var origen = new[] { Origen(1, "U1", 1, Vector(1, 0, 0)) };
+        var destino = new[]
+        {
+            Destino(1, "D1", 1, Vector(1, 0, 0)), // idéntica
+            Destino(2, "D2", 1, Vector(1, 0, 0)), // idéntica -> U1 usada dos veces
+        };
+
+        var r = _strategy.Calcular(CrearParametros(origen, destino));
+
+        r.ViolacionRN19.Should().BeTrue();
+        r.UnidadesOrigenDuplicadas.Should().ContainSingle(x => x == 1);
+        r.DetalleCalculo.Should().Contain("RN-19 VIOLADO");
+    }
+
+    [Fact]
+    public void Calcular_RN19_unidad_origen_en_tres_destinos_cubiertos_viola_regla()
+    {
+        var origen = new[] { Origen(1, "U1", 1, Vector(1, 0, 0)) };
+        var destino = new[]
+        {
+            Destino(1, "D1", 1, Vector(1, 0, 0)),
+            Destino(2, "D2", 1, Vector(1, 0, 0)),
+            Destino(3, "D3", 1, Vector(1, 0, 0)),
+        };
+
+        var r = _strategy.Calcular(CrearParametros(origen, destino));
+
+        r.ViolacionRN19.Should().BeTrue();
+        r.UnidadesOrigenDuplicadas.Should().ContainSingle(x => x == 1);
+    }
+
+    [Fact]
+    public void Calcular_RN19_unidad_origen_en_destino_cubierto_y_otro_no_cubierto_no_viola()
+    {
+        // U1 cubre D1 (idéntica), D2 no cubierta (similitud 0) -> OK
+        var origen = new[] { Origen(1, "U1", 1, Vector(1, 0, 0)) };
+        var destino = new[]
+        {
+            Destino(1, "D1", 1, Vector(1, 0, 0)), // cubierta
+            Destino(2, "D2", 1, Vector(0, 1, 0)), // NO cubierta (ortogonal)
+        };
+
+        var r = _strategy.Calcular(CrearParametros(origen, destino));
+
+        r.ViolacionRN19.Should().BeFalse();
+        r.UnidadesOrigenDuplicadas.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void Calcular_RN19_dos_unidades_origen_cada_una_en_un_destino_OK()
+    {
+        var origen = new[]
+        {
+            Origen(1, "U1", 1, Vector(1, 0, 0)),
+            Origen(2, "U2", 1, Vector(0, 1, 0)),
+        };
+        var destino = new[]
+        {
+            Destino(1, "D1", 1, Vector(1, 0, 0)), // U1
+            Destino(2, "D2", 1, Vector(0, 1, 0)), // U2
+        };
+
+        var r = _strategy.Calcular(CrearParametros(origen, destino));
+
+        r.ViolacionRN19.Should().BeFalse();
+        r.UnidadesOrigenDuplicadas.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void Calcular_RN19_deshabilitado_no_reporta_violacion()
+    {
+        var origen = new[] { Origen(1, "U1", 1, Vector(1, 0, 0)) };
+        var destino = new[]
+        {
+            Destino(1, "D1", 1, Vector(1, 0, 0)),
+            Destino(2, "D2", 1, Vector(1, 0, 0)),
+        };
+
+        var r = _strategy.Calcular(CrearParametros(origen, destino, validarRN19: false));
+
+        r.ViolacionRN19.Should().BeFalse("ValidarRN19=false desactiva la comprobación");
+        r.UnidadesOrigenDuplicadas.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void Calcular_N_a_1_con_RN19_OK_si_origenes_distintos_para_distintos_destinos()
+    {
+        // Fisica I (U1) -> Fisica General (D1)
+        // Fisica II (U2) -> Fisica General (D1)  -- N:1 mismo destino, OK
+        // Quimica (U3) -> Quimica General (D2)   -- origen distinto, OK
+        var origen = new[]
+        {
+            Origen(1, "Fisica I", 1, Vector(1, 0, 0)),
+            Origen(2, "Fisica II", 1, Vector(0.8f, 0.6f, 0)),
+            Origen(3, "Quimica", 1, Vector(0, 0, 1)),
+        };
+        var destino = new[]
+        {
+            Destino(1, "Fisica General", 1, Vector(1, 0, 0)), // mejor match U1
+            Destino(2, "Quimica General", 1, Vector(0, 0, 1)), // match U3
+        };
+
+        var r = _strategy.Calcular(CrearParametros(origen, destino));
+
+        r.ViolacionRN19.Should().BeFalse();
+        r.UnidadesCubiertas.Should().HaveCount(2);
+        // D1 tiene contribuyentes U1 (y U2 por empate técnico cercano)
+        r.UnidadesCubiertas.Single(c => c.Numero == 1).UnidadesOrigenContribuyentes.Should().Contain(1);
     }
 }

@@ -73,12 +73,13 @@ public record UnidadDestinoEmbeddingRequest(
     string Contenidos,
     IReadOnlyCollection<float> Embedding);
 
-/// <summary>Parámetros para calcular la cobertura semántica Pcont (US-10, S2-J06).</summary>
+/// <summary>Parámetros para calcular la cobertura semántica Pcont (US-10, S2-J06/J07).</summary>
 public record CalcularContenidoRequest(
     IReadOnlyCollection<UnidadOrigenEmbeddingRequest> UnidadesOrigen,
     IReadOnlyCollection<UnidadDestinoEmbeddingRequest> UnidadesDestino,
     double Tau,
-    string RutaNormativa);
+    string RutaNormativa,
+    bool ValidarRN19 = true);
 
 /// <summary>Cobertura de una unidad de destino.</summary>
 public record UnidadCoberturaResponse(
@@ -89,10 +90,12 @@ public record UnidadCoberturaResponse(
     bool Cubierta,
     IReadOnlyCollection<int> UnidadesOrigenContribuyentes);
 
-/// <summary>Resultado del cálculo de Pcont y desglose por unidad.</summary>
+/// <summary>Resultado del cálculo de Pcont y desglose por unidad (US-10, S2-J06/J07).</summary>
 public record EvaluacionContenidoResponse(
     decimal Pcont,
     IReadOnlyCollection<UnidadCoberturaResponse> UnidadesCubiertas,
     IReadOnlyCollection<UnidadCoberturaResponse> UnidadesFaltantes,
     double TauUsado,
-    string DetalleCalculo);
+    string DetalleCalculo,
+    bool ViolacionRN19,
+    IReadOnlyCollection<int> UnidadesOrigenDuplicadas);

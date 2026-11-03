@@ -1,17 +1,18 @@
+using System.Collections.Generic;
 using System.Linq;
 using Siha.MsC.Api.Domain;
 
 namespace Siha.MsC.Api.Services;
 
 /// <summary>
-/// Implementación de la regla de similitud semántica de contenidos (US-10, S2-J06).
+/// Implementación de la regla de similitud semántica de contenidos (US-10, S2-J06/J07).
 ///
 /// Algoritmo:
 ///   sj = max_u cos(t_j, u)   — mejor similitud coseno entre unidad destino j y cualquier unidad origen u
 ///   cubierta si sj ≥ τ (tau, ej. 75%)
 ///   Pcont = Σ(h_j * covered_j) / Σ(h_j) * 100  — ponderado por horas
 ///
-/// RN-19: no reutilizar materia origen en dos destinos del mismo expediente (se controla en orquestador).
+/// RN-19: no reutilizar materia origen en dos destinos del mismo expediente.
 /// N:1: varias unidades origen → una destino (unión matemática: se toma el max de similitud).
 /// </summary>
 public sealed class ReglaContenidoStrategy : IReglaContenidoStrategy
@@ -26,6 +27,9 @@ public sealed class ReglaContenidoStrategy : IReglaContenidoStrategy
         var faltantes = new List<UnidadCobertura>();
         double sumaHorasPesoCubiertas = 0;
         double sumaHorasTotales = 0;
+
+        // Para RN-19: rastrear qué unidades origen se usan en destinos cubiertos
+        var usoOrigenEnCubiertas = new Dictionary<int, List<int>>(); // origenNumero -> lista de destinoNumero
 
         foreach (var destino in p.UnidadesDestino.OrderBy(u => u.Numero))
         {
@@ -66,6 +70,14 @@ public sealed class ReglaContenidoStrategy : IReglaContenidoStrategy
             {
                 cubiertas.Add(unidad);
                 sumaHorasPesoCubiertas += destino.Horas;
+
+                // RN-19: registrar uso de unidades origen en destinos cubiertos
+                foreach (var origenNum in contribuyentes)
+                {
+                    if (!usoOrigenEnCubiertas.ContainsKey(origenNum))
+                        usoOrigenEnCubiertas[origenNum] = new List<int>();
+                    usoOrigenEnCubiertas[origenNum].Add(destino.Numero);
+                }
             }
             else
             {
@@ -73,20 +85,34 @@ public sealed class ReglaContenidoStrategy : IReglaContenidoStrategy
             }
         }
 
+        // RN-19: detectar unidades origen usadas en más de un destino cubierto
+        var unidadesDuplicadas = p.ValidarRN19
+            ? usoOrigenEnCubiertas
+                .Where(kvp => kvp.Value.Count > 1)
+                .Select(kvp => kvp.Key)
+                .OrderBy(x => x)
+                .ToList()
+            : new List<int>();
+
+        var violacionRN19 = p.ValidarRN19 && unidadesDuplicadas.Count > 0;
+
         var pcont = sumaHorasTotales > 0
             ? (decimal)Math.Round(sumaHorasPesoCubiertas / sumaHorasTotales * 100, 2)
             : 0m;
 
         var detalle = $"Pcont = Σ(h_j * covered_j) / Σ(h_j) * 100 = {sumaHorasPesoCubiertas:F0} / {sumaHorasTotales:F0} * 100 = {pcont}%; " +
                       $"τ={p.Tau}%; UnidadesDestino={p.UnidadesDestino.Count}; UnidadesOrigen={p.UnidadesOrigen.Count}; " +
-                      $"Ruta={p.RutaNormativa}";
+                      $"Ruta={p.RutaNormativa}" +
+                      (violacionRN19 ? $"; RN-19 VIOLADO: origenes duplicados={string.Join(",", unidadesDuplicadas)}" : "; RN-19 OK");
 
         return new EvaluacionContenido(
             Pcont: (decimal)pcont,
             UnidadesCubiertas: cubiertas.AsReadOnly(),
             UnidadesFaltantes: faltantes.AsReadOnly(),
             TauUsado: p.Tau,
-            DetalleCalculo: detalle
+            DetalleCalculo: detalle,
+            ViolacionRN19: violacionRN19,
+            UnidadesOrigenDuplicadas: unidadesDuplicadas.AsReadOnly()
         );
     }
 
