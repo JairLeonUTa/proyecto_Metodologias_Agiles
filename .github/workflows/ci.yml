@@ -4,8 +4,9 @@ name: CI
 #
 # Se separan explícitamente tres niveles de prueba para que la evidencia no mezcle simulaciones
 # con infraestructura real:
-#   1. unitarias      -> Siha.MsA.Tests y Siha.MsB.Tests (EF Core InMemory, mocks, inspección de configuración).
-#   2. integracion    -> Siha.Integracion.Tests con SQL Server 2022 y RabbitMQ 3.13 REALES (Testcontainers).
+#   1. unitarias      -> Siha.MsA.Tests, Siha.MsB.Tests y Siha.MsC.Tests (EF Core InMemory, mocks, inspección de configuración).
+#   2. integracion    -> Siha.Integracion.Tests con SQL Server 2022 y RabbitMQ 3.13 REALES (Testcontainers),
+#                        incluido el flujo B -> RabbitMQ -> C y el cliente gRPC de C contra A (Sprint 2).
 #   3. e2e-compose    -> docker compose desde cero (SQL A/B, RabbitMQ, ms-a, ms-b, gateway, frontend)
 #                        con caída/recuperación del bus; publica la evidencia como artefacto.
 on:
@@ -49,6 +50,10 @@ jobs:
 
       - name: Pruebas unitarias MsB (simuladas)
         run: dotnet test tests/Siha.MsB.Tests/Siha.MsB.Tests.csproj --no-build -c Release --logger "trx;LogFileName=unitarias-msb.trx" --results-directory ./TestResults
+
+      # Sprint 2 (S2-S10): Microservicio C (consumidor idempotente, extracciones, Pcred y cliente gRPC).
+      - name: Pruebas unitarias MsC (simuladas)
+        run: dotnet test tests/Siha.MsC.Tests/Siha.MsC.Tests.csproj --no-build -c Release --logger "trx;LogFileName=unitarias-msc.trx" --results-directory ./TestResults
 
       - name: Publicar resultados
         if: always()

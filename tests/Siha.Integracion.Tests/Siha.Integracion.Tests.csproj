@@ -47,6 +47,8 @@
     <ProjectReference Include="..\..\src\Services\Siha.MsB.Api\Siha.MsB.Api.csproj" />
     <!-- Alias: Siha.MsA.Api también define 'Program'. Se usa su DbContext y su host completo (MsAReal) para las pruebas gRPC. -->
     <ProjectReference Include="..\..\src\Services\Siha.MsA.Api\Siha.MsA.Api.csproj" Aliases="msa" />
+    <!-- Alias: Siha.MsC.Api también define 'Program' y genera su propio cliente gRPC desde reglas.proto (Sprint 2). -->
+    <ProjectReference Include="..\..\src\Services\Siha.MsC.Api\Siha.MsC.Api.csproj" Aliases="msc" />
   </ItemGroup>
 
 </Project>

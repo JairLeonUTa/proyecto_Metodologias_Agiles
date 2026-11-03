@@ -98,6 +98,7 @@ public class GatewayOcelotConfiguracionTests
         servicios.Should().OnlyContain(s => s.StartsWith("localhost:"));
         servicios.Should().Contain("localhost:5081", "el Microservicio A escucha en 5081 en local");
         servicios.Should().Contain("localhost:5082", "el Microservicio B escucha en 5082 en local");
+        servicios.Should().Contain("localhost:5084", "el Microservicio C escucha en 5084 en local");
     }
 
     [Fact]
@@ -162,13 +163,14 @@ public class GatewayOcelotConfiguracionTests
             .Distinct()
             .ToList();
 
-        // Los dos únicos hosts de producción son los servicios definidos en docker-compose.
-        hosts.Should().BeEquivalentTo(new[] { "ms-a", "ms-b" });
+        // Los hosts de producción son los servicios definidos en docker-compose.
+        hosts.Should().BeEquivalentTo(new[] { "ms-a", "ms-b", "ms-c" });
 
         var dockerfiles = new Dictionary<string, string>
         {
             ["ms-a"] = Path.Combine("src", "Services", "Siha.MsA.Api", "Dockerfile"),
-            ["ms-b"] = Path.Combine("src", "Services", "Siha.MsB.Api", "Dockerfile")
+            ["ms-b"] = Path.Combine("src", "Services", "Siha.MsB.Api", "Dockerfile"),
+            ["ms-c"] = Path.Combine("src", "Services", "Siha.MsC.Api", "Dockerfile")
         };
 
         foreach (var host in hosts)
@@ -198,6 +200,23 @@ public class GatewayOcelotConfiguracionTests
         documentos.Should().NotBeNull();
         documentos!.UpstreamHttpMethod.Should().Contain("POST");
         documentos.DownstreamPathTemplate.Should().Be("/api/expedientes/{everything}");
+    }
+
+    [Fact]
+    public void La_configuracion_de_extracciones_permite_post_para_calcular_creditos()
+    {
+        foreach (var archivo in new[] { RutaProduccion, RutaDesarrollo })
+        {
+            var configuracion = Cargar(archivo);
+
+            var extracciones = configuracion.Routes.FirstOrDefault(r =>
+                r.UpstreamPathTemplate == "/api/extracciones/{everything}");
+
+            extracciones.Should().NotBeNull($"falta ruta /api/extracciones en {archivo}");
+            extracciones!.UpstreamHttpMethod.Should().Contain("POST", "el endpoint calcular-creditos requiere POST en {archivo}");
+            extracciones.UpstreamHttpMethod.Should().Contain("GET", "consulta de extracción requiere GET en {archivo}");
+            extracciones.UpstreamHttpMethod.Should().Contain("PUT", "confirmación de extracción requiere PUT en {archivo}");
+        }
     }
 
     [Theory]
