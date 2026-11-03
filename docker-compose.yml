@@ -64,6 +64,39 @@ services:
       start_period: 30s
     networks: [ siha ]
 
+  # Agente IA local del Microservicio C (S2-S01). Descarga al primer arranque el modelo de lenguaje
+  # (análisis y OCR asistido) y el de embeddings (similitud de contenidos, US-10). Los modelos quedan
+  # en el volumen siha-ollama, así que las siguientes veces arranca sin descargar nada.
+  #   docker compose --profile sprint23 up -d
+  ollama:
+    image: ollama/ollama:0.3.14
+    container_name: siha-ollama
+    profiles: [ "sprint23" ]
+    entrypoint: [ "/bin/sh", "-c" ]
+    command:
+      - |
+        rm -f /tmp/modelos-listos
+        ollama serve &
+        until ollama list >/dev/null 2>&1; do sleep 1; done
+        ollama pull "$${SIHA_OLLAMA_MODELO}" && ollama pull "$${SIHA_OLLAMA_MODELO_EMBEDDINGS}" && touch /tmp/modelos-listos
+        wait
+    environment:
+      SIHA_OLLAMA_MODELO: "${SIHA_OLLAMA_MODELO:-llama3.2:3b}"
+      SIHA_OLLAMA_MODELO_EMBEDDINGS: "${SIHA_OLLAMA_MODELO_EMBEDDINGS:-nomic-embed-text}"
+      OLLAMA_KEEP_ALIVE: "10m"
+    volumes:
+      - siha-ollama:/root/.ollama
+    ports:
+      - "11434:11434"
+    healthcheck:
+      # Sano solo cuando los dos modelos terminaron de descargarse.
+      test: [ "CMD-SHELL", "test -f /tmp/modelos-listos" ]
+      interval: 15s
+      timeout: 5s
+      retries: 80
+      start_period: 60s
+    networks: [ siha ]
+
   # ==========================================================================
   # Bus de eventos (US-06)
   # ==========================================================================
@@ -176,9 +209,19 @@ services:
       Jwt__Audience: "SIHA-IA-Clients"
       # Mismo volumen que ms-b: los PDF se leen del disco compartido, no por HTTP.
       Archivos__RutaAlmacenamiento: "/app/archivos"
+      ReglasGrpc__Url: "http://ms-a:8081"
+      # Agente IA local (S2-S01): mismo modelo que descarga el servicio ollama.
+      Ollama__Url: "http://ollama:11434"
+      Ollama__Modelo: "${SIHA_OLLAMA_MODELO:-llama3.2:3b}"
+      Ollama__ModeloEmbeddings: "${SIHA_OLLAMA_MODELO_EMBEDDINGS:-nomic-embed-text}"
+      Ollama__TimeoutSegundos: "120"
     volumes:
       - siha-archivos:/app/archivos
     depends_on:
+      # service_started: el consumidor y la confirmación de extracciones no esperan la descarga
+      # de los modelos; el análisis con IA comprueba que Ollama esté listo antes de usarlo.
+      ollama:
+        condition: service_started
       sqlserver-c:
         condition: service_healthy
       rabbitmq:
@@ -238,6 +281,7 @@ volumes:
   siha-sqlc:
   siha-rabbit:
   siha-archivos:
+  siha-ollama:
 
 networks:
   siha:
