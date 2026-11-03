@@ -3,6 +3,7 @@ extern alias msc;
 using MassTransit;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.AspNetCore.TestHost;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.DependencyInjection;
 using Siha.Contracts.Events;
@@ -17,11 +18,15 @@ namespace Siha.Integracion.Tests.Soporte;
 public sealed class MsCReal : WebApplicationFactory<msc::Program>
 {
     private readonly InfraestructuraReal _infra;
+    private readonly Action<IServiceCollection>? _servicios;
 
     /// <param name="rutaAlmacenamiento">Volumen compartido con el Microservicio B (mismos PDF).</param>
-    public MsCReal(InfraestructuraReal infra, string rutaAlmacenamiento, string? urlReglasGrpc = null)
+    /// <param name="servicios">Reemplazos de servicios externos (Ollama, canal gRPC hacia A) para la prueba.</param>
+    public MsCReal(InfraestructuraReal infra, string rutaAlmacenamiento, string? urlReglasGrpc = null,
+        Action<IServiceCollection>? servicios = null)
     {
         _infra = infra;
+        _servicios = servicios;
         RutaAlmacenamiento = rutaAlmacenamiento;
         UrlReglasGrpc = urlReglasGrpc ?? "http://localhost:1";
         BaseDatos = $"SihaDbC_it_{Guid.NewGuid():N}"[..30];
@@ -47,6 +52,10 @@ public sealed class MsCReal : WebApplicationFactory<msc::Program>
         builder.UseSetting("RabbitMq:ColaSolicitudCreada", Cola);
         builder.UseSetting("Archivos:RutaAlmacenamiento", RutaAlmacenamiento);
         builder.UseSetting("ReglasGrpc:Url", UrlReglasGrpc);
+        if (_servicios is not null)
+        {
+            builder.ConfigureTestServices(_servicios);
+        }
     }
 
     /// <summary>Arranca el host: migra DB C y conecta el consumidor al bus.</summary>
@@ -55,6 +64,15 @@ public sealed class MsCReal : WebApplicationFactory<msc::Program>
         CreateClient();
         var bus = Services.GetRequiredService<IBusControl>();
         await bus.WaitForHealthStatus(BusHealthStatus.Healthy, TimeSpan.FromSeconds(60));
+    }
+
+    /// <summary>Cliente HTTP autenticado con un JWT del rol indicado (firmado con la clave de pruebas).</summary>
+    public HttpClient ClienteCon(string rol)
+    {
+        var cliente = CreateClient();
+        cliente.DefaultRequestHeaders.Authorization =
+            new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", InfraestructuraReal.TokenCon(rol));
+        return cliente;
     }
 
     public async Task<int> ContarAsync(string sql)

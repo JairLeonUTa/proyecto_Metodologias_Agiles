@@ -31,6 +31,7 @@ public sealed class AgenteAnalizadorService : IAgenteAnalizadorService
     private readonly IPrecedenteService _precedenteService;
     private readonly IOllamaEmbeddingService _ollamaEmbeddings;
     private readonly ILogger<AgenteAnalizadorService> _logger;
+    private readonly IEmbeddingCacheService? _cacheEmbeddings;
 
     public AgenteAnalizadorService(
         SihaDbContextC db,
@@ -40,7 +41,8 @@ public sealed class AgenteAnalizadorService : IAgenteAnalizadorService
         IReglaContenidoStrategy reglaContenido,
         IPrecedenteService precedenteService,
         IOllamaEmbeddingService ollamaEmbeddings,
-        ILogger<AgenteAnalizadorService> logger)
+        ILogger<AgenteAnalizadorService> logger,
+        IEmbeddingCacheService? cacheEmbeddings = null)
     {
         _db = db;
         _extraccionService = extraccionService;
@@ -50,6 +52,7 @@ public sealed class AgenteAnalizadorService : IAgenteAnalizadorService
         _precedenteService = precedenteService;
         _ollamaEmbeddings = ollamaEmbeddings;
         _logger = logger;
+        _cacheEmbeddings = cacheEmbeddings;
     }
 
     public async Task<ResultadoAnalisisCompleto> AnalizarAsync(
