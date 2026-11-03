@@ -27,13 +27,22 @@ builder.Services.Configure<AlmacenOptions>(builder.Configuration.GetSection(Alma
 builder.Services.AddSingleton<IAlmacenDocumentos, AlmacenDocumentos>();
 builder.Services.AddScoped<ProcesarSolicitudCreadaService>();
 builder.Services.AddScoped<ExtraccionService>();
-builder.Services.AddScoped<IReglaCreditosStrategy, ReglaCreditosStrategy>();
+
+// --- Estrategias consolidadas (Strategy Registry S2-J10) ---
+builder.Services.AddStrategies();
 
 // --- Cliente gRPC hacia Microservicio A (ReglasGrpc) ---
 builder.Services.Configure<ReglasGrpcOptions>(builder.Configuration.GetSection(ReglasGrpcOptions.SectionName));
 
 // --- Agente IA local (Ollama, S2-S01): solo configuración; lo consumen las estrategias de US-10 ---
 builder.Services.Configure<OllamaOptions>(builder.Configuration.GetSection(OllamaOptions.SectionName));
+
+builder.Services.AddHttpClient<IOllamaEmbeddingService, OllamaEmbeddingService>((sp, client) =>
+{
+    var cfg = sp.GetRequiredService<IOptions<OllamaOptions>>().Value;
+    client.BaseAddress = new Uri(cfg.Url.TrimEnd('/') + "/");
+    client.Timeout = TimeSpan.FromSeconds(cfg.TimeoutSegundos);
+});
 
 builder.Services.AddGrpcClient<ReglasGrpc.ReglasGrpcClient>((sp, options) =>
 {
@@ -138,7 +147,10 @@ app.MapGet("/health", () => Results.Ok(new
     {
         "GET /api/extracciones/{id}",
         "PUT /api/extracciones/{id}/confirmar",
-        "POST /api/extracciones/calcular-creditos"
+        "POST /api/extracciones/calcular-creditos",
+        "POST /api/extracciones/calcular-contenido",
+        "POST /api/extracciones/precedentes/buscar",
+        "POST /api/extracciones/{id}/analizar"
     },
     utc = DateTimeOffset.UtcNow
 }));

@@ -13,6 +13,9 @@ namespace Siha.MsC.Api.Controllers;
 /// Consulta y confirmación humana de los datos extraídos de un PDF (US-07, S2-J02).
 /// El operador revisa créditos, horas y unidades; la evaluación no avanza hasta confirmarlos.
 /// También expone el cálculo de proporción de créditos y controles normativos (US-09, S2-J04).
+/// Y la evaluación de similitud semántica de contenidos (US-10, S2-J05/J06).
+/// Y la búsqueda de precedentes homologatorios (US-11, S2-J08).
+/// Y el análisis completo orquestado (US-11, S2-J09).
 /// </summary>
 [ApiController]
 [Route("api/extracciones")]
@@ -20,11 +23,22 @@ public class ExtraccionesController : ControllerBase
 {
     private readonly ExtraccionService _servicio;
     private readonly IReglaCreditosStrategy _reglaCreditos;
+    private readonly IReglaContenidoStrategy _reglaContenido;
+    private readonly IPrecedenteService _precedenteService;
+    private readonly IAgenteAnalizadorService _agenteAnalizador;
 
-    public ExtraccionesController(ExtraccionService servicio, IReglaCreditosStrategy reglaCreditos)
+    public ExtraccionesController(
+        ExtraccionService servicio,
+        IReglaCreditosStrategy reglaCreditos,
+        IReglaContenidoStrategy reglaContenido,
+        IPrecedenteService precedenteService,
+        IAgenteAnalizadorService agenteAnalizador)
     {
         _servicio = servicio;
         _reglaCreditos = reglaCreditos;
+        _reglaContenido = reglaContenido;
+        _precedenteService = precedenteService;
+        _agenteAnalizador = agenteAnalizador;
     }
 
     [HttpGet("{id:guid}")]
@@ -143,6 +157,60 @@ public class ExtraccionesController : ControllerBase
         }
     }
 
+    /// <summary>
+    /// Calcula la cobertura semántica de contenidos (Pcont) mediante similitud coseno de embeddings (US-10, S2-J06/J07).
+    /// <para>sj = max_u cos(t_j, u); cubierta si sj ≥ τ (ej. 75%).</para>
+    /// <para>Pcont = Σ(h_j * covered_j) / Σ(h_j) * 100  — ponderado por horas.</para>
+    /// <para>N:1: varias unidades origen → una destino (se toma max similitud).</para>
+    /// <para>RN-19: no reutilizar materia origen en dos destinos del mismo expediente.</para>
+    /// </summary>
+    [HttpPost("calcular-contenido")]
+    [Authorize(Roles = $"{RolesSistema.Operador},{RolesSistema.Administrador},{RolesSistema.Docente}")]
+    [ProducesResponseType(typeof(EvaluacionContenidoResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public ActionResult<EvaluacionContenidoResponse> CalcularContenido(
+        [FromBody] CalcularContenidoRequest request)
+    {
+        try
+        {
+            var unidadesOrigen = request.UnidadesOrigen
+                .Select(u => new UnidadOrigenEmbedding(
+                    u.Numero, u.Nombre, u.Horas, u.Contenidos, u.Embedding.ToArray()))
+                .ToList();
+
+            var unidadesDestino = request.UnidadesDestino
+                .Select(u => new UnidadDestinoEmbedding(
+                    u.Numero, u.Nombre, u.Horas, u.Contenidos, u.Embedding.ToArray()))
+                .ToList();
+
+            var parametros = new ParametrosContenido(
+                UnidadesOrigen: unidadesOrigen,
+                UnidadesDestino: unidadesDestino,
+                Tau: request.Tau,
+                RutaNormativa: request.RutaNormativa,
+                ValidarRN19: request.ValidarRN19);
+
+            var resultado = _reglaContenido.Calcular(parametros);
+
+            return Ok(new EvaluacionContenidoResponse(
+                resultado.Pcont,
+                resultado.UnidadesCubiertas.Select(u => new UnidadCoberturaResponse(
+                    u.Numero, u.Nombre, u.Horas, u.SimilitudMaxima, u.Cubierta, u.UnidadesOrigenContribuyentes)).ToList(),
+                resultado.UnidadesFaltantes.Select(u => new UnidadCoberturaResponse(
+                    u.Numero, u.Nombre, u.Horas, u.SimilitudMaxima, u.Cubierta, u.UnidadesOrigenContribuyentes)).ToList(),
+                resultado.TauUsado,
+                resultado.DetalleCalculo,
+                resultado.ViolacionRN19,
+                resultado.UnidadesOrigenDuplicadas));
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new { mensaje = "Parámetros inválidos.", error = ex.Message });
+        }
+    }
+
     private static ExtraccionResponse ARespuesta(Extraccion extraccion) => new(
         extraccion.Id,
         extraccion.ExpedienteId,
@@ -162,4 +230,76 @@ public class ExtraccionesController : ControllerBase
         extraccion.ConfirmadoUtc,
         extraccion.ConfirmadoPor,
         extraccion.Observacion);
+
+    /// <summary>
+    /// Busca precedentes homologatorios por coincidencia EXACTA (US-11, S2-J08).
+    /// <para>Match exacto: mismas asignaturas origen (conjunto), misma asignatura destino, misma institución.</para>
+    /// <para>Sin coincidencia → lista vacía []. NO inventa "parecidos".</para>
+    /// </summary>
+    [HttpPost("precedentes/buscar")]
+    [Authorize(Roles = $"{RolesSistema.Operador},{RolesSistema.Administrador},{RolesSistema.Docente}")]
+    [ProducesResponseType(typeof(IReadOnlyCollection<PrecedenteResponse>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public async Task<ActionResult<IReadOnlyCollection<PrecedenteResponse>>> BuscarPrecedentes(
+        [FromBody] BuscarPrecedenteRequest request,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            var resultados = await _precedenteService.BuscarAsync(request, cancellationToken);
+            return Ok(resultados);
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new { mensaje = "Parámetros inválidos.", error = ex.Message });
+        }
+    }
+
+    /// <summary>
+    /// Ejecuta el análisis completo orquestado (US-11, S2-J09).
+    /// <para>Secuencia: 1) Extracción confirmada → 2) gRPC reglas (θ, δ, τ) → 3) ReglaCreditosStrategy (Pcred + RN-03/15/16) → 4) ReglaContenidoStrategy (Pcont + RN-19) → 5) Búsqueda precedentes.</para>
+    /// <para>Devuelve resultado consolidado con estado final para el docente.</para>
+    /// </summary>
+    [HttpPost("{id:guid}/analizar")]
+    [Authorize(Roles = $"{RolesSistema.Operador},{RolesSistema.Administrador},{RolesSistema.Docente}")]
+    [ProducesResponseType(typeof(AnalisisCompletoResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<AnalisisCompletoResponse>> AnalizarCompleto(
+        Guid id,
+        [FromBody] AnalizarExtraccionRequest request,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            var parametros = new ParametrosAnalisisCompleto(
+                AnosTranscurridos: request.AnosTranscurridos,
+                NumeroMatriculaDestino: request.NumeroMatriculaDestino,
+                EsCreditoExterno: request.EsCreditoExterno,
+                RutaNormativa: request.RutaNormativa,
+                CodigoAsignaturaDestino: request.CodigoAsignaturaDestino,
+                InstitucionOrigen: request.InstitucionOrigen,
+                CreditosDestino: request.CreditosDestino,
+                UnidadesDestino: request.UnidadesDestino,
+                ValidarRN19: request.ValidarRN19);
+
+            var resultado = await _agenteAnalizador.AnalizarAsync(id, parametros, cancellationToken);
+            return Ok(new AnalisisCompletoResponse(
+                resultado.Extraccion,
+                resultado.Creditos,
+                resultado.Contenido,
+                resultado.Precedentes,
+                resultado.EstadoFinal,
+                resultado.AlertasGlobales,
+                resultado.DetalleTrazabilidad));
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new { mensaje = "Parámetros inválidos.", error = ex.Message });
+        }
+    }
 }
