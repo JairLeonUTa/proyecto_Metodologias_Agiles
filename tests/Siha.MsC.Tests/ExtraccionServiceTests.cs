@@ -178,6 +178,29 @@ public class ExtraccionServiceTests
         resultado.Errores.Should().Contain(e => e.Contains("duplicados"));
     }
 
+    [Fact]
+    public async Task Listar_bandeja_ordena_por_fecha_descendente_y_filtra_por_estado()
+    {
+        await using var db = CrearDb();
+        var antigua = NuevaExtraccion(confianza: 0.94m, estado: EstadosExtraccion.Confirmada);
+        antigua.CreadoUtc = DateTimeOffset.UtcNow.AddHours(-2);
+        var reciente = NuevaExtraccion(confianza: 0.68m);
+        reciente.CreadoUtc = DateTimeOffset.UtcNow;
+        var escaneada = NuevaExtraccion(confianza: 0m, estado: EstadosExtraccion.PendienteOcrLlm);
+        escaneada.CreadoUtc = DateTimeOffset.UtcNow.AddHours(-1);
+        db.Extracciones.AddRange(antigua, reciente, escaneada);
+        await db.SaveChangesAsync();
+        var servicio = new ExtraccionService(db);
+
+        var todas = await servicio.ListarAsync();
+        var pendientes = await servicio.ListarAsync("pendiente_confirmacion");
+        var delExpediente = await servicio.ListarAsync(expedienteId: escaneada.ExpedienteId);
+
+        todas.Select(e => e.Id).Should().ContainInOrder(reciente.Id, escaneada.Id, antigua.Id);
+        pendientes.Should().ContainSingle().Which.Id.Should().Be(reciente.Id);
+        delExpediente.Should().ContainSingle().Which.Estado.Should().Be(EstadosExtraccion.PendienteOcrLlm);
+    }
+
     private static SihaDbContextC CrearDb()
         => new(new DbContextOptionsBuilder<SihaDbContextC>()
             .UseInMemoryDatabase($"siha-msc-extracciones-{Guid.NewGuid():N}")

@@ -31,6 +31,7 @@ public sealed class AgenteAnalizadorService : IAgenteAnalizadorService
     private readonly IPrecedenteService _precedenteService;
     private readonly IOllamaEmbeddingService _ollamaEmbeddings;
     private readonly ILogger<AgenteAnalizadorService> _logger;
+    private readonly IEmbeddingCacheService? _cacheEmbeddings;
 
     public AgenteAnalizadorService(
         SihaDbContextC db,
@@ -40,7 +41,8 @@ public sealed class AgenteAnalizadorService : IAgenteAnalizadorService
         IReglaContenidoStrategy reglaContenido,
         IPrecedenteService precedenteService,
         IOllamaEmbeddingService ollamaEmbeddings,
-        ILogger<AgenteAnalizadorService> logger)
+        ILogger<AgenteAnalizadorService> logger,
+        IEmbeddingCacheService? cacheEmbeddings = null)
     {
         _db = db;
         _extraccionService = extraccionService;
@@ -50,6 +52,7 @@ public sealed class AgenteAnalizadorService : IAgenteAnalizadorService
         _precedenteService = precedenteService;
         _ollamaEmbeddings = ollamaEmbeddings;
         _logger = logger;
+        _cacheEmbeddings = cacheEmbeddings;
     }
 
     public async Task<ResultadoAnalisisCompleto> AnalizarAsync(
@@ -149,9 +152,26 @@ public sealed class AgenteAnalizadorService : IAgenteAnalizadorService
         }
 
         // 5) ReglaContenidoStrategy: Pcont + desglose + RN-19
-        var unidadesDestino = parametros.UnidadesDestino
-            .Select(u => new UnidadDestinoEmbedding(u.Numero, u.Nombre, u.Horas, u.Contenidos, u.Embedding.ToArray()))
-            .ToList();
+        // S2-A08: la interfaz web envía las unidades del catálogo sin vector. Si una unidad de
+        // destino llega sin embedding, se genera aquí con Ollama a partir de sus contenidos.
+        var unidadesDestino = new List<UnidadDestinoEmbedding>();
+        foreach (var u in parametros.UnidadesDestino)
+        {
+            var vector = u.Embedding?.ToArray() ?? Array.Empty<float>();
+            if (vector.Length == 0)
+            {
+                var texto = string.IsNullOrWhiteSpace(u.Contenidos) ? u.Nombre : u.Contenidos;
+                vector = await _ollamaEmbeddings.GenerarEmbeddingAsync(texto, cancellationToken) ?? Array.Empty<float>();
+            }
+
+            if (vector.Length == 0)
+            {
+                alertas.Add($"Unidad destino {u.Numero} ({u.Nombre}): no se pudo generar embedding.");
+                continue;
+            }
+
+            unidadesDestino.Add(new UnidadDestinoEmbedding(u.Numero, u.Nombre, u.Horas, u.Contenidos, vector));
+        }
 
         var parametrosContenido = new ParametrosContenido(
             UnidadesOrigen: unidadesOrigenConEmbedding,

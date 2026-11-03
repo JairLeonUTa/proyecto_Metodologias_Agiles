@@ -14,6 +14,7 @@ public class SihaDbContextC : DbContext
     public DbSet<Extraccion> Extracciones => Set<Extraccion>();
     public DbSet<ExtraccionUnidad> ExtraccionUnidades => Set<ExtraccionUnidad>();
     public DbSet<Precedente> Precedentes => Set<Precedente>();
+    public DbSet<EmbeddingUnidad> EmbeddingsUnidad => Set<EmbeddingUnidad>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -64,6 +65,17 @@ public class SihaDbContextC : DbContext
             e.Property(x => x.InstitucionOrigen).HasMaxLength(150).IsRequired();
             e.Property(x => x.Fecha).HasColumnType("DATE").IsRequired();
             e.HasIndex(x => new { x.AsignaturaDestino, x.InstitucionOrigen });
+        });
+
+        modelBuilder.Entity<EmbeddingUnidad>(e =>
+        {
+            e.ToTable("EMBEDDING_UNIDAD");
+            e.HasKey(x => x.Id);
+            e.Property(x => x.CodigoAsignatura).HasMaxLength(30).IsRequired();
+            e.Property(x => x.Modelo).HasMaxLength(100).IsRequired();
+            e.Property(x => x.HashContenido).HasMaxLength(64).IsFixedLength().IsRequired();
+            e.Property(x => x.Vector).IsRequired();
+            e.HasIndex(x => new { x.CodigoAsignatura, x.NumeroUnidad, x.Modelo }).IsUnique();
         });
     }
 }

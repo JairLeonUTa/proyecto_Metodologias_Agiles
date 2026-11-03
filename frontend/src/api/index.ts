@@ -9,6 +9,7 @@ export { carrerasApi } from './carrerasApi';
 export { mallasApi } from './mallasApi';
 export { asignaturasApi } from './asignaturasApi';
 export { expedientesApi } from './expedientesApi';
+export { extraccionesApi } from './extraccionesApi';
 
 export {
   peticion,
