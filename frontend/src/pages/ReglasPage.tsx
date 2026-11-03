@@ -185,7 +185,6 @@ export function ReglasPage(): JSX.Element {
   return (
     <div className="space-y-6">
       <EncabezadoPagina
-        contexto="Normativa CAU"
         titulo="Reglas y umbrales heurísticos"
         descripcion="Configure los umbrales θ (umbral de aprobación), δ (banda de tolerancia) y τ (cobertura temática mínima) por ruta normativa, y consulte el catálogo de reglas vigentes."
       />

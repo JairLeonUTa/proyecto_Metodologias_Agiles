@@ -147,7 +147,6 @@ export function CarrerasPage(): JSX.Element {
   return (
     <div className="space-y-6">
       <EncabezadoPagina
-        contexto="Catálogo académico"
         titulo="Carreras"
         descripcion="Registro y consulta de las carreras de la Universidad Técnica de Ambato utilizadas en la homologación."
         acciones={

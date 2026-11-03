@@ -14,16 +14,16 @@ export function Casilla({ etiqueta, ayuda, id, className, ...resto }: PropsCasil
       <input
         type="checkbox"
         id={id}
-        className="mt-0.5 h-4 w-4 rounded border-slate-300 text-institucional-700 focus:ring-institucional-500"
+        className="mt-0.5 h-4 w-4 rounded border-stone-300 text-ink accent-ink focus:ring-institucional-500"
         aria-describedby={idAyuda}
         {...resto}
       />
       <div className="flex flex-col">
-        <label htmlFor={id} className="text-sm font-medium text-slate-700">
+        <label htmlFor={id} className="text-sm font-medium text-ink">
           {etiqueta}
         </label>
         {ayuda ? (
-          <span id={idAyuda} className="text-xs text-slate-500">
+          <span id={idAyuda} className="text-xs text-muted">
             {ayuda}
           </span>
         ) : null}

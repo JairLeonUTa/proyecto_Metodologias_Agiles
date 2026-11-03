@@ -232,7 +232,6 @@ export function UsuariosPage(): JSX.Element {
   return (
     <div className="space-y-6">
       <EncabezadoPagina
-        contexto="Administración"
         titulo="Usuarios y roles"
         descripcion="Cuentas institucionales del sistema y rol asignado para el control de acceso (RBAC)."
         acciones={<Boton onClick={abrirCreacion}>Crear cuenta</Boton>}

@@ -318,7 +318,6 @@ export function SolicitudNuevaPage(): JSX.Element {
   return (
     <div className="space-y-6">
       <EncabezadoPagina
-        contexto="Expedientes"
         titulo="Registrar solicitud de homologación"
         descripcion="Alta de una solicitud interna (cambio de carrera dentro de la UTA) o externa (movilidad desde otra institución). El expediente se registra, se cargan y validan sus PDF en el servidor y solo entonces se publica en el bus de eventos."
         acciones={

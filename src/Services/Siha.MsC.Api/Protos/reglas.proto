@@ -1,0 +1,67 @@
+syntax = "proto3";
+
+// Contrato gRPC del Microservicio A (Sprint 1 - S1-S04).
+// Expone los umbrales heurísticos θ, δ, τ vigentes y las reglas normativas configuradas para
+// una ruta normativa. El Microservicio C (Sprint 2/3) lo consumirá para evaluar homologaciones.
+package siha.reglas.v1;
+
+option csharp_namespace = "Siha.MsA.Api.Grpc";
+
+// Servicio de reglas y umbrales de evaluación.
+service ReglasGrpc {
+  // Devuelve θ, δ, τ vigentes y las reglas de una ruta normativa (CAU-P-011 o CAU-P-122).
+  rpc ObtenerConfiguracionRuta (SolicitudConfiguracionRuta) returns (ConfiguracionRuta);
+}
+
+// Petición de configuración de una ruta normativa.
+message SolicitudConfiguracionRuta {
+  // CAU-P-011 (cambio de carrera) o CAU-P-122 (movilidad). Obligatorio.
+  string ruta_normativa = 1;
+
+  // INTERNO o EXTERNO. Vacío = todas las reglas de la ruta.
+  string tipo_tramite = 2;
+}
+
+// Umbrales heurísticos θ, δ, τ vigentes (porcentajes en [0, 100], invariante δ ≤ θ).
+message ParametrosEvaluacionMensaje {
+  int32 id = 1;
+  string ruta_normativa = 2;
+  // θ: umbral de similitud global (%).
+  double theta = 3;
+  // δ: banda de tolerancia (%) sobre el umbral θ.
+  double delta = 4;
+  // τ: umbral de cobertura temática (%).
+  double tau = 5;
+  int32 version = 6;
+  // Marca temporal ISO-8601 (UTC).
+  string actualizado_utc = 7;
+  string actualizado_por = 8;
+}
+
+// Regla de negocio configurable asociada a la ruta normativa.
+message ReglaMensaje {
+  int32 id = 1;
+  string codigo = 2;
+  string ruta_normativa = 3;
+  string tipo_tramite = 4;
+  string descripcion = 5;
+  // Expresión/valor de configuración (p. ej. "theta>=80"); vacío si la regla no es paramétrica.
+  string expresion = 6;
+  string version = 7;
+  string fuente = 8;
+  // Verdadero para los umbrales normativos de las resoluciones CAU (no heurísticos).
+  bool es_normativa = 9;
+  // Fechas ISO-8601 (yyyy-MM-dd).
+  string vigente_desde = 10;
+  string vigente_hasta = 11;
+  bool activa = 12;
+}
+
+// Respuesta con la configuración completa de la ruta normativa solicitada.
+message ConfiguracionRuta {
+  string ruta_normativa = 1;
+  // Falso cuando la ruta no tiene umbrales θ, δ, τ registrados todavía.
+  bool parametros_configurados = 2;
+  ParametrosEvaluacionMensaje parametros = 3;
+  repeated ReglaMensaje reglas = 4;
+}

@@ -214,6 +214,14 @@
       "UpstreamPathTemplate": "/api/expedientes/{everything}",
       "UpstreamHttpMethod": [ "GET", "POST", "DELETE" ],
       "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer", "AllowedScopes": [] }
+    },
+    {
+      "DownstreamPathTemplate": "/api/extracciones/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [ { "Host": "localhost", "Port": 5084 } ],
+      "UpstreamPathTemplate": "/api/extracciones/{everything}",
+      "UpstreamHttpMethod": [ "GET", "PUT", "POST" ],
+      "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer", "AllowedScopes": [] }
     }
   ]
 }

@@ -2,59 +2,134 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Estilos base de SIHA-IA (S1-A10: navegación por teclado siempre visible). */
+/* ── Homologa UTA base: framed-sheet style ───────────────────────────
+   One tinted frame ground, white sheet, IBM Plex Sans, no shadows at rest. */
 @layer base {
   html {
     -webkit-text-size-adjust: 100%;
   }
 
   body {
-    @apply bg-slate-100 text-slate-800 antialiased;
+    @apply bg-frame text-ink antialiased;
     font-feature-settings: 'cv02', 'cv03', 'cv04';
   }
 
-  /* Anillo de foco uniforme: la navegación con Tab siempre es visible. */
   :focus-visible {
-    @apply outline-none ring-2 ring-institucional-500 ring-offset-2 ring-offset-white;
+    @apply outline-none ring-2 ring-institucional-500 ring-offset-2 ring-offset-frame;
   }
 
   h1,
   h2,
   h3 {
-    @apply text-slate-900;
+    @apply text-ink;
   }
 
   table {
     border-collapse: separate;
     border-spacing: 0;
   }
+
+  .num {
+    font-variant-numeric: tabular-nums;
+  }
 }
 
 @layer components {
-  /* Contenedor estándar de tarjeta usado por todas las vistas. */
+  /* Card on the white sheet: hairline border, no shadow. */
   .tarjeta {
-    @apply rounded-lg border border-slate-200 bg-white shadow-sm;
+    @apply rounded-lg border border-stone-200 bg-white;
   }
 
-  /* Enlace de salto al contenido, visible solo al recibir el foco (WCAG 2.4.1). */
+  /* The white sheet itself: 16px radius, 1px edge, no shadow. */
+  .hoja {
+    @apply rounded-2xl border border-stone-200 bg-white;
+  }
+
   .salto-contenido {
     @apply sr-only;
   }
 
   .salto-contenido:focus {
-    @apply not-sr-only fixed left-4 top-4 z-50 rounded-md bg-institucional-700 px-4 py-2 text-sm font-semibold text-white shadow-lg;
+    @apply not-sr-only fixed left-4 top-4 z-50 rounded-md bg-ink px-4 py-2 text-sm font-medium text-white;
+  }
+
+  /* Panel que se abre bajo un disparador (desplegable de grupo, tarjeta de
+     usuario). Solo opacidad y transform: 160 ms, sin rebotes. `visibility`
+     retira el panel cerrado del recorrido de tabulación. */
+  .panel {
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-4px) scale(0.98);
+    transition:
+      opacity 160ms cubic-bezier(0.23, 1, 0.32, 1),
+      transform 160ms cubic-bezier(0.23, 1, 0.32, 1),
+      visibility 0s linear 160ms;
+  }
+
+  .panel[data-abierto='true'] {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0) scale(1);
+    transition:
+      opacity 160ms cubic-bezier(0.23, 1, 0.32, 1),
+      transform 160ms cubic-bezier(0.23, 1, 0.32, 1),
+      visibility 0s linear 0s;
   }
 }
 
-/* Área de desplazamiento con apariencia discreta. */
+@layer utilities {
+  /* Alto completo de la ventana: `dvh` cuando el navegador lo soporta, para
+     que la barra del navegador no corte la hoja en móvil. */
+  .altura-completa {
+    min-height: 100vh;
+    min-height: 100dvh;
+  }
+}
+
+/* Scrollbar: minimal, matching the cool ground */
 .desplazable::-webkit-scrollbar {
-  width: 10px;
-  height: 10px;
+  width: 8px;
+  height: 8px;
 }
 
 .desplazable::-webkit-scrollbar-thumb {
-  background-color: rgb(148 163 184 / 0.6);
+  background-color: rgb(154 164 178 / 0.4);
   border-radius: 9999px;
   border: 2px solid transparent;
   background-clip: content-box;
+}
+
+/* Sheet animation: subtle entrance for dialogs and alerts */
+@keyframes sheet-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.sheet-animate {
+  animation: sheet-in 200ms cubic-bezier(0.23, 1, 0.32, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sheet-animate {
+    animation: none;
+  }
+  /* Los paneles se abren y cierran sin desplazamiento: el estado cambia al
+     instante, sin travel. */
+  .panel,
+  .panel[data-abierto='true'] {
+    transform: none !important;
+    transition-delay: 0s !important;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
 }

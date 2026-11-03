@@ -30,10 +30,10 @@ export function Campo({
 
   return (
     <div className={['flex flex-col gap-1.5', className ?? ''].filter(Boolean).join(' ')}>
-      <label htmlFor={htmlFor} className="text-sm font-medium text-slate-700">
+      <label htmlFor={htmlFor} className="text-[13px] font-medium text-ink">
         {etiqueta}
         {obligatorio ? (
-          <span className="ml-1 text-rose-600" aria-hidden="true">
+          <span className="ml-1 text-negative" aria-hidden="true">
             *
           </span>
         ) : null}
@@ -42,13 +42,13 @@ export function Campo({
       {children}
 
       {ayuda ? (
-        <p id={idAyuda} className="text-xs text-slate-500">
+        <p id={idAyuda} className="text-xs text-faint">
           {ayuda}
         </p>
       ) : null}
 
       {error ? (
-        <p id={idError} role="alert" className="text-xs font-medium text-rose-600">
+        <p id={idError} role="alert" className="text-xs font-medium text-negative">
           {error}
         </p>
       ) : null}
