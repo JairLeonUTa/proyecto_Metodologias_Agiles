@@ -99,3 +99,23 @@ public record EvaluacionContenidoResponse(
     string DetalleCalculo,
     bool ViolacionRN19,
     IReadOnlyCollection<int> UnidadesOrigenDuplicadas);
+
+/// <summary>Parámetros para buscar precedentes (US-11, S2-J08).</summary>
+public record BuscarPrecedenteRequest(
+    IReadOnlyCollection<string> CodigosAsignaturasOrigen,
+    string CodigoAsignaturaDestino,
+    string InstitucionOrigen);
+
+/// <summary>Asignatura de origen en un precedente.</summary>
+public record PrecedenteAsignaturaOrigenResponse(
+    string Codigo,
+    string Nombre);
+
+/// <summary>Resultado de búsqueda de precedentes (US-11, S2-J08).</summary>
+public record PrecedenteResponse(
+    Guid Id,
+    string Resolucion,
+    IReadOnlyCollection<PrecedenteAsignaturaOrigenResponse> AsignaturasOrigen,
+    string AsignaturaDestino,
+    string InstitucionOrigen,
+    DateOnly Fecha);

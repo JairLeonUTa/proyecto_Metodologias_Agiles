@@ -14,6 +14,7 @@ namespace Siha.MsC.Api.Controllers;
 /// El operador revisa créditos, horas y unidades; la evaluación no avanza hasta confirmarlos.
 /// También expone el cálculo de proporción de créditos y controles normativos (US-09, S2-J04).
 /// Y la evaluación de similitud semántica de contenidos (US-10, S2-J05/J06).
+/// Y la búsqueda de precedentes homologatorios (US-11, S2-J08).
 /// </summary>
 [ApiController]
 [Route("api/extracciones")]
@@ -22,15 +23,18 @@ public class ExtraccionesController : ControllerBase
     private readonly ExtraccionService _servicio;
     private readonly IReglaCreditosStrategy _reglaCreditos;
     private readonly IReglaContenidoStrategy _reglaContenido;
+    private readonly IPrecedenteService _precedenteService;
 
     public ExtraccionesController(
         ExtraccionService servicio,
         IReglaCreditosStrategy reglaCreditos,
-        IReglaContenidoStrategy reglaContenido)
+        IReglaContenidoStrategy reglaContenido,
+        IPrecedenteService precedenteService)
     {
         _servicio = servicio;
         _reglaCreditos = reglaCreditos;
         _reglaContenido = reglaContenido;
+        _precedenteService = precedenteService;
     }
 
     [HttpGet("{id:guid}")]
@@ -222,4 +226,30 @@ public class ExtraccionesController : ControllerBase
         extraccion.ConfirmadoUtc,
         extraccion.ConfirmadoPor,
         extraccion.Observacion);
+
+    /// <summary>
+    /// Busca precedentes homologatorios por coincidencia EXACTA (US-11, S2-J08).
+    /// <para>Match exacto: mismas asignaturas origen (conjunto), misma asignatura destino, misma institución.</para>
+    /// <para>Sin coincidencia → lista vacía []. NO inventa "parecidos".</para>
+    /// </summary>
+    [HttpPost("precedentes/buscar")]
+    [Authorize(Roles = $"{RolesSistema.Operador},{RolesSistema.Administrador},{RolesSistema.Docente}")]
+    [ProducesResponseType(typeof(IReadOnlyCollection<PrecedenteResponse>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public async Task<ActionResult<IReadOnlyCollection<PrecedenteResponse>>> BuscarPrecedentes(
+        [FromBody] BuscarPrecedenteRequest request,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            var resultados = await _precedenteService.BuscarAsync(request, cancellationToken);
+            return Ok(resultados);
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new { mensaje = "Parámetros inválidos.", error = ex.Message });
+        }
+    }
 }

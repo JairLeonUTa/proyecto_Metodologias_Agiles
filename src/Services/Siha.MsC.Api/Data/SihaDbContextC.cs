@@ -13,6 +13,7 @@ public class SihaDbContextC : DbContext
     public DbSet<EventoProcesado> EventosProcesados => Set<EventoProcesado>();
     public DbSet<Extraccion> Extracciones => Set<Extraccion>();
     public DbSet<ExtraccionUnidad> ExtraccionUnidades => Set<ExtraccionUnidad>();
+    public DbSet<Precedente> Precedentes => Set<Precedente>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -51,6 +52,18 @@ public class SihaDbContextC : DbContext
                 .WithMany(x => x.Unidades)
                 .HasForeignKey(x => x.ExtraccionId)
                 .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<Precedente>(e =>
+        {
+            e.ToTable("PRECEDENTE");
+            e.HasKey(x => x.Id);
+            e.Property(x => x.Resolucion).HasMaxLength(50).IsRequired();
+            e.Property(x => x.AsignaturasOrigenJson).HasColumnType("NVARCHAR(MAX)").IsRequired();
+            e.Property(x => x.AsignaturaDestino).HasMaxLength(30).IsRequired();
+            e.Property(x => x.InstitucionOrigen).HasMaxLength(150).IsRequired();
+            e.Property(x => x.Fecha).HasColumnType("DATE").IsRequired();
+            e.HasIndex(x => new { x.AsignaturaDestino, x.InstitucionOrigen });
         });
     }
 }
