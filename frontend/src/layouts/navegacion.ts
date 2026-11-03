@@ -16,6 +16,12 @@ export const RUTAS = {
   expedientes: '/expedientes',
   consultaExpediente: '/expedientes/consulta',
   detalleExpediente: '/expedientes/:id',
+  // Sprint 2 — Agente analizador (MS C)
+  bandejaProcesamiento: '/procesamiento',
+  confirmarExtraccion: '/procesamiento/:id/confirmar',
+  estadoExtraccion: '/procesamiento/:id/estado',
+  bandejaAnalisis: '/evaluacion',
+  analisisExpediente: '/evaluacion/:id',
 } as const;
 
 /** Roles con acceso a todo el sistema (solo para lectura de navegación). */
@@ -23,6 +29,9 @@ export const TODOS_LOS_ROLES: string[] = [ROLES.ADMINISTRADOR, ROLES.DOCENTE, RO
 
 /** Roles que pueden registrar y consultar expedientes. */
 export const ROLES_EXPEDIENTES: string[] = [ROLES.OPERADOR, ROLES.ADMINISTRADOR];
+
+/** Roles que evalúan expedientes con el agente analizador (Sprint 2, US-09 a US-11). */
+export const ROLES_EVALUACION: string[] = [ROLES.DOCENTE, ROLES.ADMINISTRADOR];
 
 export interface ElementoNavegacion {
   etiqueta: string;
@@ -79,11 +88,30 @@ export const MENU: GrupoNavegacion[] = [
         rolesPermitidos: ROLES_EXPEDIENTES,
       },
       {
+        etiqueta: 'Bandeja de procesamiento',
+        descripcion: 'Confianza de extracción y confirmación de datos (MS C)',
+        ruta: RUTAS.bandejaProcesamiento,
+        icono: 'bandeja',
+        rolesPermitidos: ROLES_EXPEDIENTES,
+      },
+      {
         etiqueta: 'Consultar estado',
         descripcion: 'Seguimiento de un expediente por su identificador',
         ruta: RUTAS.consultaExpediente,
         icono: 'consulta',
         rolesPermitidos: ROLES_EXPEDIENTES,
+      },
+    ],
+  },
+  {
+    titulo: 'Evaluación',
+    elementos: [
+      {
+        etiqueta: 'Bandeja de análisis',
+        descripcion: 'Créditos, cobertura de contenidos y precedentes',
+        ruta: RUTAS.bandejaAnalisis,
+        icono: 'consulta',
+        rolesPermitidos: ROLES_EVALUACION,
       },
     ],
   },

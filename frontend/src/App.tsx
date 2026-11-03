@@ -1,8 +1,13 @@
 import { Navigate, Route, Routes } from 'react-router-dom';
 import { RutaProtegida, RutaPublica } from './components/RutaProtegida';
 import { LayoutPrincipal } from './layouts/LayoutPrincipal';
-import { ROLES_EXPEDIENTES, RUTAS, TODOS_LOS_ROLES } from './layouts/navegacion';
+import { ROLES_EVALUACION, ROLES_EXPEDIENTES, RUTAS, TODOS_LOS_ROLES } from './layouts/navegacion';
 import { AccesoDenegadoPage, NoEncontradoPage } from './pages/AccesoDenegadoPage';
+import { AnalisisExpedientePage } from './pages/AnalisisExpedientePage';
+import { BandejaAnalisisPage } from './pages/BandejaAnalisisPage';
+import { BandejaProcesamientoPage } from './pages/BandejaProcesamientoPage';
+import { ConfirmarExtraccionPage } from './pages/ConfirmarExtraccionPage';
+import { EstadoExtraccionPage } from './pages/EstadoExtraccionPage';
 import { AsignaturasPage } from './pages/AsignaturasPage';
 import { CarrerasPage } from './pages/CarrerasPage';
 import { ConsultaExpedientePage } from './pages/ConsultaExpedientePage';
@@ -131,6 +136,48 @@ export default function App(): JSX.Element {
           element={
             <RutaProtegida rolesPermitidos={ROLES_EXPEDIENTES}>
               <ExpedienteDetallePage />
+            </RutaProtegida>
+          }
+        />
+
+        {/* Sprint 2 — Agente analizador (MS C) */}
+        <Route
+          path="procesamiento"
+          element={
+            <RutaProtegida rolesPermitidos={ROLES_EXPEDIENTES}>
+              <BandejaProcesamientoPage />
+            </RutaProtegida>
+          }
+        />
+        <Route
+          path="procesamiento/:id/confirmar"
+          element={
+            <RutaProtegida rolesPermitidos={ROLES_EXPEDIENTES}>
+              <ConfirmarExtraccionPage />
+            </RutaProtegida>
+          }
+        />
+        <Route
+          path="procesamiento/:id/estado"
+          element={
+            <RutaProtegida rolesPermitidos={TODOS_LOS_ROLES}>
+              <EstadoExtraccionPage />
+            </RutaProtegida>
+          }
+        />
+        <Route
+          path="evaluacion"
+          element={
+            <RutaProtegida rolesPermitidos={ROLES_EVALUACION}>
+              <BandejaAnalisisPage />
+            </RutaProtegida>
+          }
+        />
+        <Route
+          path="evaluacion/:id"
+          element={
+            <RutaProtegida rolesPermitidos={ROLES_EVALUACION}>
+              <AnalisisExpedientePage />
             </RutaProtegida>
           }
         />

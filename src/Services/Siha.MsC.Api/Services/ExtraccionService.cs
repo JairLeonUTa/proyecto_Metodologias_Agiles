@@ -43,6 +43,38 @@ public class ExtraccionService
             .AsNoTracking()
             .FirstOrDefaultAsync(e => e.Id == id, cancellationToken);
 
+    /// <summary>Límite de filas de la bandeja de procesamiento (S2-A01).</summary>
+    public const int LimiteBandeja = 100;
+
+    /// <summary>
+    /// Lista las extracciones más recientes para la bandeja de procesamiento (S2-A01, US-07).
+    /// Filtra opcionalmente por estado y/o expediente. Ordena de la más reciente a la más antigua.
+    /// </summary>
+    public async Task<IReadOnlyList<Extraccion>> ListarAsync(
+        string? estado = null,
+        Guid? expedienteId = null,
+        CancellationToken cancellationToken = default)
+    {
+        var consulta = _db.Extracciones
+            .Include(e => e.Unidades)
+            .AsNoTracking()
+            .AsQueryable();
+
+        if (!string.IsNullOrWhiteSpace(estado))
+        {
+            var estadoNormalizado = estado.Trim().ToUpperInvariant();
+            consulta = consulta.Where(e => e.Estado == estadoNormalizado);
+        }
+
+        if (expedienteId is { } id && id != Guid.Empty)
+            consulta = consulta.Where(e => e.ExpedienteId == id);
+
+        return await consulta
+            .OrderByDescending(e => e.CreadoUtc)
+            .Take(LimiteBandeja)
+            .ToListAsync(cancellationToken);
+    }
+
     public async Task<ConfirmacionExtraccionResultado> ConfirmarAsync(
         Guid id,
         ConfirmarExtraccionRequest? request,
