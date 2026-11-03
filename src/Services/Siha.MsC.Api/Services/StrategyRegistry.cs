@@ -14,7 +14,9 @@ public static class StrategyRegistry
         ["ReglaCreditos"] = typeof(IReglaCreditosStrategy),
         ["ReglaContenido"] = typeof(IReglaContenidoStrategy),
         ["Precedentes"] = typeof(IPrecedenteService),
-        ["AgenteAnalizador"] = typeof(IAgenteAnalizadorService)
+        ["AgenteAnalizador"] = typeof(IAgenteAnalizadorService),
+        ["ExtractorPdf"] = typeof(IExtractorPdfService),
+        ["OcrLlmExtractor"] = typeof(IOcrLlmExtractorService)
     };
 
     /// <summary>Registra todas las estrategias en el contenedor DI.</summary>
@@ -24,6 +26,8 @@ public static class StrategyRegistry
         services.AddScoped<IReglaContenidoStrategy, ReglaContenidoStrategy>();
         services.AddScoped<IPrecedenteService, PrecedenteService>();
         services.AddScoped<IAgenteAnalizadorService, AgenteAnalizadorService>();
+        services.AddScoped<IExtractorPdfService, ExtractorPdfService>();
+        services.AddHttpClient<IOcrLlmExtractorService, OcrLlmExtractorService>();
         return services;
     }
 
