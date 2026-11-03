@@ -13,6 +13,7 @@ namespace Siha.MsC.Api.Controllers;
 /// Consulta y confirmación humana de los datos extraídos de un PDF (US-07, S2-J02).
 /// El operador revisa créditos, horas y unidades; la evaluación no avanza hasta confirmarlos.
 /// También expone el cálculo de proporción de créditos y controles normativos (US-09, S2-J04).
+/// Y la evaluación de similitud semántica de contenidos (US-10, S2-J05/J06).
 /// </summary>
 [ApiController]
 [Route("api/extracciones")]
@@ -20,11 +21,16 @@ public class ExtraccionesController : ControllerBase
 {
     private readonly ExtraccionService _servicio;
     private readonly IReglaCreditosStrategy _reglaCreditos;
+    private readonly IReglaContenidoStrategy _reglaContenido;
 
-    public ExtraccionesController(ExtraccionService servicio, IReglaCreditosStrategy reglaCreditos)
+    public ExtraccionesController(
+        ExtraccionService servicio,
+        IReglaCreditosStrategy reglaCreditos,
+        IReglaContenidoStrategy reglaContenido)
     {
         _servicio = servicio;
         _reglaCreditos = reglaCreditos;
+        _reglaContenido = reglaContenido;
     }
 
     [HttpGet("{id:guid}")]
@@ -140,6 +146,57 @@ public class ExtraccionesController : ControllerBase
         catch (InvalidOperationException ex)
         {
             return BadRequest(new { mensaje = "Error de cálculo.", error = ex.Message });
+        }
+    }
+
+    /// <summary>
+    /// Calcula la cobertura semántica de contenidos (Pcont) mediante similitud coseno de embeddings (US-10, S2-J06).
+    /// <para>sj = max_u cos(t_j, u); cubierta si sj ≥ τ (ej. 75%).</para>
+    /// <para>Pcont = Σ(h_j * covered_j) / Σ(h_j) * 100  — ponderado por horas.</para>
+    /// <para>N:1: varias unidades origen → una destino (se toma max similitud).</para>
+    /// <para>RN-19: no reutilizar materia origen en dos destinos (se valida en orquestador).</para>
+    /// </summary>
+    [HttpPost("calcular-contenido")]
+    [Authorize(Roles = $"{RolesSistema.Operador},{RolesSistema.Administrador},{RolesSistema.Docente}")]
+    [ProducesResponseType(typeof(EvaluacionContenidoResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public ActionResult<EvaluacionContenidoResponse> CalcularContenido(
+        [FromBody] CalcularContenidoRequest request)
+    {
+        try
+        {
+            var unidadesOrigen = request.UnidadesOrigen
+                .Select(u => new UnidadOrigenEmbedding(
+                    u.Numero, u.Nombre, u.Horas, u.Contenidos, u.Embedding.ToArray()))
+                .ToList();
+
+            var unidadesDestino = request.UnidadesDestino
+                .Select(u => new UnidadDestinoEmbedding(
+                    u.Numero, u.Nombre, u.Horas, u.Contenidos, u.Embedding.ToArray()))
+                .ToList();
+
+            var parametros = new ParametrosContenido(
+                UnidadesOrigen: unidadesOrigen,
+                UnidadesDestino: unidadesDestino,
+                Tau: request.Tau,
+                RutaNormativa: request.RutaNormativa);
+
+            var resultado = _reglaContenido.Calcular(parametros);
+
+            return Ok(new EvaluacionContenidoResponse(
+                resultado.Pcont,
+                resultado.UnidadesCubiertas.Select(u => new UnidadCoberturaResponse(
+                    u.Numero, u.Nombre, u.Horas, u.SimilitudMaxima, u.Cubierta, u.UnidadesOrigenContribuyentes)).ToList(),
+                resultado.UnidadesFaltantes.Select(u => new UnidadCoberturaResponse(
+                    u.Numero, u.Nombre, u.Horas, u.SimilitudMaxima, u.Cubierta, u.UnidadesOrigenContribuyentes)).ToList(),
+                resultado.TauUsado,
+                resultado.DetalleCalculo));
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new { mensaje = "Parámetros inválidos.", error = ex.Message });
         }
     }
 

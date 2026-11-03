@@ -56,3 +56,43 @@ public record EvaluacionCreditosResponse(
     IReadOnlyCollection<string> Alertas,
     bool BloqueoDuro,
     string DetalleCalculo);
+
+/// <summary>Unidad de origen con embedding para evaluación de contenidos (US-10, S2-J05/J06).</summary>
+public record UnidadOrigenEmbeddingRequest(
+    int Numero,
+    string Nombre,
+    int Horas,
+    string Contenidos,
+    IReadOnlyCollection<float> Embedding);
+
+/// <summary>Unidad de destino con embedding precalculado para evaluación de contenidos.</summary>
+public record UnidadDestinoEmbeddingRequest(
+    int Numero,
+    string Nombre,
+    int Horas,
+    string Contenidos,
+    IReadOnlyCollection<float> Embedding);
+
+/// <summary>Parámetros para calcular la cobertura semántica Pcont (US-10, S2-J06).</summary>
+public record CalcularContenidoRequest(
+    IReadOnlyCollection<UnidadOrigenEmbeddingRequest> UnidadesOrigen,
+    IReadOnlyCollection<UnidadDestinoEmbeddingRequest> UnidadesDestino,
+    double Tau,
+    string RutaNormativa);
+
+/// <summary>Cobertura de una unidad de destino.</summary>
+public record UnidadCoberturaResponse(
+    int Numero,
+    string Nombre,
+    int Horas,
+    double SimilitudMaxima,
+    bool Cubierta,
+    IReadOnlyCollection<int> UnidadesOrigenContribuyentes);
+
+/// <summary>Resultado del cálculo de Pcont y desglose por unidad.</summary>
+public record EvaluacionContenidoResponse(
+    decimal Pcont,
+    IReadOnlyCollection<UnidadCoberturaResponse> UnidadesCubiertas,
+    IReadOnlyCollection<UnidadCoberturaResponse> UnidadesFaltantes,
+    double TauUsado,
+    string DetalleCalculo);

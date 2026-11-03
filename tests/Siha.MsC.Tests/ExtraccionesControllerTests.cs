@@ -184,8 +184,9 @@ public class ExtraccionesControllerTests
 
         var servicio = db is not null ? new ExtraccionService(db) : new ExtraccionService(CrearDb());
         var reglaCreditos = new ReglaCreditosStrategy();
+        var reglaContenido = new ReglaContenidoStrategy();
 
-        return new ExtraccionesController(servicio, reglaCreditos)
+        return new ExtraccionesController(servicio, reglaCreditos, reglaContenido)
         {
             ControllerContext = new ControllerContext
             {
