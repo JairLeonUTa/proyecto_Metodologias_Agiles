@@ -28,6 +28,13 @@ RAIZ = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 SALIDA = os.path.join(RAIZ, "documentos-prueba", "certificados")
 PUBLICO = os.path.join(RAIZ, "frontend", "public", "plantillas")
 
+# Deben existir en MS A como usuarios DOCENTE (DbSeederA.DocentesDemo los crea con Seed:DocentePassword).
+REVISORES = {
+    "hnaranjo": ("Ing. Hernán Naranjo", "hnaranjo@uta.edu.ec"),
+    "mvaca": ("Ing. María Vaca", "mvaca@uta.edu.ec"),
+    "jcastro": ("Ing. Javier Castro", "jcastro@uta.edu.ec"),
+}
+
 AZUL = HexColor("#7a1f2b")  # granate institucional
 GRIS = HexColor("#555555")
 ANCHO, ALTO = A4
@@ -60,6 +67,7 @@ class Certificado:
     carrera_origen: str
     carrera_destino: str
     asignaturas: list = field(default_factory=list)
+    revisores: list = field(default_factory=lambda: [REVISORES["hnaranjo"], REVISORES["mvaca"]])
 
 
 def materia(codigo, nombre, semestre, creditos, fecha, nota, matricula, unidades):
@@ -170,6 +178,8 @@ def dibujar(cert: Certificado, ruta: str, total: int | None) -> int:
     e.titulo("CERTIFICADO DE HOMOLOGACIÓN SIHA-IA", 15)
     e.c.setFont("Helvetica", 9)
     e.c.drawCentredString(ANCHO / 2, e.y, "Formato SIHA-CH-01 · Documento preaprobado por Secretaría Académica")
+    e.y -= 11
+    e.c.drawCentredString(ANCHO / 2, e.y, "Incluye solo materias aprobadas en los últimos 10 años y sin tercera matrícula")
     e.y -= 16
     e.pares([("Número de certificado", cert.numero), ("Fecha de emisión", cert.fecha_emision)])
     e.pares([("Emitido por", "Secretaría Académica FISEI")])
@@ -184,13 +194,17 @@ def dibujar(cert: Certificado, ruta: str, total: int | None) -> int:
     e.pares([("Carrera de origen", cert.carrera_origen)])
     e.pares([("Carrera de destino", cert.carrera_destino)])
 
+    e.seccion("DOCENTES REVISORES")
+    for i, (nombre, correo) in enumerate(cert.revisores, start=1):
+        e.pares([(f"Docente revisor {i}", f"{nombre} - {correo}")])
+
     e.seccion("ASIGNATURAS APROBADAS")
     for a in cert.asignaturas:
         e.espacio(70)
         e.y -= 4
         e.pares([("Asignatura", f"{a.codigo} - {a.nombre}")], bold_valor=True)
         e.pares([("Semestre", str(a.semestre)), ("Créditos", str(a.creditos)), ("Horas totales", str(a.horas))], x0=MARGEN + 12)
-        e.pares([("Fecha de aprobación", a.fecha), ("Nota", a.nota), ("Matrícula", str(a.matricula))], x0=MARGEN + 12)
+        e.pares([("Fecha de aprobación", a.fecha), ("Nota", a.nota)], x0=MARGEN + 12)
         for i, (nombre, horas, contenidos) in enumerate(a.unidades, start=1):
             e.linea_simple(f"Unidad {i}: {nombre} ({horas} horas)", "Helvetica-Bold", 9, MARGEN + 12)
             e.texto_largo("Contenidos", contenidos, MARGEN + 24)
@@ -239,23 +253,24 @@ def main():
                     ]),
         Certificado("SIHA-IND-SW-solo-fisica1.pdf", "SIHA-2026-0148", "2026-10-30",
                     "Villacís Mora Carlos Andrés", "1805123456", **ind_sw, asignaturas=[
-                        materia("IND105", "Física I", 1, 4, "2015-02-13", "7.80", 1, FISICA_I_IND),
-                        materia("IND108", "Programación Básica", 2, 4, "2015-08-07", "8.40", 2, PROGRAMACION_BASICA_IND),
-                    ]),
+                        materia("IND105", "Física I", 1, 4, "2025-02-14", "7.80", 1, FISICA_I_IND),
+                        materia("IND108", "Programación Básica", 2, 4, "2025-08-01", "8.40", 2, PROGRAMACION_BASICA_IND),
+                    ], revisores=[REVISORES["mvaca"], REVISORES["jcastro"]]),
         Certificado("SIHA-UCuenca-SW-externo.pdf", "SIHA-2026-0151", "2026-10-31",
                     "Ortiz Salazar María José", "0104567891", tipo="EXTERNO", ruta="CAU-P-122",
                     institucion="Universidad de Cuenca", carrera_origen="CC - Ciencias de la Computación",
                     carrera_destino="SW - Ingeniería de Software", asignaturas=[
                         materia("UC-ED", "Estructuras de Datos", 3, 4, "2023-07-21", "8.90", 1, ESTRUCTURAS_UC),
                         materia("UC-PROG", "Programación I", 1, 4, "2021-07-23", "7.50", 1, PROGRAMACION_UC),
-                    ]),
+                    ], revisores=[REVISORES["hnaranjo"], REVISORES["jcastro"]]),
     ]
 
     # Certificado con errores para demostrar el rechazo: nota reprobatoria y horas que no cuadran.
     erroneo = Certificado("SIHA-con-errores.pdf", "SIHA-2026-0199", "2026-10-30",
                           "Prueba Errores Juan", "18045", **ind_sw, asignaturas=[
                               materia("IND105", "Física I", 1, 4, "2024-02-16", "6.40", 1, FISICA_I_IND),
-                          ])
+                              materia("IND108", "Programación Básica", 2, 4, "2014-08-01", "8.00", 1, PROGRAMACION_BASICA_IND),
+                          ], revisores=[REVISORES["hnaranjo"], ("Docente Externo", "docente@gmail.com")])
     erroneo.asignaturas[0].horas = 160
 
     rutas = [generar(c) for c in certificados + [erroneo]]

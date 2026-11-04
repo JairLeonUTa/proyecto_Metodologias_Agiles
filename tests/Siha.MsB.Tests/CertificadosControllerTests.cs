@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
+using System.Security.Claims;
 using Moq;
 using Siha.Contracts;
 using Siha.Contracts.Events;
@@ -27,6 +28,22 @@ public class CertificadosControllerTests : IDisposable
     private readonly Mock<IExpedienteEventPublisher> _publicador = new();
     private readonly List<SolicitudCreadaEvent> _publicados = new();
 
+    /// <summary>Usuarios de MS A simulados: correo → (rol DOCENTE, activo).</summary>
+    private readonly Dictionary<string, (bool Docente, bool Activo)> _usuarios = new()
+    {
+        ["hnaranjo@uta.edu.ec"] = (true, true),
+        ["mvaca@uta.edu.ec"] = (true, true),
+        ["jcastro@uta.edu.ec"] = (true, true)
+    };
+
+    private sealed class VerificadorFalso(Dictionary<string, (bool Docente, bool Activo)> usuarios) : IVerificadorDocentes
+    {
+        public Task<IReadOnlyList<DocenteRevisorVerificado>> VerificarAsync(IEnumerable<string> correos, CancellationToken cancellationToken = default)
+            => Task.FromResult<IReadOnlyList<DocenteRevisorVerificado>>(correos.Select(c => usuarios.TryGetValue(c, out var u)
+                ? new DocenteRevisorVerificado(c, true, u.Docente, u.Activo, $"Docente {c.Split('@')[0]}")
+                : new DocenteRevisorVerificado(c, false, false, false, string.Empty)).ToList());
+    }
+
     public CertificadosControllerTests()
     {
         _publicador
@@ -46,7 +63,7 @@ public class CertificadosControllerTests : IDisposable
         var envio = new ExpedienteEnvioService(_db, almacenamiento, _publicador.Object,
             Options.Create(Pruebas.OpcionesArchivos(_directorio)), Options.Create(new RepublicacionOptions()),
             NullLogger<ExpedienteEnvioService>.Instance);
-        return new CertificadosController(_db, almacenamiento, envio, NullLogger<CertificadosController>.Instance)
+        return new CertificadosController(_db, almacenamiento, envio, new VerificadorFalso(_usuarios), NullLogger<CertificadosController>.Instance)
         {
             ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() }
         };
@@ -80,7 +97,9 @@ public class CertificadosControllerTests : IDisposable
         fisica.Creditos.Should().Be(4);
         fisica.Horas.Should().Be(192);
         fisica.FechaAprobacionCertificada.Should().Be(new DateOnly(2024, 2, 16));
-        fisica.NumeroMatriculaDestino.Should().Be(1);
+        fisica.NumeroMatriculaDestino.Should().BeNull("el certificado ya excluye terceras matrículas");
+        e.Revisores!.Select(r => r.Correo).Should().Equal("hnaranjo@uta.edu.ec", "mvaca@uta.edu.ec");
+        e.Revisores!.First().Nombre.Should().Be("Docente hnaranjo", "se usa el nombre registrado en MS A");
         fisica.CodigoDestino.Should().BeNull("el destino lo propone el análisis automático");
 
         var evento = _publicados.Should().ContainSingle().Subject;
@@ -131,5 +150,53 @@ public class CertificadosControllerTests : IDisposable
         leido.InstitucionOrigen.Should().Be("Universidad de Cuenca");
         leido.Asignaturas.Should().HaveCount(2);
         _db.Expedientes.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task Revisor_que_no_es_docente_o_no_existe_impide_registrar()
+    {
+        _usuarios["mvaca@uta.edu.ec"] = (false, true);
+        _usuarios.Remove("hnaranjo@uta.edu.ec");
+
+        var resultado = await Controlador().Registrar(Certificado("SIHA-IND-SW-completo.pdf"), CancellationToken.None);
+
+        var cuerpo = resultado.Result.Should().BeOfType<UnprocessableEntityObjectResult>().Subject.Value!;
+        var detalles = (IEnumerable<string>)cuerpo.GetType().GetProperty("detalles")!.GetValue(cuerpo)!;
+        detalles.Should().Contain(d => d.Contains("hnaranjo@uta.edu.ec") && d.Contains("no está registrado"));
+        detalles.Should().Contain(d => d.Contains("mvaca@uta.edu.ec") && d.Contains("DOCENTE"));
+        _db.Expedientes.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task Cada_docente_ve_solo_las_solicitudes_que_le_asignaron()
+    {
+        await Controlador().Registrar(Certificado("SIHA-IND-SW-completo.pdf"), CancellationToken.None);      // hnaranjo + mvaca
+        await Controlador().Registrar(Certificado("SIHA-IND-SW-solo-fisica1.pdf"), CancellationToken.None);  // mvaca + jcastro
+        var envio = new ExpedienteEnvioService(_db, Pruebas.CrearAlmacenamiento(Pruebas.OpcionesArchivos(_directorio)), _publicador.Object,
+            Options.Create(Pruebas.OpcionesArchivos(_directorio)), Options.Create(new RepublicacionOptions()), NullLogger<ExpedienteEnvioService>.Instance);
+
+        ExpedientesController Como(string correo) => new(_db, envio, NullLogger<ExpedientesController>.Instance)
+        {
+            ControllerContext = new ControllerContext
+            {
+                HttpContext = new DefaultHttpContext
+                {
+                    User = new ClaimsPrincipal(new ClaimsIdentity(new[]
+                    {
+                        new Claim(ClaimTypes.Email, correo), new Claim(ClaimTypes.Role, RolesSistema.Docente)
+                    }, "prueba"))
+                }
+            }
+        };
+
+        var deNaranjo = (await Como("hnaranjo@uta.edu.ec").Listar(null, CancellationToken.None)).Result
+            .Should().BeOfType<OkObjectResult>().Subject.Value.Should().BeAssignableTo<IEnumerable<ExpedienteResponse>>().Subject.ToList();
+        var deVaca = (await Como("mvaca@uta.edu.ec").Listar(null, CancellationToken.None)).Result
+            .Should().BeOfType<OkObjectResult>().Subject.Value.Should().BeAssignableTo<IEnumerable<ExpedienteResponse>>().Subject.ToList();
+
+        deNaranjo.Should().ContainSingle().Which.NumeroCertificado.Should().Be("SIHA-2026-0147");
+        deVaca.Should().HaveCount(2);
+        var ajeno = _db.Expedientes.Single(x => x.NumeroCertificado == "SIHA-2026-0148").Id;
+        (await Como("hnaranjo@uta.edu.ec").Obtener(ajeno, CancellationToken.None)).Result.Should().BeOfType<NotFoundResult>();
     }
 }

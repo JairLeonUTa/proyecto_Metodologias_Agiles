@@ -96,6 +96,7 @@ export interface Expediente {
   numeroCertificado?: string | null;
   estudianteNombre?: string | null;
   estudianteIdentificacion?: string | null;
+  revisores?: Array<{ nombre: string; correo: string }> | null;
 }
 
 /** Unidad temática de una asignatura del certificado SIHA. */
@@ -116,7 +117,6 @@ export interface AsignaturaCertificada {
   /** AAAA-MM-DD */
   fechaAprobacion: string;
   nota: number;
-  numeroMatricula: number;
   unidades: UnidadCertificada[];
 }
 
@@ -135,6 +135,8 @@ export interface CertificadoLeido {
   carreraDestinoCodigo: string;
   carreraDestinoNombre: string;
   asignaturas: AsignaturaCertificada[];
+  /** Docentes revisores (usuarios DOCENTE verificados en MS A). */
+  revisores: Array<{ nombre: string; correo: string }>;
 }
 
 /** Respuesta 202 de `POST /api/expedientes/certificado`. */

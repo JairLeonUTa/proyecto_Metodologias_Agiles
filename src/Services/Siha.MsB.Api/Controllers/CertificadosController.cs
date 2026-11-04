@@ -28,17 +28,20 @@ public class CertificadosController : ControllerBase
     private readonly SihaDbContextB _db;
     private readonly IArchivoStorageService _archivos;
     private readonly ExpedienteEnvioService _envio;
+    private readonly IVerificadorDocentes _docentes;
     private readonly ILogger<CertificadosController> _logger;
 
     public CertificadosController(
         SihaDbContextB db,
         IArchivoStorageService archivos,
         ExpedienteEnvioService envio,
+        IVerificadorDocentes docentes,
         ILogger<CertificadosController> logger)
     {
         _db = db;
         _archivos = archivos;
         _envio = envio;
+        _docentes = docentes;
         _logger = logger;
     }
 
@@ -160,7 +163,48 @@ public class CertificadosController : ControllerBase
             }));
         }
 
-        return (lectura.Certificado, null);
+        // Los dos revisores deben existir en la base de usuarios (MS A) con rol DOCENTE y activos.
+        IReadOnlyList<DocenteRevisorVerificado> verificados;
+        try
+        {
+            verificados = await _docentes.VerificarAsync(lectura.Certificado!.Revisores.Select(r => r.Correo), cancellationToken);
+        }
+        catch (VerificacionDocentesNoDisponibleException ex)
+        {
+            _logger.LogError(ex, "No se pudo verificar los docentes revisores.");
+            return (null, StatusCode(StatusCodes.Status503ServiceUnavailable, new { mensaje = ex.Message }));
+        }
+
+        var problemas = new List<string>();
+        foreach (var revisor in lectura.Certificado.Revisores)
+        {
+            var v = verificados.FirstOrDefault(d => string.Equals(d.Correo, revisor.Correo, StringComparison.OrdinalIgnoreCase));
+            if (v is null || !v.Existe)
+                problemas.Add($"El docente revisor {revisor.Nombre} ({revisor.Correo}) no está registrado en el sistema.");
+            else if (!v.EsDocente)
+                problemas.Add($"El usuario {revisor.Correo} no tiene el rol DOCENTE; no puede ser revisor.");
+            else if (!v.Activo)
+                problemas.Add($"El docente {revisor.Correo} está inactivo; no puede ser revisor.");
+        }
+
+        if (problemas.Count > 0)
+        {
+            return (null, UnprocessableEntity(new
+            {
+                mensaje = "Los docentes revisores del certificado deben ser usuarios activos con rol DOCENTE.",
+                detalles = problemas
+            }));
+        }
+
+        // Se usa el nombre registrado en el sistema para el docente.
+        var revisores = lectura.Certificado.Revisores
+            .Select(r => r with
+            {
+                Nombre = verificados.First(d => string.Equals(d.Correo, r.Correo, StringComparison.OrdinalIgnoreCase)).NombreCompleto is { Length: > 0 } n ? n : r.Nombre
+            })
+            .ToList();
+
+        return (lectura.Certificado with { Revisores = revisores }, null);
     }
 
     internal static Expediente ConstruirExpediente(CertificadoSiha c)
@@ -178,6 +222,10 @@ public class CertificadosController : ControllerBase
             NumeroCertificado = Recortar(c.NumeroCertificado, 40),
             EstudianteNombre = Recortar(c.EstudianteNombre, 200),
             EstudianteIdentificacion = Recortar(c.EstudianteIdentificacion, 20),
+            Revisor1Nombre = Recortar(c.Revisores[0].Nombre, 200),
+            Revisor1Correo = Recortar(c.Revisores[0].Correo, 150),
+            Revisor2Nombre = Recortar(c.Revisores[1].Nombre, 200),
+            Revisor2Correo = Recortar(c.Revisores[1].Correo, 150),
             Observaciones = $"Creado desde el certificado SIHA {c.NumeroCertificado} emitido el {c.FechaEmision:yyyy-MM-dd} por {c.EmitidoPor}."
         };
 
@@ -191,7 +239,8 @@ public class CertificadosController : ControllerBase
                 AsignaturaDestinoCodigo = null,
                 NotaOrigen = (double)a.Nota,
                 FechaAprobacionCertificada = a.FechaAprobacion,
-                NumeroMatriculaDestino = a.NumeroMatricula,
+                // El certificado SIHA ya excluye las terceras matrículas: no se registra matrícula.
+                NumeroMatriculaDestino = null,
                 Semestre = a.Semestre,
                 Creditos = a.Creditos,
                 Horas = a.HorasTotales
@@ -215,9 +264,10 @@ public class CertificadosController : ControllerBase
         c.CarreraDestinoCodigo,
         c.CarreraDestinoNombre,
         c.Asignaturas.Select(a => new AsignaturaCertificadaResponse(
-            a.Codigo, a.Nombre, a.Semestre, a.Creditos, a.HorasTotales, a.FechaAprobacion, a.Nota, a.NumeroMatricula,
+            a.Codigo, a.Nombre, a.Semestre, a.Creditos, a.HorasTotales, a.FechaAprobacion, a.Nota,
             a.Unidades.Select(u => new UnidadCertificadaResponse(u.Numero, u.Nombre, u.Horas, u.Contenidos)).ToList()))
-            .ToList());
+            .ToList(),
+        c.Revisores.Select(r => new RevisorResponse(r.Nombre, r.Correo)).ToList());
 
     private static string Recortar(string texto, int maximo) => texto.Length <= maximo ? texto : texto[..maximo];
 }

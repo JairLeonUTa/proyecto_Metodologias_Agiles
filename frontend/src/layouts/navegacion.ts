@@ -13,6 +13,8 @@ export const RUTAS = {
   importarCatalogo: '/catalogos/importar',
   usuarios: '/administracion/usuarios',
   nuevaSolicitud: '/solicitudes/nueva',
+  solicitudes: '/solicitudes',
+  detalleSolicitud: '/solicitudes/:id',
   expedientes: '/expedientes',
   consultaExpediente: '/expedientes/consulta',
   detalleExpediente: '/expedientes/:id',
@@ -52,99 +54,21 @@ export interface GrupoNavegacion {
  */
 export const MENU: GrupoNavegacion[] = [
   {
-    titulo: 'General',
-    elementos: [
-      {
-        etiqueta: 'Inicio',
-        descripcion: 'Panel de resumen del sistema',
-        ruta: RUTAS.inicio,
-        icono: 'inicio',
-        rolesPermitidos: TODOS_LOS_ROLES,
-      },
-      {
-        etiqueta: 'Reglas y umbrales',
-        descripcion: 'Configuración de θ, δ, τ y catálogo normativo',
-        ruta: RUTAS.reglas,
-        icono: 'reglas',
-        rolesPermitidos: TODOS_LOS_ROLES,
-      },
-    ],
-  },
-  {
-    titulo: 'Expedientes',
+    titulo: 'Solicitudes',
     elementos: [
       {
         etiqueta: 'Registrar solicitud',
-        descripcion: 'Alta de una solicitud de homologación interna o externa',
+        descripcion: 'Subir el certificado SIHA (PDF); el agente lo analiza y lo asigna a los dos docentes',
         ruta: RUTAS.nuevaSolicitud,
         icono: 'nueva-solicitud',
         rolesPermitidos: ROLES_EXPEDIENTES,
       },
       {
-        etiqueta: 'Bandeja de expedientes',
-        descripcion: 'Listado de expedientes por estado',
-        ruta: RUTAS.expedientes,
+        etiqueta: 'Solicitudes',
+        descripcion: 'Estimación del agente y respuesta de los docentes revisores',
+        ruta: RUTAS.solicitudes,
         icono: 'bandeja',
-        rolesPermitidos: ROLES_EXPEDIENTES,
-      },
-      {
-        etiqueta: 'Bandeja de procesamiento',
-        descripcion: 'Confianza de extracción y confirmación de datos (MS C)',
-        ruta: RUTAS.bandejaProcesamiento,
-        icono: 'bandeja',
-        rolesPermitidos: ROLES_EXPEDIENTES,
-      },
-      {
-        etiqueta: 'Consultar estado',
-        descripcion: 'Seguimiento de un expediente por su identificador',
-        ruta: RUTAS.consultaExpediente,
-        icono: 'consulta',
-        rolesPermitidos: ROLES_EXPEDIENTES,
-      },
-    ],
-  },
-  {
-    titulo: 'Evaluación',
-    elementos: [
-      {
-        etiqueta: 'Bandeja de análisis',
-        descripcion: 'Créditos, cobertura de contenidos y precedentes',
-        ruta: RUTAS.bandejaAnalisis,
-        icono: 'consulta',
-        rolesPermitidos: ROLES_EVALUACION,
-      },
-    ],
-  },
-  {
-    titulo: 'Catálogo académico',
-    elementos: [
-      {
-        etiqueta: 'Carreras',
-        descripcion: 'Registro y listado de carreras de la UTA',
-        ruta: RUTAS.carreras,
-        icono: 'carreras',
         rolesPermitidos: TODOS_LOS_ROLES,
-      },
-      {
-        etiqueta: 'Mallas curriculares',
-        descripcion: 'Versiones de malla por carrera',
-        ruta: RUTAS.mallas,
-        icono: 'mallas',
-        rolesPermitidos: TODOS_LOS_ROLES,
-      },
-      {
-        etiqueta: 'Asignaturas y unidades',
-        descripcion: 'Planes analíticos y unidades temáticas',
-        ruta: RUTAS.asignaturas,
-        icono: 'asignaturas',
-        rolesPermitidos: TODOS_LOS_ROLES,
-      },
-      {
-        etiqueta: 'Importar catálogo',
-        descripcion: 'Carga masiva del catálogo estructurado',
-        ruta: RUTAS.importarCatalogo,
-        icono: 'importar',
-        rolesPermitidos: [ROLES.ADMINISTRADOR],
       },
     ],
   },
@@ -152,8 +76,29 @@ export const MENU: GrupoNavegacion[] = [
     titulo: 'Administración',
     elementos: [
       {
+        etiqueta: 'Reglas',
+        descripcion: 'Contenido mínimo para homologar (80 %)',
+        ruta: RUTAS.reglas,
+        icono: 'reglas',
+        rolesPermitidos: [ROLES.ADMINISTRADOR],
+      },
+      {
+        etiqueta: 'Asignaturas y contenidos',
+        descripcion: 'Mallas de cada carrera que usa el agente para comparar',
+        ruta: RUTAS.asignaturas,
+        icono: 'asignaturas',
+        rolesPermitidos: [ROLES.ADMINISTRADOR],
+      },
+      {
+        etiqueta: 'Carreras y mallas',
+        descripcion: 'Carreras de la FISEI y sus versiones de malla',
+        ruta: RUTAS.mallas,
+        icono: 'mallas',
+        rolesPermitidos: [ROLES.ADMINISTRADOR],
+      },
+      {
         etiqueta: 'Usuarios y roles',
-        descripcion: 'Cuentas institucionales y asignación de roles',
+        descripcion: 'Operadores y docentes revisores',
         ruta: RUTAS.usuarios,
         icono: 'usuarios',
         rolesPermitidos: [ROLES.ADMINISTRADOR],

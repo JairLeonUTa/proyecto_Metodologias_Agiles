@@ -21,7 +21,14 @@ public sealed record CertificadoSiha(
     string CarreraOrigenNombre,
     string CarreraDestinoCodigo,
     string CarreraDestinoNombre,
-    IReadOnlyList<AsignaturaCertificada> Asignaturas);
+    IReadOnlyList<AsignaturaCertificada> Asignaturas,
+    IReadOnlyList<RevisorCertificado> Revisores);
+
+/// <summary>
+/// Docente revisor asignado en el certificado. Debe existir en MS A como usuario activo con rol DOCENTE
+/// (lo verifica MS B por gRPC al registrar).
+/// </summary>
+public sealed record RevisorCertificado(string Nombre, string Correo);
 
 /// <summary>Asignatura aprobada que consta en el certificado, con su plan analítico resumido.</summary>
 public sealed record AsignaturaCertificada(
@@ -32,7 +39,6 @@ public sealed record AsignaturaCertificada(
     int HorasTotales,
     DateOnly FechaAprobacion,
     decimal Nota,
-    int NumeroMatricula,
     IReadOnlyList<UnidadCertificada> Unidades);
 
 /// <summary>Unidad temática de una asignatura aprobada (nombre, horas y contenidos).</summary>

@@ -34,6 +34,10 @@ const CERTIFICADO = {
   carreraOrigenNombre: 'Ingeniería Industrial',
   carreraDestinoCodigo: 'SW',
   carreraDestinoNombre: 'Ingeniería de Software',
+  revisores: [
+    { nombre: 'Ing. Hernán Naranjo', correo: 'hnaranjo@uta.edu.ec' },
+    { nombre: 'Ing. María Vaca', correo: 'mvaca@uta.edu.ec' },
+  ],
   asignaturas: [
     {
       codigo: 'IND105',
@@ -43,7 +47,6 @@ const CERTIFICADO = {
       horasTotales: 192,
       fechaAprobacion: '2024-02-16',
       nota: 8.6,
-      numeroMatricula: 1,
       unidades: [{ numero: 1, nombre: 'Cinemática', horas: 192, contenidos: 'Movimiento' }],
     },
   ],
@@ -63,6 +66,7 @@ describe('Registro con un único certificado SIHA', () => {
     expect(screen.queryByLabelText(/Carrera de origen/)).not.toBeInTheDocument();
     expect(screen.queryByLabelText(/Fecha de aprobación/)).not.toBeInTheDocument();
     expect(screen.queryByLabelText(/Matrícula/)).not.toBeInTheDocument();
+    expect(screen.queryByLabelText(/revisor/i)).not.toBeInTheDocument();
     expect(screen.getByTestId('certificado-pdf')).toHaveAttribute('type', 'file');
   });
 
@@ -83,6 +87,8 @@ describe('Registro con un único certificado SIHA', () => {
     expect(screen.getByText('IND — Ingeniería Industrial')).toBeInTheDocument();
     expect(screen.getByText('Física I')).toBeInTheDocument();
     expect(screen.getByText('2024-02-16')).toBeInTheDocument();
+    expect(screen.getByText('8.60')).toBeInTheDocument();
+    expect(screen.getByText('Ing. Hernán Naranjo y Ing. María Vaca')).toBeInTheDocument();
 
     await user.click(screen.getByRole('button', { name: 'Registrar y enviar solicitud' }));
 

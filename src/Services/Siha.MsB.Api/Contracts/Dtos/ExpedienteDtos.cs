@@ -60,7 +60,11 @@ public record ExpedienteResponse(
     IReadOnlyCollection<AsignaturaResponse> Asignaturas,
     string? NumeroCertificado = null,
     string? EstudianteNombre = null,
-    string? EstudianteIdentificacion = null);
+    string? EstudianteIdentificacion = null,
+    IReadOnlyCollection<RevisorResponse>? Revisores = null);
+
+/// <summary>Docente revisor asignado a la solicitud.</summary>
+public record RevisorResponse(string Nombre, string Correo);
 
 /// <summary>
 /// Registro: 201 con borrador sin publicar. Envío: 202 con resultado de publicación

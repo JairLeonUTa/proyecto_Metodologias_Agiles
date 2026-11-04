@@ -1,13 +1,13 @@
 import { peticion } from './httpClient';
 import type {
-  AnalisisAutomatico,
   AnalisisCompleto,
   AnalizarExtraccion,
   BuscarPrecedente,
   ConfirmarExtraccion,
   Extraccion,
   Precedente,
-  SolicitudAnalisisAutomatico,
+  DecisionMateria,
+  SolicitudAnalisis,
 } from '../types/analisis';
 
 /**
@@ -29,15 +29,17 @@ export const extraccionesApi = {
   analizar: (id: string, datos: AnalizarExtraccion) =>
     peticion<AnalisisCompleto>(`/api/extracciones/${id}/analizar`, { metodo: 'POST', cuerpo: datos }),
 
-  /**
-   * Homologación automática por contenidos de todo el expediente: compara las materias aprobadas del
-   * certificado con todas las materias de la carrera de destino y propone solo las que alcanzan el mínimo.
-   */
-  analizarExpediente: (expedienteId: string, datos: SolicitudAnalisisAutomatico) =>
-    peticion<AnalisisAutomatico>(`/api/extracciones/expedientes/${expedienteId}/analisis-automatico`, {
-      metodo: 'POST',
-      cuerpo: datos,
-    }),
+  /** Solicitud con certificado SIHA: estimación del agente, revisores y respuestas. 404 si aún no se procesa. */
+  obtenerSolicitud: (expedienteId: string) =>
+    peticion<SolicitudAnalisis>(`/api/extracciones/expedientes/${expedienteId}/analisis`),
+
+  /** Vuelve a ejecutar el agente (por ejemplo, si la IA no estaba disponible). */
+  reanalizar: (expedienteId: string) =>
+    peticion<SolicitudAnalisis>(`/api/extracciones/expedientes/${expedienteId}/analisis-automatico`, { metodo: 'POST' }),
+
+  /** Respuesta final del docente revisor que inicia sesión. */
+  responder: (expedienteId: string, dictamen: { decisiones: DecisionMateria[]; comentario: string | null }) =>
+    peticion<SolicitudAnalisis>(`/api/extracciones/expedientes/${expedienteId}/dictamen`, { metodo: 'POST', cuerpo: dictamen }),
 
   /** Coincidencia exacta; sin coincidencia devuelve `[]` (S2-A07). */
   buscarPrecedentes: (datos: BuscarPrecedente) =>

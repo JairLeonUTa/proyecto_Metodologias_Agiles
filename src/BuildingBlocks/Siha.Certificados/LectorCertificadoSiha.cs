@@ -22,11 +22,23 @@ public static class LectorCertificadoSiha
     /// <summary>Nota mínima aprobatoria en la escala de 0 a 10 que usa el certificado.</summary>
     public const decimal NotaMinimaAprobatoria = 7.0m;
 
+    /// <summary>
+    /// Vigencia máxima de una materia aprobada. El certificado llega ya filtrado por Secretaría:
+    /// solo trae materias de hasta 10 años y sin tercera matrícula, así que el sistema ya no las controla.
+    /// </summary>
+    public const int VigenciaMaximaAnos = 10;
+
     private static readonly string[] EtiquetasGenerales =
     {
         "numero de certificado", "fecha de emision", "emitido por", "estudiante", "cedula",
-        "tipo de tramite", "ruta normativa", "institucion de origen", "carrera de origen", "carrera de destino"
+        "tipo de tramite", "ruta normativa", "institucion de origen", "carrera de origen", "carrera de destino",
+        "docente revisor 1", "docente revisor 2"
     };
+
+    /// <summary>Dominio institucional obligatorio de los correos de los docentes revisores.</summary>
+    public const string DominioInstitucional = "@uta.edu.ec";
+
+    private static readonly Regex RegexCorreo = new(@"[A-Za-z0-9._%+\-]+@[A-Za-z0-9.\-]+\.[A-Za-z]{2,}", RegexOptions.Compiled);
 
     private static readonly string[] EtiquetasAsignatura =
     {
@@ -264,6 +276,28 @@ public static class LectorCertificadoSiha
         if (codOrigen.Length > 0 && codOrigen == codDestino && tipo == TiposTramite.Interno)
             errores.Add("En un cambio de carrera la carrera de origen y la de destino deben ser distintas.");
 
+        var revisores = new List<RevisorCertificado>();
+        foreach (var n in new[] { 1, 2 })
+        {
+            var texto = Requerido($"docente revisor {n}", $"Docente revisor {n}");
+            if (texto.Length == 0) continue;
+            var correo = RegexCorreo.Match(texto);
+            if (!correo.Success)
+            {
+                errores.Add($"'Docente revisor {n}' debe tener el formato 'Nombre - correo{DominioInstitucional}' (se leyó '{texto}').");
+                continue;
+            }
+
+            var direccion = correo.Value.ToLowerInvariant();
+            if (!direccion.EndsWith(DominioInstitucional, StringComparison.Ordinal))
+                errores.Add($"El correo del docente revisor {n} ({direccion}) debe ser institucional ({DominioInstitucional}).");
+            var nombreRevisor = texto.Remove(correo.Index, correo.Length).Trim(' ', '-', '–', '—', '<', '>', '(', ')', ',');
+            revisores.Add(new RevisorCertificado(nombreRevisor.Length > 0 ? nombreRevisor : direccion, direccion));
+        }
+
+        if (revisores.Count == 2 && revisores[0].Correo == revisores[1].Correo)
+            errores.Add("Los dos docentes revisores deben ser personas distintas.");
+
         if (leidas.Count == 0)
             errores.Add("El certificado no lista ninguna asignatura aprobada (líneas 'Asignatura: CÓDIGO - Nombre').");
 
@@ -296,7 +330,7 @@ public static class LectorCertificadoSiha
             var semestre = Entero("semestre", "Semestre", 1, 12);
             var creditos = Entero("creditos", "Créditos", 1, 30);
             var horas = Entero("horas totales", "Horas totales", 1, 2000);
-            var matricula = Entero("matricula", "Matrícula", 1, 9);
+            // La matrícula ya no forma parte del formato (el certificado excluye las terceras matrículas).
 
             var fecha = default(DateOnly);
             if (!a.Campos.TryGetValue("fecha de aprobacion", out var fechaTexto) || string.IsNullOrWhiteSpace(fechaTexto))
@@ -305,6 +339,8 @@ public static class LectorCertificadoSiha
                 errores.Add($"{prefijo}: la fecha de aprobación '{fechaTexto}' no es válida.");
             else if (fecha > hoy || (fechaEmision != default && fecha > fechaEmision))
                 errores.Add($"{prefijo}: la fecha de aprobación {fecha:yyyy-MM-dd} es posterior a la emisión del certificado.");
+            else if (fecha < (fechaEmision != default ? fechaEmision : hoy).AddYears(-VigenciaMaximaAnos))
+                errores.Add($"{prefijo}: fue aprobada el {fecha:yyyy-MM-dd}, hace más de {VigenciaMaximaAnos} años; el certificado solo debe incluir materias vigentes.");
 
             var nota = 0m;
             if (!a.Campos.TryGetValue("nota", out var notaTexto) || string.IsNullOrWhiteSpace(notaTexto))
@@ -328,7 +364,7 @@ public static class LectorCertificadoSiha
                 errores.Add($"{prefijo}: las horas de las unidades suman {sumaHoras} y no coinciden con las horas totales ({horas}).");
 
             asignaturas.Add(new AsignaturaCertificada(
-                codigo.ToUpperInvariant(), nombre, semestre, creditos, horas, fecha, nota, matricula,
+                codigo.ToUpperInvariant(), nombre, semestre, creditos, horas, fecha, nota,
                 a.Unidades.Select(u => new UnidadCertificada(
                     u.Numero, u.Nombre, u.Horas, Regex.Replace(u.Contenidos.ToString(), @"\s+", " ").Trim())).ToList()));
         }
@@ -340,7 +376,7 @@ public static class LectorCertificadoSiha
 
         return ResultadoLecturaCertificado.Valido(new CertificadoSiha(
             numero, fechaEmision, emitidoPor, estudiante, cedula, tipo, ruta, institucion,
-            codOrigen.ToUpperInvariant(), nomOrigen, codDestino.ToUpperInvariant(), nomDestino, asignaturas));
+            codOrigen.ToUpperInvariant(), nomOrigen, codDestino.ToUpperInvariant(), nomDestino, asignaturas, revisores));
     }
 
     private static (string Codigo, string Nombre) CodigoYNombre(string texto, string etiqueta, List<string> errores)

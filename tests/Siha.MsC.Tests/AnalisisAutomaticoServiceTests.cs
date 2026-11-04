@@ -76,7 +76,7 @@ public class AnalisisAutomaticoServiceTests
         parcial.Pcont.Should().Be(50m);
         parcial.AlcanzaContenido.Should().BeFalse();
         parcial.EstadoFinal.Should().Be(EstadoEvaluacionFinal.ContenidoInsuficiente);
-        parcial.Alertas.First().Should().Contain("solo se cubre el 50 %").And.Contain("no alcanza el mínimo")
+        parcial.Alertas.First().Should().Contain("cubre el 50 %").And.Contain("a criterio del docente")
             .And.Contain("Fluidos");
         parcial.Unidades.Where(u => !u.Cubierta).Select(u => u.Nombre).Should().BeEquivalentTo(TemasFisicaII);
         r.OrigenesSinAsignar.Select(o => o.Codigo).Should().Equal("IND105");
@@ -219,6 +219,128 @@ public class AnalisisAutomaticoServiceTests
         extracciones[0].Horas.Should().Be(192);
         extracciones[0].Unidades.Should().HaveCount(4);
         extracciones[2].Unidades.Select(u => u.Nombre).Should().Contain("Mecánica de fluidos");
+        extracciones[0].Nota.Should().Be(8.60m);
+        extracciones[0].FechaAprobacion.Should().Be(new DateOnly(2024, 2, 16));
+        var contexto = await db.AnalisisExpedientes.SingleAsync();
+        contexto.CarreraDestinoCodigo.Should().Be("SW");
+        contexto.Revisor1Correo.Should().Be("hnaranjo@uta.edu.ec");
+        contexto.Revisor2Correo.Should().Be("mvaca@uta.edu.ec");
+        contexto.Estado.Should().Be(EstadosAnalisis.Pendiente);
+    }
+
+    // ---------- solicitud completa: agente + dos docentes ----------
+
+    private sealed class CatalogoFalso(IReadOnlyList<DestinoAnalisisRequest> malla) : ICatalogoGrpcCliente
+    {
+        public Task<IReadOnlyList<DestinoAnalisisRequest>> ObtenerMallaAsync(string carreraCodigo, CancellationToken cancellationToken = default)
+            => Task.FromResult(malla);
+    }
+
+    private static async Task<Guid> SembrarSolicitud(SihaDbContextC db, params (string Codigo, string Nombre, string[] Temas)[] materias)
+    {
+        var expediente = await Sembrar(db, materias);
+        db.AnalisisExpedientes.Add(new AnalisisExpediente
+        {
+            ExpedienteId = expediente, CodigoExpediente = "EXP-1", RutaNormativa = "CAU-P-011", TipoTramite = "INTERNO",
+            InstitucionOrigen = "UTA", CarreraOrigenCodigo = "IND", CarreraDestinoCodigo = "SW",
+            Revisor1Nombre = "Ing. Naranjo", Revisor1Correo = "hnaranjo@uta.edu.ec",
+            Revisor2Nombre = "Ing. Vaca", Revisor2Correo = "mvaca@uta.edu.ec"
+        });
+        await db.SaveChangesAsync();
+        return expediente;
+    }
+
+    private static AnalisisAutomaticoService ServicioConCatalogo(SihaDbContextC db, IReadOnlyList<DestinoAnalisisRequest>? malla = null)
+    {
+        var precedentes = new Mock<IPrecedenteService>();
+        precedentes.Setup(p => p.BuscarAsync(It.IsAny<BuscarPrecedenteRequest>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Array.Empty<PrecedenteResponse>());
+        return new AnalisisAutomaticoService(db, Reglas(), new ReglaCreditosStrategy(), new ReglaContenidoStrategy(),
+            precedentes.Object, Embeddings(), NullLogger<AnalisisAutomaticoService>.Instance, null,
+            new CatalogoFalso(malla ?? Solicitud().AsignaturasDestino.ToList()));
+    }
+
+    private static DictamenRequest Decidir(params (string Codigo, bool Aprueba)[] d)
+        => new(d.Select(x => new DecisionMateriaRequest(x.Codigo, x.Aprueba, null)).ToList(), "Revisado");
+
+    [Fact]
+    public async Task El_agente_trae_la_malla_por_gRPC_analiza_y_guarda_la_estimacion()
+    {
+        await using var db = CrearDb();
+        var expediente = await SembrarSolicitud(db, ("IND105", "Física I", TemasFisicaI), ("IND108", "Programación Básica", TemasProgramacion));
+
+        await ServicioConCatalogo(db).AnalizarYGuardarAsync(expediente);
+
+        var solicitudes = new SolicitudesAnalisisService(db);
+        var vista = (await solicitudes.ObtenerAsync(expediente, "admin@uta.edu.ec", esDocente: false))!;
+        vista.Estado.Should().Be(EstadosAnalisis.Analizado);
+        vista.Resultado!.Propuestas.Should().ContainSingle(p => p.CodigoDestino == "SW101");
+        vista.ResultadoFinal.Should().HaveCount(2);
+        vista.ResultadoFinal.Single(m => m.CodigoDestino == "SW101").Estimacion.Should().Be(SolicitudesAnalisisService.Cumple);
+        vista.ResultadoFinal.Single(m => m.CodigoDestino == "SW105").Estimacion.Should().Be(SolicitudesAnalisisService.CriterioDocente);
+        vista.EstadoRevision.Should().Be("PENDIENTE");
+        vista.PuedeResponder.Should().BeFalse("el administrador no es revisor");
+    }
+
+    [Fact]
+    public async Task Solo_los_dos_docentes_asignados_ven_y_responden_la_solicitud()
+    {
+        await using var db = CrearDb();
+        var expediente = await SembrarSolicitud(db, ("IND108", "Programación Básica", TemasProgramacion));
+        await ServicioConCatalogo(db).AnalizarYGuardarAsync(expediente);
+        var solicitudes = new SolicitudesAnalisisService(db);
+
+        (await solicitudes.ObtenerAsync(expediente, "otro@uta.edu.ec", esDocente: true)).Should().BeNull();
+        (await solicitudes.ObtenerAsync(expediente, "mvaca@uta.edu.ec", esDocente: true))!.PuedeResponder.Should().BeTrue();
+        var (_, error, codigo) = await solicitudes.ResponderAsync(expediente, "otro@uta.edu.ec", "Otro", Decidir(("SW101", true)));
+        codigo.Should().Be(404);
+        error.Should().Contain("no está asignada");
+    }
+
+    [Fact]
+    public async Task Con_dos_aprobaciones_queda_homologada_y_si_discrepan_sin_acuerdo()
+    {
+        await using var db = CrearDb();
+        var expediente = await SembrarSolicitud(db, ("IND105", "Física I", TemasFisicaI), ("IND108", "Programación Básica", TemasProgramacion));
+        await ServicioConCatalogo(db).AnalizarYGuardarAsync(expediente);
+        var solicitudes = new SolicitudesAnalisisService(db);
+
+        var uno = await solicitudes.ResponderAsync(expediente, "hnaranjo@uta.edu.ec", "Naranjo", Decidir(("SW101", true), ("SW105", false)));
+        uno.Respuesta!.EstadoRevision.Should().Be("EN_REVISION");
+        var dos = await solicitudes.ResponderAsync(expediente, "mvaca@uta.edu.ec", "Vaca", Decidir(("SW101", true), ("SW105", true)));
+
+        var final = dos.Respuesta!;
+        final.EstadoRevision.Should().Be("RESUELTA");
+        final.ResultadoFinal.Single(m => m.CodigoDestino == "SW101").Resultado.Should().Be("HOMOLOGADA");
+        final.ResultadoFinal.Single(m => m.CodigoDestino == "SW105").Resultado.Should().Be("SIN_ACUERDO");
+        final.Revisores.Should().OnlyContain(r => r.Respondio);
+    }
+
+    [Fact]
+    public async Task El_docente_debe_decidir_todas_las_materias()
+    {
+        await using var db = CrearDb();
+        var expediente = await SembrarSolicitud(db, ("IND105", "Física I", TemasFisicaI), ("IND108", "Programación Básica", TemasProgramacion));
+        await ServicioConCatalogo(db).AnalizarYGuardarAsync(expediente);
+
+        var (_, error, codigo) = await new SolicitudesAnalisisService(db)
+            .ResponderAsync(expediente, "hnaranjo@uta.edu.ec", "Naranjo", Decidir(("SW101", true)));
+
+        codigo.Should().Be(400);
+        error.Should().Contain("SW105");
+    }
+
+    [Fact]
+    public async Task Si_la_carrera_de_destino_no_tiene_malla_queda_en_error_con_el_motivo()
+    {
+        await using var db = CrearDb();
+        var expediente = await SembrarSolicitud(db, ("IND108", "Programación Básica", TemasProgramacion));
+
+        await ServicioConCatalogo(db, Array.Empty<DestinoAnalisisRequest>()).AnalizarYGuardarAsync(expediente);
+
+        var contexto = await db.AnalisisExpedientes.SingleAsync();
+        contexto.Estado.Should().Be(EstadosAnalisis.Error);
+        contexto.Mensaje.Should().Contain("no tiene una malla");
     }
 
     // ---------- soporte ----------

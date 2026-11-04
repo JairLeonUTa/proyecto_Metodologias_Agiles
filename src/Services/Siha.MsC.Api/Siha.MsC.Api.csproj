@@ -25,6 +25,7 @@
 
   <ItemGroup>
     <Protobuf Include="Protos\reglas.proto" GrpcServices="Client" />
+    <Protobuf Include="Protos\catalogo.proto" GrpcServices="Client" />
   </ItemGroup>
 
   <PropertyGroup>

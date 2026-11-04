@@ -40,5 +40,10 @@ public class Extraccion
 
     public string? Observacion { get; set; }
 
+    /// <summary>Datos del certificado SIHA (nulos en extracciones de planes analíticos sueltos).</summary>
+    public DateOnly? FechaAprobacion { get; set; }
+    public decimal? Nota { get; set; }
+    public int? Semestre { get; set; }
+
     public ICollection<ExtraccionUnidad> Unidades { get; set; } = new List<ExtraccionUnidad>();
 }

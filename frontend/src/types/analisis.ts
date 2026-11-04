@@ -141,29 +141,6 @@ export const ESTADO_FINAL = {
   CONTENIDO_INSUFICIENTE: 6,
 } as const;
 
-/** Unidad de la materia de la carrera de destino (catálogo de MS A). */
-export interface UnidadCatalogoAnalisis {
-  numero: number;
-  nombre: string;
-  horas: number;
-  contenidos: string | null;
-}
-
-/** Cuerpo de `POST /api/extracciones/expedientes/{id}/analisis-automatico`. */
-export interface SolicitudAnalisisAutomatico {
-  rutaNormativa: string;
-  tipoTramite: string;
-  institucionOrigen: string;
-  asignaturasOrigen: Array<{ codigo: string; fechaAprobacion: string | null; numeroMatricula: number | null }>;
-  asignaturasDestino: Array<{
-    codigo: string;
-    nombre: string;
-    creditos: number;
-    semestre: number | null;
-    unidades: UnidadCatalogoAnalisis[];
-  }>;
-}
-
 export interface OrigenPropuesta {
   extraccionId: string;
   codigo: string;
@@ -220,4 +197,53 @@ export interface AnalisisCompleto {
   estadoFinal: number;
   alertasGlobales: string[];
   detalleTrazabilidad: string;
+}
+
+export interface DecisionMateria {
+  codigoDestino: string;
+  aprobada: boolean;
+  observacion: string | null;
+}
+
+export interface DictamenDocente {
+  correoDocente: string;
+  nombreDocente: string;
+  decisiones: DecisionMateria[];
+  comentario: string | null;
+  fechaUtc: string;
+}
+
+export interface ResultadoFinalMateria {
+  codigoDestino: string;
+  nombreDestino: string;
+  /** CUMPLE (≥ contenido mínimo) o CRITERIO_DOCENTE. */
+  estimacion: 'CUMPLE' | 'CRITERIO_DOCENTE';
+  aprobaciones: number;
+  rechazos: number;
+  /** PENDIENTE, HOMOLOGADA, NO_HOMOLOGADA o SIN_ACUERDO. */
+  resultado: string;
+}
+
+/** Respuesta de `GET /api/extracciones/expedientes/{id}/analisis`: todo lo de una solicitud. */
+export interface SolicitudAnalisis {
+  expedienteId: string;
+  codigoExpediente: string;
+  numeroCertificado: string;
+  estudianteNombre: string;
+  tipoTramite: string;
+  rutaNormativa: string;
+  institucionOrigen: string;
+  carreraOrigenCodigo: string;
+  carreraDestinoCodigo: string;
+  revisores: Array<{ nombre: string; correo: string; respondio: boolean }>;
+  /** PENDIENTE (el agente está analizando), ANALIZADO o ERROR. */
+  estado: string;
+  mensaje: string | null;
+  analizadoUtc: string | null;
+  resultado: AnalisisAutomatico | null;
+  dictamenes: DictamenDocente[];
+  resultadoFinal: ResultadoFinalMateria[];
+  /** PENDIENTE, EN_REVISION o RESUELTA. */
+  estadoRevision: string;
+  puedeResponder: boolean;
 }

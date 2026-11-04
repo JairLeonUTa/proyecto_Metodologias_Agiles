@@ -8,7 +8,7 @@ import type { ColumnaTabla } from '../components/ui';
 import { useAuth } from '../hooks/useAuth';
 import { useTituloPagina } from '../hooks/useTituloPagina';
 import { RUTAS } from '../layouts/navegacion';
-import { ETIQUETA_ESTADO, ETIQUETA_TIPO_TRAMITE } from '../types/comunes';
+import { ETIQUETA_TIPO_TRAMITE } from '../types/comunes';
 import type { AsignaturaCertificada, CertificadoLeido, SolicitudCertificado } from '../types/expedientes';
 import { anosDesdeFecha } from '../utils/analisis';
 import { formatearBytes } from '../utils/formato';
@@ -52,7 +52,6 @@ const COLUMNAS: Array<ColumnaTabla<AsignaturaCertificada>> = [
     },
   },
   { clave: 'nota', encabezado: 'Nota', className: 'num', render: (a) => a.nota.toFixed(2) },
-  { clave: 'matricula', encabezado: 'Matrícula', className: 'num', render: (a) => a.numeroMatricula },
   {
     clave: 'unidades',
     encabezado: 'Contenidos',
@@ -87,7 +86,7 @@ function ResumenCertificado({ certificado }: { certificado: CertificadoLeido }):
         {dato('Carrera de origen', `${certificado.carreraOrigenCodigo} — ${certificado.carreraOrigenNombre}`)}
         {dato('Carrera de destino', `${certificado.carreraDestinoCodigo} — ${certificado.carreraDestinoNombre}`)}
         {dato('Emitido por', certificado.emitidoPor)}
-        {dato('Materias aprobadas', String(certificado.asignaturas.length))}
+        {dato('Docentes revisores', certificado.revisores.map((r) => r.nombre).join(' y '))}
       </dl>
       <Tabla columnas={COLUMNAS} filas={certificado.asignaturas} claveFila={(a) => a.codigo} />
     </div>
@@ -169,7 +168,7 @@ export function SolicitudNuevaPage(): JSX.Element {
     <div className="space-y-6">
       <EncabezadoPagina
         titulo="Registrar solicitud de homologación"
-        descripcion="Cargue el certificado de homologación SIHA (PDF preaprobado por Secretaría). El sistema toma de ese documento todos los datos: estudiante, carreras, materias aprobadas, fechas, matrículas y contenidos."
+        descripcion="Cargue el certificado de homologación SIHA (PDF preaprobado por Secretaría). Trae todo: estudiante, carreras, materias aprobadas con notas y contenidos, y los dos docentes revisores. Al registrarla, el agente la analiza y queda asignada a esos docentes."
         acciones={usuario ? <Etiqueta tono="marca">Operador: {usuario.nombreCompleto}</Etiqueta> : null}
       />
 
@@ -182,20 +181,20 @@ export function SolicitudNuevaPage(): JSX.Element {
             <Alerta tono={resultado.publicado ? 'exito' : 'advertencia'} titulo={`Expediente ${resultado.expediente.codigo}`}>
               {resultado.certificado.estudianteNombre} · {resultado.certificado.carreraOrigenCodigo} →{' '}
               {resultado.certificado.carreraDestinoCodigo} · {resultado.certificado.asignaturas.length} materia(s) aprobada(s).
-              Estado: {ETIQUETA_ESTADO[resultado.expediente.estado] ?? resultado.expediente.estado}.
+              Asignada a {resultado.certificado.revisores.map((r) => r.nombre).join(' y ')}. El agente ya está analizando los contenidos.
             </Alerta>
             <div className="flex flex-wrap gap-2">
               <Link
-                to={`/expedientes/${resultado.expediente.id}`}
+                to={`/solicitudes/${resultado.expediente.id}`}
                 className="rounded-md bg-institucional-700 px-4 py-2 text-sm font-semibold text-white hover:bg-institucional-800"
               >
-                Ver el expediente
+                Ver la solicitud y su análisis
               </Link>
               <Link
-                to={RUTAS.bandejaAnalisis}
+                to={RUTAS.solicitudes}
                 className="rounded-md border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50"
               >
-                Ir a la bandeja de análisis
+                Ir a solicitudes
               </Link>
               <Boton variante="secundario" onClick={reiniciar}>
                 Registrar otra solicitud
@@ -208,7 +207,7 @@ export function SolicitudNuevaPage(): JSX.Element {
       {!resultado ? (
         <Tarjeta
           titulo="Certificado de homologación (único documento)"
-          descripcion="Solo se acepta el formato oficial SIHA-CH-01. Un plan analítico suelto, un PDF escaneado o un certificado con datos incompletos se rechaza."
+          descripcion="Solo se acepta el formato oficial SIHA-CH-01. Un plan analítico suelto, un PDF escaneado, materias de hace más de 10 años, revisores que no son docentes del sistema o datos incompletos se rechazan."
         >
           <div className="space-y-4">
             <div

@@ -12,8 +12,8 @@ using Siha.MsB.Api.Data;
 namespace Siha.MsB.Api.Migrations
 {
     [DbContext(typeof(SihaDbContextB))]
-    [Migration("20261104210248_CertificadoSihaUnico")]
-    partial class CertificadoSihaUnico
+    [Migration("20261104225438_CertificadoSihaYRevisores")]
+    partial class CertificadoSihaYRevisores
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -90,6 +90,22 @@ namespace Siha.MsB.Api.Migrations
                         .HasMaxLength(1000)
                         .HasColumnType("nvarchar(1000)");
 
+                    b.Property<string>("Revisor1Correo")
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.Property<string>("Revisor1Nombre")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("Revisor2Correo")
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.Property<string>("Revisor2Nombre")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
                     b.Property<string>("RutaNormativa")
                         .IsRequired()
                         .HasMaxLength(20)
@@ -120,6 +136,10 @@ namespace Siha.MsB.Api.Migrations
                     b.HasIndex("NumeroCertificado")
                         .IsUnique()
                         .HasFilter("[NumeroCertificado] IS NOT NULL");
+
+                    b.HasIndex("Revisor1Correo");
+
+                    b.HasIndex("Revisor2Correo");
 
                     b.ToTable("EXPEDIENTE", (string)null);
                 });

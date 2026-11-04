@@ -166,11 +166,17 @@ public class ExpedientesController : ControllerBase
             .AsNoTracking()
             .FirstOrDefaultAsync(e => e.Id == id, cancellationToken);
 
-        return expediente is null ? NotFound() : Ok(AExpedienteResponse(expediente));
+        // Un docente solo ve las solicitudes en las que es uno de los dos revisores asignados.
+        if (expediente is null || (EsDocente() && !expediente.EsRevisor(CorreoUsuario())))
+        {
+            return NotFound();
+        }
+
+        return Ok(AExpedienteResponse(expediente));
     }
 
     [HttpGet]
-    [Authorize(Roles = $"{RolesSistema.Operador},{RolesSistema.Administrador}")]
+    [Authorize(Roles = $"{RolesSistema.Operador},{RolesSistema.Administrador},{RolesSistema.Docente}")]
     [ProducesResponseType(typeof(IEnumerable<ExpedienteResponse>), StatusCodes.Status200OK)]
     public async Task<ActionResult<IEnumerable<ExpedienteResponse>>> Listar(
         [FromQuery] string? estado,
@@ -187,9 +193,19 @@ public class ExpedientesController : ControllerBase
             query = query.Where(e => e.Estado == estado);
         }
 
+        if (EsDocente())
+        {
+            var correo = (CorreoUsuario() ?? string.Empty).ToLower();
+            query = query.Where(e => (e.Revisor1Correo ?? "").ToLower() == correo || (e.Revisor2Correo ?? "").ToLower() == correo);
+        }
+
         var expedientes = await query.OrderByDescending(e => e.FechaCreacionUtc).Take(100).ToListAsync(cancellationToken);
         return Ok(expedientes.Select(AExpedienteResponse));
     }
+
+    private bool EsDocente() => User.IsInRole(RolesSistema.Docente);
+
+    private string? CorreoUsuario() => User.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value;
 
     private static Expediente ConstruirExpediente(CrearExpedienteRequest request)
     {
@@ -255,5 +271,9 @@ public class ExpedientesController : ControllerBase
             .ToList(),
         expediente.NumeroCertificado,
         expediente.EstudianteNombre,
-        expediente.EstudianteIdentificacion);
+        expediente.EstudianteIdentificacion,
+        new[] { (expediente.Revisor1Nombre, expediente.Revisor1Correo), (expediente.Revisor2Nombre, expediente.Revisor2Correo) }
+            .Where(r => !string.IsNullOrWhiteSpace(r.Item2))
+            .Select(r => new RevisorResponse(r.Item1 ?? r.Item2!, r.Item2!))
+            .ToList());
 }

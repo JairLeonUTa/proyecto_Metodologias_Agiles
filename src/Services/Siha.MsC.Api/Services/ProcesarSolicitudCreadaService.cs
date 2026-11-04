@@ -116,6 +116,9 @@ public class ProcesarSolicitudCreadaService
                         ConfirmadoUtc = DateTimeOffset.UtcNow,
                         ConfirmadoPor = "CERTIFICADO_SIHA",
                         Observacion = $"Datos del certificado SIHA {certificado.NumeroCertificado} (documento preaprobado, plantilla SIHA-CH-01).",
+                        FechaAprobacion = asignatura.FechaAprobacion,
+                        Nota = asignatura.Nota,
+                        Semestre = asignatura.Semestre,
                         Unidades = asignatura.Unidades.Select(u => new ExtraccionUnidad
                         {
                             Numero = u.Numero,
@@ -123,6 +126,29 @@ public class ProcesarSolicitudCreadaService
                             Horas = u.Horas,
                             Contenidos = u.Contenidos
                         }).ToList()
+                    });
+                }
+
+                // Contexto para el agente: el análisis se ejecuta en cuanto se confirma este procesamiento.
+                if (!await _db.AnalisisExpedientes.AnyAsync(a => a.ExpedienteId == evento.ExpedienteId, cancellationToken))
+                {
+                    var r1 = certificado.Revisores.ElementAtOrDefault(0);
+                    var r2 = certificado.Revisores.ElementAtOrDefault(1);
+                    _db.AnalisisExpedientes.Add(new AnalisisExpediente
+                    {
+                        ExpedienteId = evento.ExpedienteId,
+                        CodigoExpediente = evento.CodigoExpediente,
+                        NumeroCertificado = certificado.NumeroCertificado,
+                        EstudianteNombre = certificado.EstudianteNombre,
+                        TipoTramite = certificado.TipoTramite,
+                        RutaNormativa = certificado.RutaNormativa,
+                        InstitucionOrigen = certificado.InstitucionOrigen,
+                        CarreraOrigenCodigo = certificado.CarreraOrigenCodigo,
+                        CarreraDestinoCodigo = certificado.CarreraDestinoCodigo,
+                        Revisor1Nombre = r1?.Nombre ?? string.Empty,
+                        Revisor1Correo = r1?.Correo ?? string.Empty,
+                        Revisor2Nombre = r2?.Nombre ?? string.Empty,
+                        Revisor2Correo = r2?.Correo ?? string.Empty
                     });
                 }
 

@@ -13,6 +13,13 @@ public interface IAnalisisAutomaticoService
 {
     Task<AnalisisAutomaticoResponse> AnalizarAsync(
         Guid expedienteId, AnalisisAutomaticoRequest solicitud, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Análisis automático de una solicitud con certificado SIHA: el agente toma el contexto guardado,
+    /// pide a MS A la malla vigente de la carrera de destino, compara y guarda la estimación.
+    /// No lanza excepciones: si falla, deja la solicitud en ERROR con el motivo.
+    /// </summary>
+    Task AnalizarYGuardarAsync(Guid expedienteId, CancellationToken cancellationToken = default);
 }
 
 /// <summary>Motivo por el que el análisis automático no puede ejecutarse (el controlador lo traduce a HTTP).</summary>
@@ -54,6 +61,7 @@ public sealed class AnalisisAutomaticoService : IAnalisisAutomaticoService
     private readonly IOllamaEmbeddingService _ollama;
     private readonly ILogger<AnalisisAutomaticoService> _logger;
     private readonly IEmbeddingCacheService? _cache;
+    private readonly ICatalogoGrpcCliente? _catalogo;
 
     public AnalisisAutomaticoService(
         SihaDbContextC db,
@@ -63,8 +71,10 @@ public sealed class AnalisisAutomaticoService : IAnalisisAutomaticoService
         IPrecedenteService precedentes,
         IOllamaEmbeddingService ollama,
         ILogger<AnalisisAutomaticoService> logger,
-        IEmbeddingCacheService? cache = null)
+        IEmbeddingCacheService? cache = null,
+        ICatalogoGrpcCliente? catalogo = null)
     {
+        _catalogo = catalogo;
         _db = db;
         _reglas = reglas;
         _reglaCreditos = reglaCreditos;
@@ -74,6 +84,62 @@ public sealed class AnalisisAutomaticoService : IAnalisisAutomaticoService
         _logger = logger;
         _cache = cache;
     }
+
+    public async Task AnalizarYGuardarAsync(Guid expedienteId, CancellationToken cancellationToken = default)
+    {
+        var contexto = await _db.AnalisisExpedientes.FirstOrDefaultAsync(a => a.ExpedienteId == expedienteId, cancellationToken);
+        if (contexto is null) return; // no llegó con certificado SIHA
+
+        contexto.Estado = EstadosAnalisis.Pendiente;
+        contexto.Mensaje = null;
+        await _db.SaveChangesAsync(cancellationToken);
+
+        try
+        {
+            if (_catalogo is null)
+                throw new AnalisisAutomaticoException(StatusCodes.Status503ServiceUnavailable, "El catálogo de MS A no está configurado.");
+
+            IReadOnlyList<DestinoAnalisisRequest> malla;
+            try
+            {
+                malla = await _catalogo.ObtenerMallaAsync(contexto.CarreraDestinoCodigo, cancellationToken);
+            }
+            catch (ReglasGrpcException ex)
+            {
+                throw new AnalisisAutomaticoException(StatusCodes.Status503ServiceUnavailable,
+                    $"No se pudo obtener la malla de la carrera de destino desde MS A: {ex.Message}");
+            }
+
+            if (malla.Count == 0)
+                throw new AnalisisAutomaticoException(StatusCodes.Status404NotFound,
+                    $"La carrera de destino {contexto.CarreraDestinoCodigo} no tiene una malla con asignaturas en el catálogo.");
+
+            var origen = await _db.Extracciones.AsNoTracking()
+                .Where(e => e.ExpedienteId == expedienteId)
+                .Select(e => new OrigenAnalisisRequest(e.CodigoAsignaturaOrigen, e.FechaAprobacion, null))
+                .ToListAsync(cancellationToken);
+
+            var resultado = await AnalizarAsync(expedienteId, new AnalisisAutomaticoRequest(
+                contexto.RutaNormativa, contexto.TipoTramite, contexto.InstitucionOrigen, origen, malla), cancellationToken);
+
+            contexto.ResultadoJson = System.Text.Json.JsonSerializer.Serialize(resultado, Json);
+            contexto.Estado = EstadosAnalisis.Analizado;
+            contexto.AnalizadoUtc = DateTimeOffset.UtcNow;
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            _logger.LogError(ex, "El análisis automático del expediente {ExpedienteId} falló.", expedienteId);
+            contexto.Estado = EstadosAnalisis.Error;
+            contexto.Mensaje = ex is AnalisisAutomaticoException
+                ? ex.Message
+                : "El agente no pudo completar el análisis. Intente nuevamente.";
+        }
+
+        await _db.SaveChangesAsync(CancellationToken.None);
+    }
+
+    /// <summary>Serialización del resultado guardado (misma forma que la respuesta HTTP).</summary>
+    public static readonly System.Text.Json.JsonSerializerOptions Json = new(System.Text.Json.JsonSerializerDefaults.Web);
 
     public async Task<AnalisisAutomaticoResponse> AnalizarAsync(
         Guid expedienteId, AnalisisAutomaticoRequest solicitud, CancellationToken cancellationToken = default)
@@ -365,7 +431,7 @@ public sealed class AnalisisAutomaticoService : IAnalisisAutomaticoService
         if (!alcanza)
         {
             var nombres = string.Join(" + ", grupo.Select(o => $"{o.Extraccion.CodigoAsignaturaOrigen} {o.Extraccion.NombreAsignaturaOrigen}"));
-            alertas.Insert(0, $"Con {nombres} solo se cubre el {contenido.Pcont.ToString("0.##", CultureInfo.InvariantCulture).Replace('.', ',')} % del contenido de {destino.Solicitud.Nombre}; no alcanza el mínimo requerido."
+            alertas.Insert(0, $"Con {nombres} cubre el {contenido.Pcont.ToString("0.##", CultureInfo.InvariantCulture).Replace('.', ',')} % del contenido de {destino.Solicitud.Nombre}, menos del {umbrales.Theta.ToString("0.##", CultureInfo.InvariantCulture)} % requerido; queda a criterio del docente."
                               + (faltantes.Count > 0 ? $" Falta: {string.Join(", ", faltantes)}." : string.Empty));
         }
 

@@ -38,6 +38,12 @@ public class SihaDbContextB : DbContext
             e.Property(x => x.NumeroCertificado).HasMaxLength(40);
             e.Property(x => x.EstudianteNombre).HasMaxLength(200);
             e.Property(x => x.EstudianteIdentificacion).HasMaxLength(20);
+            e.Property(x => x.Revisor1Nombre).HasMaxLength(200);
+            e.Property(x => x.Revisor1Correo).HasMaxLength(150);
+            e.Property(x => x.Revisor2Nombre).HasMaxLength(200);
+            e.Property(x => x.Revisor2Correo).HasMaxLength(150);
+            e.HasIndex(x => x.Revisor1Correo);
+            e.HasIndex(x => x.Revisor2Correo);
             // Un certificado SIHA solo puede registrarse una vez.
             e.HasIndex(x => x.NumeroCertificado).IsUnique().HasFilter("[NumeroCertificado] IS NOT NULL");
         });

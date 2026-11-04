@@ -16,13 +16,53 @@ public static class DbSeederA
         IPasswordHasher hasher,
         string adminCorreo,
         string adminPassword,
-        ILogger logger)
+        ILogger logger,
+        string? docentesDemoPassword = null)
     {
         await SembrarRolesAsync(db, hasher, adminCorreo, adminPassword, logger);
         await SembrarParametrosAsync(db, logger);
         await SembrarReglasAsync(db, logger);
         await SembrarCatalogoAsync(db, logger);
         await SembrarCatalogoHomologacionAsync(db, logger);
+        if (!string.IsNullOrWhiteSpace(docentesDemoPassword))
+        {
+            await SembrarDocentesDemoAsync(db, hasher, docentesDemoPassword, logger);
+        }
+    }
+
+    /// <summary>
+    /// Docentes revisores que aparecen en los certificados SIHA de ejemplo. Solo se crean si se
+    /// configura <c>Seed:DocentePassword</c>; en producción el administrador los registra en Usuarios.
+    /// </summary>
+    public static readonly (string Correo, string Nombre)[] DocentesDemo =
+    {
+        ("hnaranjo@uta.edu.ec", "Ing. Hernán Naranjo"),
+        ("mvaca@uta.edu.ec", "Ing. María Vaca"),
+        ("jcastro@uta.edu.ec", "Ing. Javier Castro")
+    };
+
+    private static async Task SembrarDocentesDemoAsync(SihaDbContextA db, IPasswordHasher hasher, string password, ILogger logger)
+    {
+        var rolDocente = await db.Roles.FirstOrDefaultAsync(r => r.Nombre == RolesSistema.Docente);
+        if (rolDocente is null) return;
+
+        var existentes = await db.Usuarios.Select(u => u.CorreoInstitucional).ToListAsync();
+        var nuevos = DocentesDemo.Where(d => !existentes.Contains(d.Correo)).ToList();
+        foreach (var (correo, nombre) in nuevos)
+        {
+            db.Usuarios.Add(new Usuario
+            {
+                CorreoInstitucional = correo,
+                NombreCompleto = nombre,
+                PasswordHash = hasher.Hash(password),
+                RolId = rolDocente.Id,
+                Activo = true
+            });
+        }
+
+        if (nuevos.Count == 0) return;
+        await db.SaveChangesAsync();
+        logger.LogInformation("Docentes revisores de ejemplo creados: {Correos}.", string.Join(", ", nuevos.Select(d => d.Correo)));
     }
 
     private static async Task SembrarRolesAsync(

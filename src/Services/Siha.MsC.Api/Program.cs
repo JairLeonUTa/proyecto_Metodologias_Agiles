@@ -65,6 +65,16 @@ builder.Services.AddGrpcClient<ReglasGrpc.ReglasGrpcClient>((sp, options) =>
 
 builder.Services.AddScoped<IReglasGrpcClient, ReglasGrpcClient>();
 
+// El agente consulta la malla vigente de la carrera de destino en MS A (mismo puerto gRPC de reglas).
+builder.Services.AddGrpcClient<CatalogoGrpc.CatalogoGrpcClient>((sp, options) =>
+{
+    var cfg = sp.GetRequiredService<IOptions<ReglasGrpcOptions>>().Value;
+    options.Address = new Uri(cfg.Url);
+})
+.ConfigureChannel(o => o.Credentials = ChannelCredentials.Insecure);
+builder.Services.AddScoped<ICatalogoGrpcCliente, CatalogoGrpcCliente>();
+builder.Services.AddScoped<SolicitudesAnalisisService>();
+
 // --- Seguridad: los endpoints de confirmación validan los JWT emitidos por el Microservicio A ---
 var jwtSection = builder.Configuration.GetSection(JwtSettings.SectionName);
 builder.Services.Configure<JwtSettings>(jwtSection);

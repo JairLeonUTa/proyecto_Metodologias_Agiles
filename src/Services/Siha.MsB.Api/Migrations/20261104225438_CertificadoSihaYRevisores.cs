@@ -5,7 +5,7 @@
 namespace Siha.MsB.Api.Migrations
 {
     /// <inheritdoc />
-    public partial class CertificadoSihaUnico : Migration
+    public partial class CertificadoSihaYRevisores : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -49,12 +49,50 @@ namespace Siha.MsB.Api.Migrations
                 maxLength: 40,
                 nullable: true);
 
+            migrationBuilder.AddColumn<string>(
+                name: "Revisor1Correo",
+                table: "EXPEDIENTE",
+                type: "nvarchar(150)",
+                maxLength: 150,
+                nullable: true);
+
+            migrationBuilder.AddColumn<string>(
+                name: "Revisor1Nombre",
+                table: "EXPEDIENTE",
+                type: "nvarchar(200)",
+                maxLength: 200,
+                nullable: true);
+
+            migrationBuilder.AddColumn<string>(
+                name: "Revisor2Correo",
+                table: "EXPEDIENTE",
+                type: "nvarchar(150)",
+                maxLength: 150,
+                nullable: true);
+
+            migrationBuilder.AddColumn<string>(
+                name: "Revisor2Nombre",
+                table: "EXPEDIENTE",
+                type: "nvarchar(200)",
+                maxLength: 200,
+                nullable: true);
+
             migrationBuilder.CreateIndex(
                 name: "IX_EXPEDIENTE_NumeroCertificado",
                 table: "EXPEDIENTE",
                 column: "NumeroCertificado",
                 unique: true,
                 filter: "[NumeroCertificado] IS NOT NULL");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_EXPEDIENTE_Revisor1Correo",
+                table: "EXPEDIENTE",
+                column: "Revisor1Correo");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_EXPEDIENTE_Revisor2Correo",
+                table: "EXPEDIENTE",
+                column: "Revisor2Correo");
         }
 
         /// <inheritdoc />
@@ -62,6 +100,14 @@ namespace Siha.MsB.Api.Migrations
         {
             migrationBuilder.DropIndex(
                 name: "IX_EXPEDIENTE_NumeroCertificado",
+                table: "EXPEDIENTE");
+
+            migrationBuilder.DropIndex(
+                name: "IX_EXPEDIENTE_Revisor1Correo",
+                table: "EXPEDIENTE");
+
+            migrationBuilder.DropIndex(
+                name: "IX_EXPEDIENTE_Revisor2Correo",
                 table: "EXPEDIENTE");
 
             migrationBuilder.DropColumn(
@@ -86,6 +132,22 @@ namespace Siha.MsB.Api.Migrations
 
             migrationBuilder.DropColumn(
                 name: "NumeroCertificado",
+                table: "EXPEDIENTE");
+
+            migrationBuilder.DropColumn(
+                name: "Revisor1Correo",
+                table: "EXPEDIENTE");
+
+            migrationBuilder.DropColumn(
+                name: "Revisor1Nombre",
+                table: "EXPEDIENTE");
+
+            migrationBuilder.DropColumn(
+                name: "Revisor2Correo",
+                table: "EXPEDIENTE");
+
+            migrationBuilder.DropColumn(
+                name: "Revisor2Nombre",
                 table: "EXPEDIENTE");
         }
     }

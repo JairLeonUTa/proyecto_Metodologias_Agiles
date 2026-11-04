@@ -14,7 +14,8 @@ public record CertificadoLeidoResponse(
     string CarreraOrigenNombre,
     string CarreraDestinoCodigo,
     string CarreraDestinoNombre,
-    IReadOnlyCollection<AsignaturaCertificadaResponse> Asignaturas);
+    IReadOnlyCollection<AsignaturaCertificadaResponse> Asignaturas,
+    IReadOnlyCollection<RevisorResponse> Revisores);
 
 public record AsignaturaCertificadaResponse(
     string Codigo,
@@ -24,7 +25,6 @@ public record AsignaturaCertificadaResponse(
     int HorasTotales,
     DateOnly FechaAprobacion,
     decimal Nota,
-    int NumeroMatricula,
     IReadOnlyCollection<UnidadCertificadaResponse> Unidades);
 
 public record UnidadCertificadaResponse(int Numero, string Nombre, int Horas, string Contenidos);

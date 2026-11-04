@@ -47,7 +47,9 @@ public class LectorCertificadoSihaTests
         fisica1.HorasTotales.Should().Be(192);
         fisica1.FechaAprobacion.Should().Be(new DateOnly(2024, 2, 16));
         fisica1.Nota.Should().Be(8.60m);
-        fisica1.NumeroMatricula.Should().Be(1);
+        c.Revisores.Should().Equal(
+            new RevisorCertificado("Ing. Hernán Naranjo", "hnaranjo@uta.edu.ec"),
+            new RevisorCertificado("Ing. María Vaca", "mvaca@uta.edu.ec"));
         fisica1.Unidades.Should().HaveCount(4);
         fisica1.Unidades[1].Nombre.Should().Be("Cinemática de la partícula");
         fisica1.Unidades[1].Horas.Should().Be(48);
@@ -97,6 +99,8 @@ public class LectorCertificadoSihaTests
         resultado.Errores.Should().Contain(e => e.Contains("cédula") && e.Contains("10 dígitos"));
         resultado.Errores.Should().Contain(e => e.Contains("no es aprobatoria"));
         resultado.Errores.Should().Contain(e => e.Contains("no coinciden con las horas totales"));
+        resultado.Errores.Should().Contain(e => e.Contains("hace más de 10 años"));
+        resultado.Errores.Should().Contain(e => e.Contains("docente@gmail.com") && e.Contains("institucional"));
     }
 
     [Fact]
@@ -112,9 +116,10 @@ public class LectorCertificadoSihaTests
         "Estudiante: Ana", "Cédula: 1804567890",
         $"Tipo de trámite: {tipo} Ruta normativa: {ruta}", "Institución de origen: UTA",
         "Carrera de origen: IND - Industrial", "Carrera de destino: SW - Software",
+        "Docente revisor 1: Ing. Ana Ruiz - aruiz@uta.edu.ec", "Docente revisor 2: Ing. Luis Paz <lpaz@uta.edu.ec>",
         "ASIGNATURAS APROBADAS",
         "Asignatura: IND105 - Física I", "Semestre: 1 Créditos: 4 Horas totales: 10",
-        "Fecha de aprobación: 15/02/2024 Nota: 8,5 Matrícula: 1",
+        "Fecha de aprobación: 15/02/2024 Nota: 8,5",
         "Unidad 1: Vectores (10 horas)", "Contenidos: Suma de vectores; nota: incluye producto escalar.",
         "FIN DEL CERTIFICADO", "Estudiante: esto ya no se lee"
     };
@@ -130,6 +135,27 @@ public class LectorCertificadoSihaTests
         a.Nota.Should().Be(8.5m);
         a.Unidades.Single().Contenidos.Should().Be("Suma de vectores; nota: incluye producto escalar.");
         resultado.Certificado.EstudianteNombre.Should().Be("Ana");
+    }
+
+    [Fact]
+    public void Lee_los_dos_revisores_con_guion_o_con_angulos()
+    {
+        var revisores = LectorCertificadoSiha.LeerTexto(Base()).Certificado!.Revisores;
+
+        revisores.Should().Equal(
+            new RevisorCertificado("Ing. Ana Ruiz", "aruiz@uta.edu.ec"),
+            new RevisorCertificado("Ing. Luis Paz", "lpaz@uta.edu.ec"));
+    }
+
+    [Fact]
+    public void Sin_dos_revisores_distintos_se_rechaza()
+    {
+        var sinSegundo = LectorCertificadoSiha.LeerTexto(Base().Where(l => !l.StartsWith("Docente revisor 2")));
+        var repetido = LectorCertificadoSiha.LeerTexto(Base().Select(l =>
+            l.StartsWith("Docente revisor 2") ? "Docente revisor 2: Otra - aruiz@uta.edu.ec" : l));
+
+        sinSegundo.Errores.Should().Contain("Falta el dato 'Docente revisor 2'.");
+        repetido.Errores.Should().Contain(e => e.Contains("personas distintas"));
     }
 
     [Fact]
