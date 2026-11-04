@@ -168,7 +168,10 @@ public enum EstadoEvaluacionFinal
     ErrorReglasGrpc = 4,
 
     /// <summary>Extracción no está confirmada (pendiente operador).</summary>
-    ExtraccionNoConfirmada = 5
+    ExtraccionNoConfirmada = 5,
+
+    /// <summary>El contenido cubierto no alcanza el mínimo vigente de la ruta normativa (Pcont &lt; θ).</summary>
+    ContenidoInsuficiente = 6
 }
 
 /// <summary>Resultado consolidado del análisis completo (US-11, S2-J09).</summary>

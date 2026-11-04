@@ -2,6 +2,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\BuildingBlocks\Siha.Contracts\Siha.Contracts.csproj" />
+    <ProjectReference Include="..\..\BuildingBlocks\Siha.Certificados\Siha.Certificados.csproj" />
   </ItemGroup>
 
   <ItemGroup>

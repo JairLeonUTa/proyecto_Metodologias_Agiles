@@ -1,92 +1,164 @@
-import { useEffect, useState } from 'react';
-import type { FormEvent } from 'react';
-import { Link, useParams, useSearchParams } from 'react-router-dom';
-import { asignaturasApi, expedientesApi, extraccionesApi, mensajeDeError, detallesDeError, reglasApi } from '../api';
-import { ConsultaPrecedentes } from '../components/analisis/ConsultaPrecedentes';
-import { PanelCreditos } from '../components/analisis/PanelCreditos';
-import { Pestanas } from '../components/analisis/Pestanas';
-import { TablaCobertura } from '../components/analisis/TablaCobertura';
+import { useState } from 'react';
+import { Link, useParams } from 'react-router-dom';
+import { asignaturasApi, carrerasApi, detallesDeError, expedientesApi, extraccionesApi, mallasApi, mensajeDeError } from '../api';
 import { EncabezadoPagina } from '../components/EncabezadoPagina';
-import { Alerta, Boton, CargandoBloque, Campo, Casilla, EntradaTexto, Selector, Tarjeta } from '../components/ui';
+import { Alerta, Boton, CargandoBloque, Etiqueta, Tabla, Tarjeta } from '../components/ui';
+import type { ColumnaTabla } from '../components/ui';
 import { usePeticion } from '../hooks/usePeticion';
 import { useTituloPagina } from '../hooks/useTituloPagina';
-import type { AnalisisCompleto, Extraccion, Precedente } from '../types/analisis';
-import { ESTADO_FINAL, ESTADOS_EXTRACCION } from '../types/analisis';
+import type { AnalisisAutomatico, CoberturaUnidadPropuesta, Extraccion, PropuestaHomologacion } from '../types/analisis';
+import { ESTADOS_EXTRACCION } from '../types/analisis';
 import type { Asignatura } from '../types/catalogo';
-import { RUTAS_NORMATIVAS_TODAS } from '../types/comunes';
 import type { Expediente } from '../types/expedientes';
-import type { ParametroEvaluacion } from '../types/reglas';
-import { anosDesdeFecha, contextoExpediente, matriculaParaSeleccion, presentarEstadoFinal } from '../utils/analisis';
+import { anosDesdeFecha, formatearPorcentaje, presentarCategoriaCreditos, presentarEstadoFinal } from '../utils/analisis';
 
-/** Vistas del resultado: coinciden con los mockups M-03, M-05 y M-06. */
-const VISTAS = ['creditos', 'cobertura', 'precedentes'] as const;
-type Vista = (typeof VISTAS)[number];
-
-interface Parametros {
-  codigoDestino: string;
-  rutaNormativa: string;
-  institucionOrigen: string;
-  anosTranscurridos: string;
-  numeroMatricula: string;
-  esCreditoExterno: boolean;
+interface Caso {
+  extraccion: Extraccion;
+  expediente: Expediente | null;
+  materias: Extraccion[];
 }
 
-interface Resultado {
-  analisis: AnalisisCompleto;
-  asignaturaDestino: Asignatura;
-  parametrosReglas: ParametroEvaluacion | null;
-  /** `null` si la consulta de precedentes falló: aviso no bloqueante (S2-A09). */
-  precedentes: Precedente[] | null;
-  errorPrecedentes: string | null;
-  datosControl: Parametros;
-}
-
-/** Carga la extracción y, si el rol lo permite, su expediente de MS B. */
-async function cargarCaso(id: string): Promise<{ extraccion: Extraccion; expediente: Expediente | null }> {
+/** Carga la materia elegida en la bandeja, su expediente (MS B) y todas las materias del expediente. */
+async function cargarCaso(id: string): Promise<Caso> {
   const extraccion = await extraccionesApi.obtener(id);
-  const expediente = await expedientesApi.obtener(extraccion.expedienteId).catch(() => null);
-  return { extraccion, expediente };
+  const [expediente, materias] = await Promise.all([
+    expedientesApi.obtener(extraccion.expedienteId).catch(() => null),
+    extraccionesApi.bandeja(undefined, extraccion.expedienteId).catch(() => [extraccion]),
+  ]);
+  return { extraccion, expediente, materias: materias.filter((m) => m.expedienteId === extraccion.expedienteId) };
+}
+
+/** Todas las asignaturas de la malla vigente de la carrera de destino, con sus unidades. */
+async function catalogoDestino(codigoCarrera: string): Promise<Asignatura[]> {
+  const carreras = await carrerasApi.listar();
+  const carrera = carreras.find((c) => c.codigo.toUpperCase() === codigoCarrera.toUpperCase());
+  if (!carrera) throw new Error(`La carrera de destino ${codigoCarrera} no existe en el catálogo.`);
+  const mallas = await mallasApi.listar(carrera.id);
+  const malla = mallas.find((m) => m.vigente) ?? mallas[0];
+  if (!malla) throw new Error(`La carrera ${codigoCarrera} no tiene una malla vigente en el catálogo.`);
+  const asignaturas = await asignaturasApi.listar(malla.id);
+  return asignaturas.filter((a) => a.unidades.length > 0);
+}
+
+const COLUMNAS_UNIDADES: Array<ColumnaTabla<CoberturaUnidadPropuesta>> = [
+  {
+    clave: 'unidad',
+    encabezado: 'Unidad de destino',
+    render: (u) => (
+      <span className="text-sm">
+        U{u.numero}. {u.nombre}
+      </span>
+    ),
+  },
+  { clave: 'horas', encabezado: 'Horas', className: 'num', render: (u) => u.horas },
+  {
+    clave: 'origen',
+    encabezado: 'Contenido más parecido en lo aprobado',
+    render: (u) =>
+      u.codigoOrigen ? (
+        <span className="text-sm">
+          <span className="font-mono text-xs text-faint">{u.codigoOrigen}</span> · U{u.numeroUnidadOrigen}. {u.nombreUnidadOrigen}
+        </span>
+      ) : (
+        '—'
+      ),
+  },
+  { clave: 'similitud', encabezado: 'Parecido', className: 'num', render: (u) => formatearPorcentaje(u.similitud) },
+  {
+    clave: 'cubierta',
+    encabezado: 'Cubierta',
+    render: (u) => <Etiqueta tono={u.cubierta ? 'exito' : 'error'}>{u.cubierta ? 'Sí' : 'No'}</Etiqueta>,
+  },
+];
+
+/** Tarjeta de una homologación propuesta o de un destino que no alcanza el contenido. */
+function TarjetaPropuesta({ propuesta, institucion }: { propuesta: PropuestaHomologacion; institucion: string }): JSX.Element {
+  const estado = presentarEstadoFinal(propuesta.estadoFinal);
+  const categoria = presentarCategoriaCreditos(propuesta.categoriaCreditos);
+  const horasCubiertas = propuesta.unidades.filter((u) => u.cubierta).reduce((suma, u) => suma + u.horas, 0);
+  const horasTotales = propuesta.unidades.reduce((suma, u) => suma + u.horas, 0);
+
+  return (
+    <Tarjeta
+      titulo={`${propuesta.codigoDestino} · ${propuesta.nombreDestino}`}
+      descripcion={`${propuesta.creditosDestino} créditos${propuesta.semestreDestino ? ` · semestre ${propuesta.semestreDestino}` : ''} · con ${propuesta.origenes
+        .map((o) => `${o.codigo} ${o.nombre}`)
+        .join(' + ')}${propuesta.origenes.length > 1 ? ' (varias materias para una)' : ''}`}
+    >
+      <div className="space-y-4">
+        <div className="flex flex-wrap items-center gap-2">
+          <Etiqueta tono={estado.tono === 'informacion' ? 'neutro' : estado.tono}>{estado.etiqueta}</Etiqueta>
+          <Etiqueta tono={categoria.tono}>Créditos: {categoria.etiqueta}</Etiqueta>
+        </div>
+
+        <dl className="grid gap-4 sm:grid-cols-3">
+          <div>
+            <dt className="text-xs uppercase tracking-wide text-faint">Contenido cubierto</dt>
+            <dd className="mt-0.5 text-2xl font-semibold text-ink">{formatearPorcentaje(propuesta.pcont)}</dd>
+            <dd className="text-xs text-faint">
+              {horasCubiertas} de {horasTotales} horas de la materia de destino
+            </dd>
+          </div>
+          <div>
+            <dt className="text-xs uppercase tracking-wide text-faint">Proporción de créditos</dt>
+            <dd className="mt-0.5 text-2xl font-semibold text-ink">{formatearPorcentaje(propuesta.pcred)}</dd>
+            <dd className="text-xs text-faint">
+              {propuesta.origenes.reduce((s, o) => s + (o.creditos ?? 0), 0)} créditos aprobados frente a {propuesta.creditosDestino}
+            </dd>
+          </div>
+          <div>
+            <dt className="text-xs uppercase tracking-wide text-faint">Materias aprobadas usadas</dt>
+            {propuesta.origenes.map((o) => (
+              <dd key={o.extraccionId} className="mt-0.5 text-sm text-ink">
+                {o.codigo} {o.nombre}
+                <span className="block text-xs text-faint">
+                  Aprobada {o.fechaAprobacion ?? '—'}
+                  {o.anosTranscurridos !== null ? ` (hace ${o.anosTranscurridos} años)` : ''} · matrícula {o.numeroMatricula ?? '—'}
+                </span>
+              </dd>
+            ))}
+          </div>
+        </dl>
+
+        {propuesta.alertas.length > 0 ? (
+          <ul aria-label="Observaciones" className="space-y-1">
+            {propuesta.alertas.map((alerta) => (
+              <li key={alerta} className="text-sm text-muted">
+                ⚠ {alerta}
+              </li>
+            ))}
+          </ul>
+        ) : null}
+
+        <Tabla columnas={COLUMNAS_UNIDADES} filas={propuesta.unidades} claveFila={(u) => u.numero} />
+
+        {propuesta.alcanzaContenido ? (
+          propuesta.precedentes.length > 0 ? (
+            <Alerta tono="informacion" titulo="Precedentes idénticos">
+              {propuesta.precedentes.map((p) => `${p.resolucion} (${p.fecha})`).join(' · ')}
+            </Alerta>
+          ) : (
+            <p className="text-xs text-faint">Sin precedentes idénticos registrados para {institucion}.</p>
+          )
+        ) : null}
+      </div>
+    </Tarjeta>
+  );
 }
 
 /**
- * Análisis del expediente por el docente (S2-A08: integración de las vistas del Sprint 2 con MS C real).
- * Ejecuta `POST /api/extracciones/{id}/analizar` (gRPC reglas → Pcred → Pcont → precedentes) y muestra
- * el resultado en tres pestañas: créditos y controles (S2-A04), cobertura (S2-A06) y precedentes (S2-A07).
+ * Análisis automático del expediente (homologación por contenidos).
+ * Toma todas las materias aprobadas del certificado SIHA y las compara con todas las materias de la
+ * carrera de destino. Propone solo las homologaciones que alcanzan el contenido mínimo vigente; el
+ * docente no escribe códigos, años ni matrículas. Los umbrales no se muestran: deciden en el servidor.
  */
 export function AnalisisExpedientePage(): JSX.Element {
   useTituloPagina('Análisis del expediente');
   const { id = '' } = useParams();
-  const [busqueda, setBusqueda] = useSearchParams();
-  const vista: Vista = VISTAS.includes(busqueda.get('vista') as Vista) ? (busqueda.get('vista') as Vista) : 'creditos';
   const caso = usePeticion(() => cargarCaso(id), [id]);
-
-  const [parametros, setParametros] = useState<Parametros>({
-    codigoDestino: '',
-    rutaNormativa: '',
-    institucionOrigen: '',
-    anosTranscurridos: '',
-    numeroMatricula: '',
-    esCreditoExterno: false,
-  });
   const [analizando, setAnalizando] = useState(false);
   const [error, setError] = useState<{ texto: string; detalles: string[] } | null>(null);
-  const [resultado, setResultado] = useState<Resultado | null>(null);
-
-  // Prellena con los datos del expediente (MS B) cuando están disponibles.
-  useEffect(() => {
-    if (!caso.datos) return;
-    const contexto = contextoExpediente(caso.datos.extraccion, caso.datos.expediente);
-    const externo = contexto.tipoTramite === 'EXTERNO';
-    setParametros((previo) => ({
-      ...previo,
-      codigoDestino: contexto.codigoDestino ?? '',
-      rutaNormativa: contexto.rutaNormativa ?? '',
-      esCreditoExterno: externo,
-      institucionOrigen: contexto.institucionOrigen ?? '',
-      anosTranscurridos: String(anosDesdeFecha(contexto.fechaAprobacionCertificada) ?? ''),
-      numeroMatricula: matriculaParaSeleccion(contexto.numeroMatriculaDestino),
-    }));
-  }, [caso.datos]);
+  const [resultado, setResultado] = useState<AnalisisAutomatico | null>(null);
 
   if (caso.cargando) return <CargandoBloque />;
 
@@ -101,68 +173,39 @@ export function AnalisisExpedientePage(): JSX.Element {
     );
   }
 
-  const { extraccion, expediente } = caso.datos;
-  const contexto = contextoExpediente(extraccion, expediente);
-  const confirmada = extraccion.estado === ESTADOS_EXTRACCION.CONFIRMADA;
-  const anos = Number(parametros.anosTranscurridos);
-  const matricula = Number(parametros.numeroMatricula);
-  const formularioValido =
-    parametros.codigoDestino.trim() !== '' &&
-    parametros.rutaNormativa !== '' &&
-    parametros.institucionOrigen.trim() !== '' &&
-    parametros.anosTranscurridos.trim() !== '' &&
-    Number.isInteger(anos) &&
-    anos >= 0 &&
-    Number.isInteger(matricula) &&
-    matricula >= 1;
+  const { expediente, materias } = caso.datos;
+  const sinConfirmar = materias.filter((m) => m.estado !== ESTADOS_EXTRACCION.CONFIRMADA);
+  const datosCertificado = new Map((expediente?.asignaturas ?? []).map((a) => [a.codigoOrigen.toUpperCase(), a]));
 
-  const analizar = async (evento: FormEvent<HTMLFormElement>): Promise<void> => {
-    evento.preventDefault();
+  const analizar = async (): Promise<void> => {
+    if (!expediente) return;
     setError(null);
-    if (!formularioValido || !confirmada) return;
-
     setAnalizando(true);
     try {
-      const codigo = parametros.codigoDestino.trim().toUpperCase();
-      const asignaturas = await asignaturasApi.listar(undefined, codigo);
-      const destino = asignaturas.find((a) => a.codigo.toUpperCase() === codigo) ?? asignaturas[0];
-      if (!destino) {
-        throw new Error(`La asignatura de destino ${codigo} no existe en el catálogo.`);
-      }
-      if (destino.unidades.length === 0) {
-        throw new Error(`La asignatura ${destino.codigo} no tiene unidades temáticas con horas en el catálogo.`);
+      const destino = await catalogoDestino(expediente.carreraDestinoCodigo);
+      if (destino.length === 0) {
+        throw new Error(`La carrera ${expediente.carreraDestinoCodigo} no tiene asignaturas con contenidos en el catálogo.`);
       }
 
-      const [analisis, reglas, precedentes] = await Promise.allSettled([
-        extraccionesApi.analizar(extraccion.id, {
-          anosTranscurridos: anos,
-          numeroMatriculaDestino: matricula,
-          esCreditoExterno: parametros.esCreditoExterno,
-          rutaNormativa: parametros.rutaNormativa,
-          codigoAsignaturaDestino: destino.codigo,
-          institucionOrigen: parametros.institucionOrigen.trim(),
-          creditosDestino: destino.creditos,
-          unidadesDestino: destino.unidades.map((u) => ({ ...u, contenidos: u.contenidos ?? '', embedding: [] })),
-          validarRN19: true,
+      setResultado(
+        await extraccionesApi.analizarExpediente(expediente.id, {
+          rutaNormativa: expediente.rutaNormativa,
+          tipoTramite: expediente.tipoTramite,
+          institucionOrigen: expediente.institucionOrigen ?? '',
+          asignaturasOrigen: expediente.asignaturas.map((a) => ({
+            codigo: a.codigoOrigen,
+            fechaAprobacion: a.fechaAprobacionCertificada ?? null,
+            numeroMatricula: a.numeroMatriculaDestino ?? null,
+          })),
+          asignaturasDestino: destino.map((a) => ({
+            codigo: a.codigo,
+            nombre: a.nombre,
+            creditos: a.creditos,
+            semestre: a.semestre,
+            unidades: a.unidades.map((u) => ({ numero: u.numero, nombre: u.nombre, horas: u.horas, contenidos: u.contenidos ?? '' })),
+          })),
         }),
-        reglasApi.obtenerParametros(parametros.rutaNormativa),
-        extraccionesApi.buscarPrecedentes({
-          codigosAsignaturasOrigen: [extraccion.codigoAsignaturaOrigen],
-          codigoAsignaturaDestino: destino.codigo,
-          institucionOrigen: parametros.institucionOrigen.trim(),
-        }),
-      ]);
-
-      if (analisis.status === 'rejected') throw analisis.reason;
-
-      setResultado({
-        analisis: analisis.value,
-        asignaturaDestino: destino,
-        parametrosReglas: reglas.status === 'fulfilled' ? reglas.value : null,
-        precedentes: precedentes.status === 'fulfilled' ? precedentes.value : null,
-        errorPrecedentes: precedentes.status === 'rejected' ? mensajeDeError(precedentes.reason) : null,
-        datosControl: parametros,
-      });
+      );
     } catch (fallo) {
       setResultado(null);
       setError({ texto: mensajeDeError(fallo), detalles: detallesDeError(fallo) });
@@ -171,16 +214,66 @@ export function AnalisisExpedientePage(): JSX.Element {
     }
   };
 
-  const final = resultado ? presentarEstadoFinal(resultado.analisis.estadoFinal) : null;
-  const sinCalculo =
-    resultado?.analisis.estadoFinal === ESTADO_FINAL.ERROR_REGLAS_GRPC ||
-    resultado?.analisis.estadoFinal === ESTADO_FINAL.EXTRACCION_NO_CONFIRMADA;
+  const columnasMaterias: Array<ColumnaTabla<Extraccion>> = [
+    {
+      clave: 'materia',
+      encabezado: 'Materia aprobada',
+      render: (m) => (
+        <div>
+          <p className="text-sm text-ink">{m.nombreAsignaturaOrigen}</p>
+          <p className="font-mono text-xs text-faint">{m.codigoAsignaturaOrigen}</p>
+        </div>
+      ),
+    },
+    {
+      clave: 'semestre',
+      encabezado: 'Semestre',
+      className: 'num',
+      render: (m) => datosCertificado.get(m.codigoAsignaturaOrigen.toUpperCase())?.semestre ?? '—',
+    },
+    { clave: 'creditos', encabezado: 'Créditos', className: 'num', render: (m) => m.creditos ?? '—' },
+    { clave: 'horas', encabezado: 'Horas', className: 'num', render: (m) => m.horas ?? '—' },
+    {
+      clave: 'fecha',
+      encabezado: 'Aprobada el',
+      render: (m) => {
+        const fecha = datosCertificado.get(m.codigoAsignaturaOrigen.toUpperCase())?.fechaAprobacionCertificada ?? null;
+        const anos = anosDesdeFecha(fecha);
+        return fecha ? `${fecha}${anos !== null ? ` (hace ${anos} años)` : ''}` : '—';
+      },
+    },
+    {
+      clave: 'matricula',
+      encabezado: 'Matrícula',
+      className: 'num',
+      render: (m) => datosCertificado.get(m.codigoAsignaturaOrigen.toUpperCase())?.numeroMatriculaDestino ?? '—',
+    },
+    { clave: 'unidades', encabezado: 'Unidades', className: 'num', render: (m) => m.unidades.length },
+    {
+      clave: 'estado',
+      encabezado: 'Datos',
+      render: (m) =>
+        m.estado === ESTADOS_EXTRACCION.CONFIRMADA ? (
+          <Etiqueta tono="exito">{m.confirmadoPor === 'CERTIFICADO_SIHA' ? 'Del certificado' : 'Confirmados'}</Etiqueta>
+        ) : (
+          <Etiqueta tono="advertencia">{m.estado}</Etiqueta>
+        ),
+    },
+  ];
+
+  const institucion = expediente?.institucionOrigen ?? '';
 
   return (
     <div className="space-y-6">
       <EncabezadoPagina
         titulo="Análisis del expediente"
-        descripcion={[contexto.codigo, extraccion.nombreAsignaturaOrigen, contexto.rutaAcademica, contexto.rutaNormativa]
+        descripcion={[
+          expediente?.codigo,
+          expediente?.estudianteNombre,
+          expediente ? `${expediente.carreraOrigenCodigo} → ${expediente.carreraDestinoCodigo}` : null,
+          expediente?.rutaNormativa,
+          institucion,
+        ]
           .filter(Boolean)
           .join(' · ')}
         acciones={
@@ -190,79 +283,32 @@ export function AnalisisExpedientePage(): JSX.Element {
         }
       />
 
-      {!confirmada ? (
-        <Alerta tono="advertencia" titulo="Datos sin confirmar">
-          El operador aún no confirma los datos extraídos. El cálculo permanece bloqueado hasta entonces.
+      {!expediente ? (
+        <Alerta tono="advertencia" titulo="Expediente no disponible">
+          No se pudo consultar el expediente en el Microservicio B; sin sus datos no se puede analizar.
         </Alerta>
       ) : null}
 
-      <Tarjeta titulo="Parámetros del caso" descripcion="Se combinan con las reglas vigentes que MS C consulta por gRPC.">
-        <form className="space-y-4" noValidate onSubmit={(evento) => void analizar(evento)}>
-          <div className="grid gap-4 md:grid-cols-3">
-            <Campo htmlFor="codigo-destino" etiqueta="Asignatura de destino (código)" obligatorio>
-              <EntradaTexto
-                id="codigo-destino"
-                value={parametros.codigoDestino}
-                placeholder="SW101"
-                onChange={(e) => setParametros({ ...parametros, codigoDestino: e.target.value })}
-              />
-            </Campo>
-            <Campo htmlFor="ruta-normativa" etiqueta="Ruta normativa" obligatorio>
-              <Selector
-                id="ruta-normativa"
-                value={parametros.rutaNormativa}
-                onChange={(e) => setParametros({ ...parametros, rutaNormativa: e.target.value })}
-              >
-                <option value="">Selecciona una ruta</option>
-                {RUTAS_NORMATIVAS_TODAS.map((ruta) => (
-                  <option key={ruta} value={ruta}>
-                    {ruta}
-                  </option>
-                ))}
-              </Selector>
-            </Campo>
-            <Campo htmlFor="institucion-origen" etiqueta="Institución de origen" obligatorio>
-              <EntradaTexto
-                id="institucion-origen"
-                value={parametros.institucionOrigen}
-                onChange={(e) => setParametros({ ...parametros, institucionOrigen: e.target.value })}
-              />
-            </Campo>
-            <Campo htmlFor="anos" etiqueta="Años desde que aprobó la asignatura" obligatorio>
-              <EntradaTexto
-                id="anos"
-                type="number"
-                min={0}
-                value={parametros.anosTranscurridos}
-                onChange={(e) => setParametros({ ...parametros, anosTranscurridos: e.target.value })}
-              />
-            </Campo>
-            <Campo htmlFor="matricula" etiqueta="Matrícula en la malla destino" obligatorio>
-              <Selector
-                id="matricula"
-                value={parametros.numeroMatricula}
-                onChange={(e) => setParametros({ ...parametros, numeroMatricula: e.target.value })}
-              >
-                <option value="">Seleccione matrícula</option>
-                <option value="1">Primera</option>
-                <option value="2">Segunda</option>
-                <option value="3">Tercera o posterior (bloqueo RN-16)</option>
-              </Selector>
-            </Campo>
-            <div className="flex items-end pb-2">
-              <Casilla
-                id="credito-externo"
-                etiqueta="Créditos de otra institución"
-                ayuda="No se aplica 48 h/crédito automático (RN-15)."
-                checked={parametros.esCreditoExterno}
-                onChange={(e) => setParametros({ ...parametros, esCreditoExterno: e.target.checked })}
-              />
-            </div>
-          </div>
-          <Boton type="submit" cargando={analizando} textoCargando="El agente está analizando…" disabled={!confirmada || !formularioValido}>
-            Ejecutar análisis
+      <Tarjeta
+        titulo="Materias aprobadas del certificado"
+        descripcion="Tomadas del certificado SIHA preaprobado. El análisis las compara con todas las materias de la carrera de destino."
+      >
+        <div className="space-y-4">
+          <Tabla columnas={columnasMaterias} filas={materias} claveFila={(m) => m.id} />
+          {sinConfirmar.length > 0 ? (
+            <Alerta tono="advertencia" titulo="Hay materias sin confirmar">
+              {sinConfirmar.map((m) => m.codigoAsignaturaOrigen).join(', ')} deben confirmarse antes del análisis.
+            </Alerta>
+          ) : null}
+          <Boton
+            onClick={() => void analizar()}
+            cargando={analizando}
+            textoCargando="El agente está comparando contenidos…"
+            disabled={!expediente || sinConfirmar.length > 0 || materias.length === 0}
+          >
+            Analizar automáticamente
           </Boton>
-        </form>
+        </div>
       </Tarjeta>
 
       {error ? (
@@ -271,62 +317,45 @@ export function AnalisisExpedientePage(): JSX.Element {
         </Alerta>
       ) : null}
 
-      {resultado && final ? (
-        <section aria-label="Resultado del análisis" className="space-y-4">
-          <Alerta tono={final.tono} titulo={final.etiqueta} detalles={resultado.analisis.alertasGlobales}>
-            {final.descripcion}
-          </Alerta>
+      {resultado ? (
+        <section aria-label="Resultado del análisis" className="space-y-6">
+          {resultado.alertas.length > 0 ? (
+            <Alerta tono="advertencia" titulo="Observaciones" detalles={resultado.alertas}>
+              Revise estas observaciones antes del dictamen.
+            </Alerta>
+          ) : null}
 
-          {sinCalculo ? null : (
-            <Pestanas
-              etiqueta="Resultado del análisis"
-              activa={vista}
-              alCambiar={(nueva) => setBusqueda({ vista: nueva }, { replace: true })}
-              pestanas={[
-                {
-                  id: 'creditos',
-                  etiqueta: 'Créditos y controles',
-                  contenido: (
-                    <PanelCreditos
-                      creditos={resultado.analisis.creditos}
-                      parametros={resultado.parametrosReglas}
-                      datos={{
-                        asignaturaOrigen: extraccion.nombreAsignaturaOrigen,
-                        asignaturaDestino: `${resultado.asignaturaDestino.nombre} (${resultado.asignaturaDestino.codigo})`,
-                        creditosOrigen: extraccion.creditos,
-                        creditosDestino: resultado.asignaturaDestino.creditos,
-                        anosTranscurridos: Number(resultado.datosControl.anosTranscurridos),
-                        numeroMatricula: Number(resultado.datosControl.numeroMatricula),
-                        esCreditoExterno: resultado.datosControl.esCreditoExterno,
-                      }}
-                    />
-                  ),
-                },
-                {
-                  id: 'cobertura',
-                  etiqueta: 'Cobertura de contenidos',
-                  contenido: (
-                    <TablaCobertura
-                      contenido={resultado.analisis.contenido}
-                      unidadesOrigen={extraccion.unidades}
-                      versionReglas={resultado.parametrosReglas?.version ?? null}
-                    />
-                  ),
-                },
-                {
-                  id: 'precedentes',
-                  etiqueta: 'Precedentes',
-                  contenido: (
-                    <ConsultaPrecedentes
-                      titulo={`${contexto.codigo} · ${extraccion.nombreAsignaturaOrigen} → ${resultado.asignaturaDestino.nombre} (${resultado.asignaturaDestino.codigo})`}
-                      precedentes={resultado.precedentes ?? (resultado.errorPrecedentes ? null : resultado.analisis.precedentes)}
-                      error={resultado.errorPrecedentes}
-                    />
-                  ),
-                },
-              ]}
-            />
-          )}
+          <div className="space-y-4">
+            <h2 className="text-lg font-semibold text-ink">
+              Homologaciones propuestas ({resultado.propuestas.length})
+            </h2>
+            {resultado.propuestas.length === 0 ? (
+              <Alerta tono="informacion">Ninguna materia aprobada alcanza el contenido mínimo de una materia de destino.</Alerta>
+            ) : (
+              resultado.propuestas.map((p) => <TarjetaPropuesta key={p.codigoDestino} propuesta={p} institucion={institucion} />)
+            )}
+          </div>
+
+          {resultado.sinCoberturaSuficiente.length > 0 ? (
+            <div className="space-y-4">
+              <h2 className="text-lg font-semibold text-ink">No se pueden homologar: contenido insuficiente</h2>
+              {resultado.sinCoberturaSuficiente.map((p) => (
+                <TarjetaPropuesta key={p.codigoDestino} propuesta={p} institucion={institucion} />
+              ))}
+            </div>
+          ) : null}
+
+          {resultado.origenesSinAsignar.length > 0 ? (
+            <Tarjeta titulo="Materias aprobadas sin equivalencia" descripcion="No alcanzan ninguna materia de la carrera de destino.">
+              <ul className="space-y-1 text-sm">
+                {resultado.origenesSinAsignar.map((o) => (
+                  <li key={o.extraccionId}>
+                    <span className="font-mono text-xs text-faint">{o.codigo}</span> {o.nombre}
+                  </li>
+                ))}
+              </ul>
+            </Tarjeta>
+          ) : null}
         </section>
       ) : null}
     </div>

@@ -28,17 +28,20 @@ public class ProcesarSolicitudCreadaService
     private readonly IAlmacenDocumentos _almacen;
     private readonly IExtractorPdfService _extractor;
     private readonly ILogger<ProcesarSolicitudCreadaService> _logger;
+    private readonly ILectorCertificadosAlmacen? _certificados;
 
     public ProcesarSolicitudCreadaService(
         SihaDbContextC db,
         IAlmacenDocumentos almacen,
         IExtractorPdfService extractor,
-        ILogger<ProcesarSolicitudCreadaService> logger)
+        ILogger<ProcesarSolicitudCreadaService> logger,
+        ILectorCertificadosAlmacen? certificados = null)
     {
         _db = db;
         _almacen = almacen;
         _extractor = extractor;
         _logger = logger;
+        _certificados = certificados;
     }
 
     public async Task<ResultadoProcesamiento> ProcesarAsync(
@@ -90,6 +93,44 @@ public class ProcesarSolicitudCreadaService
         {
             if (await _db.Extracciones.AnyAsync(x => x.DocumentoId == documento.DocumentoId, cancellationToken))
                 continue;
+
+            // Certificado SIHA (SIHA-CH-01): documento preaprobado con todas las materias. Cada materia
+            // queda como una extracción CONFIRMADA con confianza 1.00; no requiere revisión del operador.
+            var certificado = _certificados is null
+                ? null
+                : await _certificados.LeerAsync(documento.RutaAlmacenamiento, cancellationToken);
+            if (certificado is not null)
+            {
+                foreach (var asignatura in certificado.Asignaturas)
+                {
+                    _db.Extracciones.Add(new Extraccion
+                    {
+                        ExpedienteId = evento.ExpedienteId,
+                        DocumentoId = documento.DocumentoId,
+                        CodigoAsignaturaOrigen = asignatura.Codigo,
+                        NombreAsignaturaOrigen = asignatura.Nombre,
+                        Creditos = asignatura.Creditos,
+                        Horas = asignatura.HorasTotales,
+                        Confianza = 1.00m,
+                        Estado = EstadosExtraccion.Confirmada,
+                        ConfirmadoUtc = DateTimeOffset.UtcNow,
+                        ConfirmadoPor = "CERTIFICADO_SIHA",
+                        Observacion = $"Datos del certificado SIHA {certificado.NumeroCertificado} (documento preaprobado, plantilla SIHA-CH-01).",
+                        Unidades = asignatura.Unidades.Select(u => new ExtraccionUnidad
+                        {
+                            Numero = u.Numero,
+                            Nombre = u.Nombre,
+                            Horas = u.Horas,
+                            Contenidos = u.Contenidos
+                        }).ToList()
+                    });
+                }
+
+                _logger.LogInformation(
+                    "Certificado SIHA {Certificado} leído: {Asignaturas} materia(s) confirmada(s). ExpedienteId={ExpedienteId}",
+                    certificado.NumeroCertificado, certificado.Asignaturas.Count, evento.ExpedienteId);
+                continue;
+            }
 
             var codigo = evento.AsignaturasOrigen.Count == 1 ? evento.AsignaturasOrigen.First() : null;
             var resultado = await _extractor.ExtraerDeArchivoAsync(

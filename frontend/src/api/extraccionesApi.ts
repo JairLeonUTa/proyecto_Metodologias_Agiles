@@ -1,11 +1,13 @@
 import { peticion } from './httpClient';
 import type {
+  AnalisisAutomatico,
   AnalisisCompleto,
   AnalizarExtraccion,
   BuscarPrecedente,
   ConfirmarExtraccion,
   Extraccion,
   Precedente,
+  SolicitudAnalisisAutomatico,
 } from '../types/analisis';
 
 /**
@@ -26,6 +28,16 @@ export const extraccionesApi = {
   /** Orquestación completa: reglas gRPC → Pcred → Pcont → precedentes (S2-A08). */
   analizar: (id: string, datos: AnalizarExtraccion) =>
     peticion<AnalisisCompleto>(`/api/extracciones/${id}/analizar`, { metodo: 'POST', cuerpo: datos }),
+
+  /**
+   * Homologación automática por contenidos de todo el expediente: compara las materias aprobadas del
+   * certificado con todas las materias de la carrera de destino y propone solo las que alcanzan el mínimo.
+   */
+  analizarExpediente: (expedienteId: string, datos: SolicitudAnalisisAutomatico) =>
+    peticion<AnalisisAutomatico>(`/api/extracciones/expedientes/${expedienteId}/analisis-automatico`, {
+      metodo: 'POST',
+      cuerpo: datos,
+    }),
 
   /** Coincidencia exacta; sin coincidencia devuelve `[]` (S2-A07). */
   buscarPrecedentes: (datos: BuscarPrecedente) =>

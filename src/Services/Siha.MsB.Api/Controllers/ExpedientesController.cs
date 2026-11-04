@@ -223,7 +223,7 @@ public class ExpedientesController : ControllerBase
         return expediente;
     }
 
-    private static ExpedienteResponse AExpedienteResponse(Expediente expediente) => new(
+    internal static ExpedienteResponse AExpedienteResponse(Expediente expediente) => new(
         expediente.Id,
         expediente.Codigo,
         expediente.TipoTramite,
@@ -248,6 +248,12 @@ public class ExpedientesController : ControllerBase
                 a.AsignaturaDestinoCodigo,
                 a.NotaOrigen,
                 a.FechaAprobacionCertificada,
-                a.NumeroMatriculaDestino))
-            .ToList());
+                a.NumeroMatriculaDestino,
+                a.Semestre,
+                a.Creditos,
+                a.Horas))
+            .ToList(),
+        expediente.NumeroCertificado,
+        expediente.EstudianteNombre,
+        expediente.EstudianteIdentificacion);
 }

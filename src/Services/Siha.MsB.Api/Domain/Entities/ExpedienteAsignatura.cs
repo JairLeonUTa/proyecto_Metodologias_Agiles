@@ -25,4 +25,13 @@ public class ExpedienteAsignatura
 
     /// <summary>Número de matrícula de la persona en la asignatura de destino, si consta en el expediente.</summary>
     public int? NumeroMatriculaDestino { get; set; }
+
+    /// <summary>Semestre en el que se cursó la asignatura de origen (certificado SIHA).</summary>
+    public int? Semestre { get; set; }
+
+    /// <summary>Créditos de la asignatura de origen (certificado SIHA).</summary>
+    public int? Creditos { get; set; }
+
+    /// <summary>Horas totales de la asignatura de origen (certificado SIHA).</summary>
+    public int? Horas { get; set; }
 }

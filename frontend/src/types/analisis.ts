@@ -138,7 +138,79 @@ export const ESTADO_FINAL = {
   REQUIERE_VALIDACION_CONOCIMIENTOS: 3,
   ERROR_REGLAS_GRPC: 4,
   EXTRACCION_NO_CONFIRMADA: 5,
+  CONTENIDO_INSUFICIENTE: 6,
 } as const;
+
+/** Unidad de la materia de la carrera de destino (catálogo de MS A). */
+export interface UnidadCatalogoAnalisis {
+  numero: number;
+  nombre: string;
+  horas: number;
+  contenidos: string | null;
+}
+
+/** Cuerpo de `POST /api/extracciones/expedientes/{id}/analisis-automatico`. */
+export interface SolicitudAnalisisAutomatico {
+  rutaNormativa: string;
+  tipoTramite: string;
+  institucionOrigen: string;
+  asignaturasOrigen: Array<{ codigo: string; fechaAprobacion: string | null; numeroMatricula: number | null }>;
+  asignaturasDestino: Array<{
+    codigo: string;
+    nombre: string;
+    creditos: number;
+    semestre: number | null;
+    unidades: UnidadCatalogoAnalisis[];
+  }>;
+}
+
+export interface OrigenPropuesta {
+  extraccionId: string;
+  codigo: string;
+  nombre: string;
+  creditos: number | null;
+  horas: number | null;
+  fechaAprobacion: string | null;
+  anosTranscurridos: number | null;
+  numeroMatricula: number | null;
+}
+
+export interface CoberturaUnidadPropuesta {
+  numero: number;
+  nombre: string;
+  horas: number;
+  /** Similitud coseno en porcentaje (0–100) con la unidad de origen más parecida. */
+  similitud: number;
+  cubierta: boolean;
+  codigoOrigen: string | null;
+  numeroUnidadOrigen: number | null;
+  nombreUnidadOrigen: string | null;
+}
+
+export interface PropuestaHomologacion {
+  codigoDestino: string;
+  nombreDestino: string;
+  creditosDestino: number;
+  semestreDestino: number | null;
+  origenes: OrigenPropuesta[];
+  pcont: number;
+  pcred: number;
+  categoriaCreditos: string;
+  alcanzaContenido: boolean;
+  estadoFinal: number;
+  unidades: CoberturaUnidadPropuesta[];
+  alertas: string[];
+  precedentes: Precedente[];
+}
+
+export interface AnalisisAutomatico {
+  expedienteId: string;
+  propuestas: PropuestaHomologacion[];
+  sinCoberturaSuficiente: PropuestaHomologacion[];
+  origenesSinAsignar: OrigenPropuesta[];
+  alertas: string[];
+  detalleTrazabilidad: string;
+}
 
 export interface AnalisisCompleto {
   extraccion: Extraccion;

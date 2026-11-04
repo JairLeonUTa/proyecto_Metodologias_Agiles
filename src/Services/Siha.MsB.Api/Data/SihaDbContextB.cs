@@ -35,6 +35,11 @@ public class SihaDbContextB : DbContext
             e.Property(x => x.Observaciones).HasMaxLength(1000);
             e.Property(x => x.SelloConcurrencia).IsConcurrencyToken();
             e.HasIndex(x => x.Estado);
+            e.Property(x => x.NumeroCertificado).HasMaxLength(40);
+            e.Property(x => x.EstudianteNombre).HasMaxLength(200);
+            e.Property(x => x.EstudianteIdentificacion).HasMaxLength(20);
+            // Un certificado SIHA solo puede registrarse una vez.
+            e.HasIndex(x => x.NumeroCertificado).IsUnique().HasFilter("[NumeroCertificado] IS NOT NULL");
         });
 
         modelBuilder.Entity<ExpedienteDocumento>(e =>

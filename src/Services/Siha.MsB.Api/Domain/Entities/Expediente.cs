@@ -46,6 +46,15 @@ public class Expediente
 
     public string? Observaciones { get; set; }
 
+    /// <summary>Número del certificado SIHA del que se creó el expediente (único). Nulo en el registro manual.</summary>
+    public string? NumeroCertificado { get; set; }
+
+    /// <summary>Apellidos y nombres del estudiante según el certificado SIHA.</summary>
+    public string? EstudianteNombre { get; set; }
+
+    /// <summary>Cédula del estudiante según el certificado SIHA.</summary>
+    public string? EstudianteIdentificacion { get; set; }
+
     /// <summary>
     /// Sello de concurrencia optimista. Se renueva en cada transición de estado relevante para que dos
     /// envíos simultáneos del mismo expediente no publiquen dos veces (el segundo recibe 409).

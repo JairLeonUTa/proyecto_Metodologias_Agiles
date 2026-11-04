@@ -36,7 +36,10 @@ public record AsignaturaResponse(
     string? CodigoDestino,
     double? Nota,
     DateOnly? FechaAprobacionCertificada,
-    int? NumeroMatriculaDestino = null);
+    int? NumeroMatriculaDestino = null,
+    int? Semestre = null,
+    int? Creditos = null,
+    int? Horas = null);
 
 public record ExpedienteResponse(
     Guid Id,
@@ -54,7 +57,10 @@ public record ExpedienteResponse(
     DateTimeOffset FechaCreacionUtc,
     DateTimeOffset? FechaPublicacionUtc,
     IReadOnlyCollection<DocumentoResponse> Documentos,
-    IReadOnlyCollection<AsignaturaResponse> Asignaturas);
+    IReadOnlyCollection<AsignaturaResponse> Asignaturas,
+    string? NumeroCertificado = null,
+    string? EstudianteNombre = null,
+    string? EstudianteIdentificacion = null);
 
 /// <summary>
 /// Registro: 201 con borrador sin publicar. Envío: 202 con resultado de publicación

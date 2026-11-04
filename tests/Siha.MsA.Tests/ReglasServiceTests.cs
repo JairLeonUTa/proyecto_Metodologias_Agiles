@@ -254,13 +254,33 @@ public class ReglasServiceTests
     {
         using var db = NuevaDb();
         await Sembrar(db);
-        var asignaturas = await db.Asignaturas.Include(a => a.Unidades).ToListAsync();
-        Assert.NotEmpty(asignaturas);
+        // Solo la muestra base (SW101/SW201/SW301) tiene horas de unidades faltantes.
+        var asignaturas = await db.Asignaturas.Include(a => a.Unidades)
+            .Where(a => a.Codigo == "SW101" || a.Codigo == "SW201" || a.Codigo == "SW301").ToListAsync();
+        Assert.Equal(3, asignaturas.Count);
         Assert.All(asignaturas, a =>
         {
             Assert.True(a.Unidades.Sum(u => u.Horas) < a.Horas);
             Assert.False(a.PlanCompleto);
         });
+    }
+
+    [Fact]
+    public async Task SemillaAgregaFisicaDeIndustrialYSoftwareConPlanCompleto()
+    {
+        using var db = NuevaDb();
+        await Sembrar(db);
+        await Sembrar(db); // idempotente: no duplica
+
+        var fisica = await db.Asignaturas.Include(a => a.Unidades).Include(a => a.Malla)
+            .Where(a => a.Codigo == "SW105" || a.Codigo == "IND105" || a.Codigo == "IND205" || a.Codigo == "IND108")
+            .ToListAsync();
+        Assert.Equal(4, fisica.Count);
+        Assert.All(fisica, a => Assert.True(a.PlanCompleto));
+        var sw105 = fisica.Single(a => a.Codigo == "SW105");
+        Assert.Equal(8, sw105.Unidades.Count);
+        var industrial = fisica.Where(a => a.Codigo is "IND105" or "IND205").SelectMany(a => a.Unidades).Select(u => u.Nombre);
+        Assert.Equal(industrial.OrderBy(n => n), sw105.Unidades.Select(u => u.Nombre).OrderBy(n => n));
     }
 
     private static Task Sembrar(SihaDbContextA db) => DbSeederA.SembrarAsync(db,

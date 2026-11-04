@@ -88,5 +88,59 @@ export interface Expediente {
     nota: number | null;
     fechaAprobacionCertificada?: string | null;
     numeroMatriculaDestino?: number | null;
+    semestre?: number | null;
+    creditos?: number | null;
+    horas?: number | null;
   }>;
+  /** Datos del certificado SIHA del que se creó el expediente (nulos en registros manuales antiguos). */
+  numeroCertificado?: string | null;
+  estudianteNombre?: string | null;
+  estudianteIdentificacion?: string | null;
+}
+
+/** Unidad temática de una asignatura del certificado SIHA. */
+export interface UnidadCertificada {
+  numero: number;
+  nombre: string;
+  horas: number;
+  contenidos: string;
+}
+
+/** Asignatura aprobada que consta en el certificado SIHA. */
+export interface AsignaturaCertificada {
+  codigo: string;
+  nombre: string;
+  semestre: number;
+  creditos: number;
+  horasTotales: number;
+  /** AAAA-MM-DD */
+  fechaAprobacion: string;
+  nota: number;
+  numeroMatricula: number;
+  unidades: UnidadCertificada[];
+}
+
+/** Respuesta de `POST /api/expedientes/certificado/validar`: lo que el sistema leyó del PDF. */
+export interface CertificadoLeido {
+  numeroCertificado: string;
+  fechaEmision: string;
+  emitidoPor: string;
+  estudianteNombre: string;
+  estudianteIdentificacion: string;
+  tipoTramite: string;
+  rutaNormativa: string;
+  institucionOrigen: string;
+  carreraOrigenCodigo: string;
+  carreraOrigenNombre: string;
+  carreraDestinoCodigo: string;
+  carreraDestinoNombre: string;
+  asignaturas: AsignaturaCertificada[];
+}
+
+/** Respuesta 202 de `POST /api/expedientes/certificado`. */
+export interface SolicitudCertificado {
+  expediente: Expediente;
+  certificado: CertificadoLeido;
+  publicado: boolean;
+  mensaje: string;
 }

@@ -51,6 +51,14 @@ namespace Siha.MsB.Api.Migrations
                         .HasMaxLength(40)
                         .HasColumnType("nvarchar(40)");
 
+                    b.Property<string>("EstudianteIdentificacion")
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<string>("EstudianteNombre")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
                     b.Property<bool>("EventoPublicado")
                         .HasColumnType("bit");
 
@@ -70,6 +78,10 @@ namespace Siha.MsB.Api.Migrations
 
                     b.Property<int>("IntentosPublicacion")
                         .HasColumnType("int");
+
+                    b.Property<string>("NumeroCertificado")
+                        .HasMaxLength(40)
+                        .HasColumnType("nvarchar(40)");
 
                     b.Property<string>("Observaciones")
                         .HasMaxLength(1000)
@@ -102,6 +114,10 @@ namespace Siha.MsB.Api.Migrations
 
                     b.HasIndex("Estado");
 
+                    b.HasIndex("NumeroCertificado")
+                        .IsUnique()
+                        .HasFilter("[NumeroCertificado] IS NOT NULL");
+
                     b.ToTable("EXPEDIENTE", (string)null);
                 });
 
@@ -125,16 +141,25 @@ namespace Siha.MsB.Api.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
 
+                    b.Property<int?>("Creditos")
+                        .HasColumnType("int");
+
                     b.Property<Guid>("ExpedienteId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<DateOnly?>("FechaAprobacionCertificada")
                         .HasColumnType("date");
 
+                    b.Property<int?>("Horas")
+                        .HasColumnType("int");
+
                     b.Property<double?>("NotaOrigen")
                         .HasColumnType("float");
 
                     b.Property<int?>("NumeroMatriculaDestino")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("Semestre")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
