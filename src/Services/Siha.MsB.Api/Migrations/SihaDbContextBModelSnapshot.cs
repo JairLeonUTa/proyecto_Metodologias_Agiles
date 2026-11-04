@@ -134,6 +134,9 @@ namespace Siha.MsB.Api.Migrations
                     b.Property<double?>("NotaOrigen")
                         .HasColumnType("float");
 
+                    b.Property<int?>("NumeroMatriculaDestino")
+                        .HasColumnType("int");
+
                     b.HasKey("Id");
 
                     b.HasIndex("ExpedienteId");

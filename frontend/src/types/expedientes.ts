@@ -14,6 +14,8 @@ export interface AsignaturaExpediente {
   nombreOrigen: string;
   codigoDestino: string | null;
   nota: number | null;
+  fechaAprobacionCertificada?: string | null;
+  numeroMatriculaDestino?: number | null;
 }
 
 /** Cuerpo de `POST /api/expedientes`. */
@@ -70,6 +72,7 @@ export interface Expediente {
   rutaNormativa: string;
   carreraOrigenCodigo: string;
   carreraDestinoCodigo: string;
+  institucionOrigen?: string | null;
   estado: string;
   correlationId: string;
   eventoPublicado: boolean;
@@ -83,5 +86,7 @@ export interface Expediente {
     nombreOrigen: string;
     codigoDestino: string | null;
     nota: number | null;
+    fechaAprobacionCertificada?: string | null;
+    numeroMatriculaDestino?: number | null;
   }>;
 }

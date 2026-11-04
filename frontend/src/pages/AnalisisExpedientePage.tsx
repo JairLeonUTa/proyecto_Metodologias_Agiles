@@ -16,7 +16,7 @@ import type { Asignatura } from '../types/catalogo';
 import { RUTAS_NORMATIVAS_TODAS } from '../types/comunes';
 import type { Expediente } from '../types/expedientes';
 import type { ParametroEvaluacion } from '../types/reglas';
-import { contextoExpediente, presentarEstadoFinal } from '../utils/analisis';
+import { anosDesdeFecha, contextoExpediente, matriculaParaSeleccion, presentarEstadoFinal } from '../utils/analisis';
 
 /** Vistas del resultado: coinciden con los mockups M-03, M-05 y M-06. */
 const VISTAS = ['creditos', 'cobertura', 'precedentes'] as const;
@@ -62,10 +62,10 @@ export function AnalisisExpedientePage(): JSX.Element {
 
   const [parametros, setParametros] = useState<Parametros>({
     codigoDestino: '',
-    rutaNormativa: RUTAS_NORMATIVAS_TODAS[0],
-    institucionOrigen: 'Universidad Técnica de Ambato',
-    anosTranscurridos: '1',
-    numeroMatricula: '1',
+    rutaNormativa: '',
+    institucionOrigen: '',
+    anosTranscurridos: '',
+    numeroMatricula: '',
     esCreditoExterno: false,
   });
   const [analizando, setAnalizando] = useState(false);
@@ -79,10 +79,12 @@ export function AnalisisExpedientePage(): JSX.Element {
     const externo = contexto.tipoTramite === 'EXTERNO';
     setParametros((previo) => ({
       ...previo,
-      codigoDestino: contexto.codigoDestino ?? previo.codigoDestino,
-      rutaNormativa: contexto.rutaNormativa ?? previo.rutaNormativa,
+      codigoDestino: contexto.codigoDestino ?? '',
+      rutaNormativa: contexto.rutaNormativa ?? '',
       esCreditoExterno: externo,
-      institucionOrigen: externo ? '' : previo.institucionOrigen,
+      institucionOrigen: contexto.institucionOrigen ?? '',
+      anosTranscurridos: String(anosDesdeFecha(contexto.fechaAprobacionCertificada) ?? ''),
+      numeroMatricula: matriculaParaSeleccion(contexto.numeroMatriculaDestino),
     }));
   }, [caso.datos]);
 
@@ -106,7 +108,9 @@ export function AnalisisExpedientePage(): JSX.Element {
   const matricula = Number(parametros.numeroMatricula);
   const formularioValido =
     parametros.codigoDestino.trim() !== '' &&
+    parametros.rutaNormativa !== '' &&
     parametros.institucionOrigen.trim() !== '' &&
+    parametros.anosTranscurridos.trim() !== '' &&
     Number.isInteger(anos) &&
     anos >= 0 &&
     Number.isInteger(matricula) &&
@@ -209,6 +213,7 @@ export function AnalisisExpedientePage(): JSX.Element {
                 value={parametros.rutaNormativa}
                 onChange={(e) => setParametros({ ...parametros, rutaNormativa: e.target.value })}
               >
+                <option value="">Selecciona una ruta</option>
                 {RUTAS_NORMATIVAS_TODAS.map((ruta) => (
                   <option key={ruta} value={ruta}>
                     {ruta}
@@ -238,9 +243,10 @@ export function AnalisisExpedientePage(): JSX.Element {
                 value={parametros.numeroMatricula}
                 onChange={(e) => setParametros({ ...parametros, numeroMatricula: e.target.value })}
               >
+                <option value="">Seleccione matrícula</option>
                 <option value="1">Primera</option>
                 <option value="2">Segunda</option>
-                <option value="3">Tercera</option>
+                <option value="3">Tercera o posterior (bloqueo RN-16)</option>
               </Selector>
             </Campo>
             <div className="flex items-end pb-2">

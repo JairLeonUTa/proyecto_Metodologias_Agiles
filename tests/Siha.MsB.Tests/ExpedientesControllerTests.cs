@@ -1,4 +1,5 @@
 using FluentAssertions;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
@@ -30,6 +31,21 @@ public class ExpedientesControllerTests : IDisposable
     private readonly SihaDbContextB _db;
     private readonly Mock<IExpedienteEventPublisher> _publicador = new();
     private readonly List<SolicitudCreadaEvent> _publicados = new();
+
+    [Fact]
+    public void Docentes_solo_pueden_consultar_un_expediente_por_id()
+    {
+        var obtener = typeof(ExpedientesController).GetMethod(nameof(ExpedientesController.Obtener))!;
+        var listar = typeof(ExpedientesController).GetMethod(nameof(ExpedientesController.Listar))!;
+        var registrar = typeof(ExpedientesController).GetMethod(nameof(ExpedientesController.Registrar))!;
+
+        obtener.GetCustomAttributes(typeof(AuthorizeAttribute), true)
+            .Cast<AuthorizeAttribute>().Single().Roles.Should().Contain(RolesSistema.Docente);
+        listar.GetCustomAttributes(typeof(AuthorizeAttribute), true)
+            .Cast<AuthorizeAttribute>().Single().Roles.Should().NotContain(RolesSistema.Docente);
+        registrar.GetCustomAttributes(typeof(AuthorizeAttribute), true)
+            .Cast<AuthorizeAttribute>().Single().Roles.Should().NotContain(RolesSistema.Docente);
+    }
 
     public ExpedientesControllerTests()
     {
@@ -89,8 +105,8 @@ public class ExpedientesControllerTests : IDisposable
         documentos,
         new List<AsignaturaRequest>
         {
-            new("SW101", "Fundamentos de Programación", "TI101", 8.5, new DateOnly(2025, 7, 15)),
-            new("SW201", "Estructuras de Datos", "TI201", 9.0, new DateOnly(2025, 7, 15))
+            new("SW101", "Fundamentos de Programación", "TI101", 8.5, new DateOnly(2025, 7, 15), 2),
+            new("SW201", "Estructuras de Datos", "TI201", 9.0, new DateOnly(2025, 7, 15), 2)
         });
 
     private async Task<ExpedienteAceptadoResponse> RegistrarBorradorAsync(string rutaNormativa = RutasNormativas.CambioCarreraOu)
@@ -394,7 +410,7 @@ public class ExpedientesControllerTests : IDisposable
     }
 
     [Fact]
-    public async Task Persiste_la_fecha_de_aprobacion_certificada_de_las_materias()
+    public async Task Persiste_la_fecha_y_numero_de_matricula_de_las_materias()
     {
         var respuesta = await RegistrarBorradorAsync();
 
@@ -402,6 +418,11 @@ public class ExpedientesControllerTests : IDisposable
 
         asignaturas.Should().HaveCount(2);
         asignaturas.Should().OnlyContain(a => a.FechaAprobacionCertificada == new DateOnly(2025, 7, 15));
+        asignaturas.Should().OnlyContain(a => a.NumeroMatriculaDestino == 2);
+
+        var consulta = await CrearControlador().Obtener(respuesta.Id, CancellationToken.None);
+        var expediente = consulta.Result.Should().BeOfType<OkObjectResult>().Subject.Value.Should().BeOfType<ExpedienteResponse>().Subject;
+        expediente.Asignaturas.Should().OnlyContain(a => a.NumeroMatriculaDestino == 2);
     }
 
     [Theory]

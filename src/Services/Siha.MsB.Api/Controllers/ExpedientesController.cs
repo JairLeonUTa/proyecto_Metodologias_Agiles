@@ -22,7 +22,7 @@ namespace Siha.MsB.Api.Controllers;
 /// </summary>
 [ApiController]
 [Route("api/expedientes")]
-[Authorize(Roles = $"{RolesSistema.Operador},{RolesSistema.Administrador}")]
+[Authorize]
 public class ExpedientesController : ControllerBase
 {
     private readonly SihaDbContextB _db;
@@ -45,6 +45,7 @@ public class ExpedientesController : ControllerBase
     /// <c>POST /api/expedientes/{id}/documentos</c>, donde el servidor calcula ruta, hash y tamaño.
     /// </summary>
     [HttpPost]
+    [Authorize(Roles = $"{RolesSistema.Operador},{RolesSistema.Administrador}")]
     [ProducesResponseType(typeof(ExpedienteAceptadoResponse), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
@@ -96,6 +97,7 @@ public class ExpedientesController : ControllerBase
     /// cumplen los requisitos documentales. Idempotente: un expediente publicado no se republica.
     /// </summary>
     [HttpPost("{id:guid}/enviar")]
+    [Authorize(Roles = $"{RolesSistema.Operador},{RolesSistema.Administrador}")]
     [ProducesResponseType(typeof(ExpedienteAceptadoResponse), StatusCodes.Status202Accepted)]
     [ProducesResponseType(typeof(ExpedienteAceptadoResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -109,6 +111,7 @@ public class ExpedientesController : ControllerBase
     /// identificador de correlación original (CA3). Vuelve a verificar los documentos en disco.
     /// </summary>
     [HttpPost("{id:guid}/republicar")]
+    [Authorize(Roles = $"{RolesSistema.Operador},{RolesSistema.Administrador}")]
     [ProducesResponseType(typeof(ExpedienteAceptadoResponse), StatusCodes.Status202Accepted)]
     [ProducesResponseType(typeof(ExpedienteAceptadoResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -152,6 +155,7 @@ public class ExpedientesController : ControllerBase
 
     /// <summary>Consulta el estado de recepción y procesamiento del expediente (US-05, CA3).</summary>
     [HttpGet("{id:guid}")]
+    [Authorize(Roles = $"{RolesSistema.Operador},{RolesSistema.Administrador},{RolesSistema.Docente}")]
     [ProducesResponseType(typeof(ExpedienteResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<ExpedienteResponse>> Obtener(Guid id, CancellationToken cancellationToken)
@@ -166,6 +170,7 @@ public class ExpedientesController : ControllerBase
     }
 
     [HttpGet]
+    [Authorize(Roles = $"{RolesSistema.Operador},{RolesSistema.Administrador}")]
     [ProducesResponseType(typeof(IEnumerable<ExpedienteResponse>), StatusCodes.Status200OK)]
     public async Task<ActionResult<IEnumerable<ExpedienteResponse>>> Listar(
         [FromQuery] string? estado,
@@ -210,7 +215,8 @@ public class ExpedientesController : ControllerBase
                 NotaOrigen = asignatura.Nota,
                 // Fecha en la que la institución de origen certificó la aprobación de la materia
                 // seleccionada del catálogo (requisito RN-03 de CAU-P-122).
-                FechaAprobacionCertificada = asignatura.FechaAprobacionCertificada
+                FechaAprobacionCertificada = asignatura.FechaAprobacionCertificada,
+                NumeroMatriculaDestino = asignatura.NumeroMatriculaDestino
             });
         }
 
@@ -224,6 +230,7 @@ public class ExpedientesController : ControllerBase
         expediente.RutaNormativa,
         expediente.CarreraOrigenCodigo,
         expediente.CarreraDestinoCodigo,
+        expediente.InstitucionOrigen,
         expediente.Estado,
         expediente.CorrelationId,
         expediente.EventoPublicado,
@@ -240,6 +247,7 @@ public class ExpedientesController : ControllerBase
                 a.AsignaturaOrigenNombre,
                 a.AsignaturaDestinoCodigo,
                 a.NotaOrigen,
-                a.FechaAprobacionCertificada))
+                a.FechaAprobacionCertificada,
+                a.NumeroMatriculaDestino))
             .ToList());
 }
