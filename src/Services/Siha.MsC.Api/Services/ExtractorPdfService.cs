@@ -124,13 +124,13 @@ public sealed class ExtractorPdfService : IExtractorPdfService
 
         try
         {
-            await using var stream = File.OpenRead(rutaCompleta);
-            using var reader = new StreamReader(stream);
-            var contenidoBruto = await reader.ReadToEndAsync(cancellationToken);
+            var bytes = await File.ReadAllBytesAsync(rutaCompleta, cancellationToken);
+            var contenidoBruto = System.Text.Encoding.Latin1.GetString(bytes);
+            textoLeido = contenidoBruto.StartsWith("%PDF-", StringComparison.Ordinal)
+                ? ExtraerTextoPdfSinCompresion(contenidoBruto)
+                : contenidoBruto;
 
-            // Si es un archivo de texto o simulación de texto
-            tieneTextoNativo = !string.IsNullOrWhiteSpace(contenidoBruto) && contenidoBruto.Length >= 50;
-            textoLeido = contenidoBruto;
+            tieneTextoNativo = !string.IsNullOrWhiteSpace(textoLeido) && textoLeido.Length >= 50;
         }
         catch (Exception ex)
         {
@@ -248,27 +248,24 @@ public sealed class ExtractorPdfService : IExtractorPdfService
     private static IReadOnlyCollection<UnidadExtraida> ExtraerUnidades(string texto)
     {
         var unidades = new List<UnidadExtraida>();
+        var lineas = texto.Split(new[] { "\r\n", "\n", "\r" }, StringSplitOptions.None);
+        var encabezado = new Regex(@"^\s*(?:unidad|cap[ií]tulo|tema)\s*(\d+|[IVXLCDM]+)[:.\-\s]+(.+)$", RegexOptions.IgnoreCase);
 
-        // Busca patrones "Unidad 1: Nombre", "Unidad I - Nombre", "Capítulo 1", etc.
-        var matches = Regex.Matches(
-            texto,
-            @"(?i)(?:unidad|cap[ií]tulo|tema)\s*(\d+|[IVXLCDM]+)[:.\-\s]+([^\r\n]+)",
-            RegexOptions.Multiline);
-
-        int index = 1;
-        foreach (Match match in matches)
+        for (var i = 0; i < lineas.Length; i++)
         {
-            var numStr = match.Groups[1].Value;
-            var num = ConvertirNumero(numStr, index);
-            var nombre = match.Groups[2].Value.Trim();
+            var match = encabezado.Match(lineas[i]);
+            if (!match.Success) continue;
 
-            // Intento de extraer horas de esa unidad si están indicadas entre paréntesis ej "(12 horas)"
-            var matchHoras = Regex.Match(nombre, @"\((\d{1,3})\s*horas?\)", RegexOptions.IgnoreCase);
-            int horasUnidad = 10; // default razonable si no especifica
-            if (matchHoras.Success && int.TryParse(matchHoras.Groups[1].Value, out var h))
+            var num = ConvertirNumero(match.Groups[1].Value, unidades.Count + 1);
+            var titulo = match.Groups[2].Value.Trim();
+            var matchHoras = Regex.Match(titulo, @"(?:\(|[-–:]\s*)(\d{1,3})\s*horas?\)?\.?$", RegexOptions.IgnoreCase);
+            var horasUnidad = matchHoras.Success && int.TryParse(matchHoras.Groups[1].Value, out var h) ? h : 0;
+            var nombre = matchHoras.Success ? titulo[..matchHoras.Index].Trim().TrimEnd('.', '-', '–', ':') : titulo.TrimEnd('.');
+
+            var contenidos = new List<string>();
+            for (var j = i + 1; j < lineas.Length && !encabezado.IsMatch(lineas[j]); j++)
             {
-                horasUnidad = h;
-                nombre = Regex.Replace(nombre, @"\(\d{1,3}\s*horas?\)", "").Trim();
+                if (!string.IsNullOrWhiteSpace(lineas[j])) contenidos.Add(lineas[j].Trim());
             }
 
             if (!string.IsNullOrWhiteSpace(nombre) && nombre.Length >= 3)
@@ -277,9 +274,8 @@ public sealed class ExtractorPdfService : IExtractorPdfService
                     Numero: num,
                     Nombre: nombre,
                     Horas: horasUnidad,
-                    Contenidos: $"Contenidos analíticos de la unidad {num}: {nombre}"
+                    Contenidos: string.Join(" ", contenidos)
                 ));
-                index++;
             }
         }
 
@@ -291,6 +287,14 @@ public sealed class ExtractorPdfService : IExtractorPdfService
             .ToList();
 
         return resultado.AsReadOnly();
+    }
+
+    // ponytail: lee literales Tj de PDFs sin comprimir (como el PDF de prueba); para flujos comprimidos se necesita PdfPig.
+    private static string ExtraerTextoPdfSinCompresion(string contenido)
+    {
+        var coincidencias = Regex.Matches(contenido, @"\(((?:\\.|[^\\)])*)\)\s*Tj");
+        return string.Join("\n", coincidencias.Select(m => Regex.Replace(m.Groups[1].Value, @"\\([\\()])", "$1")
+            .Replace(@"\n", "\n").Replace(@"\r", "\r")));
     }
 
     private static int ConvertirNumero(string valor, int fallback)

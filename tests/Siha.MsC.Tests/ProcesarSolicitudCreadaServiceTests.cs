@@ -145,7 +145,9 @@ public class ProcesarSolicitudCreadaServiceTests
             .Options);
 
     private static ProcesarSolicitudCreadaService CrearServicio(SihaDbContextC db, string raiz)
-        => new(db, CrearAlmacen(raiz), NullLogger<ProcesarSolicitudCreadaService>.Instance);
+        => new(db, CrearAlmacen(raiz),
+            new ExtractorPdfService(Options.Create(new AlmacenOptions { RutaAlmacenamiento = raiz }), NullLogger<ExtractorPdfService>.Instance),
+            NullLogger<ProcesarSolicitudCreadaService>.Instance);
 
     private static AlmacenDocumentos CrearAlmacen(string raiz)
         => new(Options.Create(new AlmacenOptions { RutaAlmacenamiento = raiz }));

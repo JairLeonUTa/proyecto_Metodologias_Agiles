@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using Siha.MsC.Api.Domain;
 
@@ -100,8 +101,8 @@ public sealed class ReglaContenidoStrategy : IReglaContenidoStrategy
             ? (decimal)Math.Round(sumaHorasPesoCubiertas / sumaHorasTotales * 100, 2)
             : 0m;
 
-        var detalle = $"Pcont = Σ(h_j * covered_j) / Σ(h_j) * 100 = {sumaHorasPesoCubiertas:F0} / {sumaHorasTotales:F0} * 100 = {pcont}%; " +
-                      $"τ={p.Tau}%; UnidadesDestino={p.UnidadesDestino.Count}; UnidadesOrigen={p.UnidadesOrigen.Count}; " +
+        var detalle = $"Pcont = Σ(h_j * covered_j) / Σ(h_j) * 100 = {sumaHorasPesoCubiertas:F0} / {sumaHorasTotales:F0} * 100 = {pcont.ToString("0.##", CultureInfo.InvariantCulture)}%; " +
+                      $"τ={p.Tau.ToString("0.##", CultureInfo.InvariantCulture)}%; UnidadesDestino={p.UnidadesDestino.Count}; UnidadesOrigen={p.UnidadesOrigen.Count}; " +
                       $"Ruta={p.RutaNormativa}" +
                       (violacionRN19 ? $"; RN-19 VIOLADO: origenes duplicados={string.Join(",", unidadesDuplicadas)}" : "; RN-19 OK");
 
