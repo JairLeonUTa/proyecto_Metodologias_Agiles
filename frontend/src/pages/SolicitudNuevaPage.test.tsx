@@ -71,6 +71,21 @@ describe('Registro de materias de origen', () => {
     await waitFor(() => expect(screen.getByLabelText(/Nombre de origen/)).toHaveValue('Estructuras de Datos'));
   });
 
+  it('muestra las materias de la carrera de origen también en un trámite externo', async () => {
+    const user = userEvent.setup();
+    render(<MemoryRouter><SolicitudNuevaPage /></MemoryRouter>);
+
+    await user.selectOptions(screen.getByLabelText(/Tipo de trámite/), 'EXTERNO');
+    await user.selectOptions(await screen.findByLabelText(/Carrera de origen/), 'SOFT');
+    await waitFor(() => expect(catalogos.listarAsignaturas).toHaveBeenCalledWith(10));
+
+    const codigo = await screen.findByLabelText(/Código de origen/);
+    expect(codigo.tagName).toBe('SELECT');
+    expect(codigo).toHaveTextContent('SW201 — Estructuras de Datos');
+    await user.selectOptions(codigo, 'SW201');
+    expect(screen.getByLabelText(/Nombre de origen/)).toHaveValue('Estructuras de Datos');
+  });
+
   it('muestra los códigos cuando carga el catálogo y completa el nombre seleccionado', async () => {
     const user = userEvent.setup();
     let liberarCatalogo: ((materias: Awaited<ReturnType<typeof catalogos.listarAsignaturas>>) => void) | undefined;

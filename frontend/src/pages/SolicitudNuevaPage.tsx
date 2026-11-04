@@ -124,9 +124,11 @@ export function SolicitudNuevaPage(): JSX.Element {
   );
 
   const esExterno = formulario.tipoTramite === TIPOS_TRAMITE.EXTERNO;
+  const muestraCatalogoOrigen = Boolean(mallaOrigen) &&
+    (catalogoOrigen.cargando || Boolean(catalogoOrigen.datos?.length));
 
   useEffect(() => {
-    if (esExterno || !catalogoOrigen.datos?.length) return;
+    if (!catalogoOrigen.datos?.length) return;
 
     const porCodigo = new Map(catalogoOrigen.datos.map((asignatura) => [asignatura.codigo.toUpperCase(), asignatura.nombre]));
     setFilas((actuales) => {
@@ -139,7 +141,7 @@ export function SolicitudNuevaPage(): JSX.Element {
       });
       return cambiaron ? actualizadas : actuales;
     });
-  }, [catalogoOrigen.datos, esExterno]);
+  }, [catalogoOrigen.datos]);
 
   // Una vez registrado el borrador, los datos del trámite ya están en el servidor: solo se
   // pueden reintentar las cargas de documentos y el envío.
@@ -581,16 +583,7 @@ export function SolicitudNuevaPage(): JSX.Element {
 
                   <div className="grid gap-3 lg:grid-cols-3">
                     <Campo htmlFor={idCodigo} etiqueta="Código de origen" obligatorio>
-                      {esExterno ? (
-                        <EntradaTexto
-                          id={idCodigo}
-                          value={fila.codigoOrigen}
-                          maxLength={30}
-                          disabled={bloqueado}
-                          placeholder="Código según documentos de origen"
-                          onChange={(evento) => actualizarFila(indice, { codigoOrigen: evento.target.value })}
-                        />
-                      ) : (
+                      {muestraCatalogoOrigen ? (
                         <Selector
                           id={idCodigo}
                           value={fila.codigoOrigen}
@@ -617,6 +610,15 @@ export function SolicitudNuevaPage(): JSX.Element {
                             </option>
                           ))}
                         </Selector>
+                      ) : (
+                        <EntradaTexto
+                          id={idCodigo}
+                          value={fila.codigoOrigen}
+                          maxLength={30}
+                          disabled={bloqueado}
+                          placeholder="Código según documentos de origen"
+                          onChange={(evento) => actualizarFila(indice, { codigoOrigen: evento.target.value })}
+                        />
                       )}
                     </Campo>
 
