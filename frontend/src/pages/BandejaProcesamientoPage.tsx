@@ -15,6 +15,7 @@ const FILTROS = [
   { valor: '', etiqueta: 'Todos los estados' },
   { valor: ESTADOS_EXTRACCION.PENDIENTE_CONFIRMACION, etiqueta: 'Confirmación pendiente' },
   { valor: ESTADOS_EXTRACCION.PENDIENTE_OCR_LLM, etiqueta: 'Pendiente OCR / LLM' },
+  { valor: ESTADOS_EXTRACCION.CANCELADA, etiqueta: 'Extracción cancelada' },
   { valor: ESTADOS_EXTRACCION.CONFIRMADA, etiqueta: 'Datos extraídos' },
 ];
 

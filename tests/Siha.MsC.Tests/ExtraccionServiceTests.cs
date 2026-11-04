@@ -121,6 +121,25 @@ public class ExtraccionServiceTests
     }
 
     [Fact]
+    public async Task Confirmar_cancelada_devuelve_conflicto_y_no_modifica_datos()
+    {
+        await using var db = CrearDb();
+        var extraccion = NuevaExtraccion(estado: EstadosExtraccion.Cancelada);
+        extraccion.Creditos = null;
+        extraccion.Horas = null;
+        db.Extracciones.Add(extraccion);
+        await db.SaveChangesAsync();
+        var servicio = new ExtraccionService(db);
+
+        var resultado = await servicio.ConfirmarAsync(
+            extraccion.Id, new ConfirmarExtraccionRequest(3, 144, new[] { new UnidadExtraccionRequest(1, "U", 144) }), "operador");
+
+        resultado.Resultado.Should().Be(ResultadoConfirmacionExtraccion.Cancelada);
+        resultado.Extraccion!.Estado.Should().Be(EstadosExtraccion.Cancelada);
+        resultado.Extraccion.Creditos.Should().BeNull();
+    }
+
+    [Fact]
     public async Task Confirmar_sin_unidades_rechaza_y_no_modifica_los_datos()
     {
         await using var db = CrearDb();

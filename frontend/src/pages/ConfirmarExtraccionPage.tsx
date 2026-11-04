@@ -1,13 +1,14 @@
 import { useEffect, useMemo, useState } from 'react';
 import type { FormEvent } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import { ErrorApi, extraccionesApi, mensajeDeError } from '../api';
+import { ErrorApi, expedientesApi, extraccionesApi, mensajeDeError } from '../api';
 import { EncabezadoPagina } from '../components/EncabezadoPagina';
 import { Alerta, AreaTexto, Boton, CargandoBloque, Campo, EntradaTexto, Etiqueta, Tarjeta } from '../components/ui';
 import { usePeticion } from '../hooks/usePeticion';
 import { useTituloPagina } from '../hooks/useTituloPagina';
 import type { Extraccion } from '../types/analisis';
 import { ESTADOS_EXTRACCION } from '../types/analisis';
+import type { Expediente } from '../types/expedientes';
 import {
   aSolicitudConfirmacion,
   borradorDesdeExtraccion,
@@ -31,13 +32,17 @@ export function ConfirmarExtraccionPage(): JSX.Element {
   useTituloPagina('Confirmar datos extraídos');
   const { id = '' } = useParams();
   const navegar = useNavigate();
-  const extraccion = usePeticion(() => extraccionesApi.obtener(id), [id]);
+  const caso = usePeticion(async () => {
+    const extraccion = await extraccionesApi.obtener(id);
+    const expediente = await expedientesApi.obtener(extraccion.expedienteId).catch(() => null);
+    return { extraccion, expediente };
+  }, [id]);
 
-  if (extraccion.cargando) {
+  if (caso.cargando) {
     return <CargandoBloque />;
   }
 
-  if (extraccion.error || !extraccion.datos) {
+  if (caso.error || !caso.datos) {
     return (
       <div className="space-y-4">
         <EncabezadoPagina titulo="Confirmar datos extraídos" />
@@ -45,12 +50,12 @@ export function ConfirmarExtraccionPage(): JSX.Element {
           tono="error"
           titulo="No se pudo cargar la extracción"
           accion={
-            <Boton variante="secundario" tamano="sm" onClick={() => extraccion.recargar()}>
+            <Boton variante="secundario" tamano="sm" onClick={() => caso.recargar()}>
               Reintentar
             </Boton>
           }
         >
-          {extraccion.error ?? 'La extracción no existe.'}
+          {caso.error ?? 'La extracción no existe.'}
         </Alerta>
         <Link to="/procesamiento" className="text-sm font-semibold text-institucional-700 hover:underline">
           Volver a la bandeja
@@ -61,7 +66,8 @@ export function ConfirmarExtraccionPage(): JSX.Element {
 
   return (
     <FormularioConfirmacion
-      extraccion={extraccion.datos}
+      extraccion={caso.datos.extraccion}
+      fechaAprobacionCertificada={fechaAprobacionDe(caso.datos.expediente, caso.datos.extraccion)}
       alConfirmar={(confirmada) =>
         navegar('/procesamiento', {
           state: {
@@ -75,10 +81,15 @@ export function ConfirmarExtraccionPage(): JSX.Element {
 
 interface PropsFormulario {
   extraccion: Extraccion;
+  fechaAprobacionCertificada?: string | null;
   alConfirmar: (extraccion: Extraccion) => void;
 }
 
-export function FormularioConfirmacion({ extraccion, alConfirmar }: PropsFormulario): JSX.Element {
+export function FormularioConfirmacion({
+  extraccion,
+  fechaAprobacionCertificada,
+  alConfirmar,
+}: PropsFormulario): JSX.Element {
   const [borrador, setBorrador] = useState<BorradorConfirmacion>(() => borradorDesdeExtraccion(extraccion));
   const [intentoEnvio, setIntentoEnvio] = useState(false);
   const [enviando, setEnviando] = useState(false);
@@ -145,10 +156,22 @@ export function FormularioConfirmacion({ extraccion, alConfirmar }: PropsFormula
       />
 
       {!editable ? (
-        <Alerta tono={extraccion.estado === ESTADOS_EXTRACCION.CONFIRMADA ? 'exito' : 'informacion'}>
+        <Alerta
+          tono={
+            extraccion.estado === ESTADOS_EXTRACCION.CONFIRMADA
+              ? 'exito'
+              : extraccion.estado === ESTADOS_EXTRACCION.CANCELADA
+                ? 'error'
+                : 'informacion'
+          }
+          titulo={extraccion.estado === ESTADOS_EXTRACCION.CANCELADA ? 'Extracción cancelada' : undefined}
+        >
           {extraccion.estado === ESTADOS_EXTRACCION.CONFIRMADA
             ? `Esta extracción ya fue confirmada por ${extraccion.confirmadoPor ?? 'un operador'}.`
-            : 'Esta extracción está pendiente de OCR/LLM; podrá confirmarse cuando termine la lectura del PDF.'}
+            : extraccion.estado === ESTADOS_EXTRACCION.CANCELADA
+              ? (extraccion.observacion ??
+                'El PDF no tiene capa de texto y el análisis OCR/LLM no está disponible. Cargue un PDF con texto seleccionable.')
+              : 'Esta extracción está pendiente de OCR/LLM; podrá confirmarse cuando termine la lectura del PDF.'}
         </Alerta>
       ) : (
         <Alerta tono={confianzaBaja ? 'advertencia' : 'informacion'}>
@@ -164,7 +187,7 @@ export function FormularioConfirmacion({ extraccion, alConfirmar }: PropsFormula
       ) : null}
 
       <Tarjeta titulo="Datos de la asignatura de origen" descripcion="Leídos del PDF">
-        <div className="grid gap-4 md:grid-cols-3">
+        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
           <Campo htmlFor="nombre-origen" etiqueta="Nombre de la asignatura">
             <EntradaTexto id="nombre-origen" value={extraccion.nombreAsignaturaOrigen} readOnly disabled />
           </Campo>
@@ -202,6 +225,15 @@ export function FormularioConfirmacion({ extraccion, alConfirmar }: PropsFormula
               className={extraccion.horas === null ? DUDOSO : undefined}
               placeholder="— (no encontrado)"
               onChange={(evento) => setBorrador({ ...borrador, horas: evento.target.value })}
+            />
+          </Campo>
+          <Campo htmlFor="fecha-aprobacion" etiqueta="Fecha de aprobación certificada">
+            <EntradaTexto
+              id="fecha-aprobacion"
+              value={fechaAprobacionCertificada ?? ''}
+              placeholder="No registrada"
+              readOnly
+              disabled
             />
           </Campo>
         </div>
@@ -344,4 +376,10 @@ export function FormularioConfirmacion({ extraccion, alConfirmar }: PropsFormula
       </div>
     </form>
   );
+}
+
+function fechaAprobacionDe(expediente: Expediente | null, extraccion: Extraccion): string | null {
+  return expediente?.asignaturas.find((asignatura) =>
+    asignatura.codigoOrigen === extraccion.codigoAsignaturaOrigen,
+  )?.fechaAprobacionCertificada ?? null;
 }

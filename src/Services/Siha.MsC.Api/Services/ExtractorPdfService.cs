@@ -127,7 +127,7 @@ public sealed class ExtractorPdfService : IExtractorPdfService
             var bytes = await File.ReadAllBytesAsync(rutaCompleta, cancellationToken);
             var contenidoBruto = System.Text.Encoding.Latin1.GetString(bytes);
             textoLeido = contenidoBruto.StartsWith("%PDF-", StringComparison.Ordinal)
-                ? ExtraerTextoPdfSinCompresion(contenidoBruto)
+                ? ExtraerTextoPdf(contenidoBruto)
                 : contenidoBruto;
 
             tieneTextoNativo = !string.IsNullOrWhiteSpace(textoLeido) && textoLeido.Length >= 50;
@@ -234,7 +234,7 @@ public sealed class ExtractorPdfService : IExtractorPdfService
 
     private static string? ExtraerNombreAsignatura(string texto)
     {
-        var match = Regex.Match(texto, @"(?i)(?:asignatura|materia|nombre\s+de\s+la\s+materia)\s*[:=-]?\s*([^\r\n]{3,80})");
+        var match = Regex.Match(texto, @"(?i)(?:asignatura|materia|nombre\s+de\s+la\s+materia)[^\S\r\n]*[:=-]?[^\S\r\n]*([^\r\n]{3,80})");
         if (match.Success)
         {
             var candidato = match.Groups[1].Value.Trim();
@@ -250,6 +250,7 @@ public sealed class ExtractorPdfService : IExtractorPdfService
         var unidades = new List<UnidadExtraida>();
         var lineas = texto.Split(new[] { "\r\n", "\n", "\r" }, StringSplitOptions.None);
         var encabezado = new Regex(@"^\s*(?:unidad|cap[ií]tulo|tema)\s*(\d+|[IVXLCDM]+)[:.\-\s]+(.+)$", RegexOptions.IgnoreCase);
+        var seccion = new Regex(@"^\s*\d+\.\s*[A-ZÁÉÍÓÚÑ]");
 
         for (var i = 0; i < lineas.Length; i++)
         {
@@ -263,7 +264,7 @@ public sealed class ExtractorPdfService : IExtractorPdfService
             var nombre = matchHoras.Success ? titulo[..matchHoras.Index].Trim().TrimEnd('.', '-', '–', ':') : titulo.TrimEnd('.');
 
             var contenidos = new List<string>();
-            for (var j = i + 1; j < lineas.Length && !encabezado.IsMatch(lineas[j]); j++)
+            for (var j = i + 1; j < lineas.Length && !encabezado.IsMatch(lineas[j]) && !seccion.IsMatch(lineas[j]); j++)
             {
                 if (!string.IsNullOrWhiteSpace(lineas[j])) contenidos.Add(lineas[j].Trim());
             }
@@ -289,12 +290,171 @@ public sealed class ExtractorPdfService : IExtractorPdfService
         return resultado.AsReadOnly();
     }
 
-    // ponytail: lee literales Tj de PDFs sin comprimir (como el PDF de prueba); para flujos comprimidos se necesita PdfPig.
+    // ponytail: extractor propio con ZLibStream. Cubre PDFs de Word/Chrome/LibreOffice (FlateDecode + Tm).
+    // Si aparece un PDF con fuentes CID o cifrado, evaluar PdfPig.
     private static string ExtraerTextoPdfSinCompresion(string contenido)
     {
         var coincidencias = Regex.Matches(contenido, @"\(((?:\\.|[^\\)])*)\)\s*Tj");
         return string.Join("\n", coincidencias.Select(m => Regex.Replace(m.Groups[1].Value, @"\\([\\()])", "$1")
             .Replace(@"\n", "\n").Replace(@"\r", "\r")));
+    }
+
+    /// <summary>
+    /// Texto de PDFs con capa de texto. Primero intenta streams sin comprimir y, si no hay,
+    /// descomprime los FlateDecode y reconstruye las líneas por coordenada Y del operador Tm.
+    /// </summary>
+    private static string ExtraerTextoPdf(string contenido)
+    {
+        var directo = ExtraerTextoPdfSinCompresion(contenido);
+        if (!string.IsNullOrWhiteSpace(directo))
+            return directo;
+
+        var lineas = new List<string>();
+        foreach (var flujo in EnumerarFlujosPdf(contenido))
+        {
+            var descomprimido = DescomprimirFlate(flujo);
+            if (descomprimido is null || !descomprimido.Contains("BT", StringComparison.Ordinal))
+                continue;
+
+            lineas.AddRange(ExtraerLineasDeTexto(descomprimido));
+        }
+
+        return string.Join("\n", lineas);
+    }
+
+    /// <summary>Bloques crudos entre <c>stream</c> y <c>endstream</c> (sin comprimir ni interpretar).</summary>
+    private static IEnumerable<byte[]> EnumerarFlujosPdf(string contenido)
+    {
+        var bytes = System.Text.Encoding.Latin1.GetBytes(contenido);
+        var marcaInicio = System.Text.Encoding.Latin1.GetBytes("stream");
+        var marcaFin = System.Text.Encoding.Latin1.GetBytes("endstream");
+
+        var posicion = 0;
+        while (posicion < bytes.Length)
+        {
+            var inicio = BuscarBytes(bytes, marcaInicio, posicion);
+            if (inicio < 0) yield break;
+
+            var desde = inicio + marcaInicio.Length;
+            if (desde < bytes.Length && bytes[desde] == (byte)'\r') desde++;
+            if (desde < bytes.Length && bytes[desde] == (byte)'\n') desde++;
+
+            var hasta = BuscarBytes(bytes, marcaFin, desde);
+            if (hasta < 0) yield break;
+
+            var largo = hasta - desde;
+            if (largo > 0)
+            {
+                var copia = new byte[largo];
+                Array.Copy(bytes, desde, copia, 0, largo);
+                yield return copia;
+            }
+
+            posicion = hasta + marcaFin.Length;
+        }
+    }
+
+    private static int BuscarBytes(byte[] pajar, byte[] aguja, int desde)
+    {
+        for (var i = desde; i <= pajar.Length - aguja.Length; i++)
+        {
+            var coincide = true;
+            for (var j = 0; j < aguja.Length; j++)
+            {
+                if (pajar[i + j] != aguja[j]) { coincide = false; break; }
+            }
+            if (coincide) return i;
+        }
+        return -1;
+    }
+
+    private static string? DescomprimirFlate(byte[] datos)
+    {
+        try
+        {
+            using var entrada = new MemoryStream(datos);
+            using var zlib = new System.IO.Compression.ZLibStream(entrada, System.IO.Compression.CompressionMode.Decompress);
+            using var salida = new MemoryStream();
+            zlib.CopyTo(salida);
+            return System.Text.Encoding.Latin1.GetString(salida.ToArray());
+        }
+        catch (Exception)
+        {
+            // No es un stream FlateDecode válido (fuente, imagen, metadatos): se ignora.
+            return null;
+        }
+    }
+
+    /// <summary>
+    /// Reconstruye líneas visuales: agrupa los fragmentos de texto por la Y de <c>Tm</c> y los
+    /// ordena por X, de modo que "Creditos:" y "4" vuelvan a quedar en la misma línea.
+    /// </summary>
+    private static IEnumerable<string> ExtraerLineasDeTexto(string contenido)
+    {
+        var fragmentos = new List<(double Y, double X, int Orden, string Texto)>();
+        var orden = 0;
+
+        foreach (Match bloque in Regex.Matches(contenido, @"BT(?<cuerpo>.*?)ET", RegexOptions.Singleline))
+        {
+            var cuerpo = bloque.Groups["cuerpo"].Value;
+            var texto = UnirCadenasDeTexto(cuerpo);
+            if (string.IsNullOrWhiteSpace(texto))
+                continue;
+
+            var posicion = Regex.Match(
+                cuerpo,
+                @"(-?[\d.]+)\s+(-?[\d.]+)\s+(-?[\d.]+)\s+(-?[\d.]+)\s+(-?[\d.]+)\s+(-?[\d.]+)\s+Tm");
+
+            double x = 0;
+            double y = -orden * 12d; // Sin Tm se conserva el orden de aparición.
+            if (posicion.Success)
+            {
+                x = double.Parse(posicion.Groups[5].Value, System.Globalization.CultureInfo.InvariantCulture);
+                y = double.Parse(posicion.Groups[6].Value, System.Globalization.CultureInfo.InvariantCulture);
+            }
+
+            fragmentos.Add((y, x, orden++, texto));
+        }
+
+        return fragmentos
+            .GroupBy(f => Math.Round(f.Y, 1))
+            .OrderByDescending(g => g.Key)
+            .Select(g => string.Concat(g.OrderBy(f => f.X).ThenBy(f => f.Orden).Select(f => f.Texto)));
+    }
+
+    private static string UnirCadenasDeTexto(string cuerpo)
+    {
+        var texto = new System.Text.StringBuilder();
+        foreach (Match cadena in Regex.Matches(cuerpo, @"\((?:\\[\s\S]|[^\\)])*\)"))
+        {
+            texto.Append(DesescaparCadenaPdf(cadena.Value[1..^1]));
+        }
+        return texto.ToString();
+    }
+
+    private static string DesescaparCadenaPdf(string valor)
+    {
+        var texto = new System.Text.StringBuilder(valor.Length);
+        for (var i = 0; i < valor.Length; i++)
+        {
+            if (valor[i] != '\\' || i + 1 >= valor.Length)
+            {
+                texto.Append(valor[i]);
+                continue;
+            }
+
+            i++;
+            texto.Append(valor[i] switch
+            {
+                'n' => '\n',
+                'r' => '\r',
+                't' => '\t',
+                'b' => '\b',
+                'f' => '\f',
+                var otro => otro
+            });
+        }
+        return texto.ToString();
     }
 
     private static int ConvertirNumero(string valor, int fallback)

@@ -57,6 +57,29 @@ describe('Confirmación de datos extraídos (S2-A02 / S2-A03 / S2-A09)', () => {
     expect(screen.getByText('Ingrese los créditos (entero entre 1 y 30).')).toBeInTheDocument();
   });
 
+  it('muestra la fecha certificada real y deja vacío el campo si no existe', () => {
+    const extraccion = extraccionDePrueba();
+    const { rerender } = render(
+      <MemoryRouter>
+        <FormularioConfirmacion
+          extraccion={extraccion}
+          fechaAprobacionCertificada="2025-07-15"
+          alConfirmar={vi.fn()}
+        />
+      </MemoryRouter>,
+    );
+
+    expect(screen.getByLabelText('Fecha de aprobación certificada')).toHaveValue('2025-07-15');
+
+    rerender(
+      <MemoryRouter>
+        <FormularioConfirmacion extraccion={extraccion} alConfirmar={vi.fn()} />
+      </MemoryRouter>,
+    );
+    expect(screen.getByLabelText('Fecha de aprobación certificada')).toHaveValue('');
+    expect(screen.getByLabelText('Fecha de aprobación certificada')).toHaveAttribute('placeholder', 'No registrada');
+  });
+
   it('completa los créditos y envía PUT /confirmar con los datos corregidos', async () => {
     const usuario = userEvent.setup();
     const confirmada = extraccionDePrueba({ creditos: 3, estado: 'CONFIRMADA' });

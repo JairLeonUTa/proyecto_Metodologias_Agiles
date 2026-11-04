@@ -5,6 +5,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Siha.Contracts.Events;
 using Siha.MsC.Api.Data;
+using Siha.MsC.Api.Domain;
 using Siha.MsC.Api.Options;
 using Siha.MsC.Api.Services;
 
@@ -48,6 +49,27 @@ public class ProcesarSolicitudCreadaServiceTests
         primero.Should().Be(ResultadoProcesamiento.Procesado);
         segundo.Should().Be(ResultadoProcesamiento.Duplicado);
         (await db.EventosProcesados.CountAsync()).Should().Be(1);
+    }
+
+    [Fact]
+    public async Task Pdf_sin_capa_de_texto_cancela_la_extraccion_sin_inventar_datos()
+    {
+        using var temp = new Soporte.DirectorioTemporal();
+        var contenido = "%PDF-1.4\n1 0 obj\n<< /Type /Catalog >>\nendobj\n%%EOF\n"u8.ToArray();
+        temp.CrearArchivo("a.pdf", contenido);
+        var evento = CrearEvento(contenido);
+        await using var db = CrearDb();
+        var servicio = CrearServicio(db, temp.Ruta);
+
+        var resultado = await servicio.ProcesarAsync(evento, evento.ExpedienteId);
+
+        resultado.Should().Be(ResultadoProcesamiento.Procesado);
+        var extraccion = await db.Extracciones.Include(e => e.Unidades).SingleAsync();
+        extraccion.Estado.Should().Be(EstadosExtraccion.Cancelada);
+        extraccion.Creditos.Should().BeNull();
+        extraccion.Horas.Should().BeNull();
+        extraccion.Unidades.Should().BeEmpty();
+        extraccion.Observacion.Should().Contain("OCR");
     }
 
     [Fact]
