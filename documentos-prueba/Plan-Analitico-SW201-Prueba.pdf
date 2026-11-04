@@ -1,0 +1,116 @@
+%PDF-1.4
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [3 0 R] /Count 1 >>
+endobj
+3 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 842] /Resources << /Font << /F1 4 0 R >> >> /Contents 5 0 R >>
+endobj
+4 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+endobj
+5 0 obj
+<< /Length 1985 >>
+stream
+BT
+/F1 10 Tf
+50 790 Td
+14 TL
+(DOCUMENTO FICTICIO PARA PRUEBAS - NO ES OFICIAL) Tj
+T*
+(PLAN ANALITICO DE ASIGNATURA) Tj
+T*
+(Institucion: Universidad Tecnica de Ambato \(documento sintetico\)) Tj
+T*
+(Carrera: Ingenieria de Software) Tj
+T*
+(Asignatura: Estructuras de Datos) Tj
+T*
+(Codigo: SW201) Tj
+T*
+(Periodo: 2025 | Nivel: Segundo) Tj
+T*
+(Creditos: 4 | Horas totales: 192) Tj
+T*
+() Tj
+T*
+(1. DESCRIPCION) Tj
+T*
+(Estudia estructuras de datos y algoritmos para organizar, consultar y procesar) Tj
+T*
+(informacion. Incluye programacion y analisis de complejidad.) Tj
+T*
+() Tj
+T*
+(2. OBJETIVO) Tj
+T*
+(Implementar estructuras lineales y no lineales y justificar su eficiencia.) Tj
+T*
+() Tj
+T*
+(3. RESULTADOS DE APRENDIZAJE) Tj
+T*
+(- Selecciona estructuras adecuadas para resolver problemas computacionales.) Tj
+T*
+(- Implementa listas, pilas, colas, arboles y tablas hash.) Tj
+T*
+(- Compara algoritmos mediante analisis de tiempo y espacio.) Tj
+T*
+() Tj
+T*
+(4. UNIDADES TEMATICAS) Tj
+T*
+(Unidad 1: Analisis de algoritmos y tipos abstractos de datos - 32 horas.) Tj
+T*
+(Notacion O grande, complejidad temporal y espacial, operaciones y pruebas.) Tj
+T*
+(Unidad 2: Estructuras lineales - 48 horas.) Tj
+T*
+(Arreglos, listas enlazadas, pilas, colas circulares e implementaciones.) Tj
+T*
+(Unidad 3: Arboles y estructuras jerarquicas - 56 horas.) Tj
+T*
+(Arboles binarios, recorridos, arboles de busqueda y colas de prioridad.) Tj
+T*
+(Unidad 4: Tablas hash y grafos - 56 horas.) Tj
+T*
+(Funciones hash, colisiones, grafos, recorridos BFS y DFS, busqueda de rutas.) Tj
+T*
+() Tj
+T*
+(5. METODOLOGIA Y EVALUACION) Tj
+T*
+(Clases, resolucion de problemas, practicas guiadas y trabajo autonomo.) Tj
+T*
+(Practicas: 40 por ciento | Proyecto: 30 por ciento | Examen final: 30 por ciento.) Tj
+T*
+() Tj
+T*
+(6. BIBLIOGRAFIA) Tj
+T*
+(Goodrich, Tamassia y Goldwasser. Data Structures and Algorithms in Python.) Tj
+T*
+(Cormen et al. Introduction to Algorithms.) Tj
+T*
+() Tj
+T*
+(FIN DEL DOCUMENTO DE PRUEBA) Tj
+T*
+ET
+endstream
+endobj
+xref
+0 6
+0000000000 65535 f 
+0000000009 00000 n 
+0000000058 00000 n 
+0000000115 00000 n 
+0000000241 00000 n 
+0000000311 00000 n 
+trailer
+<< /Size 6 /Root 1 0 R >>
+startxref
+2348
+%%EOF

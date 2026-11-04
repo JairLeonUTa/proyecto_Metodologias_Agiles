@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { asignaturasApi, carrerasApi, expedientesApi, mallasApi } from '../api';
 import { mensajeDeError, detallesDeError } from '../api';
@@ -31,7 +31,6 @@ import {
   TIPOS_TRAMITE,
   TIPOS_TRAMITE_TODOS,
 } from '../types/comunes';
-import { aNumero } from '../utils/validaciones';
 
 /** Fila del detalle de materias del expediente. */
 interface FilaAsignatura {
@@ -39,7 +38,6 @@ interface FilaAsignatura {
   codigoOrigen: string;
   nombreOrigen: string;
   codigoDestino: string;
-  nota: string;
 }
 
 interface FormularioSolicitud {
@@ -65,7 +63,6 @@ const FILA_VACIA = (): FilaAsignatura => ({
   codigoOrigen: '',
   nombreOrigen: '',
   codigoDestino: '',
-  nota: '',
 });
 
 /**
@@ -124,6 +121,22 @@ export function SolicitudNuevaPage(): JSX.Element {
 
   const esExterno = formulario.tipoTramite === TIPOS_TRAMITE.EXTERNO;
 
+  useEffect(() => {
+    if (esExterno || !catalogoOrigen.datos?.length) return;
+
+    const porCodigo = new Map(catalogoOrigen.datos.map((asignatura) => [asignatura.codigo.toUpperCase(), asignatura.nombre]));
+    setFilas((actuales) => {
+      let cambiaron = false;
+      const actualizadas = actuales.map((fila) => {
+        const nombre = porCodigo.get(fila.codigoOrigen.trim().toUpperCase());
+        if (!nombre || fila.nombreOrigen === nombre) return fila;
+        cambiaron = true;
+        return { ...fila, nombreOrigen: nombre };
+      });
+      return cambiaron ? actualizadas : actuales;
+    });
+  }, [catalogoOrigen.datos, esExterno]);
+
   // Una vez registrado el borrador, los datos del trámite ya están en el servidor: solo se
   // pueden reintentar las cargas de documentos y el envío.
   const bloqueado = enviando || borrador !== null;
@@ -177,16 +190,6 @@ export function SolicitudNuevaPage(): JSX.Element {
         nuevos.asignaturas = `La materia ${incompleta + 1} requiere código y nombre de origen.`;
       }
 
-      const notaInvalida = filasValidas.findIndex((fila) => {
-        if (fila.nota.trim() === '') {
-          return false;
-        }
-        const nota = aNumero(fila.nota);
-        return Number.isNaN(nota) || nota < 0 || nota > 20;
-      });
-      if (notaInvalida >= 0) {
-        nuevos.asignaturas = `La nota de la materia ${notaInvalida + 1} debe estar entre 0 y 20.`;
-      }
     }
 
     if (archivos.length === 0) {
@@ -261,7 +264,7 @@ export function SolicitudNuevaPage(): JSX.Element {
             codigoOrigen: fila.codigoOrigen.trim(),
             nombreOrigen: fila.nombreOrigen.trim(),
             codigoDestino: fila.codigoDestino || null,
-            nota: fila.nota.trim() === '' ? null : aNumero(fila.nota),
+            nota: null,
           })),
         });
         setBorrador(expediente);
@@ -548,7 +551,7 @@ export function SolicitudNuevaPage(): JSX.Element {
         >
           {errores.asignaturas ? <Alerta tono="error">{errores.asignaturas}</Alerta> : null}
 
-          {catalogoOrigen.datos && catalogoOrigen.datos.length > 0 ? (
+          {!esExterno && catalogoOrigen.datos && catalogoOrigen.datos.length > 0 ? (
             <datalist id="sugerencias-origen">
               {catalogoOrigen.datos.map((asignatura) => (
                 <option key={asignatura.id} value={asignatura.codigo}>
@@ -563,7 +566,6 @@ export function SolicitudNuevaPage(): JSX.Element {
               const idCodigo = `materia-origen-${indice}`;
               const idNombre = `materia-nombre-${indice}`;
               const idDestino = `materia-destino-${indice}`;
-              const idNota = `materia-nota-${indice}`;
 
               return (
                 <div key={fila.id} className="rounded-md border border-slate-200 bg-slate-50/60 p-3">
@@ -581,7 +583,7 @@ export function SolicitudNuevaPage(): JSX.Element {
                     </Boton>
                   </div>
 
-                  <div className="grid gap-3 lg:grid-cols-4">
+                  <div className="grid gap-3 lg:grid-cols-3">
                     <Campo htmlFor={idCodigo} etiqueta="Código de origen" obligatorio>
                       <EntradaTexto
                         id={idCodigo}
@@ -590,7 +592,25 @@ export function SolicitudNuevaPage(): JSX.Element {
                         maxLength={30}
                         disabled={bloqueado}
                         placeholder="Ej.: PRG-101"
-                        onChange={(evento) => actualizarFila(indice, { codigoOrigen: evento.target.value })}
+                        onChange={(evento) => {
+                          const codigo = evento.target.value;
+                          const asignatura = !esExterno
+                            ? catalogoOrigen.datos?.find((item) => item.codigo.toUpperCase() === codigo.trim().toUpperCase())
+                            : undefined;
+                          const codigoAnteriorDelCatalogo = catalogoOrigen.datos?.some(
+                            (item) => item.codigo.toUpperCase() === fila.codigoOrigen.trim().toUpperCase()
+                              && item.nombre === fila.nombreOrigen,
+                          );
+
+                          actualizarFila(indice, {
+                            codigoOrigen: codigo,
+                            ...(asignatura
+                              ? { nombreOrigen: asignatura.nombre }
+                              : codigoAnteriorDelCatalogo
+                                ? { nombreOrigen: '' }
+                                : {}),
+                          });
+                        }}
                       />
                     </Campo>
 
@@ -623,19 +643,6 @@ export function SolicitudNuevaPage(): JSX.Element {
                       </Selector>
                     </Campo>
 
-                    <Campo htmlFor={idNota} etiqueta="Nota obtenida" ayuda="Escala 0-20 (opcional).">
-                      <EntradaTexto
-                        id={idNota}
-                        type="number"
-                        min={0}
-                        max={20}
-                        step="0.01"
-                        value={fila.nota}
-                        disabled={bloqueado}
-                        placeholder="18.50"
-                        onChange={(evento) => actualizarFila(indice, { nota: evento.target.value })}
-                      />
-                    </Campo>
                   </div>
                 </div>
               );

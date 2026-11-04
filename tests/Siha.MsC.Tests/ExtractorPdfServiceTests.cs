@@ -1,6 +1,7 @@
 using FluentAssertions;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
+using Siha.MsC.Tests.Soporte;
 using Siha.MsC.Api.Domain;
 using Siha.MsC.Api.Options;
 using Siha.MsC.Api.Services;
@@ -59,6 +60,25 @@ public class ExtractorPdfServiceTests
         r.EstadoSugerido.Should().Be(EstadosExtraccion.Confirmada);
         r.RequiereConfirmacionHumana.Should().BeFalse();
         r.CamposFaltantes.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task ExtraerDeArchivo_lee_texto_de_un_pdf_y_no_incluye_operadores_pdf_en_los_datos()
+    {
+        using var temp = new DirectorioTemporal();
+        var options = Options.Create(new AlmacenOptions { RutaAlmacenamiento = temp.Ruta });
+        var servicio = new ExtractorPdfService(options, NullLogger<ExtractorPdfService>.Instance);
+        var pdf = "%PDF-1.4\n1 0 obj\n<< /Length 300 >>\nstream\nBT\n(Asignatura: Estructuras de Datos) Tj\n(Codigo: SW201) Tj\n(Creditos: 4) Tj\n(Horas totales: 192) Tj\n(Unidad 1: Algoritmos - 32 horas.) Tj\n(Notacion O grande y complejidad temporal.) Tj\nET\nendstream\nendobj\n%%EOF";
+        temp.CrearArchivo("plan.pdf", System.Text.Encoding.ASCII.GetBytes(pdf));
+
+        var resultado = await servicio.ExtraerDeArchivoAsync("plan.pdf");
+
+        resultado.CodigoAsignaturaOrigen.Should().Be("SW201");
+        resultado.NombreAsignaturaOrigen.Should().Be("Estructuras de Datos");
+        resultado.Creditos.Should().Be(4);
+        resultado.Horas.Should().Be(192);
+        resultado.Unidades.Should().ContainSingle().Which.Should().Match<UnidadExtraida>(u =>
+            u.Nombre == "Algoritmos" && u.Horas == 32 && u.Contenidos.Contains("Notacion O grande"));
     }
 
     [Fact]

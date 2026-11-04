@@ -2,6 +2,7 @@ using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Siha.Contracts.Events;
 using Siha.MsC.Api.Data;
+using Siha.MsC.Api.Domain;
 using Siha.MsC.Api.Domain.Entities;
 
 namespace Siha.MsC.Api.Services;
@@ -25,15 +26,18 @@ public class ProcesarSolicitudCreadaService
 {
     private readonly SihaDbContextC _db;
     private readonly IAlmacenDocumentos _almacen;
+    private readonly IExtractorPdfService _extractor;
     private readonly ILogger<ProcesarSolicitudCreadaService> _logger;
 
     public ProcesarSolicitudCreadaService(
         SihaDbContextC db,
         IAlmacenDocumentos almacen,
+        IExtractorPdfService extractor,
         ILogger<ProcesarSolicitudCreadaService> logger)
     {
         _db = db;
         _almacen = almacen;
+        _extractor = extractor;
         _logger = logger;
     }
 
@@ -80,6 +84,37 @@ public class ProcesarSolicitudCreadaService
         {
             throw new InvalidOperationException(
                 $"No se pudo verificar los documentos del expediente {evento.ExpedienteId}: {string.Join(" | ", problemas)}");
+        }
+
+        foreach (var documento in evento.Documentos)
+        {
+            if (await _db.Extracciones.AnyAsync(x => x.DocumentoId == documento.DocumentoId, cancellationToken))
+                continue;
+
+            var codigo = evento.AsignaturasOrigen.Count == 1 ? evento.AsignaturasOrigen.First() : null;
+            var resultado = await _extractor.ExtraerDeArchivoAsync(
+                documento.RutaAlmacenamiento, codigo, cancellationToken);
+            _db.Extracciones.Add(new Extraccion
+            {
+                ExpedienteId = evento.ExpedienteId,
+                DocumentoId = documento.DocumentoId,
+                CodigoAsignaturaOrigen = resultado.CodigoAsignaturaOrigen,
+                NombreAsignaturaOrigen = resultado.NombreAsignaturaOrigen,
+                Creditos = resultado.Creditos,
+                Horas = resultado.Horas,
+                Confianza = resultado.Confianza,
+                Estado = resultado.EstadoSugerido == EstadosExtraccion.PendienteOcrLlm
+                    ? EstadosExtraccion.PendienteOcrLlm
+                    : EstadosExtraccion.PendienteConfirmacion,
+                Observacion = resultado.Observacion,
+                Unidades = resultado.Unidades.Select(u => new ExtraccionUnidad
+                {
+                    Numero = u.Numero,
+                    Nombre = u.Nombre,
+                    Horas = u.Horas,
+                    Contenidos = u.Contenidos
+                }).ToList()
+            });
         }
 
         _db.EventosProcesados.Add(new EventoProcesado
