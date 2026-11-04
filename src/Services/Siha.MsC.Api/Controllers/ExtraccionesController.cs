@@ -123,6 +123,12 @@ public class ExtraccionesController : ControllerBase
                 mensaje = "La extracción está pendiente de OCR/LLM; complete el flujo US-10 antes de confirmarla.",
                 estado = resultado.Extraccion!.Estado
             }),
+            ResultadoConfirmacionExtraccion.Cancelada => Conflict(new
+            {
+                mensaje = "La extracción fue cancelada: el PDF no tiene capa de texto y el análisis OCR/LLM no está disponible. Cargue un PDF con texto seleccionable.",
+                estado = resultado.Extraccion!.Estado,
+                observacion = resultado.Extraccion.Observacion
+            }),
             _ => Conflict(new
             {
                 mensaje = "La extracción no está en estado PENDIENTE_CONFIRMACION.",

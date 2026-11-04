@@ -166,6 +166,107 @@ public class ExtractorPdfServiceTests
     }
 
     [Fact]
+    public async Task ExtraerDeArchivo_pdf_con_streams_flate_reconstruye_las_lineas_por_coordenada()
+    {
+        // Arrange: PDF como los de Word/Chrome, con el texto comprimido en FlateDecode y
+        // una línea visual partida en varios operadores TJ.
+        using var temp = new Soporte.DirectorioTemporal();
+        var contenido = string.Join("\n", new[]
+        {
+            "BT /F1 10 Tf 1 0 0 1 50 790 Tm [(Asignatura: ) -10 (Estructuras de Datos)] TJ ET",
+            "BT /F1 10 Tf 1 0 0 1 50 776 Tm [(Codigo: SW201)] TJ ET",
+            "BT /F1 10 Tf 1 0 0 1 50 762 Tm [(Creditos: )] TJ ET",
+            "BT /F1 10 Tf 1 0 0 1 90 762 Tm [(4)] TJ ET",
+            "BT /F1 10 Tf 1 0 0 1 50 748 Tm [(Horas totales: 1)] TJ ET",
+            "BT /F1 10 Tf 1 0 0 1 120 748 Tm [(92)] TJ ET",
+            "BT /F1 10 Tf 1 0 0 1 50 734 Tm [(Unidad 1: Analisis de algoritmos - 32 horas.)] TJ ET",
+            "BT /F1 10 Tf 1 0 0 1 50 720 Tm [(Unidad 2: Grafos y recorridos - 48 horas.)] TJ ET"
+        });
+
+        var comprimido = ComprimirZlib(contenido);
+        var pdf = ArmarPdfConFlujoComprimido(comprimido);
+        temp.CrearArchivo("comprimido.pdf", pdf);
+        var servicio = new ExtractorPdfService(
+            Options.Create(new AlmacenOptions { RutaAlmacenamiento = temp.Ruta }),
+            NullLogger<ExtractorPdfService>.Instance);
+
+        // Act
+        var r = await servicio.ExtraerDeArchivoAsync("comprimido.pdf");
+
+        // Assert
+        r.EsEscaneado.Should().BeFalse();
+        r.NombreAsignaturaOrigen.Should().Be("Estructuras de Datos");
+        r.CodigoAsignaturaOrigen.Should().Be("SW201");
+        r.Creditos.Should().Be(4);
+        r.Horas.Should().Be(192);
+        r.Unidades.Should().HaveCount(2);
+    }
+
+    private static byte[] ComprimirZlib(string texto)
+    {
+        using var salida = new MemoryStream();
+        using (var zlib = new System.IO.Compression.ZLibStream(salida, System.IO.Compression.CompressionLevel.Optimal, leaveOpen: true))
+        {
+            var datos = System.Text.Encoding.Latin1.GetBytes(texto);
+            zlib.Write(datos, 0, datos.Length);
+        }
+        return salida.ToArray();
+    }
+
+    private static byte[] ArmarPdfConFlujoComprimido(byte[] comprimido)
+    {
+        var encabezado = System.Text.Encoding.Latin1.GetBytes(
+            $"%PDF-1.4\n5 0 obj\n<< /Length {comprimido.Length} /Filter /FlateDecode >>\nstream\n");
+        var pie = System.Text.Encoding.Latin1.GetBytes("\nendstream\nendobj\n%%EOF\n");
+
+        using var salida = new MemoryStream();
+        salida.Write(encabezado);
+        salida.Write(comprimido);
+        salida.Write(pie);
+        return salida.ToArray();
+    }
+
+    [Fact]
+    public async Task ExtraerDeTexto_ignora_el_titulo_y_toma_la_linea_de_asignatura()
+    {
+        var texto = string.Join("\n", new[]
+        {
+            "PLAN ANALITICO DE ASIGNATURA",
+            "Institucion: Universidad Tecnica de Ambato",
+            "Asignatura: Estructuras de Datos",
+            "Codigo: SW201",
+            "Creditos: 3",
+            "Horas totales: 148",
+            "Unidad 1: Analisis - 32 horas."
+        });
+
+        var r = await _servicio.ExtraerDeTextoAsync(texto, tieneCapaTexto: true);
+
+        r.NombreAsignaturaOrigen.Should().Be("Estructuras de Datos");
+    }
+
+    [Fact]
+    public async Task ExtraerDeTexto_corta_contenidos_al_llegar_a_una_seccion_numerada()
+    {
+        var texto = string.Join("\n", new[]
+        {
+            "Asignatura: Estructuras de Datos",
+            "Codigo: SW201",
+            "Creditos: 3",
+            "Horas totales: 148",
+            "Unidad 4: Tablas hash - 56 horas.",
+            "Funciones hash y grafos.",
+            "5.METODOLOGIA Y EVALUACION",
+            "Practicas: 40 por ciento."
+        });
+
+        var r = await _servicio.ExtraerDeTextoAsync(texto, tieneCapaTexto: true);
+
+        r.Unidades.Should().ContainSingle();
+        r.Unidades.Single().Contenidos.Should().Be("Funciones hash y grafos.");
+    }
+
+    [Fact]
     public void CalcularConfianza_suma_correctamente_ponderaciones()
     {
         // Arrange

@@ -12,6 +12,7 @@ public enum ResultadoConfirmacionExtraccion
     NoEncontrada,
     YaConfirmada,
     PendienteOcrLlm,
+    Cancelada,
     EstadoNoPermitido,
     DatosInvalidos
 }
@@ -93,6 +94,9 @@ public class ExtraccionService
 
         if (extraccion.Estado == EstadosExtraccion.PendienteOcrLlm)
             return new(ResultadoConfirmacionExtraccion.PendienteOcrLlm, extraccion);
+
+        if (extraccion.Estado == EstadosExtraccion.Cancelada)
+            return new(ResultadoConfirmacionExtraccion.Cancelada, extraccion);
 
         if (extraccion.Estado != EstadosExtraccion.PendienteConfirmacion)
             return new(ResultadoConfirmacionExtraccion.EstadoNoPermitido, extraccion);

@@ -45,6 +45,8 @@ export function presentarEstadoExtraccion(estado: string): PresentacionEstado {
       return { etiqueta: 'Confirmación pendiente', tono: 'advertencia', accion: 'Confirmar datos' };
     case ESTADOS_EXTRACCION.PENDIENTE_OCR_LLM:
       return { etiqueta: 'Pendiente OCR / LLM', tono: 'informacion', accion: 'Ver estado' };
+    case ESTADOS_EXTRACCION.CANCELADA:
+      return { etiqueta: 'Extracción cancelada', tono: 'error', accion: 'Ver detalle' };
     default:
       return { etiqueta: estado || 'Desconocido', tono: 'neutro', accion: 'Ver detalle' };
   }
@@ -64,6 +66,9 @@ export interface ContextoExpediente {
   rutaNormativa: string | null;
   documento: string | null;
   codigoDestino: string | null;
+  institucionOrigen: string | null;
+  fechaAprobacionCertificada: string | null;
+  numeroMatriculaDestino: number | null;
 }
 
 /**
@@ -79,6 +84,9 @@ export function contextoExpediente(extraccion: Extraccion, expediente?: Expedien
       rutaNormativa: null,
       documento: null,
       codigoDestino: null,
+      institucionOrigen: null,
+      fechaAprobacionCertificada: null,
+      numeroMatriculaDestino: null,
     };
   }
 
@@ -94,7 +102,23 @@ export function contextoExpediente(extraccion: Extraccion, expediente?: Expedien
     rutaNormativa: expediente.rutaNormativa,
     documento: documento?.nombreArchivo ?? null,
     codigoDestino: asignatura?.codigoDestino ?? null,
+    institucionOrigen: expediente.institucionOrigen || null,
+    fechaAprobacionCertificada: asignatura?.fechaAprobacionCertificada ?? null,
+    numeroMatriculaDestino: asignatura?.numeroMatriculaDestino ?? null,
   };
+}
+
+export function anosDesdeFecha(fecha: string | null | undefined, hoy = new Date()): number | null {
+  if (!fecha || !/^\d{4}-\d{2}-\d{2}$/.test(fecha)) return null;
+  const [year, month, day] = fecha.split('-').map(Number);
+  const aprobacion = new Date(year, month - 1, day);
+  if (aprobacion.getFullYear() !== year || aprobacion.getMonth() !== month - 1 || aprobacion.getDate() !== day || aprobacion > hoy) return null;
+  return hoy.getFullYear() - year - (hoy.getMonth() < month - 1 || (hoy.getMonth() === month - 1 && hoy.getDate() < day) ? 1 : 0);
+}
+
+/** Normaliza matrículas de tercero en adelante al único nivel de bloqueo RN-16. */
+export function matriculaParaSeleccion(numero: number | null | undefined): string {
+  return numero == null ? '' : String(Math.min(numero, 3));
 }
 
 /** Borrador editable de la confirmación (M-02). Los números vacíos quedan como cadena vacía. */
@@ -211,7 +235,7 @@ export function aSolicitudConfirmacion(borrador: BorradorConfirmacion): Confirma
 }
 
 /** Etapas del pipeline de extracción ampliada (M-04). */
-export type EstadoEtapa = 'completada' | 'en-curso' | 'pendiente';
+export type EstadoEtapa = 'completada' | 'en-curso' | 'pendiente' | 'fallida';
 
 export interface EtapaExtraccion {
   titulo: string;
@@ -226,6 +250,7 @@ export interface EtapaExtraccion {
 export function etapasExtraccion(extraccion: Extraccion): EtapaExtraccion[] {
   const { estado } = extraccion;
   const ocrLlm = estado === ESTADOS_EXTRACCION.PENDIENTE_OCR_LLM;
+  const cancelada = estado === ESTADOS_EXTRACCION.CANCELADA;
   const porConfirmar = estado === ESTADOS_EXTRACCION.PENDIENTE_CONFIRMACION;
   const confirmada = estado === ESTADOS_EXTRACCION.CONFIRMADA;
   const unidades = extraccion.unidades.length;
@@ -234,13 +259,17 @@ export function etapasExtraccion(extraccion: Extraccion): EtapaExtraccion[] {
     { titulo: '1. PDF recibido', detalle: 'Hash SHA-256 verificado', estado: 'completada' },
     {
       titulo: '2. OCR',
-      detalle: ocrLlm ? 'OCR en curso' : 'Texto disponible',
-      estado: ocrLlm ? 'en-curso' : 'completada',
+      detalle: cancelada ? 'OCR no disponible' : ocrLlm ? 'OCR en curso' : 'Texto disponible',
+      estado: cancelada ? 'fallida' : ocrLlm ? 'en-curso' : 'completada',
     },
     {
       titulo: '3. LLM analizando',
-      detalle: ocrLlm ? 'Ollama · en espera del texto' : `${unidades} unidad(es) estructuradas`,
-      estado: ocrLlm ? 'en-curso' : 'completada',
+      detalle: cancelada
+        ? 'LLM no ejecutado'
+        : ocrLlm
+          ? 'Ollama · en espera del texto'
+          : `${unidades} unidad(es) estructuradas`,
+      estado: cancelada ? 'fallida' : ocrLlm ? 'en-curso' : 'completada',
     },
     {
       titulo: '4. Validación del operador',

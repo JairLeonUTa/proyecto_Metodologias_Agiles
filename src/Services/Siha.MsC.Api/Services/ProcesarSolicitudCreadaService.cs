@@ -94,6 +94,18 @@ public class ProcesarSolicitudCreadaService
             var codigo = evento.AsignaturasOrigen.Count == 1 ? evento.AsignaturasOrigen.First() : null;
             var resultado = await _extractor.ExtraerDeArchivoAsync(
                 documento.RutaAlmacenamiento, codigo, cancellationToken);
+
+            // El PDF escaneado no se puede procesar: el pipeline OCR/LLM no está operativo.
+            // Se cierra la extracción en CANCELADA para no dejarla pendiente para siempre.
+            var sinTexto = resultado.EstadoSugerido == EstadosExtraccion.PendienteOcrLlm;
+
+            if (sinTexto)
+            {
+                _logger.LogWarning(
+                    "Extracción cancelada: el documento {DocumentoId} no tiene capa de texto y el OCR/LLM no está operativo. ExpedienteId={ExpedienteId}",
+                    documento.DocumentoId, evento.ExpedienteId);
+            }
+
             _db.Extracciones.Add(new Extraccion
             {
                 ExpedienteId = evento.ExpedienteId,
@@ -103,10 +115,12 @@ public class ProcesarSolicitudCreadaService
                 Creditos = resultado.Creditos,
                 Horas = resultado.Horas,
                 Confianza = resultado.Confianza,
-                Estado = resultado.EstadoSugerido == EstadosExtraccion.PendienteOcrLlm
-                    ? EstadosExtraccion.PendienteOcrLlm
+                Estado = sinTexto
+                    ? EstadosExtraccion.Cancelada
                     : EstadosExtraccion.PendienteConfirmacion,
-                Observacion = resultado.Observacion,
+                Observacion = sinTexto
+                    ? "El PDF no tiene capa de texto y el análisis OCR/LLM no está operativo: extracción cancelada sin datos. Cargue un PDF con texto seleccionable para continuar."
+                    : resultado.Observacion,
                 Unidades = resultado.Unidades.Select(u => new ExtraccionUnidad
                 {
                     Numero = u.Numero,

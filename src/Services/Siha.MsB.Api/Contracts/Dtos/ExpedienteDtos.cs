@@ -13,7 +13,8 @@ public record AsignaturaRequest(
     [param: Required, MaxLength(200)] string NombreOrigen,
     [param: MaxLength(30)] string? CodigoDestino,
     double? Nota,
-    DateOnly? FechaAprobacionCertificada);
+    DateOnly? FechaAprobacionCertificada,
+    [param: Range(1, int.MaxValue)] int? NumeroMatriculaDestino = null);
 
 /// <summary>
 /// Petición de registro de un expediente. La validación exhaustiva de PDF, almacenamiento
@@ -34,7 +35,8 @@ public record AsignaturaResponse(
     string NombreOrigen,
     string? CodigoDestino,
     double? Nota,
-    DateOnly? FechaAprobacionCertificada);
+    DateOnly? FechaAprobacionCertificada,
+    int? NumeroMatriculaDestino = null);
 
 public record ExpedienteResponse(
     Guid Id,
@@ -43,6 +45,7 @@ public record ExpedienteResponse(
     string RutaNormativa,
     string CarreraOrigenCodigo,
     string CarreraDestinoCodigo,
+    string InstitucionOrigen,
     string Estado,
     Guid CorrelationId,
     bool EventoPublicado,

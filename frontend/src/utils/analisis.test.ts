@@ -6,10 +6,12 @@ import {
   borradorDesdeExtraccion,
   camposVacios,
   contextoExpediente,
+  anosDesdeFecha,
   etapasExtraccion,
   formatearPorcentaje,
   hayErrores,
   nivelConfianza,
+  matriculaParaSeleccion,
   porcentajeACoseno,
   presentarEstadoExtraccion,
   rutaAccionExtraccion,
@@ -37,7 +39,19 @@ describe('bandeja de procesamiento (S2-A01)', () => {
       accion: 'Confirmar datos',
     });
     expect(presentarEstadoExtraccion('PENDIENTE_OCR_LLM').etiqueta).toBe('Pendiente OCR / LLM');
+    expect(presentarEstadoExtraccion('CANCELADA')).toMatchObject({
+      etiqueta: 'Extracción cancelada',
+      tono: 'error',
+    });
     expect(rutaAccionExtraccion({ id: 'x', estado: 'PENDIENTE_CONFIRMACION' })).toBe('/procesamiento/x/confirmar');
+  });
+
+  it('marca OCR y LLM como no disponibles cuando la extracción se cancela', () => {
+    const etapas = etapasExtraccion(extraccionDePrueba({ estado: 'CANCELADA', unidades: [] }));
+
+    expect(etapas[1]).toMatchObject({ estado: 'fallida', detalle: 'OCR no disponible' });
+    expect(etapas[2]).toMatchObject({ estado: 'fallida', detalle: 'LLM no ejecutado' });
+    expect(etapas[3].estado).toBe('pendiente');
     expect(rutaAccionExtraccion({ id: 'x', estado: 'PENDIENTE_OCR_LLM' })).toBe('/procesamiento/x/estado');
   });
 
@@ -50,10 +64,11 @@ describe('bandeja de procesamiento (S2-A01)', () => {
       codigo: 'EXP-20261022-7B03C2',
       tipoTramite: 'EXTERNO',
       rutaNormativa: 'CAU-P-122',
+      institucionOrigen: 'Institución de prueba',
       carreraOrigenCodigo: 'UC',
       carreraDestinoCodigo: 'SW',
       documentos: [{ id: 'doc-1', nombreArchivo: 'silabo-bases-datos.pdf' }],
-      asignaturas: [{ codigoOrigen: 'bd101', nombreOrigen: 'BD', codigoDestino: 'SW205', nota: 8 }],
+      asignaturas: [{ codigoOrigen: 'bd101', nombreOrigen: 'BD', codigoDestino: 'SW205', nota: 8, fechaAprobacionCertificada: '2023-11-05', numeroMatriculaDestino: 2 }],
     } as unknown as Expediente;
 
     expect(contextoExpediente(extraccion, expediente)).toMatchObject({
@@ -61,7 +76,26 @@ describe('bandeja de procesamiento (S2-A01)', () => {
       documento: 'silabo-bases-datos.pdf',
       rutaAcademica: 'UC → SW',
       codigoDestino: 'SW205',
+      institucionOrigen: 'Institución de prueba',
+      fechaAprobacionCertificada: '2023-11-05',
+      numeroMatriculaDestino: 2,
     });
+  });
+
+  it('calcula años completos desde la fecha certificada y deja fechas ausentes o inválidas sin derivar', () => {
+    expect(anosDesdeFecha('2023-11-05', new Date(2026, 10, 4))).toBe(2);
+    expect(anosDesdeFecha('2025-11-05', new Date(2026, 10, 4))).toBe(0);
+    expect(anosDesdeFecha(null, new Date(2026, 10, 4))).toBeNull();
+    expect(anosDesdeFecha('fecha-invalida', new Date(2026, 10, 4))).toBeNull();
+  });
+});
+
+describe('matrícula para análisis', () => {
+  it('agrupa la tercera matrícula y las posteriores en la opción de bloqueo RN-16', () => {
+    expect(matriculaParaSeleccion(null)).toBe('');
+    expect(matriculaParaSeleccion(1)).toBe('1');
+    expect(matriculaParaSeleccion(2)).toBe('2');
+    expect(matriculaParaSeleccion(9)).toBe('3');
   });
 });
 

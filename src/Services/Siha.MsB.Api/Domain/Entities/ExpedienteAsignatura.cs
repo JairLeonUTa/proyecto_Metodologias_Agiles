@@ -22,4 +22,7 @@ public class ExpedienteAsignatura
     /// y certificadas seleccionadas del catálogo.
     /// </summary>
     public DateOnly? FechaAprobacionCertificada { get; set; }
+
+    /// <summary>Número de matrícula de la persona en la asignatura de destino, si consta en el expediente.</summary>
+    public int? NumeroMatriculaDestino { get; set; }
 }

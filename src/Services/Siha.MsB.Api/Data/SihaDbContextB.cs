@@ -69,6 +69,7 @@ public class SihaDbContextB : DbContext
             e.Property(x => x.AsignaturaOrigenCodigo).HasMaxLength(30).IsRequired();
             e.Property(x => x.AsignaturaOrigenNombre).HasMaxLength(200).IsRequired();
             e.Property(x => x.AsignaturaDestinoCodigo).HasMaxLength(30);
+            e.Property(x => x.NumeroMatriculaDestino);
             e.HasOne(x => x.Expediente)
                 .WithMany(x => x.Asignaturas)
                 .HasForeignKey(x => x.ExpedienteId)

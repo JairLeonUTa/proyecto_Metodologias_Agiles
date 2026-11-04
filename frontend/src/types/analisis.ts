@@ -8,6 +8,8 @@ export const ESTADOS_EXTRACCION = {
   PENDIENTE_CONFIRMACION: 'PENDIENTE_CONFIRMACION',
   CONFIRMADA: 'CONFIRMADA',
   PENDIENTE_OCR_LLM: 'PENDIENTE_OCR_LLM',
+  /** PDF sin texto y OCR/LLM no operativo: extracción cerrada sin datos. */
+  CANCELADA: 'CANCELADA',
 } as const;
 
 export type EstadoExtraccion = (typeof ESTADOS_EXTRACCION)[keyof typeof ESTADOS_EXTRACCION];

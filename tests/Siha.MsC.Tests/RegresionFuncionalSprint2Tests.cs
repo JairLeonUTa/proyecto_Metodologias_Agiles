@@ -52,9 +52,13 @@ public class RegresionFuncionalSprint2Tests
             Horas totales: 120
             
             Unidad 1: Clases y Objetos (30 horas)
+            Conceptos de Clases y objetos, atributos, métodos y encapsulamiento.
             Unidad 2: Herencia y Polimorfismo (40 horas)
+            Herencia simple, clases abstractas y polimorfismo en tiempo de ejecución.
             Unidad 3: Manejo de Excepciones (20 horas)
+            Excepciones verificadas, bloques try/catch y manejo de errores.
             Unidad 4: Colecciones y Genéricos (30 horas)
+            Colecciones, listas, mapas y tipos genéricos.
         ";
 
         var resExtraccion = await extractor.ExtraerDeTextoAsync(textoSyllabus, tieneCapaTexto: true);

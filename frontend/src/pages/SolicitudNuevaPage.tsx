@@ -38,6 +38,8 @@ interface FilaAsignatura {
   codigoOrigen: string;
   nombreOrigen: string;
   codigoDestino: string;
+  fechaAprobacionCertificada: string;
+  numeroMatriculaDestino: string;
 }
 
 interface FormularioSolicitud {
@@ -63,6 +65,8 @@ const FILA_VACIA = (): FilaAsignatura => ({
   codigoOrigen: '',
   nombreOrigen: '',
   codigoDestino: '',
+  fechaAprobacionCertificada: '',
+  numeroMatriculaDestino: '',
 });
 
 /**
@@ -120,9 +124,11 @@ export function SolicitudNuevaPage(): JSX.Element {
   );
 
   const esExterno = formulario.tipoTramite === TIPOS_TRAMITE.EXTERNO;
+  const muestraCatalogoOrigen = Boolean(mallaOrigen) &&
+    (catalogoOrigen.cargando || Boolean(catalogoOrigen.datos?.length));
 
   useEffect(() => {
-    if (esExterno || !catalogoOrigen.datos?.length) return;
+    if (!catalogoOrigen.datos?.length) return;
 
     const porCodigo = new Map(catalogoOrigen.datos.map((asignatura) => [asignatura.codigo.toUpperCase(), asignatura.nombre]));
     setFilas((actuales) => {
@@ -135,7 +141,7 @@ export function SolicitudNuevaPage(): JSX.Element {
       });
       return cambiaron ? actualizadas : actuales;
     });
-  }, [catalogoOrigen.datos, esExterno]);
+  }, [catalogoOrigen.datos]);
 
   // Una vez registrado el borrador, los datos del trámite ya están en el servidor: solo se
   // pueden reintentar las cargas de documentos y el envío.
@@ -265,6 +271,8 @@ export function SolicitudNuevaPage(): JSX.Element {
             nombreOrigen: fila.nombreOrigen.trim(),
             codigoDestino: fila.codigoDestino || null,
             nota: null,
+            fechaAprobacionCertificada: fila.fechaAprobacionCertificada || null,
+            numeroMatriculaDestino: fila.numeroMatriculaDestino ? Number(fila.numeroMatriculaDestino) : null,
           })),
         });
         setBorrador(expediente);
@@ -551,16 +559,6 @@ export function SolicitudNuevaPage(): JSX.Element {
         >
           {errores.asignaturas ? <Alerta tono="error">{errores.asignaturas}</Alerta> : null}
 
-          {!esExterno && catalogoOrigen.datos && catalogoOrigen.datos.length > 0 ? (
-            <datalist id="sugerencias-origen">
-              {catalogoOrigen.datos.map((asignatura) => (
-                <option key={asignatura.id} value={asignatura.codigo}>
-                  {asignatura.nombre}
-                </option>
-              ))}
-            </datalist>
-          ) : null}
-
           <div className="space-y-3">
             {filas.map((fila, indice) => {
               const idCodigo = `materia-origen-${indice}`;
@@ -585,33 +583,43 @@ export function SolicitudNuevaPage(): JSX.Element {
 
                   <div className="grid gap-3 lg:grid-cols-3">
                     <Campo htmlFor={idCodigo} etiqueta="Código de origen" obligatorio>
-                      <EntradaTexto
-                        id={idCodigo}
-                        list="sugerencias-origen"
-                        value={fila.codigoOrigen}
-                        maxLength={30}
-                        disabled={bloqueado}
-                        placeholder="Ej.: PRG-101"
-                        onChange={(evento) => {
-                          const codigo = evento.target.value;
-                          const asignatura = !esExterno
-                            ? catalogoOrigen.datos?.find((item) => item.codigo.toUpperCase() === codigo.trim().toUpperCase())
-                            : undefined;
-                          const codigoAnteriorDelCatalogo = catalogoOrigen.datos?.some(
-                            (item) => item.codigo.toUpperCase() === fila.codigoOrigen.trim().toUpperCase()
-                              && item.nombre === fila.nombreOrigen,
-                          );
-
-                          actualizarFila(indice, {
-                            codigoOrigen: codigo,
-                            ...(asignatura
-                              ? { nombreOrigen: asignatura.nombre }
-                              : codigoAnteriorDelCatalogo
-                                ? { nombreOrigen: '' }
-                                : {}),
-                          });
-                        }}
-                      />
+                      {muestraCatalogoOrigen ? (
+                        <Selector
+                          id={idCodigo}
+                          value={fila.codigoOrigen}
+                          disabled={bloqueado || catalogoOrigen.cargando || !catalogoOrigen.datos?.length}
+                          onChange={(evento) => {
+                            const codigo = evento.target.value;
+                            const asignatura = catalogoOrigen.datos?.find((item) => item.codigo === codigo);
+                            actualizarFila(indice, {
+                              codigoOrigen: codigo,
+                              nombreOrigen: asignatura?.nombre ?? '',
+                            });
+                          }}
+                        >
+                          <option value="">
+                            {catalogoOrigen.cargando
+                              ? 'Cargando materias de origen…'
+                              : catalogoOrigen.datos?.length
+                                ? 'Seleccione código de origen'
+                                : 'No hay materias en el catálogo de origen'}
+                          </option>
+                          {(catalogoOrigen.datos ?? []).map((asignatura) => (
+                            <option key={asignatura.id} value={asignatura.codigo}>
+                              {asignatura.codigo} — {asignatura.nombre}
+                            </option>
+                          ))}
+                        </Selector>
+                      ) : (
+                        <EntradaTexto
+                          id={idCodigo}
+                          value={fila.codigoOrigen}
+                          maxLength={30}
+                          disabled={bloqueado}
+                          placeholder="Código según documentos de origen"
+                          onChange={(evento) => actualizarFila(indice, { codigoOrigen: evento.target.value })}
+                        />
+                      )}
                     </Campo>
 
                     <Campo htmlFor={idNombre} etiqueta="Nombre de origen" obligatorio>
@@ -641,6 +649,32 @@ export function SolicitudNuevaPage(): JSX.Element {
                           </option>
                         ))}
                       </Selector>
+                    </Campo>
+
+                    <Campo htmlFor={`fecha-aprobacion-${indice}`} etiqueta="Fecha de aprobación certificada">
+                      <EntradaTexto
+                        id={`fecha-aprobacion-${indice}`}
+                        type="date"
+                        value={fila.fechaAprobacionCertificada}
+                        disabled={bloqueado}
+                        onChange={(evento) => actualizarFila(indice, { fechaAprobacionCertificada: evento.target.value })}
+                      />
+                      <p className="text-xs text-faint">Use la fecha que consta en el certificado; si no aparece, déjela vacía.</p>
+                    </Campo>
+
+                    <Campo htmlFor={`matricula-destino-${indice}`} etiqueta="Matrícula en la carrera destino">
+                      <Selector
+                        id={`matricula-destino-${indice}`}
+                        value={fila.numeroMatriculaDestino}
+                        disabled={bloqueado}
+                        onChange={(evento) => actualizarFila(indice, { numeroMatriculaDestino: evento.target.value })}
+                      >
+                        <option value="">Sin dato registrado</option>
+                        <option value="1">Primera</option>
+                        <option value="2">Segunda</option>
+                        <option value="3">Tercera o posterior (bloqueo RN-16)</option>
+                      </Selector>
+                      <p className="text-xs text-faint">Seleccione el dato que consta en el expediente académico; no lo suponga.</p>
                     </Campo>
 
                   </div>

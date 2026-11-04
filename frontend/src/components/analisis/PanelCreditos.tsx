@@ -56,7 +56,7 @@ export function PanelCreditos({ creditos, datos, parametros }: PropsPanelCredito
     <div className="space-y-4">
       <div className="grid gap-3 md:grid-cols-3">
         <TarjetaMetrica
-          etiqueta={`${datos.asignaturaOrigen} → ${datos.asignaturaDestino}`}
+          etiqueta={`Proporción de créditos (Pcred) · ${datos.asignaturaOrigen} → ${datos.asignaturaDestino}`}
           valor={formatearPorcentaje(creditos.pcred)}
           detalle={`${datos.creditosOrigen ?? '—'} créditos de origen frente a ${datos.creditosDestino} de destino`}
         />

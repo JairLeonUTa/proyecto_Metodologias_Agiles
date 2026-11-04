@@ -29,6 +29,7 @@ export function EstadoExtraccionPage(): JSX.Element {
 
   const datos = extraccion.datos;
   const enOcr = datos?.estado === ESTADOS_EXTRACCION.PENDIENTE_OCR_LLM;
+  const cancelada = datos?.estado === ESTADOS_EXTRACCION.CANCELADA;
 
   useEffect(() => {
     if (datos) setCargadoEn(Date.now());
@@ -108,7 +109,14 @@ export function EstadoExtraccionPage(): JSX.Element {
         </Alerta>
       ) : null}
 
-      {vacios.length > 0 && !enOcr ? (
+      {cancelada ? (
+        <Alerta tono="error" titulo="Extracción cancelada">
+          {datos.observacion ??
+            'El PDF no tiene capa de texto y el análisis OCR/LLM no está disponible: no se generaron datos para confirmar.'}
+        </Alerta>
+      ) : null}
+
+      {vacios.length > 0 && !enOcr && !cancelada ? (
         <Alerta tono="advertencia">
           <strong>
             {vacios.length} campo{vacios.length > 1 ? 's' : ''} con confianza baja

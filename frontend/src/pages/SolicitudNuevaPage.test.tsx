@@ -39,6 +39,23 @@ describe('Registro de materias de origen', () => {
     ]));
   });
 
+  it('permite al operador registrar la fecha certificada y matrícula destino sin valores asumidos', async () => {
+    const user = userEvent.setup();
+    render(<MemoryRouter><SolicitudNuevaPage /></MemoryRouter>);
+
+    const fecha = await screen.findByLabelText(/Fecha de aprobación certificada/);
+    const matricula = screen.getByLabelText(/Matrícula en la carrera destino/);
+    expect(fecha).toHaveValue('');
+    expect(matricula).toHaveProperty('value', '');
+    expect(matricula.tagName).toBe('SELECT');
+    expect(matricula.querySelectorAll('option')).toHaveLength(4);
+
+    await user.type(fecha, '2025-07-15');
+    await user.selectOptions(matricula, '3');
+    expect(fecha).toHaveValue('2025-07-15');
+    expect(matricula).toHaveProperty('value', '3');
+  });
+
   it('al ingresar un código de origen del catálogo completa el nombre de la materia', async () => {
     const user = userEvent.setup();
     render(<MemoryRouter><SolicitudNuevaPage /></MemoryRouter>);
@@ -46,12 +63,30 @@ describe('Registro de materias de origen', () => {
     expect(screen.queryByLabelText(/Nota obtenida/)).not.toBeInTheDocument();
     await user.selectOptions(await screen.findByLabelText(/Carrera de origen/), 'SOFT');
     await waitFor(() => expect(catalogos.listarAsignaturas).toHaveBeenCalledWith(10));
-    await user.type(await screen.findByLabelText(/Código de origen/), 'SW201');
+    const codigo = await screen.findByLabelText(/Código de origen/);
+    expect(codigo.tagName).toBe('SELECT');
+    expect(codigo).toHaveTextContent('SW201 — Estructuras de Datos');
+    await user.selectOptions(codigo, 'SW201');
 
-    expect(await screen.findByLabelText(/Nombre de origen/)).toHaveValue('Estructuras de Datos');
+    await waitFor(() => expect(screen.getByLabelText(/Nombre de origen/)).toHaveValue('Estructuras de Datos'));
   });
 
-  it('completa el nombre si el catálogo llega después de escribir el código', async () => {
+  it('muestra las materias de la carrera de origen también en un trámite externo', async () => {
+    const user = userEvent.setup();
+    render(<MemoryRouter><SolicitudNuevaPage /></MemoryRouter>);
+
+    await user.selectOptions(screen.getByLabelText(/Tipo de trámite/), 'EXTERNO');
+    await user.selectOptions(await screen.findByLabelText(/Carrera de origen/), 'SOFT');
+    await waitFor(() => expect(catalogos.listarAsignaturas).toHaveBeenCalledWith(10));
+
+    const codigo = await screen.findByLabelText(/Código de origen/);
+    expect(codigo.tagName).toBe('SELECT');
+    expect(codigo).toHaveTextContent('SW201 — Estructuras de Datos');
+    await user.selectOptions(codigo, 'SW201');
+    expect(screen.getByLabelText(/Nombre de origen/)).toHaveValue('Estructuras de Datos');
+  });
+
+  it('muestra los códigos cuando carga el catálogo y completa el nombre seleccionado', async () => {
     const user = userEvent.setup();
     let liberarCatalogo: ((materias: Awaited<ReturnType<typeof catalogos.listarAsignaturas>>) => void) | undefined;
     catalogos.listarAsignaturas.mockImplementation((mallaId: number) =>
@@ -63,11 +98,14 @@ describe('Registro de materias de origen', () => {
 
     await user.selectOptions(await screen.findByLabelText(/Carrera de origen/), 'SOFT');
     const codigo = await screen.findByLabelText(/Código de origen/);
-    await user.type(codigo, 'SW201');
+    expect(codigo).toBeDisabled();
+    await waitFor(() => expect(liberarCatalogo).toBeDefined());
     liberarCatalogo?.([
       { id: 10, mallaId: 10, codigo: 'SW201', nombre: 'Estructuras de Datos', creditos: 4, horas: 192, semestre: 2, planCompleto: true, unidades: [] },
     ]);
 
-    expect(await screen.findByLabelText(/Nombre de origen/)).toHaveValue('Estructuras de Datos');
+    await screen.findByRole('option', { name: 'SW201 — Estructuras de Datos' });
+    await user.selectOptions(codigo, 'SW201');
+    expect(screen.getByLabelText(/Nombre de origen/)).toHaveValue('Estructuras de Datos');
   });
 });
