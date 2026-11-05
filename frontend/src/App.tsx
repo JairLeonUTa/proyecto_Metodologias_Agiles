@@ -15,8 +15,11 @@ import { ExpedienteDetallePage } from './pages/ExpedienteDetallePage';
 import { ExpedientesPage } from './pages/ExpedientesPage';
 import { ImportarCatalogoPage } from './pages/ImportarCatalogoPage';
 import { InicioPage } from './pages/InicioPage';
+import { SolicitudDetallePage } from './pages/SolicitudDetallePage';
+import { SolicitudesPage } from './pages/SolicitudesPage';
 import { LoginPage } from './pages/LoginPage';
 import { MallasPage } from './pages/MallasPage';
+import { ReglasHomologacionPage } from './pages/ReglasHomologacionPage';
 import { ReglasPage } from './pages/ReglasPage';
 import { SolicitudNuevaPage } from './pages/SolicitudNuevaPage';
 import { UsuariosPage } from './pages/UsuariosPage';
@@ -60,7 +63,32 @@ export default function App(): JSX.Element {
           </RutaProtegida>
         }
       >
-        <Route index element={<InicioPage />} />
+        {/* La aplicación arranca en la lista de solicitudes (operador, docente y administrador). */}
+        <Route index element={<Navigate to={RUTAS.solicitudes} replace />} />
+        <Route
+          path="solicitudes"
+          element={
+            <RutaProtegida rolesPermitidos={TODOS_LOS_ROLES}>
+              <SolicitudesPage />
+            </RutaProtegida>
+          }
+        />
+        <Route
+          path="reglas-homologacion"
+          element={
+            <RutaProtegida rolesPermitidos={TODOS_LOS_ROLES}>
+              <ReglasHomologacionPage />
+            </RutaProtegida>
+          }
+        />
+        <Route
+          path="solicitudes/:id"
+          element={
+            <RutaProtegida rolesPermitidos={TODOS_LOS_ROLES}>
+              <SolicitudDetallePage />
+            </RutaProtegida>
+          }
+        />
 
         <Route
           path="reglas"
@@ -193,7 +221,7 @@ export default function App(): JSX.Element {
         />
 
         {/* Compatibilidad con la ruta canónica de inicio */}
-        <Route path="inicio" element={<Navigate to="/" replace />} />
+        <Route path="inicio" element={<InicioPage />} />
 
         {/* Ruta no encontrada dentro de la aplicación autenticada */}
         <Route path="*" element={<NoEncontradoPage />} />

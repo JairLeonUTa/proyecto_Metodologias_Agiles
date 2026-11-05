@@ -33,10 +33,18 @@ namespace Siha.MsB.Api.Migrations
                         .HasMaxLength(20)
                         .HasColumnType("nvarchar(20)");
 
+                    b.Property<string>("CarreraDestinoNombre")
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
                     b.Property<string>("CarreraOrigenCodigo")
                         .IsRequired()
                         .HasMaxLength(20)
                         .HasColumnType("nvarchar(20)");
+
+                    b.Property<string>("CarreraOrigenNombre")
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
 
                     b.Property<string>("Codigo")
                         .IsRequired()
@@ -50,6 +58,14 @@ namespace Siha.MsB.Api.Migrations
                         .IsRequired()
                         .HasMaxLength(40)
                         .HasColumnType("nvarchar(40)");
+
+                    b.Property<string>("EstudianteIdentificacion")
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<string>("EstudianteNombre")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
 
                     b.Property<bool>("EventoPublicado")
                         .HasColumnType("bit");
@@ -71,9 +87,29 @@ namespace Siha.MsB.Api.Migrations
                     b.Property<int>("IntentosPublicacion")
                         .HasColumnType("int");
 
+                    b.Property<string>("NumeroCertificado")
+                        .HasMaxLength(40)
+                        .HasColumnType("nvarchar(40)");
+
                     b.Property<string>("Observaciones")
                         .HasMaxLength(1000)
                         .HasColumnType("nvarchar(1000)");
+
+                    b.Property<string>("Revisor1Correo")
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.Property<string>("Revisor1Nombre")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("Revisor2Correo")
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.Property<string>("Revisor2Nombre")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
 
                     b.Property<string>("RutaNormativa")
                         .IsRequired()
@@ -102,6 +138,14 @@ namespace Siha.MsB.Api.Migrations
 
                     b.HasIndex("Estado");
 
+                    b.HasIndex("NumeroCertificado")
+                        .IsUnique()
+                        .HasFilter("[NumeroCertificado] IS NOT NULL");
+
+                    b.HasIndex("Revisor1Correo");
+
+                    b.HasIndex("Revisor2Correo");
+
                     b.ToTable("EXPEDIENTE", (string)null);
                 });
 
@@ -111,9 +155,16 @@ namespace Siha.MsB.Api.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<bool?>("Aprobada")
+                        .HasColumnType("bit");
+
                     b.Property<string>("AsignaturaDestinoCodigo")
                         .HasMaxLength(30)
                         .HasColumnType("nvarchar(30)");
+
+                    b.Property<string>("AsignaturaDestinoNombre")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
 
                     b.Property<string>("AsignaturaOrigenCodigo")
                         .IsRequired()
@@ -131,10 +182,20 @@ namespace Siha.MsB.Api.Migrations
                     b.Property<DateOnly?>("FechaAprobacionCertificada")
                         .HasColumnType("date");
 
+                    b.Property<int?>("Nivel")
+                        .HasColumnType("int");
+
                     b.Property<double?>("NotaOrigen")
                         .HasColumnType("float");
 
                     b.Property<int?>("NumeroMatriculaDestino")
+                        .HasColumnType("int");
+
+                    b.Property<string>("PeriodoAcademico")
+                        .HasMaxLength(40)
+                        .HasColumnType("nvarchar(40)");
+
+                    b.Property<int?>("SolicitudNumero")
                         .HasColumnType("int");
 
                     b.HasKey("Id");

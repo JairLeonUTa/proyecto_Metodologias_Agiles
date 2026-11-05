@@ -1,0 +1,70 @@
+syntax = "proto3";
+
+// Contrato gRPC interno del Microservicio A: catálogo académico y usuarios docentes.
+//  - MS C (agente) obtiene la malla vigente de la carrera de destino con sus contenidos para compararlos.
+//  - MS B verifica que los docentes revisores del certificado SIHA existen con rol DOCENTE.
+package siha.catalogo.v1;
+
+option csharp_namespace = "Siha.MsA.Api.Grpc";
+
+service CatalogoGrpc {
+  rpc ObtenerMallaVigente (SolicitudMalla) returns (MallaVigente);
+  rpc VerificarDocentes (SolicitudDocentes) returns (RespuestaDocentes);
+  // Busca una carrera por su nombre completo (o código), sin importar tildes ni "Ingeniería en/de".
+  rpc ResolverCarrera (SolicitudCarrera) returns (CarreraResuelta);
+}
+
+message SolicitudCarrera {
+  string nombre = 1;
+}
+
+message CarreraResuelta {
+  bool encontrada = 1;
+  string codigo = 2;
+  string nombre = 3;
+}
+
+message SolicitudMalla {
+  // Código (p. ej. SW) o nombre de la carrera (p. ej. "Software").
+  string carrera_codigo = 1;
+}
+
+message UnidadMalla {
+  int32 numero = 1;
+  string nombre = 2;
+  int32 horas = 3;
+  string contenidos = 4;
+}
+
+message AsignaturaMalla {
+  string codigo = 1;
+  string nombre = 2;
+  int32 creditos = 3;
+  int32 semestre = 4;
+  repeated UnidadMalla unidades = 5;
+}
+
+message MallaVigente {
+  // Falso si la carrera no existe o no tiene una malla vigente.
+  bool encontrada = 1;
+  string carrera_codigo = 2;
+  string carrera_nombre = 3;
+  string version = 4;
+  repeated AsignaturaMalla asignaturas = 5;
+}
+
+message SolicitudDocentes {
+  repeated string correos = 1;
+}
+
+message DocenteVerificado {
+  string correo = 1;
+  bool existe = 2;
+  bool es_docente = 3;
+  bool activo = 4;
+  string nombre_completo = 5;
+}
+
+message RespuestaDocentes {
+  repeated DocenteVerificado docentes = 1;
+}

@@ -317,7 +317,9 @@ export function presentarEstadoFinal(estado: number): PresentacionEstadoFinal {
     case ESTADO_FINAL.REQUIERE_VALIDACION_CONOCIMIENTOS:
       return { etiqueta: 'Validación de conocimientos', tono: 'advertencia', descripcion: 'RN-03: la asignatura supera los 10 años de vigencia (CAU-P-011).' };
     case ESTADO_FINAL.ERROR_REGLAS_GRPC:
-      return { etiqueta: 'Reglas no disponibles', tono: 'error', descripcion: 'No se obtuvieron θ, δ, τ del Microservicio A. El sistema no sustituye valores.' };
+      return { etiqueta: 'Reglas no disponibles', tono: 'error', descripcion: 'No se obtuvieron las reglas vigentes del Microservicio A. El sistema no sustituye valores.' };
+    case ESTADO_FINAL.CONTENIDO_INSUFICIENTE:
+      return { etiqueta: 'No alcanza el contenido', tono: 'error', descripcion: 'Las materias aprobadas no cubren el contenido mínimo requerido de la materia de destino.' };
     case ESTADO_FINAL.EXTRACCION_NO_CONFIRMADA:
       return { etiqueta: 'Extracción sin confirmar', tono: 'advertencia', descripcion: 'El operador debe confirmar los datos antes del cálculo.' };
     default:

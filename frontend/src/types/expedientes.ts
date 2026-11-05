@@ -88,5 +88,59 @@ export interface Expediente {
     nota: number | null;
     fechaAprobacionCertificada?: string | null;
     numeroMatriculaDestino?: number | null;
+    nivel?: number | null;
+    periodoAcademico?: string | null;
+    aprobada?: boolean | null;
+    asignaturaDestinoNombre?: string | null;
+    solicitudNumero?: number | null;
   }>;
+  /** Datos del certificado SIHA del que se creó el expediente (nulos en registros manuales antiguos). */
+  numeroCertificado?: string | null;
+  estudianteNombre?: string | null;
+  estudianteIdentificacion?: string | null;
+  revisores?: Array<{ nombre: string; correo: string }> | null;
+  carreraOrigenNombre?: string | null;
+  carreraDestinoNombre?: string | null;
+}
+
+/** Materia del historial académico del certificado (aprobada o reprobada). */
+export interface MateriaCursada {
+  nombre: string;
+  nivel: number;
+  periodoAcademico: string;
+  nota: number;
+  aprobada: boolean;
+}
+
+/** Materia(s) aprobada(s) que el estudiante pide homologar por una materia de la carrera de destino. */
+export interface SolicitudHomologacion {
+  numero: number;
+  materiasOrigen: string[];
+  materiaDestino: string;
+}
+
+/** Respuesta de `POST /api/expedientes/certificado/validar`: lo que el sistema leyó del PDF. */
+export interface CertificadoLeido {
+  numeroCertificado: string;
+  fechaEmision: string;
+  emitidoPor: string;
+  estudianteNombre: string;
+  estudianteIdentificacion: string;
+  tipoTramite: string;
+  rutaNormativa: string;
+  institucionOrigen: string;
+  carreraOrigen: string;
+  carreraDestino: string;
+  materias: MateriaCursada[];
+  solicitudes: SolicitudHomologacion[];
+  /** Docentes revisores (usuarios DOCENTE verificados en MS A). */
+  revisores: Array<{ nombre: string; correo: string }>;
+}
+
+/** Respuesta 202 de `POST /api/expedientes/certificado`. */
+export interface SolicitudCertificado {
+  expediente: Expediente;
+  certificado: CertificadoLeido;
+  publicado: boolean;
+  mensaje: string;
 }

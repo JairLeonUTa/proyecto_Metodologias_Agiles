@@ -1,11 +1,19 @@
 import { peticion } from './httpClient';
 import type {
+  CertificadoLeido,
   CrearExpediente,
   DocumentoCargado,
   DocumentosExpediente,
   Expediente,
   ExpedienteAceptado,
+  SolicitudCertificado,
 } from '../types/expedientes';
+
+function formularioPdf(archivo: File): FormData {
+  const formulario = new FormData();
+  formulario.append('archivo', archivo, archivo.name);
+  return formulario;
+}
 
 /**
  * Registro, carga de documentos, envío y consulta de expedientes (S1-A06/A07/A09/A10).
@@ -16,6 +24,14 @@ import type {
  *  3. `enviar` pide al servidor verificar los PDF en disco y publicar el evento si se cumplen los requisitos.
  */
 export const expedientesApi = {
+  /** Lee el certificado SIHA sin registrar nada. 422 con `detalles` si no cumple la plantilla. */
+  validarCertificado: (archivo: File) =>
+    peticion<CertificadoLeido>('/api/expedientes/certificado/validar', { metodo: 'POST', cuerpo: formularioPdf(archivo) }),
+
+  /** Registra y envía la solicitud a partir del certificado SIHA (único documento aceptado). */
+  registrarCertificado: (archivo: File) =>
+    peticion<SolicitudCertificado>('/api/expedientes/certificado', { metodo: 'POST', cuerpo: formularioPdf(archivo) }),
+
   /** Registra el borrador del expediente. El servidor responde 201 Created. */
   registrar: (expediente: CrearExpediente) =>
     peticion<ExpedienteAceptado>('/api/expedientes', { metodo: 'POST', cuerpo: expediente }),

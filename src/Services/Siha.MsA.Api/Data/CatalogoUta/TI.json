@@ -1,0 +1,1367 @@
+{
+ "carrera": "TI",
+ "nombre": "Tecnologías de la Información",
+ "fuente": "Sílabos oficiales publicados en uta.edu.ec (2026)",
+ "asignaturas": [
+  {
+   "nombre": "ALGEBRA LINEAL",
+   "nivel": 1,
+   "creditos": 3,
+   "horas": 144,
+   "descripcion": "Algebra lineal es una materia que introduce al estudiante en el ámbito de la matemática superior, se estructura en cuatro unidades temáticas: Matrices y determinantes, Estructuras algrebaícas, vectores en R2 y R3 y Espacios vectoriales a fin de que haga suyo el lenguaje de las Ciencias, que es matemática, alrededor de la cual se articula la formación del ingeniero.",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "Aplicar la teoría de matrices y determinantes de orden n, sus relaciones, operaciones, y propiedades para la resolución de problemas de",
+     "horas": 36,
+     "contenidos": "Introducción al estudio matricial y clases. Operaciones con"
+    },
+    {
+     "numero": 2,
+     "nombre": "Comprender el concepto, clasificación y teoremas de las Estructuras Algebraicas para su aplicación en diferentes operaciones..",
+     "horas": 36,
+     "contenidos": "Operación binaria. Operaciones con estructuras"
+    },
+    {
+     "numero": 3,
+     "nombre": "Analizar e interpretar las operaciones con vectores en R2 y R3 para la solución de problemas",
+     "horas": 36,
+     "contenidos": "Vectores en el plano, Vectores en el espacio."
+    },
+    {
+     "numero": 4,
+     "nombre": "Interpretar y analizar los espacios vectoriales y su aplicación en operaciones definidas con vectores en el plano (R2) y en el espacio (R3) y su",
+     "horas": 36,
+     "contenidos": "Introducción a los espacios y subespacios vectoriales,"
+    }
+   ],
+   "codigo": "08060112"
+  },
+  {
+   "nombre": "FUNDAMENTOS DE PROGRAMACION",
+   "nivel": 1,
+   "creditos": 4,
+   "horas": 192,
+   "descripcion": "La materia de Fundamentos de Programación permite proponer, diseñar e implementar algoritmos con criterios de eficiencia y precisión para dar solución a problemas básicos relacionados con el manejo de la información, además de la utilización de estructuras básicas de datos para el manejo eficiente de memoria. En la unidad 1 se realiza una introducción a la metodología y lógica de programación, en la unidad 2 se aplican las estructuras de control en la elaboración de programas, en la unidad 3 se da una introducción a la POO para mejorar el rendimiento de los programas y en la unidad 4 se utilizan estructuras de datos básicas. Las metodologías utilizadas serán el método expositivo y el aprendizaje basado en proyectos para conseguir que el estudiante obtenga aprendizajes significativos.",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "Fundamentar la lógica de programación para el diseño de algoritmos orientado a la resolución de problemas.",
+     "horas": 36,
+     "contenidos": "Introducción y Metodología a los Fundamentos de; Desarrollo de ejercicios básicos (E/P/S)"
+    },
+    {
+     "numero": 2,
+     "nombre": "Trabajar con estructuras de condición, repetición y control para resolver problemas del contexto",
+     "horas": 60,
+     "contenidos": "Sentencias condicionales y cíclicas; Contadores y acumuladores, Control de ingreso de datos"
+    },
+    {
+     "numero": 3,
+     "nombre": "Utilizar métodos y clases propias para la simplificación de la estructura de un programa.",
+     "horas": 48,
+     "contenidos": "Métodos definidos por el usuario; Manejo de archivo de datos"
+    },
+    {
+     "numero": 4,
+     "nombre": "Utilizar Estructuras básicas de datos que permita la organización de los datos en la solución de problemas.",
+     "horas": 48,
+     "contenidos": "Arreglos Unidireccionales y Bidireccionales; Listas ArrayList y LinkedList"
+    }
+   ],
+   "codigo": "08060113"
+  },
+  {
+   "nombre": "CALCULO DIFERENCIAL",
+   "nivel": 1,
+   "creditos": 3,
+   "horas": 144,
+   "descripcion": "La asignatura de Cálculo Diferencial forma parte de la unidad curricular básica de la carrera de Tecnologías de la Información y se estructura en cuatro unidades temáticas: Límites, Derivadas, Aplicaciones de la Derivada e Integrales, que constituyen los fundamentos del análisis matemático. Los contenidos se desarrollan mediante clases expositivas, resolución de ejercicios, trabajos prácticos y actividades colaborativas, complementadas con el aprendizaje autónomo del estudiante, orientado a la aplicación del cálculo en la solución de problemas geométricos, físicos y de ingeniería, fortaleciendo las habilidades analíticas necesarias para la comprensión de fenómenos de cambio y su aplicación en el ámbito tecnológico.",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "Analizar los conceptos y propiedades fundamentales de los límites de una función, mediante la resolución de ejercicios, para comprender el",
+     "horas": 18,
+     "contenidos": "Límites"
+    },
+    {
+     "numero": 2,
+     "nombre": "Aplicar las reglas de derivación a diferentes tipos de funciones, con el fin de determinar tasas de cambio y preparar la resolución de problemas",
+     "horas": 54,
+     "contenidos": "Derivadas"
+    },
+    {
+     "numero": 3,
+     "nombre": "Utilizar el criterio de la derivada para el análisis de gráficos y la resolución de problemas de optimización y situaciones propias de la ingeniería y",
+     "horas": 18,
+     "contenidos": "Aplicaciones"
+    },
+    {
+     "numero": 4,
+     "nombre": "Emplear los métodos básicos de integración para resolver problemas relacionados con la antiderivada, fortaleciendo la comprensión de los",
+     "horas": 54,
+     "contenidos": "Integrales"
+    }
+   ],
+   "codigo": "08060114"
+  },
+  {
+   "nombre": "FISICA",
+   "nivel": 1,
+   "creditos": 3,
+   "horas": 144,
+   "descripcion": "La física es una ciencia fundamental que se ocupa de los principios básicos del universo. La asignatura en el presente nivel permite al estudiante de ingeniería la formulación de estructuras y construcción de modelos heurísticos simples y complejos en los diferentes roles de la vida humana. Los contenidos de Física para la formación del futuro Ingeniero comprende: Dinámica de la Partícula de cuerpos Rígidos y Rotacional, Trabajo, Energía y su Conservación, Electricidad, mediante aprendizajes.",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "Analizar e interpretar los diferentes fenómenos físicos; además de la descripción y conceptualización de las componentes inherentes al",
+     "horas": 36,
+     "contenidos": "Fuerza, primera Ley de Newton; Equilibrio del cuerpo Sólido, Segunda Ley de Newton"
+    },
+    {
+     "numero": 2,
+     "nombre": "Aplicar las expresiones matemáticas de Trabajo, Potencia, Energía, para la resolver cuestiones prácticas.",
+     "horas": 30,
+     "contenidos": "Energía y su conservación, cantidad de movimiento y su; Trabajo, potencia"
+    },
+    {
+     "numero": 3,
+     "nombre": "Estudiar las leyes y comportamiento del movimiento rotacional y sus aplicaciones.",
+     "horas": 36,
+     "contenidos": "Dinámica del movimiento circular; Campo Gravitacional y Leyes deKepler"
+    },
+    {
+     "numero": 4,
+     "nombre": "Interpretar los fenómenos y leyes relacionadas con la electricidad y el comportamiento de la corriente en la resolución de problemas de carácter",
+     "horas": 42,
+     "contenidos": "Electroestática; Electrodinámica"
+    }
+   ],
+   "codigo": "08060115"
+  },
+  {
+   "nombre": "METODOLOGIA DE LA INVESTIGACION",
+   "nivel": 1,
+   "creditos": 2,
+   "horas": 96,
+   "descripcion": "La asignatura de Metodología de la Investigación se estructura en 4 unidades curriculares básicas relacionadas con los fundamentos de la metodología de investigación, tipos y métodos de investigación científica, técnicas e instrumentos de investigación y componentes estructurales del perfil de investigación. Los temas se desarrollan a través de conferencias integradoras y actividades prácticas y de trabajo autónomo del estudiante donde elaboran un perfil de investigación sobre una problemática identificada, utilizando técnicas y herramientas de organización, procesamiento y análisis de información, así como la aplicación de normas de redacción técnica en la presentación de informes y artículos de investigación.",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "Identificar los fundamentos de la metodología de la investigación científica que influyen en la generación de conocimiento",
+     "horas": 12,
+     "contenidos": "Fundamentos de la metodología de la investigación"
+    },
+    {
+     "numero": 2,
+     "nombre": "Analizar los tipos y métodos de investigación científica.",
+     "horas": 18,
+     "contenidos": "Tipos y métodos de Investigación"
+    },
+    {
+     "numero": 3,
+     "nombre": "Aplicar las técnicas e instrumentos de investigación",
+     "horas": 18,
+     "contenidos": "Técnicas e instrumentos de recolección de datos"
+    },
+    {
+     "numero": 4,
+     "nombre": "Desarrollar los componentes estructurales del perfil de investigación.",
+     "horas": 48,
+     "contenidos": "Componentes del perfil de investigación"
+    }
+   ],
+   "codigo": "08060116"
+  },
+  {
+   "nombre": "CALCULO INTEGRAL",
+   "nivel": 2,
+   "creditos": 2,
+   "horas": 96,
+   "descripcion": "La asignatura desarrolla los fundamentos y criterios para la aplicación de la integral en la solución de problemas relacionados con propiedades geométricas en el plano y en el espacio, tales como cálculo de áreas, volúmenes y centros de gravedad. Asimismo, aborda nociones básicas vinculadas con ecuaciones diferenciales homogéneas de orden superior. Mediante clases expositivas y trabajo colaborativo, se promueve que el estudiante fortalezca su capacidad para modelar y resolver problemas geométricos y físicos, aplicando de manera rigurosa los conceptos del Cálculo Integral.",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "Aplicar los conceptos de la integral en la solución de problemas de áreas bajo la curva",
+     "horas": 24,
+     "contenidos": "Integración; Área bajo la curva, Área limitada por una o dos"
+    },
+    {
+     "numero": 2,
+     "nombre": "Identificar fórmulas y procesos de la integral definida para la resolución de problemas geométricos en el plano y espacio.",
+     "horas": 24,
+     "contenidos": "Longitud de arco de una curva plana en coordenadas; Áreas de superficies de revolución; Cálculo de volúmenes de sólidos de revolución, Centros de"
+    },
+    {
+     "numero": 3,
+     "nombre": "Solucionar problemas geométricos en el plano y volúmenes bajo una superficie aplicando conceptos de la integral múltiple.",
+     "horas": 24,
+     "contenidos": "Integrales múltiples; Aplicación de las integrales múltiples; Volumen bajo una superficie"
+    },
+    {
+     "numero": 4,
+     "nombre": "Resolver ecuaciones diferenciales ordinarias con la aplicación de criterios lógicos, analíticos y reflexivos",
+     "horas": 24,
+     "contenidos": "Ecuaciones diferenciales ordinarias; Ecuaciones diferenciales ordinarias de primer orden; Ecuaciones diferenciales ordinarias de segundo orden"
+    }
+   ],
+   "codigo": "08060213"
+  },
+  {
+   "nombre": "LOGICA MATEMATICA",
+   "nivel": 2,
+   "creditos": 2,
+   "horas": 96,
+   "descripcion": "La asignatura se encuentra estructurada en 16 semanas, las cuales se desarrollarán en 4 unidades de aprendizaje, que permiten desarrollar en los estudiantes destrezas en temáticas como: Lógica Proposicional con sus respectivas tablas de verdad, operadores lógicos; Inferencias lógicas, así como sus reglas; Lógica de Predicados, su cálculo, cuantificadores, representación; para finalmente concluir con el estudio del Álgebra de Boole, con sus reglas y simplificación. El proceso de enseñanza aprendizaje se realizará a través de conferencias magistrales, aula invertida, resolución de ejercicios, trabajos grupales, consiguiendo así una efectiva evaluación diagnóstica, formativa y sumativa.",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "Clasificar las diferentes clases de proposiciones en un enunciado, utilizando conectivos lógicos, para la elaboración de tablas de verdad y la",
+     "horas": 24,
+     "contenidos": "Lógica Proposicional"
+    },
+    {
+     "numero": 2,
+     "nombre": "Aplicar las reglas de inferencia lógica, junto con sus leyes y métodos de deducción, en la solución de problemas lógicos propuestos.",
+     "horas": 24,
+     "contenidos": "Inferencia lógica"
+    },
+    {
+     "numero": 3,
+     "nombre": "Formalizar conocimientos mediante el uso de predicados, cuantificadores lógicos y representaciones simbólicas, facilitando la solución de",
+     "horas": 24,
+     "contenidos": "Lógica de predicados"
+    },
+    {
+     "numero": 4,
+     "nombre": "Aplicar las reglas fundamentales del álgebra de Boole y los sistemas de representación y codificación de la información, asegurando la correcta",
+     "horas": 24,
+     "contenidos": "Álgebra de Boole"
+    }
+   ],
+   "codigo": "08060214"
+  },
+  {
+   "nombre": "MEDIDAS ELECTRICAS",
+   "nivel": 2,
+   "creditos": 3,
+   "horas": 144,
+   "descripcion": "La asignatura de Medidas Eléctricas nos permite realizar mediciones destinadas a la determinación de magnitudes eléctricas. Estas magnitudes pueden medirse con instrumentos que dan directamente el valor correspondiente mediante una lectura clara y constante, por medio de instrumentos que reciben el nombre de la magnitud a medir, como, por ejemplo, amperímetro, voltímetro, etc. Contenidos de la asignatura: 1. Teoría de errores. 2. Fundamentos de electricidad y electrónica 3. Circuitos digitales 4. Robótica básica Mediante aprendizajes expositivos y colaborativos para la resolución de ejercicios y prácticas, permitiendo al estudiante obtener destrezas y habilidades en la conceptualización.",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "Analizar los conceptos de la teoría de errores para su aplicación en las medidas eléctricas",
+     "horas": 36,
+     "contenidos": "Errores en las medidas eléctricas"
+    },
+    {
+     "numero": 2,
+     "nombre": "Aplicar los fundamentos de electricidad y electrónica en la toma de medidas mediante los diferentes instrumentos, considerando su principio de",
+     "horas": 36,
+     "contenidos": "Electricidad y electrónica"
+    },
+    {
+     "numero": 3,
+     "nombre": "Establecer la importancia de los Circuitos Digitales en el diseño de secuencias automatizadas",
+     "horas": 36,
+     "contenidos": "Electrónica digital"
+    },
+    {
+     "numero": 4,
+     "nombre": "Identificar las aplicaciones de la robótica básica en la automatización de procesos utilizando Arduino.",
+     "horas": 36,
+     "contenidos": "Principios de la robótica"
+    }
+   ],
+   "codigo": "08060215"
+  },
+  {
+   "nombre": "ESTRUCTURA DE DATOS",
+   "nivel": 2,
+   "creditos": 3,
+   "horas": 144,
+   "descripcion": "La asignatura Estructura de Datos se estructura en cuatro unidades curriculares básicas relacionadas con los diferentes tipos de estructuras de datos: de acceso directo (vectores y matrices), listas (secuenciales, pilas y colas), árboles y grafos. Los temas se desarrollan a través de actividades del proceso de enseñanza-aprendizaje instructivo y actividades prácticas de laboratorio, acompañadas del trabajo autónomo y colaborativo de los estudiantes en la solución a una problemática planteada como proyecto de curso. En las actividades prácticas diseñarán e implementarán soluciones de software para casos concretos.",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "Conocer los principios de las estructuras de datos utilizando un lenguaje de programación orientada a objetos",
+     "horas": 18,
+     "contenidos": "Introducción a Estructuras de Datos en el ámbito de la; Estrategias de algoritmización y programación con"
+    },
+    {
+     "numero": 2,
+     "nombre": "Solucionar problemas de programación haciendo uso de estructuras secuenciales (listas, pilas y colas)",
+     "horas": 54,
+     "contenidos": "Listas secuenciales.; Listas simplemente enlazadas.; Listas doblemente enlazadas.; Listas circulares.; Pilas y colas.; Ejercicio integrador"
+    },
+    {
+     "numero": 3,
+     "nombre": "Solucionar problemas de programación haciendo uso de la estructura de datos Arbol",
+     "horas": 36,
+     "contenidos": "Introducción a los árboles como estructura de datos.; Actualización en árboles (alta/baja/modificación).; Transformación árbol general en árbol binario; Aplicación de los árboles a la ingeniería"
+    },
+    {
+     "numero": 4,
+     "nombre": "Solucionar problemas de programación haciendo uso de la estructura de datos Grafo",
+     "horas": 36,
+     "contenidos": "Introducción a los grafos como estructura de datos.; Multilistas y su relación con la implementación de grafos.; Vectores y matrices. Relación con la implementación de; Aplicación de los grafos a la ingeniería."
+    }
+   ],
+   "codigo": "08060216"
+  },
+  {
+   "nombre": "REALIDAD NACIONAL",
+   "nivel": 2,
+   "creditos": 2,
+   "horas": 96,
+   "descripcion": "En esta asignatura se conocerá la realidad de nuestro país fundamentalmente en lo referente a la vinculación con el entorno político, económico, social y cultural; la realidad de la población, producción, diversidad y su multiculturalidad; y, además, conocer la realidad del país articulado al nuevo orden mundial.",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "Analizar el dinamismo del nuevo orden mundial y su relación con la economía y sociedad ecuatoriana.",
+     "horas": 24,
+     "contenidos": "El nuevo orden mundial.; Principales indicadores económicos: pobreza y riqueza.; El poder político mundial.; Organismos nacionales e internacionales en el ámbito"
+    },
+    {
+     "numero": 2,
+     "nombre": "Relacionar la historia del Ecuador en el contexto político, económico, cultural y social.",
+     "horas": 24,
+     "contenidos": "Historia del Ecuador en la época Colonial y Republicana.; Modelo de industrialización por sustitución de exportaciones; Corrientes políticas, económicas y sociales.; Estado plurinacional e intercultural"
+    },
+    {
+     "numero": 3,
+     "nombre": "Examinar el marco constitucional y normativo desde la perspectiva de la economía y la sociedad.",
+     "horas": 24,
+     "contenidos": "Poder y organización del estado.; Participación del Estado en el ámbito económicco y social.; Organización territorial del Estado; Marco constitucional y normativo"
+    },
+    {
+     "numero": 4,
+     "nombre": "Conocer el Plan Nacional de Desarrollo y las agendas locales desde la perspectiva socioeconómica.",
+     "horas": 24,
+     "contenidos": "Plan nacional de desarrollo. Estrategia territorial de; Agendas de desarrollo local en el ámbito socioeconómico.; Régimen de desarrollo y del buen vivir.; Ética y moral profesional frente a la sociedad."
+    }
+   ],
+   "codigo": "08060217"
+  },
+  {
+   "nombre": "PROGRAMACION ORIENTADA A OBJETOS",
+   "nivel": 2,
+   "creditos": 3,
+   "horas": 144,
+   "descripcion": "La asignatura de Programación Orientada a Objetos se estructura en 4 unidades curriculares básicas en donde se enseña el paradigma de programación que usa objetos y sus interacciones para diseñar aplicaciones y programas informáticos, incluyendo lo referente a los conceptos de herencia, abstracción, polimorfismo y encapsulamiento.",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "Definir la programación orientada a objetos desde la perspectiva sintáctica de un programa.",
+     "horas": 36,
+     "contenidos": "Evolución de los lenguajes de programación.; Objetos y Clases; Definición y uso de variables y métodos"
+    },
+    {
+     "numero": 2,
+     "nombre": "Caracterizar los principios de la programación orientada a objetos.",
+     "horas": 36,
+     "contenidos": "Abstracción y encapsulamiento.; Herencia; Polimorfismo; Ejercicio integrador"
+    },
+    {
+     "numero": 3,
+     "nombre": "Definir la programación orientada a objetos desde la perspectiva semántica de un programa.",
+     "horas": 36,
+     "contenidos": "Interface, Clases Abstractas; Patrones de diseño básicos"
+    },
+    {
+     "numero": 4,
+     "nombre": "Desarrollar habilidades en la modelación de un programa orientado a objetos.",
+     "horas": 36,
+     "contenidos": "Excepciones; Operaciones CRUD; Desarrollo de casos de estudio"
+    }
+   ],
+   "codigo": "08060218"
+  },
+  {
+   "nombre": "PROGRAMACION AVANZADA",
+   "nivel": 3,
+   "creditos": 3,
+   "horas": 144,
+   "descripcion": "El presente módulo trata de formar en las capacidades de: resolver problemas de programación de planificación y gestión. Programación Avanzada está orientada al diseño de aplicaciones bajo entorno visual comúnmente a través del uso del formulario GUI. En este módulo se hará una presentación y estudio de las interfaces visuales a través del entorno de desarrollo integrado moderno, tales como Visual Studio.Net, Visual Code, entre otros.",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "Interactuar con las principales instrucciones del lenguaje y el manejo de controles en entornos gráficos.",
+     "horas": 36,
+     "contenidos": "Introducción a los Ambientes Gráficos de Programación; Fundamentos; Manejo de Excepciones"
+    },
+    {
+     "numero": 2,
+     "nombre": "Desarrollar prototipos de aplicaciones en entornos gráficos.",
+     "horas": 36,
+     "contenidos": "Controles y características en entornos Gráficos; Arreglos; Clases; Controles de Usuario"
+    },
+    {
+     "numero": 3,
+     "nombre": "Analizar los principales tipos de arquitecturas de software y sus aplicaciones.",
+     "horas": 36,
+     "contenidos": "Indizadores, delegados y eventos; Asincromismo; Principios de Programación Orientada a Objetos; Arquitecturas en Aplicaciones"
+    },
+    {
+     "numero": 4,
+     "nombre": "Crear aplicaciones de escritorio con operaciones CRUD(Lectura, Inserción, Actualización y Eliminación).",
+     "horas": 36,
+     "contenidos": "Ado.Net; Linq; Reportes"
+    }
+   ],
+   "codigo": "08060312"
+  },
+  {
+   "nombre": "PROBABILIDAD Y ESTADISTICA",
+   "nivel": 3,
+   "creditos": 3,
+   "horas": 144,
+   "descripcion": "La asignatura de Probabilidad y Estadística, se estructura en cuatro unidades curriculares y pretende que el estudiante de Tecnologías de la Información desarrolle habilidades para el manejo y tratamiento de datos de fenómenos masivos, utilizando fórmulas y grafos, regresiones estadísticas, probabilidades y distribución de variables aleatorias,muestreo y pruebas de hipótesis, presentes en muchos fenómenos relacionados a las Tecnologías de la Información.",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "Emplear apropiadamente información estadística de fenómenos masivos, para datos no agrupados y agrupados (tablas de distribución de",
+     "horas": 36,
+     "contenidos": "Aplicación de la estadística descriptiva"
+    },
+    {
+     "numero": 2,
+     "nombre": "Operar los principios y leyes de la Teoría elemental de probabilidades para fenómenos aleatorios, y análisis combinatorio",
+     "horas": 36,
+     "contenidos": "Teoría elemental de Probabilidades; Análisis combinatorio"
+    },
+    {
+     "numero": 3,
+     "nombre": "Aplicar apropiadamente distribuciones probabilísticas de carácter discreto y continuo, muestreo y pruebas de hipótesis",
+     "horas": 36,
+     "contenidos": "Distribuciones probabilísticas discretas; Distribuciones probabilísticas continuas; Muestreo y prueba de hipótesis"
+    },
+    {
+     "numero": 4,
+     "nombre": "Correlacionar y proyectar regresionalmente fenómenos aleatorios como técnicas de inferencia estadística",
+     "horas": 36,
+     "contenidos": "Regresión y Correlación lineal y no lineal; Evaluación de la correlación estadística"
+    }
+   ],
+   "codigo": "08060313"
+  },
+  {
+   "nombre": "SISTEMAS OPERATIVOS",
+   "nivel": 3,
+   "creditos": 3,
+   "horas": 144,
+   "descripcion": "Sistemas Operativos es una asignatura que se estructura en cuatro unidades curriculares, orientadas al estudio teórico-práctico de los sistemas operativos como el programa base para el funcionamiento de los equipos computacionales. La asignatura se centra en la comprensión de la estructura, funcionamiento, gestión y configuración de los sistemas operativos, permitiendo al estudiante identificar, administrar y optimizar los recursos y servicios básicos del sistema. A través de actividades prácticas, resolución de problemas y desarrollo de proyectos, los estudiantes aplicarán los conocimientos teóricos en contextos reales, fortaleciendo además habilidades blandas como el trabajo en equipo, la comunicación efectiva y el pensamiento crítico. Como resultado, los alumnos serán capaces de analizar, configurar y gestionar sistemas operativos, administrar eficientemente los recursos del computador para maximizar su rendimiento y proponer soluciones innovadoras a problemas relacionados con la operación y mantenimiento de sistemas informáticos, integrando de manera efectiva la teoría y la práctica.",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "Comprender los tipos de sistemas operativos y los elementos que los componen.",
+     "horas": 36,
+     "contenidos": "Introducción a los Sistemas Operativos."
+    },
+    {
+     "numero": 2,
+     "nombre": "Describir la estructura general de los sistemas operativos, identificando sus componentes principales y sus funciones.",
+     "horas": 36,
+     "contenidos": "Estructura de los sistemas operativos."
+    },
+    {
+     "numero": 3,
+     "nombre": "Analizar los procesos y mecanismos de gestión de los sistemas operativos.",
+     "horas": 36,
+     "contenidos": "Gestión de los sistemas operativos"
+    },
+    {
+     "numero": 4,
+     "nombre": "Configurar y utilizar los servicios y herramientas básicas de un sistema operativo",
+     "horas": 36,
+     "contenidos": "Configuración y uso de los servicios básicos de un sistema"
+    }
+   ],
+   "codigo": "08060314"
+  },
+  {
+   "nombre": "FUNDAMENTOS DE BASES DE DATOS",
+   "nivel": 3,
+   "creditos": 3,
+   "horas": 144,
+   "descripcion": "La asignatura Fundamentos de Base de Datos está estructurada en 4 unidades curriculares que abarcan desde la fundamentación teórica básica hasta la implmentación y consulta de datos en bases de datos complejas. Se han considerado las siguientes unidades: 1. Fundamentos de Gestión de la Información Este capítulo introduce los conceptos básicos sobre la información, los datos y su importancia en las organizaciones. Se analizan los sistemas de información, el ciclo de vida de los datos y el papel de las bases de datos como herramientas para almacenar, organizar y recuperar información de manera eficiente y segura. Metodología de aprendizaje: Clases expositivas apoyadas con ejemplos reales, análisis de casos sencillos, debates guiados y actividades prácticas que permitan identificar tipos de datos y sistemas de información utilizados en la vida cotidiana y en entornos empresariales. Resultados de aprendizaje: El estudiante comprende la importancia de la gestión de la información y reconoce el rol de las bases de datos en los sistemas informáticos, diferenciando datos, información y conocimiento en contextos reales. 2. Modelado de Bases de Datos Se estudia el proceso de diseño de bases de datos, enfocándose en el modelado conceptual y lógico. Se utilizan diagramas para representar entidades, atributos y relaciones, permitiendo estructurar correctamente la información antes de su implementación. Metodología de aprendizaje: Aprendizaje basado en problemas, elaboración de diagramas entidad-relación, trabajo colaborativo y ejercicios prácticos que simulan escenarios reales de diseño de bases de datos. Resultados de aprendizaje: El estudiante es capaz de analizar un problema real, identificar sus datos y diseñar un modelo de base de datos coherente y funcional que responda a las necesidades planteadas. 3. Integridad en Bases de Datos Este capítulo aborda las reglas y restricciones que garantizan la consistencia y validez de los datos almacenados. Se estudian los distintos tipos de integridad y su aplicación para evitar errores y mantener la calidad de la información. Metodología de aprendizaje:Explicaciones conceptuales combinadas con ejemplos prácticos, ejercicios de identificación de errores en bases de datos y prácticas guiadas aplicando reglas de integridad. Resultados de aprendizaje: El estudiante comprende la importancia de la integridad de los datos y aplica correctamente restricciones que aseguran la coherencia y confiabilidad de la información almacenada. 4. Lenguaje SQL Se introduce el lenguaje SQL como herramienta principal para interactuar con bases de datos. Se estudian sentencias para la definición, manipulación y consulta de datos, permitiendo al estudiante gestionar información de forma efectiva. Metodología de aprendizaje: Prácticas en laboratorio, resolución de ejercicios progresivos, demostraciones guiadas y desarrollo de consultas SQL aplicadas a casos reales. Resultados de aprendizaje:El estudiante utiliza el lenguaje SQL para crear, consultar y modificar bases de datos, demostrando habilidades prácticas en la gestión y recuperación de información.",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "Fundamentar las definiciones de gestión de la información",
+     "horas": 36,
+     "contenidos": "Fundamentos de Gestión de la Información."
+    },
+    {
+     "numero": 2,
+     "nombre": "Aplicar la metodología para el análisis, diseño y modelado de bases de datos.",
+     "horas": 36,
+     "contenidos": "Modelado de Bases de datos"
+    },
+    {
+     "numero": 3,
+     "nombre": "Controlar la Integridad de la Base de Datos.",
+     "horas": 36,
+     "contenidos": "Integridad de la Base de Datos."
+    },
+    {
+     "numero": 4,
+     "nombre": "Utilizar el lenguaje SQL para la gestión de la base de datos",
+     "horas": 36,
+     "contenidos": "Lenguaje SQL"
+    }
+   ],
+   "codigo": "08060315"
+  },
+  {
+   "nombre": "FUNDAMENTOS DE REDES Y COMUNICACION DE DATOS",
+   "nivel": 3,
+   "creditos": 3,
+   "horas": 144,
+   "descripcion": "Las Redes de Computadores como en todo proceso de comunicación se requiere de un emisor, un mensaje, un medio y un receptor. La finalidad principal para la creación de una red de computadoras es compartir los recursos y la información en la distancia, asegurar la confiabilidad y la disponibilidad de la información, aumentar la velocidad de transmisión de los datos y reducir el costo general de estas acciones. Un ejemplo es Internet, la cual es una gran red de millones de computadoras ubicadas en distintos puntos del planeta interconectadas básicamente para compartir información y recursos.",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "Explorar la Red",
+     "horas": 36,
+     "contenidos": "Exploración de la Red"
+    },
+    {
+     "numero": 2,
+     "nombre": "Describir los protocolos y comunicaciones de red (Capa de enlace y control de acceso al medio)",
+     "horas": 36,
+     "contenidos": "Protocolos y comunicaciones de red (Capa de enlace y"
+    },
+    {
+     "numero": 3,
+     "nombre": "Comprender el acceso a la red y medios de transmisión",
+     "horas": 36,
+     "contenidos": "Acceso a la red y medios de transmisión"
+    },
+    {
+     "numero": 4,
+     "nombre": "Comprender el direccionamiento IP",
+     "horas": 36,
+     "contenidos": "Direccionamiento IP"
+    }
+   ],
+   "codigo": "08060316"
+  },
+  {
+   "nombre": "METODOS NUMERICOS",
+   "nivel": 4,
+   "creditos": 3,
+   "horas": 144,
+   "descripcion": "Esta asignatura y las competencias que desarrolla, permitirán al estudiante integrarse plenamente al campo de acción la carrera de Tecnologías de la Información, y convertirse en un ente innovador y creativo, además de utilizar las herramientas conceptuales y prácticas de los Métodos Numéricos para el análisis. solución y elaboración de problemas típicos de la ingeniería. Está estructurada en cuatro unidades temáticas: teoría del error y métodos iterativos, interpolación e integración numérica, ecuaciones diferenciales y aproximación funcional. La metodología utilizada es aprendizaje basado en problemas y el uso adecuado del método expositivo. La finalidad es que a traves de los métodos numéricos el estudiante pueda aproximarse al resultado de aquellos problemas que no han tenido solución cuando se aplica los métodos de resolución conocidos.",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "Interpretar la influencia de los diferentes tipos de error en la resolución de problemas mediante métodos iterativos",
+     "horas": 36,
+     "contenidos": "Métodos iterativos"
+    },
+    {
+     "numero": 2,
+     "nombre": "Aplicar criterios para la solución de problemas de interpolación matemática e integración numérica mediante métodos numéricos con",
+     "horas": 36,
+     "contenidos": "Interpolación e integración numérica"
+    },
+    {
+     "numero": 3,
+     "nombre": "Resolver ecuaciones diferenciales ordinarias y su solución aproximada en diferentes problemas ingenieriles.",
+     "horas": 36,
+     "contenidos": "Ecuaciones diferenciales, métodos de solución por"
+    },
+    {
+     "numero": 4,
+     "nombre": "Aplicar criterios matemáticos para la solución de problemas de curvas, aproximación funcional, aproximación lineal y polinomial",
+     "horas": 36,
+     "contenidos": "Aproximación funcional"
+    }
+   ],
+   "codigo": "08060412"
+  },
+  {
+   "nombre": "INGENIERIA DE SOFTWARE",
+   "nivel": 4,
+   "creditos": 3,
+   "horas": 144,
+   "descripcion": "La presente asignatura pretende que los estudiantes adquieran las capacidades integradas de identificar los diferentes paradigmas de Ingeniería de software existentes, realizar la gestión de un proyecto de software, realizar el análisis de requisitos en un proyecto de desarrollo de software, desarrollar la especificación de los requerimientos en un proyecto de Desarrollo de software y realizar los pasos necesarios para el desarrollo de un sistema informático basado en las diferentes metodologías de aplicación de la Ingeniería de software",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "Analizar los fundamentos y procesos de la ingeniería de software",
+     "horas": 21,
+     "contenidos": "Introducción a la ingeniería del software; Introducción a los sistemas de información; Evaluación y mejora del proceso del software; Modelado de requerimientos"
+    },
+    {
+     "numero": 2,
+     "nombre": "Identificar los diferentes modelos de ingeniería del software",
+     "horas": 21,
+     "contenidos": "Modelo de capacidad de madurez; Modelo en cascada (waterfall) y Modelo de prototipos; Modelo RUP; Introducción a las metodologías de desarrollo de software"
+    },
+    {
+     "numero": 3,
+     "nombre": "Conocer las metodologías de desarrollo de software",
+     "horas": 63,
+     "contenidos": "Metodologías ágiles; Metodologías clásicas; Metodologías enfocadas al desarrollo de software seguro; Metodologías para el desarrollo de aplicaciones móviles"
+    },
+    {
+     "numero": 4,
+     "nombre": "Comprender el proceso de la gestión de proyectos de software y la calidad en la ingeniería de software",
+     "horas": 39,
+     "contenidos": "Gestión del riesgo y de personal en proyectos de ingeniería; Trabajo en equipo en los proyectos de software; Calidad y estándares en la ingeniería del software; Revisiones, métricas del software (Métricas de usabilidad y"
+    }
+   ],
+   "codigo": "08060413"
+  },
+  {
+   "nombre": "INTERACCION HOMBRE MAQUINA",
+   "nivel": 4,
+   "creditos": 3,
+   "horas": 144,
+   "descripcion": "El estudio de la Interacción Hombre?Máquina (IHM) es fundamental para el diseño y desarrollo de aplicaciones que sean útiles, eficientes y fáciles de usar para los usuarios a quienes están dirigidas. En esta asignatura se abordan los principios básicos del diseño de aplicaciones, así como las técnicas fundamentales para la evaluación de la interacción y la usabilidad. Se contempla la teoría esencial del diseño de interacción y la evaluación de la experiencia del usuario, complementada con el desarrollo de prototipos que permiten poner en práctica los conceptos teóricos aprendidos. Los contenidos se trabajan mediante clases demostrativas, actividades prácticas y trabajo colaborativo, junto con el trabajo autónomo del estudiante, en el que se analizan casos prácticos para aplicar principios, estándares y guías de estilo orientados al diseño de interfaces intuitivas y altamente usables para todo tipo de usuario.",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "Aplicar conceptos básicos que sustentan la interacción Hombre Máquina al diseño de sistemas, para satisfacer necesidades de usuarios de una",
+     "horas": 36,
+     "contenidos": "Introducción a la interacción hombre maquina.; La usabilidad y accesibilidad; El factor humano."
+    },
+    {
+     "numero": 2,
+     "nombre": "Identificar los principios, métodos, guías y estándares del diseño centrado en el usuario en el diseño de la interacción Hombre-Máquina",
+     "horas": 27,
+     "contenidos": "Diseño centrado en el usuario; Estándares y guías."
+    },
+    {
+     "numero": 3,
+     "nombre": "Diseñar prototipos de interfaces enfocados en los usuarios finales, para crear aplicaciones más naturales e intuitivas, mediante la comprensión",
+     "horas": 54,
+     "contenidos": "Emoción y experiencia; Prototipos; Implementación de interfaces"
+    },
+    {
+     "numero": 4,
+     "nombre": "Evaluar interfaces diseñadas para mejorar aplicaciones ya desarrolladas, mediante la aplicación de técnicas y mejores prácticas en el área de",
+     "horas": 27,
+     "contenidos": "Teoría de la evaluación y validación; Métodos de evaluación"
+    }
+   ],
+   "codigo": "08060414"
+  },
+  {
+   "nombre": "ADMINISTRACION DE SISTEMAS OPERATIVOS",
+   "nivel": 4,
+   "creditos": 3,
+   "horas": 144,
+   "descripcion": "La presente asignatura pretende que los estudiantes adquieran las siguientes competencias: Comprender los conceptos de sistemas operativos de red, administración de los componentes hardware de acuerdo a especificaciones mínimas según estándares internacionales. Comprender los conceptos básicos de administración de usuarios y grupos en sistemas operativos Windows y Linux. Realizar y administrar configuraciones básicas de servicios de red en sistemas operativos de red. Proporcionar una perspectiva general de las reglas y los procedimientos que deben implementarse para afrontar los riesgos de seguridad en los diferentes servicios implementados en una organización.",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "Comprender los conceptos de sistemas operativos de red y la gestión y monitoreo de los recursos hardware disponibles",
+     "horas": 24,
+     "contenidos": "Introducción y tipos de sistemas operativos; Instalación sistema operativo de red; Comandos básicos; Monitoreo hardware básico"
+    },
+    {
+     "numero": 2,
+     "nombre": "Comprender conceptos básicos de administración de usuarios en los sistemas operativos de red",
+     "horas": 36,
+     "contenidos": "Usuarios y Grupos; Manejo de superusuario; Autenticación de usuarios; Instalación sistema de autenticación"
+    },
+    {
+     "numero": 3,
+     "nombre": "Configurar y administrar servicios de red y almacenamiento en sistemas operativos de red",
+     "horas": 48,
+     "contenidos": "Configuración de servicios y tareas; Manejo de sistemas de archivos; Respaldos; Automatización de tareas"
+    },
+    {
+     "numero": 4,
+     "nombre": "Aplicar conceptos de seguridad a través de servicios de monitoreo y firewall en sistemas operativos de red",
+     "horas": 36,
+     "contenidos": "Monitoreo; Seguridad usando firewall; Proxy Server"
+    }
+   ],
+   "codigo": "08060415"
+  },
+  {
+   "nombre": "GESTION DE BASES DE DATOS",
+   "nivel": 4,
+   "creditos": 3,
+   "horas": 144,
+   "descripcion": "La asignatura Gestión de Bases de Datos comprende la correcta utilización del lenguaje SQL y PLSQL para realizar el control transaccional en una base de datos relacional. Se tienen las siguientes unidades curriculares: 1. Procesamiento y Optimización de Consultas. 2. Programación en PLSQL. 3. Control y Gestión Transaccional. 4. Administración de Usuarios",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "Utilizar las técnicas para el adecuado procesamiento y optimización de consultas.",
+     "horas": 36,
+     "contenidos": "Procesamiento y Optimización de Consultas"
+    },
+    {
+     "numero": 2,
+     "nombre": "Desarrollar soluciones válidas y eficientes para control de procesos transaccionales utilizando programación en PLSQL.",
+     "horas": 36,
+     "contenidos": "Programación en PLSQL"
+    },
+    {
+     "numero": 3,
+     "nombre": "Controlar y Gestionar las transacciones en la base de datos.",
+     "horas": 36,
+     "contenidos": "Control y Gestión Transaccional."
+    },
+    {
+     "numero": 4,
+     "nombre": "Administrar usuarios para garantizar la seguridad, confiabilidad, accesibilidad, disponibilidad y confidencialidad de los datos",
+     "horas": 36,
+     "contenidos": "Administración de Usuarios"
+    }
+   ],
+   "codigo": "08060416"
+  },
+  {
+   "nombre": "SISTEMAS DE BASES DE DATOS DISTRIBUIDOS",
+   "nivel": 5,
+   "creditos": 3,
+   "horas": 144,
+   "descripcion": "La asignatura de Sistemas de Bases de Datos Distribuidas se estructura en cuatro unidades curriculares: Unidad 1: Fundamentos de Bases de Datos Distribuidas, en la que se analizan la arquitectura, características y principios de los sistemas distribuidos; Unidad 2: Fragmentación en Bases de Datos, orientada al diseño y distribución lógica de la información; Unidad 3: Replicación de Bases de Datos, donde se estudian los modelos y mecanismos que garantizan disponibilidad y consistencia; y Unidad 4: Escenarios de Replicación de Bases de Datos, enfocada en la aplicación práctica en contextos empresariales reales. Los contenidos se desarrollan mediante clases teóricas integradoras, prácticas de laboratorio en SQL Server, análisis de casos y trabajo colaborativo, permitiendo al estudiante diseñar e implementar soluciones que optimicen la accesibilidad, el rendimiento, la seguridad y la alta disponibilidad de la información en entornos distribuidos.",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "Fundamentar los conceptos de sistemas centralizados y los sistemas distribuidos",
+     "horas": 36,
+     "contenidos": "Fundamentos Base de Datos distribuidas"
+    },
+    {
+     "numero": 2,
+     "nombre": "Comprender e implementar técnicas de fragmentación en bases de datos distribuidas para garantizar eficiencia e integridad de la información.",
+     "horas": 36,
+     "contenidos": "Fragmentación en bases de datos"
+    },
+    {
+     "numero": 3,
+     "nombre": "Aplicar esquemas de replicación de base de datos",
+     "horas": 36,
+     "contenidos": "Replicación de base de datos"
+    },
+    {
+     "numero": 4,
+     "nombre": "Construir escenarios de replicación de base de datos",
+     "horas": 36,
+     "contenidos": "Escenarios de replicación de BD"
+    }
+   ],
+   "codigo": "08060512"
+  },
+  {
+   "nombre": "TECNOLOGIAS Y DESARROLLO WEB",
+   "nivel": 5,
+   "creditos": 3,
+   "horas": 144,
+   "descripcion": "La asignatura Tecnologías y Desarrollo Web desarrolla en el estudiante las competencias necesarias para diseñar, construir e implementar aplicaciones web modernas, integrando de manera coherente tecnologías de frontend y backend. Al finalizar el curso, el estudiante será capaz de desarrollar soluciones web funcionales, seguras, escalables y mantenibles, adaptadas a las necesidades del entorno organizacional y tecnológico contemporáneo.",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "Desarrollar aplicaciones Web usando tecnologías de Frontend.",
+     "horas": 36,
+     "contenidos": "Introduccion a las Tecnologías Web; Control de versiones; Introducción al Backend; Arquitectura y buenas prácticas en el Desarrollo Backend"
+    },
+    {
+     "numero": 2,
+     "nombre": "Introducir los principales frameworks utilizados para el desarrollo Frontend",
+     "horas": 36,
+     "contenidos": "Frameworks Frontend; Trabajo con frameworks Frontend"
+    },
+    {
+     "numero": 3,
+     "nombre": "Crear servicios Web con arquitectura y buenas prácticas",
+     "horas": 36,
+     "contenidos": "Introducción a los servicios web; Servicios web:SOAP, REST, GraphQL, gRPC; Servicios web REST fundamentos; Programación de servicios REST con una Arquitectura de"
+    },
+    {
+     "numero": 4,
+     "nombre": "Utilizar tecnologías de Backend para el desarrollo de aplicaciones Web.",
+     "horas": 36,
+     "contenidos": "Desarrollo de lado del servidor (Backend) usando una; Trabajo con un Frameworks de Servidor (Backend) usando"
+    }
+   ],
+   "codigo": "08060513"
+  },
+  {
+   "nombre": "INVESTIGACION OPERATIVA",
+   "nivel": 5,
+   "creditos": 3,
+   "horas": 144,
+   "descripcion": "La asignatura de Investigación Operativa se estructura en 4 unidades curriculares esenciales relacionadas con la optimización matemática, la construcción de modelos en Investigación de Operaciones, modelamiento matemático de problemas de programación lineal y transporte, modelaje de aplicaciones prácticas y planificación, programación, revisión y evaluación de operaciones y gestión de proyectos de REDES/PERT-CPM/RUTA CRÍTICA-DIAGRAMA/GANTT-MS/PROJECT.",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "Establecer procesos de optimización en la construcción de Modelos para la toma de decisiones con Investigación Operativa. Aplicaciones",
+     "horas": 18,
+     "contenidos": "Modelos de optimización para la toma de decisiones con"
+    },
+    {
+     "numero": 2,
+     "nombre": "Resolver matemática, gráficamente y con aplicaciones informáticas problemas del Modelo de Programación Lineal y Transporte",
+     "horas": 54,
+     "contenidos": "Modelo de Programación Lineal y Algoritmo del Transporte"
+    },
+    {
+     "numero": 3,
+     "nombre": "Resolver problemas del Modelo de Diseño y Programación de REDES/PERT-CPM/RUTA CRÍTICA-DIAGRAMA/GANTT",
+     "horas": 54,
+     "contenidos": "Modelo de Diseño y Programación de REDES/PERT-"
+    },
+    {
+     "numero": 4,
+     "nombre": "Desarrollar aplicaciones prácticas del Modelo de planeación, revisión y evaluación de operaciones y gestión de proyectos. MS/PROJECT",
+     "horas": 18,
+     "contenidos": "Modelo de planeación, revisión y evaluación de operaciones"
+    }
+   ],
+   "codigo": "08060514"
+  },
+  {
+   "nombre": "CONMUTACION Y ENRUTAMIENTO BASICO",
+   "nivel": 5,
+   "creditos": 3,
+   "horas": 144,
+   "descripcion": "En el siguiente módulo se analizará los conceptos generales y específicos sobre conmutación y enrutamiento, conocimientos que servirán para el desarrollo y expansión de las rutas siendo estas instrucciones que sirven para ir de una red a otra, estas instrucciones pueden ser dadas al router dinámica o estáticamente, esto sirve para que el administrador se anticipe además al crecimiento de la red, pues se analizan conceptos como la capa de enlace de datos, subcapa de control de acceso al medio, ethernet, capa de red.",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "Configurar dispositivos de red aplicando conceptos de switching",
+     "horas": 36,
+     "contenidos": "Configuración de dispositivos de red aplicando conceptos"
+    },
+    {
+     "numero": 2,
+     "nombre": "Configurar estableciendo los conceptos de Vlans y enrutamiento entre inter Vlans",
+     "horas": 36,
+     "contenidos": "Configuración estableciendo los conceptos de Vlans y"
+    },
+    {
+     "numero": 3,
+     "nombre": "Configurar DHCPv4 y la seguridad del Switch aplicando conceptos de entornos seguros",
+     "horas": 27,
+     "contenidos": "Configuración DHCPv4 y la seguridad del Switch aplicando"
+    },
+    {
+     "numero": 4,
+     "nombre": "Configurar redes inalámbricas WLAN y rutas IP estáticas",
+     "horas": 45,
+     "contenidos": "Configurar redes inalámbricas WLAN y rutas IP estáticas"
+    }
+   ],
+   "codigo": "08060515"
+  },
+  {
+   "nombre": "GESTION Y EVALUACION DE PROYECTOS TI",
+   "nivel": 5,
+   "creditos": 3,
+   "horas": 144,
+   "descripcion": "La asignatura Gestión y Evaluación de Proyectos de Tecnologías de la Información es de carácter teórico?práctico y tiene como propósito proporcionar a los estudiantes una visión integral de los procesos y herramientas necesarias para la dirección exitosa de proyectos tecnológicos. El curso aborda de manera progresiva los principios universales de la gestión de proyectos , así como la aplicación de marcos internacionales de referencia que guían las fases de inicio, planificación, ejecución, control y cierre de proyectos. Se enfatiza en el desarrollo de habilidades para elaborar documentos esenciales como el acta de constitución, el cronograma, la matriz de riesgos y los indicadores de desempeño, garantizando que los futuros profesionales puedan conducir proyectos que generen valor organizacional y resultados sostenibles. Además, la asignatura fomenta el uso de metodologías predictivas y ágiles , integrando enfoques innovadores como la gestión visual de tareas y el análisis de valor entregado. El estudiante desarrollará competencias clave en liderazgo, trabajo en equipo, comunicación efectiva y pensamiento crítico, necesarias para enfrentar los desafíos actuales de la gestión de proyectos en el ámbito de las Tecnologías de la Información.",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "Interpretar los principios y directrices reconocidas en la gestión de proyectos, aplicables a proyectos de TI.",
+     "horas": 36,
+     "contenidos": "Fundamentos y Marcos de Referencia"
+    },
+    {
+     "numero": 2,
+     "nombre": "Elaborar documentos esenciales para el inicio y planificación de proyectos: acta de constitución, identificación de interesados, alcance,",
+     "horas": 36,
+     "contenidos": "Ciclo de Vida de un Proyecto TI"
+    },
+    {
+     "numero": 3,
+     "nombre": "Aplicar metodologías y herramientas para ejecutar y controlar proyectos, incluyendo gestión de riesgos, comunicación y control de entregables.",
+     "horas": 36,
+     "contenidos": "Gestión de Proyectos de TI"
+    },
+    {
+     "numero": 4,
+     "nombre": "Evaluar los resultados de los proyectos de TI mediante indicadores de valor, calidad y cumplimiento de objetivos, formalizando el cierre y las",
+     "horas": 36,
+     "contenidos": "Metodologías para Proyectos de TI."
+    }
+   ],
+   "codigo": "08060516"
+  },
+  {
+   "nombre": "ADMINISTRACION DE BASE DE DATOS",
+   "nivel": 6,
+   "creditos": 3,
+   "horas": 144,
+   "descripcion": "La asignatura de Administración de Bases de Datos se orienta al desarrollo de competencias técnicas para la gestión eficiente, segura y optimizada de los sistemas gestores de bases de datos en entornos académicos y empresariales. Se estructura en cuatro unidades curriculares que abordan progresivamente los fundamentos conceptuales, la administración de seguridad, el monitoreo y optimización del rendimiento, así como estrategias avanzadas de disponibilidad, respaldo y modernización de infraestructuras de datos. En la primera unidad se estudian los conceptos fundamentales de la administración de bases de datos, los roles y funciones del administrador (DBA), la arquitectura de los sistemas gestores, la instalación y configuración inicial, así como la creación de bases de datos y el análisis de modelos de datos y estructuras internas como tablas, índices, vistas y esquemas. La segunda unidad se enfoca en la seguridad y administración operativa, abordando la autenticación, gestión de usuarios, roles y privilegios, políticas de auditoría, control de concurrencia y transacciones, además de estrategias básicas de respaldo, restauración y automatización de tareas administrativas. La tercera unidad profundiza en el monitoreo, análisis de rendimiento y optimización de bases de datos mediante planes de ejecución de consultas, estrategias de indexación, administración del almacenamiento, particionamiento de tablas, mantenimiento preventivo y correctivo, así como el uso de registros y diagnósticos del sistema. Finalmente, la cuarta unidad aborda escenarios avanzados como estrategias de respaldo y recuperación de alta disponibilidad, replicación y sincronización de datos, clustering, migración entre sistemas gestores, optimización para entornos empresariales y revisión de tendencias actuales en la administración de bases de datos.",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "Definir los fundamentos de Administración de Base de Datos",
+     "horas": 36,
+     "contenidos": "Conceptos de Administración de Base de Datos; Roles y funciones del administrador de bases de datos; Arquitectura de los Sistemas de Gestión de Base de Datos; Instalación, configuración inicial y creación de bases de; Tipos de modelos de datos y estructuras internas (tablas,"
+    },
+    {
+     "numero": 2,
+     "nombre": "Administrar la seguridad, control de accesos y gestión de datos en entornos de base de datos empresarial.",
+     "horas": 36,
+     "contenidos": "Autenticación, roles y privilegios; Políticas de seguridad y auditoría de accesos; Gestión de usuarios, esquemas y permisos; Transacciones y control de concurrencia; Respaldos y restauración básica; Automatización de tareas administrativas"
+    },
+    {
+     "numero": 3,
+     "nombre": "Implementar técnicas de monitoreo y afinamiento para mejorar el rendimiento de bases de datos empresariales.",
+     "horas": 36,
+     "contenidos": "Monitoreo de bases de datos; Planes de ejecución de consultas y análisis de rendimiento; Estrategias de indexación y optimización de consultas; Administración de almacenamiento y particionamiento de; Mantenimiento preventivo y correctivo de la base de datos; Logs y diagnósticos en sistemas de gestión de base de"
+    },
+    {
+     "numero": 4,
+     "nombre": "Implementar estrategias avanzadas de recuperación, disponibilidad y administración de entornos críticos de base de datos.",
+     "horas": 36,
+     "contenidos": "Estrategias avanzadas de respaldo y recuperación; Replicación y sincronización de datos; Clustering y alta disponibilidad; Migración entre sistemas gestores de base de datos; Migración entre sistemas gestores; Puesta a punto de bases de datos para entornos; Tendencias actuales en administración de bases de datos"
+    }
+   ],
+   "codigo": "08060606"
+  },
+  {
+   "nombre": "SISTEMAS DE SOPORTE DE DECISIONES",
+   "nivel": 6,
+   "creditos": 3,
+   "horas": 144,
+   "descripcion": "El presente módulo pretende que los estudiantes adquieran las capacidades integradas para desarrollo de Sistemas de Soporte de Decisión, Metodologías para el diseño de sistemas de soporte de decisiones. Business Intelligence, Herramientas para el desarrollo de sistemas de soporte de decisiones. Creación de modelos multidimensionales, análisis de la información a travéz de reportes en Excel - tablas dinámicas - dashboard y Power BI, reportes profesionales.",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "Fundamentar los conceptos de sistemas de soporte de decisiones",
+     "horas": 36,
+     "contenidos": "Sistemas de Soporte de Decisiones"
+    },
+    {
+     "numero": 2,
+     "nombre": "Aplicar la metodología de construcción de data warehouse",
+     "horas": 36,
+     "contenidos": "Modelado y construcción de un data warehouse"
+    },
+    {
+     "numero": 3,
+     "nombre": "Construir cubos para el análisis de la información",
+     "horas": 36,
+     "contenidos": "Análisis de la información a través de estructuras"
+    },
+    {
+     "numero": 4,
+     "nombre": "Construir modelos tabulares para el análisis de la información",
+     "horas": 36,
+     "contenidos": "Análisis de la información a través de estructuras tabulares"
+    }
+   ],
+   "codigo": "08060607"
+  },
+  {
+   "nombre": "CONMUTACION Y ENRUTAMIENTO AVANZADO",
+   "nivel": 6,
+   "creditos": 3,
+   "horas": 144,
+   "descripcion": "La asignatura Conmutación y Enrutamiento Avanzado está estructurada en cuatro unidades curriculares, abarcando desde los fundamentos de la conmutación hasta las tecnologías emergentes de virtualización y automatización de redes. Conmutación en Redes Locales: Se estudian los principios de la conmutación en la capa 2, configurando dispositivos de red con soporte para protocolos IPv4 e IPv6, incluyendo VLANs, STP y EtherChannel para mejorar la segmentación y redundancia. Protocolos de Enrutamiento Dinámico: Se exploran protocolos avanzados como OSPF, EIGRP y BGP para la interconectividad entre redes, abordando estrategias de optimización, balanceo de carga y escalabilidad en entornos empresariales. Calidad de Servicio (QoS): Se establecen políticas de priorización y gestión del tráfico para mejorar el rendimiento de la red, asegurando la eficiencia en aplicaciones críticas mediante técnicas como modelado de tráfico, clasificación y marcado de paquetes. Virtualización y Automatización de Redes: Se analiza el impacto de las redes definidas por software (SDN) y la virtualización en la eficiencia operativa, escalabilidad y flexibilidad de la infraestructura de red. Se estudian herramientas y protocolos como OpenFlow y la automatización con Python y Ansible. El proceso de enseñanza-aprendizaje se desarrolla mediante conferencias magistrales, metodología de aula invertida, simulaciones y actividades colaborativas, integrando el uso de herramientas prácticas para consolidar conocimientos en redes empresariales tradicionales y definidas por software.",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "Analizar los principios de switching y segmentación de tráfico mediante VLANs para optimizar rendimiento y seguridad.",
+     "horas": 30,
+     "contenidos": "Conmutación en Redes Locales"
+    },
+    {
+     "numero": 2,
+     "nombre": "Implementar protocolos de enrutamiento dinámico en IPv4 e IPv6 para garantizar conectividad eficiente y redundante.",
+     "horas": 30,
+     "contenidos": "Enrutamiento Dinámico IPv4 y IPv6"
+    },
+    {
+     "numero": 3,
+     "nombre": "Aplicar políticas y tecnologias relacionadas a QoS para priorizar tráfico y asegurar el desempeño de aplicaciones críticas en redes",
+     "horas": 30,
+     "contenidos": "Políticas de Calidad de servicio QoS"
+    },
+    {
+     "numero": 4,
+     "nombre": "Evaluar el impacto de SDN en la automatización, virtualización y escalabilidad de las infraestructuras de red.",
+     "horas": 30,
+     "contenidos": "Virtualización y automatización de la red"
+    }
+   ],
+   "codigo": "08060608"
+  },
+  {
+   "nombre": "GOBIERNOS TI",
+   "nivel": 6,
+   "creditos": 3,
+   "horas": 144,
+   "descripcion": "Este silabo está conformado por 4 unidades temáticas que proporcionan conocimientos y competencias necesarias para comprender, diseñar y aplicar prácticas de gobierno orientadas a asegurar que las TI aporten valor a la organización y se alineen con sus objetivos estratégicos. Se abordan: 1) Los fundamentos conceptuales del Gobierno de TI y su relación con la gobernanza corporativa y la gestión tecnológica. 2) El proceso de planeamiento estratégico de TI mediante el análisis organizacional y la definición de objetivos, estrategias y servicios tecnológicos. 3) El estudio de marcos de referencia, modelos y estándares internacionales como base de buenas prácticas; y 4) Las metodologías para la implementación del Gobierno de TI, considerando etapas de diagnóstico, planificación, ejecución, monitoreo y mejora continua en contextos institucionales públicos y privados.",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "Conocer los fundamentos de Gobierno de TI",
+     "horas": 36,
+     "contenidos": "Introducción al Gobierno TI; Importancia y beneficios del Gobierno TI; Principios básicos del Gobierno TI - ISO/IEC 38500; Estructura del Gobierno TI"
+    },
+    {
+     "numero": 2,
+     "nombre": "Determinar el planeamiento estratégico de TI",
+     "horas": 36,
+     "contenidos": "Análisis de la organización. Visión y Misión; Objetivos estrategicos Organizacionales y TI - Analisis; Planeación y gestión estratégica de las TIC; Servicios de TI"
+    },
+    {
+     "numero": 3,
+     "nombre": "Analizar los marcos, modelos y estándares para el Gobierno de TI",
+     "horas": 36,
+     "contenidos": "Normas y estándares para el gobierno TI.; Ciclo de vida de los servicios de TI.; Marcos para el Gobierno de TI.; COBIT y ITIL."
+    },
+    {
+     "numero": 4,
+     "nombre": "Establecer la metodología de implementación del Gobierno de TI",
+     "horas": 36,
+     "contenidos": "Implementación del Gobierno de TI; Elementos de un modelo de gobernanza; Proceso para el diseño de un modelo de Gobierno de TI.; Enfoque corporativo."
+    }
+   ],
+   "codigo": "08060609"
+  },
+  {
+   "nombre": "APLICACIONES MOVILES",
+   "nivel": 6,
+   "creditos": 3,
+   "horas": 144,
+   "descripcion": "La asignatura Aplicaciones Móviles se estructura en cuatro unidades curriculares básicas relacionadas con el desarrollo de aplicaciones para móviles: arquitecturas y entornos de desarrollo, desarrollo de la interfaz de usuario, acceso a datos, aplicaciones móviles multiplataforma, acceso a servicios web a través de dispositivos móviles. Los temas se desarrollan a través de actividades del proceso de enseñanza-aprendizaje y por medio de actividades prácticas en laboratorio, acompañadas del trabajo autónomo y colaborativo de los estudiantes en la solución a una problemática planteada como proyectos prácticos. En las actividades prácticas diseñarán e implementarán soluciones de software para casos de uso concretos",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "Comprender los fundamentos de las arquitecturas y entornos de desarrollo de aplicaciones móviles.",
+     "horas": 18,
+     "contenidos": "Fundamentos de desarrollo de aplicaciones móviles."
+    },
+    {
+     "numero": 2,
+     "nombre": "Diseñar, desarrollar y publicar aplicaciones móviles de última generación.",
+     "horas": 63,
+     "contenidos": "Desarrollo de aplicaciones móviles con Android."
+    },
+    {
+     "numero": 3,
+     "nombre": "Aplicar los procesos que involucran la administración de datos en dispositivos móviles.",
+     "horas": 27,
+     "contenidos": "Gestión de datos en dispositivos móviles con Android."
+    },
+    {
+     "numero": 4,
+     "nombre": "Diseñar y desarrollar aplicaciones para dispositivos móviles multiplataforma.",
+     "horas": 36,
+     "contenidos": "Desarrollo de aplicaciones para dispositivos móviles"
+    }
+   ],
+   "codigo": "08060610"
+  },
+  {
+   "nombre": "INTELIGENCIA DE NEGOCIOS",
+   "nivel": 7,
+   "creditos": 3,
+   "horas": 144,
+   "descripcion": "La inteligencia de negocios posibilita la toma de deciciones en función del descubrimiento de conocimiento a través de la identificación de patrones que explican los fenómenos estudiados. El módulo consta de una una base teórica, algoritmos de minería de datos - descripción y uso, uso de herramientas de análisis como Weka y rapidminer, una introducción a la ciencia de datos con Python.",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "Conceptualizar la minería de datos en una primera aproximación",
+     "horas": 36,
+     "contenidos": "Ciencia de datos, Análisis, Minería, descubrir conocimiento"
+    },
+    {
+     "numero": 2,
+     "nombre": "Fundamentar la minería de datos",
+     "horas": 36,
+     "contenidos": "Minería de datos"
+    },
+    {
+     "numero": 3,
+     "nombre": "Aplicar algoritmos de minería de datos",
+     "horas": 36,
+     "contenidos": "Técnicas básicas de minería de datos"
+    },
+    {
+     "numero": 4,
+     "nombre": "Conocer el proceso para descubrir conocimiento",
+     "horas": 36,
+     "contenidos": "Proceso para descubrir conocimiento"
+    }
+   ],
+   "codigo": "08060708"
+  },
+  {
+   "nombre": "EMPRENDIMIENTO Y GESTION FINANCIERA DE TI",
+   "nivel": 7,
+   "creditos": 4,
+   "horas": 192,
+   "descripcion": "Emprendimiento y Gestión Financiera de TI es una asignatura que se estructura en cuatro unidades curriculares, orientadas al estudio teórico-práctico de los conceptos contables y financieros aplicados a los emprendimientos en el área de tecnologías de la información. La asignatura se centra en la comprensión y aplicación de los conceptos básicos de contabilidad, la elaboración de registros y auxiliares contables, así como la interpretación de estados financieros básicos de una pyme. Además, aborda la normativa vigente sobre el Impuesto al Valor Agregado (IVA) y el diseño estructurado de un plan de negocios, incluyendo sus componentes estratégicos, operativos y financieros. A través de actividades prácticas, ejercicios contables, y el desarrollo de propuestas de negocio, los estudiantes aplicarán los conocimientos teóricos en situaciones reales, fortaleciendo habilidades blandas como el pensamiento crítico, la capacidad analítica y el trabajo en equipo. Como resultado, los estudiantes serán capaces de diseñar un plan de cuentas adecuado, elaborar registros contables, calcular y registrar impuestos, y estructurar un plan de negocios que responda a las necesidades del entorno empresarial, integrando de manera efectiva la teoría y la práctica.",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "Aplicar conceptos contables básicos para elaborar un plan de cuentas de un emprendimiento.",
+     "horas": 48,
+     "contenidos": "Conceptos básicos y plan decuentas de un emprendimiento"
+    },
+    {
+     "numero": 2,
+     "nombre": "Elaborar registros, auxiliares contables y estados financieros básicos para pymes.",
+     "horas": 48,
+     "contenidos": "Registros, auxiliares contables yestados financieros de"
+    },
+    {
+     "numero": 3,
+     "nombre": "Aplicar la normativa tributaria para calcular y registrar el Impuesto al valor agregado",
+     "horas": 48,
+     "contenidos": "Impuesto al valor agregado."
+    },
+    {
+     "numero": 4,
+     "nombre": "Diseñar un esquema de un plan de negocios",
+     "horas": 48,
+     "contenidos": "Componentes del plan denegocios"
+    }
+   ],
+   "codigo": "08060709"
+  },
+  {
+   "nombre": "ARQUITECTURA Y PLATAFORMAS DE SERVIDORES",
+   "nivel": 7,
+   "creditos": 3,
+   "horas": 144,
+   "descripcion": "La presente asignatura pretende que los estudiantes adquieran las siguientes capacidades: Analizar el funcionamiento de la capa de transporte y aplicación del modelo TCP/IP, para determinar los diferentes tipos de servicios que se puede implantar en una intranet extranet de acuerdo a especificaciones mínimas según estándares internacionales. Aplicar diferentes entornos para la implementación de sistemas operativos de red para la instalación de los diferentes servicios de red para intranet extranet acorde a normas de seguridad de redes. Aplicar la configuración y afinamiento de servicios de red para intranet extranet acorde a normas de seguridad de redes. Comprender y evaluar las aplicaciones web a través de los servicios de intranet extranet en base a normas y estándares internacionales.",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "Analizar el funcionamiento de la capa de transporte y aplicación del modelo TCP/IP, para determinar los diferentes tipos de servicios que se",
+     "horas": 30,
+     "contenidos": "Infraestructura; Data center"
+    },
+    {
+     "numero": 2,
+     "nombre": "Aplicar diferentes entornos para la implementación de sistemas operativos de red para la instalación de los diferentes servicios de red para",
+     "horas": 42,
+     "contenidos": "Virtualizaciï¿½n y computaciï¿½n en la nube"
+    },
+    {
+     "numero": 3,
+     "nombre": "Aplicar la configuración y afinamiento de servicios de red para intranet extranet acorde a normas de seguridad de redes",
+     "horas": 36,
+     "contenidos": "Servicios para servidores e infraestructura web"
+    },
+    {
+     "numero": 4,
+     "nombre": "Comprender y evaluar las aplicaciones web a través de los servicios de intranet extranet en base a normas y estándares",
+     "horas": 36,
+     "contenidos": "Aplicaciones Web y Manejo de Contenidos"
+    }
+   ],
+   "codigo": "08060710"
+  },
+  {
+   "nombre": "ADMINISTRACION DE REDES",
+   "nivel": 7,
+   "creditos": 3,
+   "horas": 144,
+   "descripcion": "La asignatura de Administración de Redes se orienta al desarrollo de competencias para la gestión, monitoreo, mantenimiento y aseguramiento de infraestructuras de red en entornos organizacionales. Se estructura en cuatro unidades curriculares que abordan progresivamente los fundamentos de la administración de redes, los protocolos y servicios de comunicación, la gestión operativa y el monitoreo, así como los principios esenciales de seguridad en redes locales. En la primera unidad se estudian los conceptos básicos de administración de redes, los modelos de referencia OSI y TCP/IP aplicados a la gestión de infraestructuras de comunicación, las funciones y objetivos de la administración de redes, y el uso de herramientas de diagnóstico como ping, traceroute, netstat, ifconfig/ip y nmap , permitiendo comprender el funcionamiento, la conectividad y la detección de problemas en redes de datos. La segunda unidad se centra en los protocolos de transporte y los servicios de aplicación, abordando el funcionamiento de TCP y UDP , el establecimiento de conexiones mediante puertos y sockets, y los principales servicios de red como HTTP/HTTPS, FTP, SSH, DNS, DHCP, SMTP, POP3 e IMAP , complementados con la simulación y análisis de tráfico mediante herramientas especializadas para la comprensión del comportamiento de la red. La tercera unidad profundiza en la gestión integral de redes, considerando el modelo FCAPS (Fault, Configuration, Accounting, Performance, Security) , los protocolos de administración como SNMP, NetFlow y Syslog , así como el uso de herramientas de monitoreo basadas en software libre, incluyendo plataformas como Nagios para la supervisión del estado de servicios y dispositivos de red. Finalmente, la cuarta unidad aborda los principios básicos de seguridad en redes locales, las amenazas y vulnerabilidades más frecuentes, y la implementación de herramientas de seguridad de código abierto como pfSense , Snort/Suricata y OpenVAS , orientadas a la protección, detección de intrusiones y evaluación de vulnerabilidades en infraestructuras de red.",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "Identificar la importancia de la administración de redes mediante el estudio del modelo TCP/IP con su capa de transporte para el rendimiento",
+     "horas": 36,
+     "contenidos": "Introducción a la Administración de redes"
+    },
+    {
+     "numero": 2,
+     "nombre": "Interpretar el funcionamiento de los servicios que facilitan la administración de una red mediante la compartición de recursos entre dispositivos",
+     "horas": 36,
+     "contenidos": "Protocolos de Transporte y Servicios de Aplicación"
+    },
+    {
+     "numero": 3,
+     "nombre": "Analizar los modelos cliente-servidor para gestión de redes mediante la utilización de software de monitoreo y congestión de red con el",
+     "horas": 36,
+     "contenidos": "Gestión de una red"
+    },
+    {
+     "numero": 4,
+     "nombre": "Aplicar los métodos de seguridad en redes de computadoras para garantizar la disponibilidad de datos mediante el análisis de ataques de",
+     "horas": 36,
+     "contenidos": "Seguridad básica en redes locales"
+    }
+   ],
+   "codigo": "08060711"
+  },
+  {
+   "nombre": "INTEGRACION DE SISTEMAS",
+   "nivel": 8,
+   "creditos": 2,
+   "horas": 96,
+   "descripcion": "La asignatura de Integración de Sistemas se estructura en cuatro unidades curriculares orientadas al estudio de los fundamentos, modelos y enfoques arquitectónicos para la interoperabilidad entre sistemas de gestión computacional, abordando la integración horizontal mediante sistemas de información y Business Intelligence, la integración vertical en distintos niveles organizacionales y la integración orientada a soluciones de negocio; los contenidos se desarrollan a través de clases integradoras, análisis de casos reales, prácticas de laboratorio con bases de datos y herramientas de integración, trabajo colaborativo y actividades autónomas, donde los estudiantes diseñan e implementan procesos de integración, aplican técnicas de extracción, transformación y análisis de grandes volúmenes de datos, y desarrollan algoritmos para el reconocimiento de patrones, con el propósito de generar reportes estratégicos que faciliten la toma de decisiones y consolidar su formación en Ingeniería de Software, Administración de Bases de Datos y Programación dentro del ámbito de las Tecnologías de la Información.",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "Conocer los principios fundamentales y los elementos que permitan la integración de sistemas a partir de modulos y sistemas individuales",
+     "horas": 24,
+     "contenidos": "Introducción a la integración de sistemas"
+    },
+    {
+     "numero": 2,
+     "nombre": "Definir la utilización de técnicas que permitan la integración de sistemas orientado al manejo de business intelligence",
+     "horas": 24,
+     "contenidos": "Integración horizontal mediante sistemas de información y"
+    },
+    {
+     "numero": 3,
+     "nombre": "Utilizar herramientas que permitan la integración, control y análisis de grandes volúmenes de datos",
+     "horas": 24,
+     "contenidos": "Integración vertical mediante sistemas de información"
+    },
+    {
+     "numero": 4,
+     "nombre": "Definir y programar algoritmos que permitan descubrir patrones a partir de los datos obtenidos de la integración de sistemas",
+     "horas": 24,
+     "contenidos": "Integración orientada a soluciones de negocio"
+    }
+   ],
+   "codigo": "08060807"
+  },
+  {
+   "nombre": "SEGURIDAD DE LA INFORMACION EN REDES DE COMUNICACION DE DATOS",
+   "nivel": 8,
+   "creditos": 3,
+   "horas": 144,
+   "descripcion": "La presente asignatura pretende que los estudiantes adquieran las siguientes capacidades: Analizar los conceptos de criptografía y protocolos de seguridad, para determinar los diferentes tipos de mecanimos de seguridad que se puede implantar en una red de comunicación de datos de acuerdo a especificaciones mínimas según estándares internacionales. Aplicar diferentes entornos para la implementación de redes de comunicación de datos seguras acorde a normas de seguridad de redes. Aplicar la configuración y afinamiento de servicios de red para asegurar la información acorde a normas de seguridad de redes. Comprender y evaluar las aplicaciones seguras y de monitoreo de red en base a normas y estándares internacionales",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "Analizar los conceptos de criptografía y protocolos de seguridad de la comunicación paraa determinar los diferentes tipos de mecanismo que",
+     "horas": 30,
+     "contenidos": "Criptografía; Seguridad en la comunicación"
+    },
+    {
+     "numero": 2,
+     "nombre": "Aplicar diferentes protocolos de autenticación para redes de comunicación de datos acorde a normas de seguridad de redes",
+     "horas": 42,
+     "contenidos": "Protocolos de autenticación"
+    },
+    {
+     "numero": 3,
+     "nombre": "Comprender y evaluar aplicaciones seguras en base normas y estándares de seguridad interacionales",
+     "horas": 36,
+     "contenidos": "Aplicaciones Seguras a nivel de red"
+    },
+    {
+     "numero": 4,
+     "nombre": "Determinar los diferentes mecanismos de medidas para mejorar la seguridad de la información en redes de comunicación de datos",
+     "horas": 36,
+     "contenidos": "Medidas y contramedidas de seguidad en redes de"
+    }
+   ],
+   "codigo": "08060808"
+  },
+  {
+   "nombre": "AUDITORIA DE TI",
+   "nivel": 8,
+   "creditos": 2,
+   "horas": 96,
+   "descripcion": "En esta asignatura los estudiantes tendrán la capacidad de identificar en una organización los procesos que están sustentados en sistemas de TI, evaluar los riesgos a los que están expuestos los sistemas de TI, aplicar herramientas y técnicas para la ejecución de la auditoría, aplicar metodologías de auditoría de TI, arbitrar medidas de control preventivas y o correctivas que aseguren la información; todas estas capacidades permitirán a los estudiantes implantar procesos de Auditoría de TI en organizaciones con el fin de proponer alternativas de solución que permitan optimizar la gestión informática dentro de las mismas.",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "Conocer el marco jurídico de la auditoría de TI",
+     "horas": 12,
+     "contenidos": "Introducción y marco jurídico de la auditoría de TI"
+    },
+    {
+     "numero": 2,
+     "nombre": "Planificar una auditoría de TI",
+     "horas": 36,
+     "contenidos": "Preparación y planeación de la auditoría de TI"
+    },
+    {
+     "numero": 3,
+     "nombre": "Ejecutar una auditoría de TI",
+     "horas": 36,
+     "contenidos": "Aplicación de la auditoría de TI"
+    },
+    {
+     "numero": 4,
+     "nombre": "Elaborar el Informe de Auditoría",
+     "horas": 12,
+     "contenidos": "Evaluación de la información y elaboración del Informe de"
+    }
+   ],
+   "codigo": "08060809"
+  },
+  {
+   "nombre": "DISEÑO DE PROYECTOS",
+   "nivel": 8,
+   "creditos": 3,
+   "horas": 144,
+   "descripcion": "La asignatura diseño de proyectos se desarrolla para los alumnos del octavo ciclo de la carrera de tecnologías de la información, la cual se estructura en cuatro unidades curriculares orientadas a formar en el estudiante una actitud científica frente a los problemas de TI, a través de la aplicación del método científico en la elaboración y ejecución de proyectos específicos de investigación. Esta asignatura facilita también el uso de metodología e instrumentos para la correcta aplicación de una prueba piloto, el análisis de sus resultados y su adecuada presentación.",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "Establecer los enfoques de investigación",
+     "horas": 30,
+     "contenidos": "La investigación; Tipos de investigación; Técnicas e instrumentos; El método científico"
+    },
+    {
+     "numero": 2,
+     "nombre": "Identificar el problema de investigación y sustentarlo",
+     "horas": 36,
+     "contenidos": "La situación problemática; Antecedentes y marco teórico; Preguntas, objetivos e hipótesis; Variables, dimensiones e indicadores; Justificación de la Investigación"
+    },
+    {
+     "numero": 3,
+     "nombre": "Determinar los métodos, técnicas, recursos y presupuesto a emplear en un proyecto de investigación",
+     "horas": 42,
+     "contenidos": "Aspectos metodológicos; Técnicas e instrumentos; Población y muestra; Recolección de la información"
+    },
+    {
+     "numero": 4,
+     "nombre": "Sustentar el perfil de proyecto",
+     "horas": 36,
+     "contenidos": "Preguntas y respuestas; La Bibliografía; El Articulo científico; Estructura y redacción de un artículo científico"
+    }
+   ],
+   "codigo": "08060810"
+  },
+  {
+   "nombre": "DESARROLLO DE PROYECTOS",
+   "nivel": 9,
+   "creditos": 6,
+   "horas": 288,
+   "descripcion": "Desarrollo de Proyectos se imparte en el noveno nivel de la carrera de tecnologias de la informacion, la cual tiene como finalidad que el estudiante desarrolle un proyecto de investigacion como su trabajo de titulacion, aplicando experticia en el manejo de sus etapas mediante herramientas e instrumentos, técnicas y tecnologías para la solución de problemas que respondan a los requerimientos del contexto social o empresarial.",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "Evaluar el diseño de proyecto aprobado",
+     "horas": 57,
+     "contenidos": "Lineamientos para el desarrollo; Revisión del diseño del Proyecto de investigación; Análisis de Objetivos de la investigación; Validez de la Justificación; Análisis de la Hipótesis; Ajustes del Proyecto"
+    },
+    {
+     "numero": 2,
+     "nombre": "Desarrollar la Investigación del proyecto",
+     "horas": 72,
+     "contenidos": "Marco teórico de la investigación; Análisis y elaboración de materiales; La recolección de datos; Evaluación y análisis de resultados"
+    },
+    {
+     "numero": 3,
+     "nombre": "Implementar los resultados de la investigación",
+     "horas": 96,
+     "contenidos": "Planificación detallada; Aplicación metodológica; Desarrollo de la propuesta; Revisión del marco teórico; Redacción del trabajo de investigación"
+    },
+    {
+     "numero": 4,
+     "nombre": "Comprobar la hipótesis, conclusiones y recomendaciones",
+     "horas": 63,
+     "contenidos": "Comprobación de la hipótesis; Conclusiones y recomendaciones; Fuentes de información; Anexos"
+    }
+   ],
+   "codigo": "08060904"
+  }
+ ]
+}

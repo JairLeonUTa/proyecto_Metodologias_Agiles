@@ -16,12 +16,53 @@ public static class DbSeederA
         IPasswordHasher hasher,
         string adminCorreo,
         string adminPassword,
-        ILogger logger)
+        ILogger logger,
+        string? docentesDemoPassword = null)
     {
         await SembrarRolesAsync(db, hasher, adminCorreo, adminPassword, logger);
         await SembrarParametrosAsync(db, logger);
         await SembrarReglasAsync(db, logger);
         await SembrarCatalogoAsync(db, logger);
+        await SembrarCatalogoUtaAsync(db, logger);
+        if (!string.IsNullOrWhiteSpace(docentesDemoPassword))
+        {
+            await SembrarDocentesDemoAsync(db, hasher, docentesDemoPassword, logger);
+        }
+    }
+
+    /// <summary>
+    /// Docentes revisores que aparecen en los certificados SIHA de ejemplo. Solo se crean si se
+    /// configura <c>Seed:DocentePassword</c>; en producción el administrador los registra en Usuarios.
+    /// </summary>
+    public static readonly (string Correo, string Nombre)[] DocentesDemo =
+    {
+        ("hnaranjo@uta.edu.ec", "Ing. Hernán Naranjo"),
+        ("mvaca@uta.edu.ec", "Ing. María Vaca"),
+        ("jcastro@uta.edu.ec", "Ing. Javier Castro")
+    };
+
+    private static async Task SembrarDocentesDemoAsync(SihaDbContextA db, IPasswordHasher hasher, string password, ILogger logger)
+    {
+        var rolDocente = await db.Roles.FirstOrDefaultAsync(r => r.Nombre == RolesSistema.Docente);
+        if (rolDocente is null) return;
+
+        var existentes = await db.Usuarios.Select(u => u.CorreoInstitucional).ToListAsync();
+        var nuevos = DocentesDemo.Where(d => !existentes.Contains(d.Correo)).ToList();
+        foreach (var (correo, nombre) in nuevos)
+        {
+            db.Usuarios.Add(new Usuario
+            {
+                CorreoInstitucional = correo,
+                NombreCompleto = nombre,
+                PasswordHash = hasher.Hash(password),
+                RolId = rolDocente.Id,
+                Activo = true
+            });
+        }
+
+        if (nuevos.Count == 0) return;
+        await db.SaveChangesAsync();
+        logger.LogInformation("Docentes revisores de ejemplo creados: {Correos}.", string.Join(", ", nuevos.Select(d => d.Correo)));
     }
 
     private static async Task SembrarRolesAsync(
@@ -233,6 +274,103 @@ public static class DbSeederA
         await db.SaveChangesAsync();
         logger.LogInformation("Semilla de catálogo académico aplicada (5 carreras y malla SW 2024-A).");
     }
+
+    /// <summary>Versión de malla que se crea con los sílabos oficiales publicados por la UTA.</summary>
+    public const string VersionMallaUta = "UTA-2022";
+
+    /// <summary>
+    /// Conocimiento del agente: mallas y sílabos oficiales de las carreras de la FISEI (Software,
+    /// Tecnologías de la Información, Industrial, Telecomunicaciones y Robótica), extraídos de los PDF
+    /// publicados en uta.edu.ec (tools/catalogo-uta). Cada asignatura trae nivel, créditos, horas y sus
+    /// unidades con temas y horas. Se carga una sola vez por carrera y queda como malla vigente.
+    /// </summary>
+    private static async Task SembrarCatalogoUtaAsync(SihaDbContextA db, ILogger logger)
+    {
+        var ensamblado = typeof(DbSeederA).Assembly;
+        foreach (var recurso in ensamblado.GetManifestResourceNames().Where(r => r.Contains(".CatalogoUta.") && r.EndsWith(".json")))
+        {
+            await using var flujo = ensamblado.GetManifestResourceStream(recurso)!;
+            var catalogo = await System.Text.Json.JsonSerializer.DeserializeAsync<CatalogoUtaJson>(flujo,
+                new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+            if (catalogo is null || catalogo.Asignaturas.Count == 0) continue;
+
+            var carrera = await db.Carreras.FirstOrDefaultAsync(c => c.Codigo == catalogo.Carrera);
+            if (carrera is null)
+            {
+                carrera = new Carrera { Codigo = catalogo.Carrera, Nombre = catalogo.Nombre };
+                db.Carreras.Add(carrera);
+                await db.SaveChangesAsync();
+            }
+
+            // Si la malla UTA-2022 ya existe (una base cargada con una versión anterior del catálogo) no se
+            // salta la carrera: se le agregan las materias nuevas que falten, sin tocar las que ya están.
+            var malla = await db.Mallas.FirstOrDefaultAsync(m => m.CarreraId == carrera.Id && m.Version == VersionMallaUta);
+            var mallaNueva = malla is null;
+            if (malla is null)
+            {
+                foreach (var anterior in await db.Mallas.Where(m => m.CarreraId == carrera.Id && m.Vigente).ToListAsync())
+                    anterior.Vigente = false;
+
+                malla = new MallaCurricular
+                {
+                    CarreraId = carrera.Id,
+                    Version = VersionMallaUta,
+                    Anio = 2022,
+                    Fuente = catalogo.Fuente,
+                    RutaNormativa = RutasNormativas.CambioCarreraOu,
+                    Vigente = true
+                };
+                db.Mallas.Add(malla);
+                await db.SaveChangesAsync();
+            }
+
+            var existentes = (await db.Asignaturas.Select(a => a.Codigo).ToListAsync()).ToHashSet();
+            var faltantes = catalogo.Asignaturas.Where(a => !existentes.Contains(a.Codigo)).ToList();
+            if (faltantes.Count == 0) continue;
+
+            foreach (var a in faltantes)
+            {
+                var asignatura = new Asignatura
+                {
+                    MallaId = malla.Id,
+                    Codigo = a.Codigo,
+                    Nombre = a.Nombre,
+                    Creditos = Math.Clamp(a.Creditos ?? 1, 1, 30),
+                    Horas = a.Horas ?? a.Unidades.Sum(u => u.Horas),
+                    Semestre = Math.Clamp(a.Nivel ?? 1, 1, 20)
+                };
+                foreach (var u in a.Unidades)
+                {
+                    asignatura.Unidades.Add(new UnidadTematica
+                    {
+                        Numero = u.Numero,
+                        Nombre = u.Nombre.Length > 200 ? u.Nombre[..200] : u.Nombre,
+                        Horas = Math.Max(1, u.Horas),
+                        Contenidos = u.Contenidos
+                    });
+                }
+
+                var (error, advertencias) = Services.ValidacionCatalogo.Evaluar(asignatura);
+                asignatura.PlanCompleto = error is null && advertencias.Count == 0;
+                db.Asignaturas.Add(asignatura);
+            }
+
+            await db.SaveChangesAsync();
+            if (mallaNueva)
+                logger.LogInformation("Malla oficial de {Carrera} cargada: {Asignaturas} asignaturas con sus sílabos.",
+                    catalogo.Nombre, faltantes.Count);
+            else
+                logger.LogInformation("Malla oficial de {Carrera}: se agregaron {Asignaturas} asignatura(s) que faltaban.",
+                    catalogo.Nombre, faltantes.Count);
+        }
+    }
+
+    private sealed record CatalogoUtaJson(string Carrera, string Nombre, string Fuente, List<AsignaturaUtaJson> Asignaturas);
+
+    private sealed record AsignaturaUtaJson(
+        string Codigo, string Nombre, int? Nivel, int? Creditos, int? Horas, string? Descripcion, List<UnidadUtaJson> Unidades);
+
+    private sealed record UnidadUtaJson(int Numero, string Nombre, int Horas, string Contenidos);
 
     private static Asignatura NuevaAsignatura(
         int mallaId, string codigo, string nombre, int creditos, int semestre,

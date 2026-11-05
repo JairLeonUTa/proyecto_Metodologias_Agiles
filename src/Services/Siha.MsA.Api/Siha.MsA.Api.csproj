@@ -23,6 +23,11 @@
   <!-- Contrato gRPC del servicio de reglas (S1-S04). Solo se genera el lado servidor. -->
   <ItemGroup>
     <Protobuf Include="Protos\reglas.proto" GrpcServices="Server" />
+    <Protobuf Include="Protos\catalogo.proto" GrpcServices="Server" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Data\CatalogoUta\*.json" />
   </ItemGroup>
 
   <PropertyGroup>

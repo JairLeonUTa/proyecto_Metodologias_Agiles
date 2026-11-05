@@ -46,6 +46,31 @@ public class Expediente
 
     public string? Observaciones { get; set; }
 
+    /// <summary>Número del certificado SIHA del que se creó el expediente (único). Nulo en el registro manual.</summary>
+    public string? NumeroCertificado { get; set; }
+
+    /// <summary>Apellidos y nombres del estudiante según el certificado SIHA.</summary>
+    public string? EstudianteNombre { get; set; }
+
+    /// <summary>Cédula del estudiante según el certificado SIHA.</summary>
+    public string? EstudianteIdentificacion { get; set; }
+
+    /// <summary>Nombres completos de las carreras (los códigos se resuelven en MS A).</summary>
+    public string? CarreraOrigenNombre { get; set; }
+    public string? CarreraDestinoNombre { get; set; }
+
+    /// <summary>Docentes revisores asignados en el certificado (usuarios DOCENTE de MS A).</summary>
+    public string? Revisor1Nombre { get; set; }
+    public string? Revisor1Correo { get; set; }
+    public string? Revisor2Nombre { get; set; }
+    public string? Revisor2Correo { get; set; }
+
+    /// <summary>True si el correo es de uno de los dos docentes revisores asignados.</summary>
+    public bool EsRevisor(string? correo) =>
+        !string.IsNullOrWhiteSpace(correo) &&
+        (string.Equals(Revisor1Correo, correo.Trim(), StringComparison.OrdinalIgnoreCase) ||
+         string.Equals(Revisor2Correo, correo.Trim(), StringComparison.OrdinalIgnoreCase));
+
     /// <summary>
     /// Sello de concurrencia optimista. Se renueva en cada transición de estado relevante para que dos
     /// envíos simultáneos del mismo expediente no publiquen dos veces (el segundo recibe 409).

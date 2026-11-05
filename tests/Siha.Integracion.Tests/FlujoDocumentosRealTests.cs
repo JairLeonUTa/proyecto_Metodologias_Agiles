@@ -84,7 +84,10 @@ public class FlujoDocumentosRealTests
         await using var ms = new MsBReal(_infra);
         ms.CreateClient(); // arranca Program.cs: MigrarAsync contra SQL Server real
 
-        (await ConsultarAsync<int>(ms, "SELECT COUNT(*) FROM __EFMigrationsHistory")).Should().Be(3);
+        // Todas las migraciones del ensamblado de MS B quedan aplicadas (el número crece con cada sprint).
+        var esperadas = typeof(Siha.MsB.Api.Data.SihaDbContextB).Assembly.GetTypes()
+            .Count(t => t.IsSubclassOf(typeof(Microsoft.EntityFrameworkCore.Migrations.Migration)));
+        (await ConsultarAsync<int>(ms, "SELECT COUNT(*) FROM __EFMigrationsHistory")).Should().Be(esperadas);
         (await ConsultarAsync<int>(ms,
             "SELECT COUNT(*) FROM sys.indexes WHERE name = 'IX_EXPEDIENTE_DOC_Unico_Validado' AND is_unique = 1 AND has_filter = 1"))
             .Should().Be(1);

@@ -84,18 +84,13 @@ export function ReglasPage(): JSX.Element {
     limpiar();
 
     const theta = aNumero(formulario.theta);
-    const delta = aNumero(formulario.delta);
-    const tau = aNumero(formulario.tau);
+    // δ y τ no se editan aquí: se conservan los del servidor (o los valores por defecto si la ruta es nueva).
+    const tau = aNumero(formulario.tau || '75');
+    const delta = Math.min(aNumero(formulario.delta || '15'), theta);
 
     const faltantes: typeof errores = {};
     if (Number.isNaN(theta)) {
-      faltantes.theta = 'El umbral θ es obligatorio.';
-    }
-    if (Number.isNaN(delta)) {
-      faltantes.delta = 'La banda δ es obligatoria.';
-    }
-    if (Number.isNaN(tau)) {
-      faltantes.tau = 'El umbral τ es obligatorio.';
+      faltantes.theta = 'El contenido mínimo es obligatorio.';
     }
 
     const errorRango = validarParametros(theta, delta, tau);
@@ -185,8 +180,8 @@ export function ReglasPage(): JSX.Element {
   return (
     <div className="space-y-6">
       <EncabezadoPagina
-        titulo="Reglas y umbrales heurísticos"
-        descripcion="Configure los umbrales θ (umbral de aprobación), δ (banda de tolerancia) y τ (cobertura temática mínima) por ruta normativa, y consulte el catálogo de reglas vigentes."
+        titulo="Reglas de homologación"
+        descripcion="Defina el contenido mínimo que debe cubrir una materia para homologarse (por defecto 80 %) y consulte las reglas vigentes."
       />
 
       {!esAdministrador ? (
@@ -197,7 +192,7 @@ export function ReglasPage(): JSX.Element {
       ) : null}
 
       <Tarjeta
-        titulo="Umbrales θ, δ, τ"
+        titulo="Contenido mínimo"
         descripcion={DESCRIPCION_RUTA[rutaNormativa] ?? 'Ruta normativa seleccionada'}
         acciones={
           <div className="w-64">
@@ -241,12 +236,13 @@ export function ReglasPage(): JSX.Element {
               <form onSubmit={(evento) => void guardar(evento)} className="space-y-4" noValidate>
                 {errores.general ? <Alerta tono="error">{errores.general}</Alerta> : null}
 
-                <div className="grid gap-4 sm:grid-cols-3">
+                {/* Un solo estándar visible: el contenido mínimo. δ y τ se conservan tal cual en el servidor. */}
+                <div className="grid gap-4 sm:max-w-sm">
                   <Campo
                     htmlFor="theta"
-                    etiqueta="θ — Umbral de aprobación"
+                    etiqueta="Contenido mínimo para homologar (%)"
                     obligatorio
-                    ayuda="Porcentaje mínimo de coincidencia (0-100)."
+                    ayuda="Si el agente estima este porcentaje o más, la materia cumple; si sale menos, queda a criterio de los docentes revisores."
                     error={errores.theta}
                   >
                     <EntradaTexto
@@ -262,45 +258,6 @@ export function ReglasPage(): JSX.Element {
                     />
                   </Campo>
 
-                  <Campo
-                    htmlFor="delta"
-                    etiqueta="δ — Banda de tolerancia"
-                    obligatorio
-                    ayuda="Debe ser menor o igual que θ."
-                    error={errores.delta}
-                  >
-                    <EntradaTexto
-                      id="delta"
-                      type="number"
-                      min={0}
-                      max={100}
-                      step="0.01"
-                      value={formulario.delta}
-                      invalido={Boolean(errores.delta)}
-                      disabled={!esAdministrador}
-                      onChange={(evento) => setFormulario({ ...formulario, delta: evento.target.value })}
-                    />
-                  </Campo>
-
-                  <Campo
-                    htmlFor="tau"
-                    etiqueta="τ — Cobertura temática"
-                    obligatorio
-                    ayuda="Umbral mínimo de cobertura de contenidos (0-100)."
-                    error={errores.tau}
-                  >
-                    <EntradaTexto
-                      id="tau"
-                      type="number"
-                      min={0}
-                      max={100}
-                      step="0.01"
-                      value={formulario.tau}
-                      invalido={Boolean(errores.tau)}
-                      disabled={!esAdministrador}
-                      onChange={(evento) => setFormulario({ ...formulario, tau: evento.target.value })}
-                    />
-                  </Campo>
                 </div>
 
                 {mensaje ? (

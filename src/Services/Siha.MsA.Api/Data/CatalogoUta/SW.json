@@ -1,0 +1,1379 @@
+{
+ "carrera": "SW",
+ "nombre": "Software",
+ "fuente": "Sílabos oficiales publicados en uta.edu.ec (2026)",
+ "asignaturas": [
+  {
+   "nombre": "FISICA",
+   "nivel": 1,
+   "creditos": 3,
+   "horas": 144,
+   "descripcion": "La física es una ciencia fundamental que se ocupa de los principios básicos del universo. La asignatura en el presente nivel permite al estudiante de ingeniería la formulación de estructuras y construcción de modelos heurísticos simples y complejos en los diferentes roles de la vida humana. Los contenidos de Física para la formación del futuro Ingeniero comprende de cuatro unidades las cuales son: 1.- Dinámica de la Partícula de cuerpos Rígidos 2.-Trabajo, Energía y su Conservación 3.- Dinámica del movimiento circular y gravitación Universal 4.- Electroestática y Electrodinámica Mediante aprendizajes expositivos y colaborativos para la resolución de ejercicios, permitiendo al estudiante obtener destrezas y habilidades en la conceptualización.",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "Analizar e interpretar los diferentes fenómenos físicos; además de la descripción y conceptualización de las componentes inherentes al",
+     "horas": 36,
+     "contenidos": "Fuerza, primera Ley de Newton; Equilibrio del cuerpo Sólido, Segunda Ley de Newton"
+    },
+    {
+     "numero": 2,
+     "nombre": "Aplicar las expresiones matemáticas de Trabajo, Potencia, Energía, para la resolver cuestiones prácticas.",
+     "horas": 36,
+     "contenidos": "Trabajo, potencia; Energía y su conservación, cantidad de movimiento y su"
+    },
+    {
+     "numero": 3,
+     "nombre": "Estudiar las leyes y comportamiento del movimiento rotacional y la gravitación universal.",
+     "horas": 36,
+     "contenidos": "Campo Gravitacional y Leyes de Kepler.; Dinámica del movimiento circular"
+    },
+    {
+     "numero": 4,
+     "nombre": "Interpretar los fenómenos y leyes relacionadas con la electricidad y el comportamiento de la corriente en la resolución de problemas de carácter",
+     "horas": 36,
+     "contenidos": "Electroestática; Electrodinámica"
+    }
+   ],
+   "codigo": "08080113"
+  },
+  {
+   "nombre": "ALGEBRA LINEAL",
+   "nivel": 1,
+   "creditos": 3,
+   "horas": 144,
+   "descripcion": "Álgebra lineal es una materia que introduce al estudiante en el ámbito de la matemática superior, mediante el concepto de estructura vectorial y la programación lineal, así como el conocimiento progresivo de teoremas, reglas, principios y técnicas. Está estructurada con cuatro unidades curriculares, iniciando por Sistemas de Ecuaciones Lineales y Matrices, Estructuras Algebraicas, para posteriormente profundizar el estudio de Vectores en R2 y R3 complementado con el estudio de Espacios vectorial. Para lo cual se utilizara la metodología de aprendizaje basado en problemas y el metodo expositivo para alcanzar los resultados de aprendizaje de cada unidad como son: aplicar la teoría de matrices y determinantes para la resolución de problemas de sistemas de ecuaciones lineales, además distingue el concepto, clasificación y teoremas de las estructuras algebraicas para su aplicación en diferentes operaciones matemáticas. Así mismo, evalúa las operaciones con vectores en R2 y R3 para la solución de problemas, e interpreta los espacios vectoriales y su aplicación en operaciones definidas con vectores en el plano (R2), en el espacio (R3) y su generalización a Rn.",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "Aplicar la teoría de matrices y determinantes de orden n, sus relaciones, operaciones, y propiedades para la resolución de problemas de",
+     "horas": 36,
+     "contenidos": "Introducción al estudio matricial y clases. Operaciones con; Matriz inversa. Determinantes. Sistemas de ecuaciones"
+    },
+    {
+     "numero": 2,
+     "nombre": "Distinguir el concepto, clasificación y teoremas de las Estructuras Algebraicas para su aplicación en diferentes operaciones matemáticas.",
+     "horas": 36,
+     "contenidos": "Operación binaria.; Operaciones con estructuras Algebraicas"
+    },
+    {
+     "numero": 3,
+     "nombre": "Evaluar las operaciones con vectores en R2 y R3 para la solución de problemas.",
+     "horas": 36,
+     "contenidos": "Vectores en el plano; Vectores en el espacio"
+    },
+    {
+     "numero": 4,
+     "nombre": "Interpretar los espacios vectoriales y su aplicación en operaciones definidas con vectores en el plano (R2), en el espacio (R3) y su",
+     "horas": 36,
+     "contenidos": "Introducción a los espacios y subespacios vectoriales; Independencia lineal y bases"
+    }
+   ],
+   "codigo": "08080114"
+  },
+  {
+   "nombre": "CALCULO DIFERENCIAL",
+   "nivel": 1,
+   "creditos": 3,
+   "horas": 144,
+   "descripcion": "La asignatura de Cálculo Diferencial, perteneciente a la unidad curricular básica de la carrera de Software, se estructura en cuatro unidades temáticas: Límites de funciones, Derivadas, Aplicaciones de la derivada e Integrales indefinidas. Los contenidos se desarrollan mediante clases expositivas, resolución de ejercicios, actividades prácticas y trabajo colaborativo, complementados con el aprendizaje autónomo del estudiante, con el propósito de fortalecer las destrezas matemáticas necesarias para analizar funciones, resolver problemas geométricos y de optimización, y aplicar el cálculo en contextos propios de la ingeniería y el desarrollo de software.",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "Analizar los conceptos y propiedades fundamentales de los límites de una función, mediante la resolución de ejercicios, para comprender el",
+     "horas": 18,
+     "contenidos": "Límites de funciones; Límites específicos"
+    },
+    {
+     "numero": 2,
+     "nombre": "Aplicar las reglas de derivación a diferentes tipos de funciones, con el fin de determinar tasas de cambio y preparar la resolución de problemas",
+     "horas": 54,
+     "contenidos": "Derivaciòn; Reglas de derivación; Derivadas especiales; Puntos característicos de una gráfica"
+    },
+    {
+     "numero": 3,
+     "nombre": "Utilizar el criterio de la derivada para el análisis de gráficos y la resolución de problemas de optimización y situaciones propias de la ingeniería",
+     "horas": 18,
+     "contenidos": "Aplicaciones de las derivadas; Aplicaciones a problemas de máximos y mínimos"
+    },
+    {
+     "numero": 4,
+     "nombre": "Emplear los métodos básicos de integración para resolver problemas relacionados con la antiderivada, fortaleciendo la comprensión de los",
+     "horas": 54,
+     "contenidos": "Antiderivada; Integración por sustitución o cambio de variable; Integración de funciones de la forma ax2+bx+c; Integración de funciones con reducciones y sustituciones; Integración por partes.; Integración con fracciones parciales"
+    }
+   ],
+   "codigo": "08080115"
+  },
+  {
+   "nombre": "ALGORITMOS Y LOGICA DE PROGRAMACION",
+   "nivel": 1,
+   "creditos": 4,
+   "horas": 192,
+   "descripcion": "Algoritmos y Lógica de Programación permite proponer, diseñar e implementar algoritmos con criterios de eficiencia y precisión para dar solución a problemas básicos relacionados con el manejo de la información. En la unidad 1 se realiza una introducción a la metodología y lógica de programación, en la unidad 2 se aplican las estructuras de control en la elaboración de programas, en la unidad 3 se da una introducción a la POO para mejorar el rendimiento de los programas y en la unidad 4 se utilizan estructuras de datos básicas. Las metodologías utilizadas serán el método expositivo y el aprendizaje basado en proyectos para conseguir que el estudiante obtenga aprendizajes significativos.",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "Identificar los procesos fundamentales de la lógica de programación.",
+     "horas": 36,
+     "contenidos": "Introducción a los Algoritmos y Lógica de Programación; Codificación de la Información; Lenguajes de Programación; Metodología de Programación"
+    },
+    {
+     "numero": 2,
+     "nombre": "Aplicar estructuras de control en la elaboración de programas",
+     "horas": 60,
+     "contenidos": "Programación básica; Programación con condicionales; Programación con ciclos; Contadores y acumuladores. Controles de ingreso de datos"
+    },
+    {
+     "numero": 3,
+     "nombre": "Aplicar POO para mejorar el rendimiento de los programas",
+     "horas": 48,
+     "contenidos": "Clases, Objetos y Métodos; Creación, escritura y lectura de archivos"
+    },
+    {
+     "numero": 4,
+     "nombre": "Utilizar estructuras básicas de datos para el almacenamiento de información",
+     "horas": 48,
+     "contenidos": "Estructuras básicas de datos; Arreglos, ArrayList y LinkedList"
+    }
+   ],
+   "codigo": "08080116"
+  },
+  {
+   "nombre": "LOGICA MATEMATICA",
+   "nivel": 1,
+   "creditos": 2,
+   "horas": 96,
+   "descripcion": "La asignatura de Lógica Matemática pertenece a la formación básica de la carrera de Ingeniería de Software y se organiza en cuatro unidades temáticas: Lógica Proposicional, Inferencia Lógica, Lógica de Predicados y Álgebra de Boole, las cuales proporcionan los fundamentos del razonamiento lógico formal. Los contenidos se desarrollan mediante clases expositivas, actividades prácticas, talleres y trabajo colaborativo, apoyados por el aprendizaje autónomo del estudiante, con el fin de fortalecer la capacidad para analizar, demostrar y resolver problemas lógicos, competencias esenciales para el diseño de algoritmos, el desarrollo de software y la construcción de sistemas computacionales.",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "Aplicar los principios de la lógica proposicional para representar, analizar y evaluar proposiciones y argumentos lógicos, utilizando tablas de",
+     "horas": 24,
+     "contenidos": "Lógica Proposicional."
+    },
+    {
+     "numero": 2,
+     "nombre": "Utilizar las reglas de inferencia lógica para construir y demostrar razonamientos válidos, verificando la corrección de argumentos mediante",
+     "horas": 24,
+     "contenidos": "Inferencia Lógica."
+    },
+    {
+     "numero": 3,
+     "nombre": "Analizar y formular expresiones lógicas mediante la lógica de predicados y cuantificadores, con el propósito de modelar situaciones complejas y",
+     "horas": 24,
+     "contenidos": "Lógica de predicados."
+    },
+    {
+     "numero": 4,
+     "nombre": "Emplear los fundamentos del álgebra de Boole para simplificar expresiones lógicas y resolver problemas relacionados con sistemas digitales y",
+     "horas": 24,
+     "contenidos": "Álgebra de Boole."
+    }
+   ],
+   "codigo": "08080117"
+  },
+  {
+   "nombre": "FUNDAMENTOS DE INGENIERIA DE SOFTWARE",
+   "nivel": 2,
+   "creditos": 3,
+   "horas": 144,
+   "descripcion": "La asignatura contribuye a la formación profesional y académica, mediante la capacitación y desarrollo de competencias conceptuales en las metodologías de la ingeniería de software para el desarrollo de aplicaciones informáticas. Utilizando las buenas prácticas señaladas en la ingeniería de requerimientos, gestión de proyectos, validación y verificación del software. Además fomenta estrategias didácticas proponiendo problemáticas realeas a través de las cuales analizaran escenarios posibles, aplicando los conceptos y conocimientos aprendidos en clases; fomentando el razonamiento y juicio crítico. La asignatura esta formado por cuatro ejes fundamentales: * Análisis del ciclo de vida del software * Gestión de proyectos * Introducción a los requerimientos y diseño de software * Principios de verificación y validación",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "Identificar al software como producto y proceso",
+     "horas": 24,
+     "contenidos": "Ciclo de vida del software; El software como proceso; El software como producto; Introducción a la ingeniería de software"
+    },
+    {
+     "numero": 2,
+     "nombre": "Analizar los procesos de gestión de proyectos de software",
+     "horas": 48,
+     "contenidos": "Gestión de proyectos; Organización de equipos; Creación de planes y tareas; Riesgos en los proyectos de software"
+    },
+    {
+     "numero": 3,
+     "nombre": "Aplicar los métodos introductorios a los requerimientos y diseño de software",
+     "horas": 42,
+     "contenidos": "Introducción a los requerimientos de software; Introducción al diseño de software"
+    },
+    {
+     "numero": 4,
+     "nombre": "Evaluar los principios de verificación y validación en el software",
+     "horas": 30,
+     "contenidos": "Principios de Validación de software; Principios de verificación de software"
+    }
+   ],
+   "codigo": "08080212"
+  },
+  {
+   "nombre": "CALCULO INTEGRAL",
+   "nivel": 2,
+   "creditos": 3,
+   "horas": 144,
+   "descripcion": "En la asignatura de Cálculo Integral se desarrollan criterios sobre la aplicación de la integral a la solución de problemas relacionados a características de figuras geométricas tanto en el plano como en el espacio, características como el área, centros de gravedad, volúmenes, entre otras, involucrando problemas básicos relacionados a las ecuaciones diferenciales homogéneas de orden superior. Se estructura en 4 unidades, Integral definida que relaciona conceptualmente la derivada y la integral y su aplicación a la solución de problemas de cálculo de áreas bajo la curva. La segunda unidad, Aplicaciones geométricas que identifica fórmulas y procesos de la integral definida para la resolución de problemas geométricos en el plano y en el espacio. La 3ra y 4ta. unidad, Integrales múltiples y Ecuaciones diferenciales, que solucionan problemas geométricos en el plano y volúmenes bajo una superficie. Todo este proceso de enseñanza - aprendizaje se lo realiza mediante métodos expositivos y trabajos grupales, aula invertida, debates, actividades integradoras, que le permitan al estudiante la resolución de problemas geométricos y físicos. Además, la finalidad es medir fenómenos cambiantes y optimizar recursos, funcionando como la operación inversa a la derivada.",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "Relacionar conceptualmente la derivada y la integral y su aplicación a la solución de problemas de cálculo de áreas bajo la curva",
+     "horas": 36,
+     "contenidos": "Integral definida; Àrea bajo la curva"
+    },
+    {
+     "numero": 2,
+     "nombre": "Identificar fórmulas y procesos do lo integral definida para la resolución de problemas geométricos en el plano y espacio.",
+     "horas": 36,
+     "contenidos": "Aplicaciones geométricas; Sólidos de revolución"
+    },
+    {
+     "numero": 3,
+     "nombre": "Solucionar problemas geométricos en el plano y volúmenes bajo una superficie aplicando conceptos de la integral múltiple.",
+     "horas": 36,
+     "contenidos": "Integrales múltiples; Volumen bajo una superficie"
+    },
+    {
+     "numero": 4,
+     "nombre": "Resolver ecuaciones diferenciales ordinarias con la aplicación de criterios lógicos, analíticos y reflexivos",
+     "horas": 36,
+     "contenidos": "Ecuaciones diferenciales ordinarias; Ecuaciones diferenciales de primer y segundo orden"
+    }
+   ],
+   "codigo": "08080213"
+  },
+  {
+   "nombre": "PROGRAMACION ORIENTADA A OBJETOS",
+   "nivel": 2,
+   "creditos": 4,
+   "horas": 192,
+   "descripcion": "En esta asignatura se estudia el paradigma de la programación orientada a objetos como enfoque fundamental para el diseño e implementación de aplicaciones de software robustas, reutilizables y mantenibles. El curso inicia con el análisis de la evolución de la programación, contextualizando el surgimiento de la orientación a objetos como respuesta a las limitaciones de los paradigmas previos. A partir de ello, se abordan los conceptos de clases y objetos como unidades básicas de modelado, así como los principios y propiedades esenciales de la programación orientada a objetos: abstracción, encapsulamiento, herencia y polimorfismo. Los contenidos se desarrollan a lo largo de cuatro unidades curriculares, mediante actividades del proceso de enseñanza?aprendizaje instructivo, prácticas de laboratorio y trabajo autónomo y colaborativo. Como eje integrador, los estudiantes desarrollarán un proyecto de curso orientado a la solución de una problemática concreta, en el cual diseñarán e implementarán soluciones de software aplicando de manera coherente los conceptos y principios de la orientación a objetos.",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "Identificar los pilares de la programación orientada a objetos (abstracción, encapsulamiento, herencia y polimorfismo).",
+     "horas": 48,
+     "contenidos": "Evolución de los lenguajes de programación.; Pilares de la Programación Orientada a Objetos.; Diagrama de clases. Diseño de un sistema orientado a"
+    },
+    {
+     "numero": 2,
+     "nombre": "Aplicar los pilares de la programación orientada a objetos (abstracción, encapsulamiento, herencia y polimorfismo) en el lenguaje Java.",
+     "horas": 48,
+     "contenidos": "Abstracción y encapsulamiento en Java.; Herencia en Java.; Polimorfismo en Java.; Implementación de casos de estudio en Java."
+    },
+    {
+     "numero": 3,
+     "nombre": "Aplicar los pilares de programación orientada a objetos (abstracción, encapsulamiento, herencia y polimorfismo) en otros lenguajes.",
+     "horas": 48,
+     "contenidos": "Abstracción y encapsulamiento en otros lenguajes de; Herencia en otros lenguajes de programación.; Polimorfismo en otros lenguajes de programación.; Implementación de casos de estudio en otros lenguajes de"
+    },
+    {
+     "numero": 4,
+     "nombre": "Definir una arquitectura de desarrollo de software orientado a objetos.",
+     "horas": 48,
+     "contenidos": "Interfaces, herencia y herencia múltiple.; Patrones de diseño en programación orientada a objetos.; Persistencia de objetos."
+    }
+   ],
+   "codigo": "08080214"
+  },
+  {
+   "nombre": "SISTEMAS OPERATIVOS",
+   "nivel": 2,
+   "creditos": 3,
+   "horas": 144,
+   "descripcion": "Sistemas Operativos es una asignatura que se estructura en cuatro unidades curriculares, orientadas al estudio teórico-práctico de los sistemas operativos como el programa base para el funcionamiento de los equipos computacionales. La asignatura se centra en la comprensión de la estructura, funcionamiento, gestión y configuración de los sistemas operativos, permitiendo al estudiante identificar, administrar y optimizar los recursos y servicios básicos del sistema. A través de actividades prácticas, resolución de problemas y desarrollo de proyectos, los estudiantes aplicarán los conocimientos teóricos en contextos reales, fortaleciendo además habilidades blandas como el trabajo en equipo, la comunicación efectiva y el pensamiento crítico. Como resultado, los alumnos serán capaces de analizar, configurar y gestionar sistemas operativos, administrar eficientemente los recursos del computador para maximizar su rendimiento y proponer soluciones innovadoras a problemas relacionados con la operación y mantenimiento de sistemas informáticos, integrando de manera efectiva la teoría y la práctica.",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "Comprender los tipos de sistemas operativos y los elementos que los componen.",
+     "horas": 36,
+     "contenidos": "Introducción a los Sistemas Operativos."
+    },
+    {
+     "numero": 2,
+     "nombre": "Describir la estructura general de los sistemas operativos, identificando sus componentes principales y sus funciones.",
+     "horas": 36,
+     "contenidos": "Estructura de los sistemas operativos."
+    },
+    {
+     "numero": 3,
+     "nombre": "Analizar los procesos y mecanismos de gestión de los sistemas operativos",
+     "horas": 36,
+     "contenidos": "Gestión de los sistemas operativos"
+    },
+    {
+     "numero": 4,
+     "nombre": "Configurar y utilizar herramientas básicas de shell script.",
+     "horas": 36,
+     "contenidos": "Programación Shell Script"
+    }
+   ],
+   "codigo": "08080215"
+  },
+  {
+   "nombre": "METODOLOGIA DE LA INVESTIGACION",
+   "nivel": 2,
+   "creditos": 2,
+   "horas": 96,
+   "descripcion": "La asignatura de Metodología de la Investigación se estructura en 4 unidades curriculares básicas relacionadas con los fundamentos de la metodología de investigación, tipos y métodos de investigación científica, técnicas e instrumentos de investigación y componentes estructurales del perfil de investigación. Los temas se desarrollan a través de conferencias integradoras y actividades prácticas y de trabajo autónomo del estudiante donde elaboran un perfil de investigación sobre una problemática identificada, utilizando técnicas y herramientas de organización, procesamiento y análisis de información, así como la aplicación de normas de redacción técnica en la presentación de informes y artículos de investigación.",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "Identificar los fundamentos de la metodología de la investigación científica que influyen en la generación de conocimiento.",
+     "horas": 12,
+     "contenidos": "Fundamentos de la metodología de la investigación"
+    },
+    {
+     "numero": 2,
+     "nombre": "Analizar los tipos y métodos de investigación científica.",
+     "horas": 18,
+     "contenidos": "Tipos y métodos de Investigación"
+    },
+    {
+     "numero": 3,
+     "nombre": "Aplicar las técnicas e instrumentos de investigación.",
+     "horas": 18,
+     "contenidos": "Técnicas e instrumentos de recolección de datos"
+    },
+    {
+     "numero": 4,
+     "nombre": "Desarrollar los componentes estructurales del perfil de investigación.",
+     "horas": 48,
+     "contenidos": "Componentes del perfil de investigación"
+    }
+   ],
+   "codigo": "08080216"
+  },
+  {
+   "nombre": "METODOS NUMERICOS",
+   "nivel": 3,
+   "creditos": 3,
+   "horas": 144,
+   "descripcion": "Esta asignatura y las competencias que desarrolla, permitirán al estudiante integrarse plenamente al campo de acción de la carrera de Software y convertirse en un ente innovador y creativo, además de utilizar las herramientas conceptuales y prácticas de los Métodos Numéricos para el análisis, solución y elaboración. . de problemas típicos de la ingeniería. Está estructurada en cuatro unidades temáticas: teoría del error y métodos iterativos, interpolación e integración numérica, ecuaciones diferenciales y aproximación funcional. La metodología utilizada es el aprendizaje basado en problemas y el uso adecuado del método expositivo. La finalidad es que a traves de los métodos numéricos el estudiante pueda aproximarse al resultado de aquellos problemas que no han tenido solución cuando se aplica los métodos de resolución conocidos.",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "Interpretar la influencia de los diferentes tipos de error y resolución de problemas mediante cálculos numéricos iterativos",
+     "horas": 36,
+     "contenidos": "Teoría de errores y métodos iterativos"
+    },
+    {
+     "numero": 2,
+     "nombre": "Aplicar criterios para la solución de problemas de interpolación matemática e integración numérica mediante métodos numéricos con",
+     "horas": 36,
+     "contenidos": "Interpolación e integración numérica"
+    },
+    {
+     "numero": 3,
+     "nombre": "Resolver ecuaciones diferenciales ordinarias y su solución aproximada en diferentes problemas ingenieriles",
+     "horas": 36,
+     "contenidos": "Ecuaciones diferenciales, métodos de solución por"
+    },
+    {
+     "numero": 4,
+     "nombre": "Aplicar criterios matemáticos para la solución de problemas de curvas, aproximación funcional, aproximación lineal y polinomial",
+     "horas": 36,
+     "contenidos": "Aproximación funcional"
+    }
+   ],
+   "codigo": "08080312"
+  },
+  {
+   "nombre": "ESTRUCTURA DE DATOS",
+   "nivel": 3,
+   "creditos": 3,
+   "horas": 144,
+   "descripcion": "La asignatura Estructura de Datos se estructura en 4 unidades curriculares básicas relacionadas con los diferentes tipos de estructuras de datos: de acceso directo (vectores y matrices), listas (secuenciales, pilas y colas), árboles y grafos. Los temas se desarrollan a través de actividades del proceso de enseñanza-aprendizaje instructivo y actividades prácticas de laboratorio, acompañadas del trabajo autónomo y colaborativo de los estudiantes en la solución a una problemática planteada como proyecto de curso. En las actividades prácticas diseñarán e implementarán soluciones de software para casos concretos.",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "Identificar los principios que rigen la programación de estructuras de datos estáticas y dinámicas",
+     "horas": 18,
+     "contenidos": "Estructuras de datos estáticas y dinámicas; Estrategias de algoritmización y programación para la"
+    },
+    {
+     "numero": 2,
+     "nombre": "Solucionar problemas de programación haciendo uso de estructuras de datos secuenciales",
+     "horas": 54,
+     "contenidos": "Listas secuenciales.; Listas simplemente enlazadas.; Listas doblemente enlazadas.; Listas circulares.; Pilas y colas.; Ejercicio integrador"
+    },
+    {
+     "numero": 3,
+     "nombre": "Solucionar problemas de programación haciendo uso de la estructura de datos Árbol",
+     "horas": 36,
+     "contenidos": "Introducción a los árboles como estructura de datos.; Actualización en árboles; Transformación árbol general en árbol binario; Aplicación de los árboles a la ingeniería"
+    },
+    {
+     "numero": 4,
+     "nombre": "Solucionar problemas de programación haciendo uso de la estructura de datos Grafo",
+     "horas": 36,
+     "contenidos": "Introducción a los grafos como estructura de datos.; Multilistas y su relación con la implementación de grafos.; Vectores y matrices. Relación con la implementación de; Aplicación de los grafos a la ingeniería."
+    }
+   ],
+   "codigo": "08080313"
+  },
+  {
+   "nombre": "PROBABILIDAD Y ESTADISTICA",
+   "nivel": 3,
+   "creditos": 3,
+   "horas": 144,
+   "descripcion": "La asignatura de Probabilidad y Estadística se estructura en cuatro unidades curriculares y pretende que el estudiante de Ingeniería de Software desarrollen habilidades para el manejo y tratamiento de datos de fenómenos masivos, utilizando fórmulas y grafos, regresiones estadísticas, probabilidades y distribución de variables aleatorias, muestreo así como pruebas de hipótesis, presentes en muchos fenómenos relacionados a la Ingeniería del Software. Para ello se utiliza la metodología de aprendizaje basado en problemas y el método expositivo para lograr los resultados de aprendizaje de cada unidad que son: utiliza la metodología estadística para análisis de fenómenos masivos. Caracteriza datos por tendencia central, desviación y dispersión, sesgo y curtosis. Además, levantan e interpretan grafos estadísticos, utilizan variables aleatorias, discriminan y califican eventos probabilísticos, calculan probabilidades de eventos compuestos, y utilizan análisis combinatorio. Así también, manejan apropiadamente distribuciones probabilísticas discretas y continuas, realizan distribuciones muestrales y ensayan pruebas de hipótesis,correlacionan y proyectan regresionalmente fenómenos estadísticos aleatorios.",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "Manejar apropiadamente información estadística de fenómenos masivos, para datos no agrupados y agrupados. (Tablas de distribución de",
+     "horas": 36,
+     "contenidos": "Aplicación de la estadística descriptiva"
+    },
+    {
+     "numero": 2,
+     "nombre": "Operar los principios y leyes de la teoría elemental de probabilidades para fenómenos aleatorios, y análisis combinatorio.",
+     "horas": 36,
+     "contenidos": "Teoría elemental de Probabilidades; Análisis combinatorio"
+    },
+    {
+     "numero": 3,
+     "nombre": "Aplicar apropiadamente distribuciones probabilísticas de carácter discreto y continuo, muestreo y pruebas de hipótesis",
+     "horas": 36,
+     "contenidos": "Distribuciones probabilísticas discretas; Distribuciones probabilísticas continuas; Muestreo y prueba de hipótesis"
+    },
+    {
+     "numero": 4,
+     "nombre": "Correlacionar y proyectar regresionalmente fenómenos estadísticos como técnicas de inferencia estadística.",
+     "horas": 36,
+     "contenidos": "Regresión y Correlación lineal y no lineal; Evaluación de la correlación estadística"
+    }
+   ],
+   "codigo": "08080314"
+  },
+  {
+   "nombre": "INTRODUCCION A REDES",
+   "nivel": 3,
+   "creditos": 3,
+   "horas": 144,
+   "descripcion": "La presente asignatura está dividida en cuatro unidades curriculares, iniciando con la Introducción a Redes, en donde se establecen los conceptos básicos de una red, topologías, clasificación e incluye una Introducción y el Uso de las redes. La segunda unidad, pone en consideración los Principios de Interconexión de Redes que estudia los modelos de referencia OSI y TCP/IP, con el análisis minucioso de sus capas y se establecen comparativas para desarrollar un mejor nivel de aprendizaje en los estudiantes y abarca direccionamiento IP. La tercera unidad se refiere al tratamiento de los distintos Elementos de una Red con el estudio de los componentes Hardware(físicos) y Software (lógicos) que componen una red de datos, conjuntamente se habla de una cuarta unidad que introduce al estudiante a los conceptos básicos de diseño de una red básica segura. Para el desarrollo de la asignatura se emplearán metodologías de Aprendizaje Expositivo, Colaborativo y Aula Invertida, a través de las cuáles el estudiante podrá mejorar sus destrezas numéricas y sociales, orientados al diseño de redes desde cero permitiendo el desarrollo cognitivo y analítico en los futuros profesionales.",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "Identificar los conceptos fundamentales y principios básicos de las redes de comunicación, incluyendo su uso en la conectividad moderna y su",
+     "horas": 36,
+     "contenidos": "Introducción y Uso de las redes"
+    },
+    {
+     "numero": 2,
+     "nombre": "Analizar los protocolos de interconexión de redes y los modelos de referencia mediante el estudio de la fundamentación teórica para la",
+     "horas": 36,
+     "contenidos": "Principios de redes y Modelos de Referencia"
+    },
+    {
+     "numero": 3,
+     "nombre": "Identificar los elementos hardware y software de una red mediante el análisis de su utilidad dentro del diseño de una infraestructura de redes.",
+     "horas": 36,
+     "contenidos": "Elementos Hardware y Software de una red"
+    },
+    {
+     "numero": 4,
+     "nombre": "Implementar un diseño de red pequeña mediante el uso de un router, un switch y dispositivos finales con características de protección de",
+     "horas": 36,
+     "contenidos": "Diseño de una red básica"
+    }
+   ],
+   "codigo": "08080315"
+  },
+  {
+   "nombre": "MODELAMIENTO Y DISEñO DE SOFTWARE",
+   "nivel": 3,
+   "creditos": 3,
+   "horas": 144,
+   "descripcion": "La asignatura de Modelamiento y Diseño de Software se estructura en 4 unidades curriculares basicas con las que se pretende que los estudiantes adquieran las capacidades integradas de aplicar técnicas para el levantamiento de requisitos, especificar los requerimientos obtenidos mediante estándares IEEE, modelar la estructura y comportamiento de un sistema de información que satisfaga los requerimientos especificados y diseñar la estructura física del sistema de información que refleje la posible implementación como guía para su desarrollo. Los temas se desarrollan a través de conferencias síncronas, actividades prácticas y de trabajos colaborativos acompañadas del trabajo autónomo del estudiante donde resolverán problemas de análisis y diseño de sistemas con el fin de que sean capaces de modelar la estructura y comportamiento de un sistema de información de manera adecuada según los requerimientos dados.",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "Describir el desarrollo de Software basado en modelos.",
+     "horas": 18,
+     "contenidos": "Ingeniería de software: Enfoque al análisis y diseño"
+    },
+    {
+     "numero": 2,
+     "nombre": "Identificar los patrones de diseño de Software con UML.",
+     "horas": 72,
+     "contenidos": "Modelado de requisitos del Cliente; Modelado del análisis; Modelado del diseño de alto nivel; Modelado del diseño detallado y construcción; Otras disciplinas"
+    },
+    {
+     "numero": 3,
+     "nombre": "Describir la Ingeniería de Software dirigida por modelos.",
+     "horas": 36,
+     "contenidos": "Desarrollo de software dirigido por modelos."
+    },
+    {
+     "numero": 4,
+     "nombre": "Analizar las ontologías en la Ingeniería de Software.",
+     "horas": 18,
+     "contenidos": "Ingeniería de Software: Ontologías"
+    }
+   ],
+   "codigo": "08080316"
+  },
+  {
+   "nombre": "METODOLOGIAS AGILES",
+   "nivel": 4,
+   "creditos": 4,
+   "horas": 192,
+   "descripcion": "La asignatura Metodologías Ágiles integra cuatro unidades curriculares orientadas a: comprender la evolución del software y los fundamentos del Manifiesto Ágil; analizar la filosofía y enfoques ágiles vigentes; estudiar metodologías como Scrum, XP y Kanban; y examinar herramientas de apoyo para su gestión. Se desarrolla mediante aprendizaje basado en problemas y proyectos, complementado con talleres, análisis de casos y trabajo colaborativo. Como resultado, el estudiante describe los principios ágiles, analiza enfoques actuales, compara metodologías del mercado y aplica herramientas para planificar y gestionar iteraciones, promoviendo la entrega temprana de valor y la mejora continua en el desarrollo de software.",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "Describir los principios fundamentales de las Metodologías Ágiles",
+     "horas": 48,
+     "contenidos": "Evolución de software; Etapas del Proceso de Desarrollo de Software; Manifiesto Ágil; Agilidad"
+    },
+    {
+     "numero": 2,
+     "nombre": "Analizar conceptos asociados a la filosofía y enfoques ágiles de la actualidad",
+     "horas": 48,
+     "contenidos": "Filosofía Ágil; Enfoques Ágiles"
+    },
+    {
+     "numero": 3,
+     "nombre": "Estudiar y analizar las principales Metodologías Ágiles del mercado",
+     "horas": 48,
+     "contenidos": "XP, Programación Extrema; SCRUM; KANBAN; Otras Metodologías"
+    },
+    {
+     "numero": 4,
+     "nombre": "Examinar las principales Herramientas Agiles existentes en el mercado.",
+     "horas": 48,
+     "contenidos": "Herramientas para el manejo de Scrum; Herramientas para el manejo de XP; Herramientas para el manejo de Kanban; Herramientas para el manejo de otras metodologías"
+    }
+   ],
+   "codigo": "08080406"
+  },
+  {
+   "nombre": "REDES",
+   "nivel": 4,
+   "creditos": 3,
+   "horas": 144,
+   "descripcion": "La presente asignatura está estructurada en cuatro unidades curriculares, abordando los fundamentos de las redes locales (LAN) y la arquitectura TCP/IP, desde la infraestructura física hasta los servicios de red esenciales. Conmutación en redes LAN: Se estudian los principios de la conmutación en la capa 2, la segmentación de redes mediante VLANs y las técnicas para optimizar la comunicación dentro de una red local. Redes inalámbricas: Se analizan los estándares y protocolos de comunicación Wi-Fi, junto con la configuración y seguridad de redes inalámbricas para garantizar conectividad eficiente y protegida. Enrutamiento en redes: Se profundiza en la interconexión de redes a través de protocolos de enrutamiento estático y dinámico, permitiendo la comunicación entre diferentes entornos tecnológicos. Servicios IP y seguridad en la red: Se exploran los servicios esenciales del modelo TCP/IP, como DHCP, DNS y NAT, además de estrategias básicas de seguridad para la protección de la infraestructura de red. La asignatura busca que los estudiantes comprendan los diferentes protocolos del modelo TCP/IP, identifiquen las diferencias entre dispositivos y nodos de interconexión en las capas 1, 2 y 3, y apliquen prácticas fundamentales de seguridad en redes. Para su desarrollo, se emplearán metodologías de Aprendizaje Expositivo, Colaborativo y Aula Invertida , facilitando la resolución de ejercicios prácticos que fortalecen las habilidades analíticas y la capacidad de aplicación en entornos reales.",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "Comprender los fundamentos de redes de computadoras, incluyendo los modelos de comunicación, arquitecturas y protocolos del modelo",
+     "horas": 10,
+     "contenidos": "Introducción a las redes"
+    },
+    {
+     "numero": 2,
+     "nombre": "Identificar los conceptos de conmutación de redes de manera efectiva, la segmentación de tráfico mediante VLANs, y la implementación de",
+     "horas": 28,
+     "contenidos": "Conmutación en redes"
+    },
+    {
+     "numero": 3,
+     "nombre": "Diseñar redes inalámbricas mediante el estudio de estándares para la configuración de dispositivos de acceso considerando medidas de",
+     "horas": 28,
+     "contenidos": "Redes inalámbricas"
+    },
+    {
+     "numero": 4,
+     "nombre": "Implementar protocolos de enrutamiento estático y dinámico en IPv4 e IPv6 mediante el estudio de la capa de red para el manejo de tráfico y de",
+     "horas": 28,
+     "contenidos": "Enrutamiento en Redes"
+    },
+    {
+     "numero": 5,
+     "nombre": "Configurar redes con servicios IP confiables y seguros mediante la implementación de parámetros básicos para garantizar la disponibilidad de",
+     "horas": 28,
+     "contenidos": "Servicios IP y seguridad en la red"
+    }
+   ],
+   "codigo": "08080407"
+  },
+  {
+   "nombre": "BASE DE DATOS",
+   "nivel": 4,
+   "creditos": 3,
+   "horas": 144,
+   "descripcion": "La asignatura Base de Datos abarca desde la fundamentación teórica básica, hasta la implementación de complejas bases de datos relacionales, con su correspondiente control de procesos transaccionales. La asignatura comprende las siguientes unidades curriculares: 1. Esquema Conceptual 2. Esquema L ó gico. 3. Normalizaci ó n. 4. Esquema Físico. 5. Bloques PLSQL",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "Diseñar el Esquema Conceptual acorde a los requerimientos del contexto.",
+     "horas": 18,
+     "contenidos": "Esquema Conceptual"
+    },
+    {
+     "numero": 2,
+     "nombre": "Construir el Esquema Lógico de la base de datos.",
+     "horas": 18,
+     "contenidos": "Esquema Lógico."
+    },
+    {
+     "numero": 3,
+     "nombre": "Controlar la Normalización de la Base de datos.",
+     "horas": 36,
+     "contenidos": "Normalización."
+    },
+    {
+     "numero": 4,
+     "nombre": "Implementar el Esquema Físico en Lenguaje SQL",
+     "horas": 36,
+     "contenidos": "Esquema Físico."
+    },
+    {
+     "numero": 5,
+     "nombre": "Controlar los procesos transaccionales con Bloques PLSQL",
+     "horas": 36,
+     "contenidos": "Bloques PLSQL"
+    }
+   ],
+   "codigo": "08080408"
+  },
+  {
+   "nombre": "COMPUTACION VISUAL",
+   "nivel": 4,
+   "creditos": 3,
+   "horas": 144,
+   "descripcion": "El presente módulo forma en las capacidades de: resolver problemas de programación complejos de planificación y gestión. Programación Visual está orientada al diseño de aplicaciones bajo entorno visual comúnmente a través del uso del formulario GUI. En este módulo se hará una presentación y estudio de las interfaces visuales a través del entorno de desarrollo de escritorio y web",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "Manejar el lenguaje de programación orientada a objetos en forma gráfica con las librerías de GUI en java",
+     "horas": 24,
+     "contenidos": "Definiciones y fundamentos interfaz grafica; Manejo de ventanas y formas graficas en java; Manejo de componentes de entrada y salida.; Manejo de paneles, Manejo de menús.; Manejo de archivos.; Manejo de cuadros de dialogo y excepciones y tooltips; Creación y Validaciones de propios componentes"
+    },
+    {
+     "numero": 2,
+     "nombre": "Desarrolar de aplicaciones clientes/servidor de escritorio aplicando normas y estándares internacionales",
+     "horas": 42,
+     "contenidos": "Introducción. al Desarrollo de Software, Modelos; Control de Versiones; Modelos, metodologias y herramientas dedesarrollo; Desarrollo de aplicaciones CRUD de escritorio; reporteo"
+    },
+    {
+     "numero": 3,
+     "nombre": "Desarrollar de Sistemas Web Parte cliente",
+     "horas": 39,
+     "contenidos": "Manejo de html y htaml5; Manejo de css; Manejo de java script; Manejo de herramientas web jquery(javascript, css)"
+    },
+    {
+     "numero": 4,
+     "nombre": "Construir aplicaciones cliente servidor en tres capas sitios web",
+     "horas": 39,
+     "contenidos": "Definición de la Arquitectura Patrones de Arquitectura Web; Servidores de bases de datos web; Desarrollo de aplicaciones web utilizando php; reporteo"
+    }
+   ],
+   "codigo": "08080409"
+  },
+  {
+   "nombre": "MANEJO Y CONFIGURACION DEL SOFTWARE",
+   "nivel": 4,
+   "creditos": 2,
+   "horas": 96,
+   "descripcion": "La asignatura Manejo y Configuración del Software se encuentra estructurada en 16 semanas , las cuales se desarrollan en cuatro unidades de aprendizaje orientadas a la comprensión y aplicación de la Administración de la Configuración del Software en el contexto de proyectos informáticos. En la primera unidad , se abordan las generalidades de la Administración de la Configuración del Software, considerando su definición, importancia, roles involucrados y los beneficios que aporta al control y evolución de los sistemas software. La segunda unidad se centra en el estudio de los sistemas de control de versiones, analizando el propósito de la gestión de repositorios, sus características principales y las herramientas utilizadas para el control y seguimiento de cambios. En la tercera unidad , se analizan las fases del proceso de Administración de la Configuración del Software, profundizando en los procedimientos, flujos de trabajo y herramientas que permiten asegurar la integridad y trazabilidad del software durante su ciclo de vida. Finalmente, la cuarta unidad aborda la Administración de la Configuración aplicada a WebApps, permitiendo al estudiante comprender su implementación en entornos de desarrollo web. El proceso de enseñanza?aprendizaje se desarrolla mediante metodologías como el Aprendizaje Basado en Proyectos y el método expositivo, apoyado en talleres prácticos, trabajos colaborativos y el uso de recursos tecnológicos, lo que facilita una evaluación diagnóstica, formativa y sumativa acorde a los resultados de aprendizaje establecidos.",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "Describir las generalidades de la Administración de la Configuración del Software.",
+     "horas": 18,
+     "contenidos": "Introducción de ACS; Roles y beneficios de ACS."
+    },
+    {
+     "numero": 2,
+     "nombre": "Identificar el propósito de gestionar un repositorio ACS, sus características y sus herramientas.",
+     "horas": 30,
+     "contenidos": "Sistema de Control de Versiones"
+    },
+    {
+     "numero": 3,
+     "nombre": "Analizar las fases de un proceso de administración de la configuración del software (ACS).",
+     "horas": 30,
+     "contenidos": "Proceso ACS; Herramientas ACS"
+    },
+    {
+     "numero": 4,
+     "nombre": "Describir la Administración de la Configuración para Webapps.",
+     "horas": 18,
+     "contenidos": "ACS para WebApps."
+    }
+   ],
+   "codigo": "08080410"
+  },
+  {
+   "nombre": "INVESTIGACIÓN OPERATIVA",
+   "nivel": 5,
+   "creditos": 3,
+   "horas": 144,
+   "descripcion": "La asignatura de Investigación Operativa se estructura en 4 unidades curriculares esenciales relacionadas con la optimización matemática, la construcción de modelos en Investigación de Operaciones, modelamiento matemático de problemas de programación lineal y transporte, modelaje de aplicaciones prácticas y planificación, programación, revisión y evaluación de operaciones y gestión de proyectos de REDES/PERT-CPM/RUTA CRÍTICA-DIAGRAMA/GANTT-MS/PROJECT.",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "Aplicar procesos de optimización en la construcción de Modelos para la toma de decisiones con Investigación Operativa. Aplicaciones",
+     "horas": 18,
+     "contenidos": "Modelos de optimización para la toma de decisiones con"
+    },
+    {
+     "numero": 2,
+     "nombre": "Resolver matemática, gráficamente y con aplicaciones informáticas problemas del Modelo de Programación Lineal y Transporte",
+     "horas": 54,
+     "contenidos": "Modelo de Programación Lineal y Algoritmo del Transporte"
+    },
+    {
+     "numero": 3,
+     "nombre": "Resolver problemas del Modelo de Diseño y Programación de REDES/PERT-CPM/RUTA CRÍTICA-DIAGRAMA/GANTT",
+     "horas": 54,
+     "contenidos": "Modelo de Diseño y Programación de REDES/PERT-"
+    },
+    {
+     "numero": 4,
+     "nombre": "Desarrollar aplicaciones prácticas del Modelo de planeación, revisión y evaluación de operaciones y gestión de proyectos. MS/PROJECT",
+     "horas": 18,
+     "contenidos": "Modelo de planeación, revisión y evaluación de operaciones"
+    }
+   ],
+   "codigo": "08080506"
+  },
+  {
+   "nombre": "SISTEMAS DE SOPORTE DE DECISIONES",
+   "nivel": 5,
+   "creditos": 3,
+   "horas": 144,
+   "descripcion": "El presente módulo pretende que los estudiantes adquieran las capacidades integradas para desarrollo de Sistemas de Soporte de Decisión, Metodologías para el diseño de sistemas de soporte de decisiones. Business Intelligence, Herramientas para el desarrollo de sistemas de soporte de decisiones. Creación de modelos multidimensionales, análisis de la información a travéz de reportes en Excel - tablas dinámicas - dashboard y Power BI, reportes profesionales.",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "Conocer que son los Sistemas de apoyo a la toma de decisiones",
+     "horas": 36,
+     "contenidos": "Sistemas de Soporte de Decisiones"
+    },
+    {
+     "numero": 2,
+     "nombre": "Establecer la arquitectura de construcción de un BI",
+     "horas": 36,
+     "contenidos": "Modelado y construcción de un data warehouse"
+    },
+    {
+     "numero": 3,
+     "nombre": "Construir un datawarehouse",
+     "horas": 36,
+     "contenidos": "Análisis de la información a travésde estructuras"
+    },
+    {
+     "numero": 4,
+     "nombre": "Analizar datos a través de modelos tabulares",
+     "horas": 36,
+     "contenidos": "Análisis de la información a través de estructuras tabulares"
+    }
+   ],
+   "codigo": "08080507"
+  },
+  {
+   "nombre": "PATRONES DE SOFTWARE",
+   "nivel": 5,
+   "creditos": 3,
+   "horas": 144,
+   "descripcion": "La presente asignatura se enfoca en el estudio teórico y práctico de los principales grupos de patrones de diseño de software adaptables al desarrollo de aplicaciones que se basan en el paradigma de programación orientado a objetos. Además pretende proveer de soluciones generales y reutilizables a problemas comunes en el diseño de software.",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "Fundamentar las definiciones y aplicaciones de los patrones de diseño, parar la mejora de las propiedades de un sistema de software.",
+     "horas": 36,
+     "contenidos": "Introducción a los Patrones de Software; Programación Limpia. Buenas prácticas y principios de; Principios SOLID"
+    },
+    {
+     "numero": 2,
+     "nombre": "Ocupar la estructura de los patrones creacionales para las distintas formas típicas en que los objetos de una clase se pueden instanciar",
+     "horas": 27,
+     "contenidos": "Patrones Creacionales.; Aplicación de Patrones Creacionales"
+    },
+    {
+     "numero": 3,
+     "nombre": "Aplicar los patrones estructurales mediante ejemplos concretos para formar estructuras más complejas de diseño",
+     "horas": 36,
+     "contenidos": "Patrones Estructurales.; Aplicación de Patrones Estructurales"
+    },
+    {
+     "numero": 4,
+     "nombre": "Utilizar los patrones de comportamiento en el contexto de la fase de diseño para cumplir con propiedades específicas de un sistema de",
+     "horas": 45,
+     "contenidos": "Patrones Comportamentales.; Aplicación de Patrones Comportamentales."
+    }
+   ],
+   "codigo": "08080508"
+  },
+  {
+   "nombre": "APLICACIONES ORIENTADAS A SERVICIOS",
+   "nivel": 5,
+   "creditos": 3,
+   "horas": 144,
+   "descripcion": "La asignatura Aplicaciones Orientadas a Servicios aborda los principios y tecnologías para el diseño y desarrollo de aplicaciones basadas en arquitecturas orientadas a servicios. Integra conceptos de servicios web, APIs y comunicación entre sistemas distribuidos. Utiliza una metodología teórico-práctica con énfasis en proyectos y casos reales. Promueve el aprendizaje activo y el trabajo colaborativo. Al finalizar, el estudiante será capaz de desarrollar soluciones escalables, interoperables y seguras.",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "Introducir al desarrollo orientado a servicios",
+     "horas": 36,
+     "contenidos": "Introducción a la Programación Gráfica; Introducción a los Servicios Web; Implementación de Servicios"
+    },
+    {
+     "numero": 2,
+     "nombre": "Implementar arquitecturas orientado a servicios",
+     "horas": 36,
+     "contenidos": "Introducción a SOA; Contexto SOA; Servicios SOAP; Servicios REST"
+    },
+    {
+     "numero": 3,
+     "nombre": "Analizar las Interfaces de Programación de Aplicaciones (API)",
+     "horas": 36,
+     "contenidos": "Introducción a las WEB API; Implementación de aplicaciones Web Api"
+    },
+    {
+     "numero": 4,
+     "nombre": "Integrar y construir aplicaciones orientadas a servicios",
+     "horas": 36,
+     "contenidos": "Consumo del webservice en aplicación de escritorio; Consumo del webservice en aplicación web; Consumo del webservice en aplicación móvil"
+    }
+   ],
+   "codigo": "08080509"
+  },
+  {
+   "nombre": "INTERACCION HUMANO / COMPUTADOR",
+   "nivel": 5,
+   "creditos": 3,
+   "horas": 144,
+   "descripcion": "p class=Default>El estudio de la Interacción Humano-Computador (IHC) es fundamental para diseñar y crear aplicaciones que sean útiles y fáciles de usar para los usuarios a quienes van dirigidas. En esta asignatura se abordan temas sobre principios básicos de diseño de aplicaciones, así como las técnicas fundamentales de evaluación de la interacción, contempla la teoría básica de diseño y evaluación de usabilidad. También se desarrollan prototipos para poner en práctica los c",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "Aplicar conceptos básicos que sustentan la interacción humano computadora al diseño de sistemas para satisfacer necesidades de usuarios de",
+     "horas": 36,
+     "contenidos": "Introducción a la interacción humano computador; La usabilidad y accesibilidad.; El factor humano."
+    },
+    {
+     "numero": 2,
+     "nombre": "Identificar los principios, métodos, guías y estándares del diseño centrado en el usuario en el diseño de la interacción Humano-Computador.",
+     "horas": 27,
+     "contenidos": "Diseño centrado en el usuario; Estándares y guías."
+    },
+    {
+     "numero": 3,
+     "nombre": "Diseñar prototipos de interfaces enfocados en los usuarios finales, para crear aplicaciones más naturales e intuitivas, mediante la comprensión",
+     "horas": 54,
+     "contenidos": "Emoción y experiencia; Prototipos; Implementación de interfaces"
+    },
+    {
+     "numero": 4,
+     "nombre": "Evaluar interfaces diseñadas para mejorar aplicaciones ya desarrolladas, mediante la aplicación de técnicas y mejores prácticas en el área de",
+     "horas": 27,
+     "contenidos": "Teoría de la evaluación y validación; Métodos de evaluación"
+    }
+   ],
+   "codigo": "08080510"
+  },
+  {
+   "nombre": "APLICACIONES WEB Y MOVILES",
+   "nivel": 6,
+   "creditos": 4,
+   "horas": 192,
+   "descripcion": "La asignatura de Aplicaciones Web y Móviles se orienta al desarrollo de competencias para el diseño, desarrollo e implementación de soluciones tecnológicas multiplataforma, integrando principios de arquitectura, metodologías de desarrollo, experiencia de usuario y accesibilidad digital. Se estructura en cuatro unidades curriculares que abordan desde los fundamentos conceptuales hasta las tendencias actuales, considerando tanto el desarrollo técnico como la calidad de la experiencia del usuario en entornos web y móviles. En la primera unidad se analizan los fundamentos del desarrollo de aplicaciones web y móviles, incluyendo la evolución histórica de estas tecnologías, conceptos esenciales, tipos de aplicaciones, el ecosistema actual de desarrollo, tendencias tecnológicas emergentes y la configuración del entorno de trabajo necesario para la construcción de soluciones digitales. La segunda unidad se centra en las metodologías y tecnologías de desarrollo, abordando enfoques metodológicos modernos, principios de diseño de interfaces UI/UX , tecnologías web y móviles, así como estrategias de diseño orientadas a mejorar la interacción, funcionalidad y experiencia del usuario. La tercera unidad profundiza en la arquitectura de aplicaciones web y móviles, analizando modelos arquitectónicos fundamentales y modernos, la comunicación entre sistemas, las arquitecturas frontend y backend, así como aspectos de despliegue, escalabilidad y sostenibilidad de aplicaciones en contextos reales. Finalmente, la cuarta unidad aborda la accesibilidad y usabilidad de aplicaciones digitales, considerando principios de accesibilidad, estándares internacionales y criterios de diseño centrados en el usuario que garanticen aplicaciones inclusivas, eficientes y de fácil interacción.",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "Analizar los fundamentos, tipos y evolución de las aplicaciones web y móviles para identificar entornos de desarrollo actuales y su aplicación en",
+     "horas": 18,
+     "contenidos": "Introducción al desarrollo de aplicaciones web y móviles"
+    },
+    {
+     "numero": 2,
+     "nombre": "Implementar prototipos funcionales aplicando metodologías ágiles y tecnologías frontend y backend modernas para el desarrollo de soluciones",
+     "horas": 78,
+     "contenidos": "Metodologías de Diseño y Tecnologías de Desarrollo de"
+    },
+    {
+     "numero": 3,
+     "nombre": "Diseñar arquitecturas básicas de aplicaciones web y móviles utilizando modelos cliente-servidor, MVC y APIs REST, garantizando escalabilidad",
+     "horas": 72,
+     "contenidos": "Arquitectura de Aplicaciones Web y Móviles"
+    },
+    {
+     "numero": 4,
+     "nombre": "Evaluar e implementar criterios de accesibilidad y usabilidad conforme a estándares internacionales para mejorar la experiencia del usuario en",
+     "horas": 24,
+     "contenidos": "Accesibilidad y Usabilidad de Aplicaciones Web y Móviles"
+    }
+   ],
+   "codigo": "08080606"
+  },
+  {
+   "nombre": "INTELIGENCIA DE NEGOCIOS",
+   "nivel": 6,
+   "creditos": 3,
+   "horas": 144,
+   "descripcion": "La asignatura Inteligencia de Negocios tiene como propósito proporcionar herramientas para descubrir e interpretar patrones en grandes y variados volúmenes de datos, con el fin de brindar soluciones empresariales mediante reportes que faciliten la toma de decisiones. En este marco, la asignatura desarrolla en el estudiante el conocimiento y la habilidad para utilizar tecnologías que agreguen valor a los datos crudos almacenados en repositorios diversos, orientando el descubrimiento de patrones como soporte para necesidades empresariales. La asignatura comprende las siguientes unidades curriculares: Conceptos fundamentales y enfoque de proyectos de inteligencia de negocios, y modelado dimensional de datos (Business Intelligence). Fundamentos del manejo de grandes y variados volúmenes de datos mediante herramientas de Big Data. Técnicas de modelado de datos para el problema de la extracción de patrones (Data Mining). Programación de algoritmos de aprendizaje automático para descubrir patrones de modo automático (patrones de reconocimiento). La metodología de enseñanza se apoya en Aprendizaje Basado en Problemas (ABP), Aprendizaje Basado en Proyectos y método expositivo, empleando estrategias como resolución de problemas, talleres y generación de datos y búsqueda de información, con recursos didácticos como marcadores, audiovisuales, internet y tecnologías de apoyo (reuniones virtuales). En cuanto a los escenarios de aprendizaje, se contempla el entorno virtual (computadoras, aula virtual, simuladores, Teams/Zoom), el áulico (actividades con apoyo del aula virtual institucional) y el real (actividades en laboratorio). La evaluación se desarrolla de forma diagnóstica (preguntas de sondeo por unidad), formativa (rúbrica) y sumativa (pruebas), considerando además instrumentos como pruebas diagnósticas, trabajos/tareas fuera de clase, trabajos en clase y evaluaciones parciales.",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "Conocer los conceptos fundamentales, la orientación y el enfoque de proyectos orientados a la inteligencia de negocios, y al modelado",
+     "horas": 36,
+     "contenidos": "Business Intlligence"
+    },
+    {
+     "numero": 2,
+     "nombre": "Conocer los fundamentos del manejo de grandes y variados volumenes de datos por medio de la aplicación de herramientas de big data",
+     "horas": 36,
+     "contenidos": "Fundamentos de Big Data"
+    },
+    {
+     "numero": 3,
+     "nombre": "Presentar diferentes técnicas de modelado de datos para el problema de la extracción de patrones",
+     "horas": 36,
+     "contenidos": "Fundamentos de Data Mining"
+    },
+    {
+     "numero": 4,
+     "nombre": "Programación de algoritmos aprendizaje automático de máquina para descubrir patrones de modo automático",
+     "horas": 36,
+     "contenidos": "Algoritmos de patrones de reconocimiento"
+    }
+   ],
+   "codigo": "08080607"
+  },
+  {
+   "nombre": "APLICACIONES DISTRIBUIDAS",
+   "nivel": 6,
+   "creditos": 3,
+   "horas": 144,
+   "descripcion": "La asignatura de Aplicaciones Distribuidas se estructura en cuatro unidades curriculares: la primera aborda los fundamentos y principios de la programación distribuida; la segunda desarrolla los procesos, mecanismos de comunicación y modelos de arquitecturas distribuidas; la tercera estudia el cómputo en la nube y los aspectos de seguridad en entornos distribuidos; y la cuarta se enfoca en la Arquitectura Orientada a Servicios y su implementación mediante frameworks. Los contenidos se desarrollan a través de clases teóricas integradoras y actividades prácticas de laboratorio, complementadas con trabajo autónomo y colaborativo, donde los estudiantes diseñan e implementan aplicaciones distribuidas que garanticen disponibilidad, escalabilidad y seguridad en el manejo de la información empresarial conforme a estándares internacionales.",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "Identificar los conceptos fundamentales asociados con las aplicaciones distribuidas.",
+     "horas": 36,
+     "contenidos": "Introducción a los Sistemas/Aplicaciones Distribuidos"
+    },
+    {
+     "numero": 2,
+     "nombre": "Conocer los procesos, la comunicación y los modelos de arquitecturas de las aplicaciones distribuidas.",
+     "horas": 36,
+     "contenidos": "Procesos, Comunicación y Modelos de Arquitecturas"
+    },
+    {
+     "numero": 3,
+     "nombre": "Utilizar el computo en la nube para la creación de una arquitectura distribuida cuidando aspectos de seguridad.",
+     "horas": 36,
+     "contenidos": "Computo en la Nube y Seguridad"
+    },
+    {
+     "numero": 4,
+     "nombre": "Desarrollar una arquitectura orientada a servicios mediante el uso de frameworks.",
+     "horas": 36,
+     "contenidos": "Arquitectura Orientada a Servicios"
+    }
+   ],
+   "codigo": "08080608"
+  },
+  {
+   "nombre": "GESTION DE PRUEBAS E IMPLANTACIÓN DE SOFTWARE",
+   "nivel": 6,
+   "creditos": 3,
+   "horas": 144,
+   "descripcion": "Estudiaremos como gestionar el proceso de pruebas de software mediante metodologías de ingeniería y los procesos metodológicos para la implantación de esos sistemas de software en ambientes de producción.",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "Identificar y ejecutar adecuadamente diversos tipos de pruebas en entornos software.",
+     "horas": 36,
+     "contenidos": "Gestión y tipos de pruebas de software"
+    },
+    {
+     "numero": 2,
+     "nombre": "Implementar herramientas y adoptar metodologías óptimas para pruebas de software.",
+     "horas": 36,
+     "contenidos": "Metodología y Herramientas de pruebas"
+    },
+    {
+     "numero": 3,
+     "nombre": "Adquirir conocimientos sobre las etapas y actividades esenciales en la implantación de software, garantizando una integración exitosa y",
+     "horas": 36,
+     "contenidos": "Procesos de Implantación"
+    },
+    {
+     "numero": 4,
+     "nombre": "Entender y diferenciar las principales metodologías de implantación, aplicando el marco más adecuado según las características y",
+     "horas": 36,
+     "contenidos": "Metodologías de implantación de software"
+    }
+   ],
+   "codigo": "08080609"
+  },
+  {
+   "nombre": "REALIDAD NACIONAL",
+   "nivel": 6,
+   "creditos": 2,
+   "horas": 96,
+   "descripcion": "Este silabo está conformado por 4 unidades temáticas, las cuales desde un enfoque deductivo aborda las temáticas basadas en los fundamentos teóricos conceptuales que registran las etapas, momentos y escenarios de la realidad socioeconómica del mundo y particularmente del Ecuador. En su primera parte desde una manera contextual se analiza el dinamismo del nuevo orden hegemónico mundial y su relación con la economía y sociedad ecuatoriana, en la segunda parte se contrasta la historia del Ecuador con el actual contexto político, económico, cultural y social en el Ecuador En la tercera parte se interpreta el marco constitucional y normativo desde la perspectiva de la economía y la sociedad y finalmente en la cuarta parte se realiza una revisión del Plan Nacional de Desarrollo y las agendas locales desde la perspectiva socioeconómica.",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "Analizar el dinamismo del nuevo orden hegemónico mundial y su relación con la economía y sociedad ecuatoriana.",
+     "horas": 24,
+     "contenidos": "Nuevo orden mundial y su relación con la economía y; Principales indicadores; El poder político mundial.; Tratados comerciales."
+    },
+    {
+     "numero": 2,
+     "nombre": "Contrastar la historia del Ecuador con el actual contexto político, económico, cultural y social en el Ecuador.",
+     "horas": 24,
+     "contenidos": "Historia del ecuador en el contexto político, económico; Estructura formal de Gobiernos Autónomos; Actividades principales de los GADs; Estado plurinacional e intercultural"
+    },
+    {
+     "numero": 3,
+     "nombre": "Interpretar el marco constitucional y normativo desde la perspectiva de la economía y la sociedad.",
+     "horas": 24,
+     "contenidos": "Marco constitucional y normativo desde la perspectiva de la; Profesiones emergentes en la era digital.; Especializaciones y posgrados; Emprendimiento e innovación y responsabilidad social y"
+    },
+    {
+     "numero": 4,
+     "nombre": "Revisar el Plan Nacional de Desarrollo y las agendas locales desde la perspectiva socioeconómica.",
+     "horas": 24,
+     "contenidos": "Plan nacional de desarrollo y las agendas locales desde la; Tema de investigación y Planteamiento del problema.; Justificación y Objetivo General y específicos.; Desarrollo y entrega del Trabajo de Titulación"
+    }
+   ],
+   "codigo": "08080610"
+  },
+  {
+   "nombre": "DESARROLLO ASISTIDO POR SOFTWARE",
+   "nivel": 7,
+   "creditos": 2,
+   "horas": 96,
+   "descripcion": "La asignatura Desarrollo Asistido por Software se encuentra estructurada en 16 semanas , las cuales se desarrollan en cuatro unidades de aprendizaje orientadas al uso de herramientas CASE para apoyar y automatizar el proceso de desarrollo de software. En la primera unidad , se abordan los fundamentos de la ingeniería de software asistida por computadora, analizando sus conceptos, características y beneficios dentro del ciclo de vida del software. La segunda unidad se centra en el uso de herramientas para la planificación, análisis y diseño del software, permitiendo al estudiante modelar y estructurar soluciones informáticas de manera eficiente. En la tercera unidad , se emplean aplicaciones orientadas a la gestión del desarrollo de software, fortaleciendo la organización, el control y el seguimiento de proyectos. Finalmente, la cuarta unidad analiza las herramientas destinadas a la documentación, pruebas y evaluación del software, asegurando la calidad del producto antes de su implementación. El proceso de enseñanza?aprendizaje se desarrolla mediante metodologías como el Aprendizaje Basado en Proyectos y el método expositivo, apoyado en talleres prácticos, trabajo colaborativo y el uso de recursos tecnológicos, permitiendo una evaluación diagnóstica, formativa y sumativa acorde con los resultados de aprendizaje establecidos.",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "Conocer los fundamentos de la ingeniería asistida por computadora.",
+     "horas": 18,
+     "contenidos": "Ingeniería de software asistida por software."
+    },
+    {
+     "numero": 2,
+     "nombre": "Comprender el uso de herramientas para la planificación, análisis y diseño del software.",
+     "horas": 30,
+     "contenidos": "Herramientas de planificación, análisis y diseño de"
+    },
+    {
+     "numero": 3,
+     "nombre": "Desarrollar software con apoyo de aplicativos para la gestión del software.",
+     "horas": 24,
+     "contenidos": "Herramientas para la gestión del desarrollo de software."
+    },
+    {
+     "numero": 4,
+     "nombre": "Analizar las herramientas para la documentación, pruebas y evaluación de software.",
+     "horas": 24,
+     "contenidos": "Herramientas para la documentación, pruebas y evaluación"
+    }
+   ],
+   "codigo": "08080708"
+  },
+  {
+   "nombre": "AUDITORIA DE SISTEMAS DE INFORMACION",
+   "nivel": 7,
+   "creditos": 3,
+   "horas": 144,
+   "descripcion": "En esta asignatura los estudiantes tendrán la capacidad de identificar en una organización los procesos que están sustentados en sistemas de Información, evaluar los riesgos a los que están expuestos los sistemas de información, aplicar herramientas y técnicas para la ejecución de la auditoría, aplicar metodologías de auditoría de sistemas de información arbitrar medidas de control preventivas y o correctivas que aseguren la información; todas estas capacidades permitirán a los estudiantes implantar procesos de Auditoría de sistemas de información en organizaciones con el fin de proponer alternativas de solución que permitan optimizar la gestión informática dentro de las mismas.",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "Identificar a los sistemas de Información y el rol de la Auditoría Informática",
+     "horas": 36,
+     "contenidos": "Introducción a los sistemas de Información y el rol de la"
+    },
+    {
+     "numero": 2,
+     "nombre": "Estructurar un Centro de Proceso de Datos e implantación de controles generales",
+     "horas": 36,
+     "contenidos": "Estructuración de un Centro de Proceso de Datos e"
+    },
+    {
+     "numero": 3,
+     "nombre": "Desarrollar una Auditoría Técnica de seguridad en sistemas y redes",
+     "horas": 36,
+     "contenidos": "Auditoría Técnica de seguridad en sistemas y redes"
+    },
+    {
+     "numero": 4,
+     "nombre": "Desarrollar una Auditoría Técnica de seguridad Internet y Dispositivos Móviles",
+     "horas": 36,
+     "contenidos": "Auditoría Técnica de seguridad Internet y Dispositivos"
+    }
+   ],
+   "codigo": "08080709"
+  },
+  {
+   "nombre": "GESTION DE PROYECTOS DE SOFTWARE",
+   "nivel": 7,
+   "creditos": 3,
+   "horas": 144,
+   "descripcion": "La asignatura de Gestión de Proyectos de Software pertenece a la unidad curricular profesional de la carrera de Software y se estructura en cuatro unidades temáticas: Introducción a la Gestión de Proyectos de Software, Procesos de un Proyecto de Software, Planificación del Proyecto y Control de Proyectos. Los contenidos se desarrollan mediante clases expositivas, análisis de casos, actividades prácticas y trabajo colaborativo, complementados con el aprendizaje autónomo del estudiante, con el propósito de fortalecer las competencias para planificar, ejecutar y controlar proyectos de software, aplicando metodologías, buenas prácticas e indicadores que garanticen el cumplimiento de objetivos, la adecuada gestión de recursos y la satisfacción de los requerimientos del cliente.",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "Analizar los fundamentos, conceptos y enfoques de la gestión de proyectos de software, reconociendo su importancia dentro del ciclo de vida",
+     "horas": 36,
+     "contenidos": "Gestión de Proyectos de Software"
+    },
+    {
+     "numero": 2,
+     "nombre": "Definir el alcance, los objetivos y los interesados de un proyecto de software, a partir del análisis de los requisitos y necesidades del cliente,",
+     "horas": 36,
+     "contenidos": "Procesos de un Proyecto de Software"
+    },
+    {
+     "numero": 3,
+     "nombre": "Elaborar el plan para la dirección del proyecto de software, integrando cronograma, recursos, costos, riesgos y calidad, como guía para la",
+     "horas": 36,
+     "contenidos": "Planificación del Proyecto"
+    },
+    {
+     "numero": 4,
+     "nombre": "Ejecutar y controlar el proyecto de software conforme al plan para la dirección del proyecto, aplicando técnicas de seguimiento y control que",
+     "horas": 36,
+     "contenidos": "Control de Proyectos"
+    }
+   ],
+   "codigo": "08080710"
+  },
+  {
+   "nombre": "GESTION DE CALIDAD DEL SOFTWARE",
+   "nivel": 7,
+   "creditos": 3,
+   "horas": 144,
+   "descripcion": "La asignatura Gestión de Calidad del Software se estructura en cuatro unidades curriculares orientadas a que el estudiante adquiera de manera progresiva los principales conceptos, tipos, modelos y normas de calidad aplicables a los productos y procesos de software, comprendiendo su importancia en el desarrollo de soluciones confiables y alineadas a estándares internacionales; en la Unidad 1 se abordan los fundamentos generales de la calidad del software y los modelos normativos; en la Unidad 2 se estudian y aplican herramientas y técnicas para evaluar la calidad del producto; en la Unidad 3 se desarrollan los procesos de aseguramiento de la calidad y planificación del control; y en la Unidad 4 se analizan y aplican métricas de software para la medición y mejora continua, mediante clases integradoras, talleres prácticos, análisis de casos reales y trabajo colaborativo, que permiten al estudiante identificar, analizar y aplicar principios de calidad en contextos reales de desarrollo de software.",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "Identificar los procesos fundamentales de la gestión de calidad del software.",
+     "horas": 24,
+     "contenidos": "Fundamentos generales de la calidad de software"
+    },
+    {
+     "numero": 2,
+     "nombre": "Aplicar los fundamentos y herramientas para la calidad del producto.",
+     "horas": 48,
+     "contenidos": "Fundamentos y herramientas para la calidad del producto."
+    },
+    {
+     "numero": 3,
+     "nombre": "Reconocer los procesos para el aseguramiento de la calidad del software.",
+     "horas": 36,
+     "contenidos": "Aseguramiento de la calidad de software"
+    },
+    {
+     "numero": 4,
+     "nombre": "Emplear métricas de software para medir la calidad.",
+     "horas": 36,
+     "contenidos": "Métricas de software"
+    }
+   ],
+   "codigo": "08080711"
+  },
+  {
+   "nombre": "INTELIGENCIA ARTIFICIAL",
+   "nivel": 7,
+   "creditos": 2,
+   "horas": 96,
+   "descripcion": "La asignatura de Inteligencia Artificial comprende las unidades curriculares: 1. Implementar sistemas expertos basados en reglas. 2. Implementar sistemas expertos con redes neuronales artificiales 3. Diseñar e implementar sistemas que utilicen técnicas de computación evolutiva con algoritmos genéticos. 4. Resolver problemas utilizando lógica difusa y fractales. La metodología a utilizarse se regirá con base en el modelo educativo de la UTA, se aplicarán métodos, técnicas y estrategias, mediante el trabajo individual y grupal, tomando como referencia el aprendizaje basado en problemas (ABP), método socrático, proyectos y talleres de resolución de problemas, buscando el logro del resultado de aprendizajedeseado para el estudiante. El aprendizaje se desarrollará en el aula a través de conferencias teóricas y resolución de ejercicios prácticos de aplicación, utilizando como complemento el aula virtual de la asignatura, páginas de consulta en internet, y el envío de tareas que permitan reforzar el aprendizaje mediante la resolución de problemas reales y cotidianos con temas relacionados a la realidad profesional. La evaluación será diagnostica, sistemática, sumativa, considerando las actividades de aula y el reglamento de evaluación de la institución: consultas bibliográficas, trabajos de campo, trabajos prácticos, prácticas de laboratorio, seminarios, exposiciones, ejecución de proyectos de investigación, proyectos comunitarios, reforzando con técnicas adicionales de evaluación como: resolución de problemas, lecciones oral/escrita, pruebas oral/escrita, solución de problemas, examen parcial, ponderando en base a lo estipulado en el Reglamento del sistema de evaluación, acreditación y calificación. Al finalizar el curso, el estudiante podrá construir sistemas expertos que utilicen redes neuronales artificiales para resolver problemas que requieran aprendizaje, computación evolutiva, algoritmos genéticos, lógica difusa.",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "Definir los componentes de sistemas expertos basados en reglas para crear sistemas de inferencia",
+     "horas": 12,
+     "contenidos": "Aprendizaje basado en reglas"
+    },
+    {
+     "numero": 2,
+     "nombre": "Identificar problemas que puedan resolverse mediante computación evolutiva y la aplicación de algoritmos genéticos",
+     "horas": 24,
+     "contenidos": "Lógica difusa; Algoritmos genéticos"
+    },
+    {
+     "numero": 3,
+     "nombre": "Desarrollar habilidades para aproximar la solución del problema mediante la aplicación de algoritmos de machine learning",
+     "horas": 36,
+     "contenidos": "Machine learning"
+    },
+    {
+     "numero": 4,
+     "nombre": "Aplicar los algoritmos de machine learning para desarrollar clasificación mediante visión por computadora",
+     "horas": 24,
+     "contenidos": "Visión por computadora"
+    }
+   ],
+   "codigo": "08080712"
+  },
+  {
+   "nombre": "EMPRENDIMIENTO Y LEGISLACION LABORAL",
+   "nivel": 8,
+   "creditos": 2,
+   "horas": 96,
+   "descripcion": "El emprendimiento en software se centra en el desarrollo de programas informáticos que mejoran la productividad y eficiencia de las organizaciones , pudiéndose aplicar en diversas áreas como gerencia, legal, administración, producción, recursos humanos, logística y marketing , entre otras. Asimismo, contempla la creación de soluciones digitales para el mercado , diseñadas con una visión global , ejecutadas mediante un liderazgo equilibrado y la gestión de riesgos calculados . El objetivo final es generar valor tangible , que contribuya al éxito y sostenibilidad de los proyectos emprendidos.",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "Definir el Modelo metodológico de Gestión de Proyectos Socio Productivos",
+     "horas": 24,
+     "contenidos": "Modelo metodológico de Gestión de Proyectos Socio"
+    },
+    {
+     "numero": 2,
+     "nombre": "Establecer el Proceso contable en un negocio",
+     "horas": 24,
+     "contenidos": "Proceso Contable"
+    },
+    {
+     "numero": 3,
+     "nombre": "Diferenciar la Contratación de empleados y trabajadores, sus deberes y derechos",
+     "horas": 24,
+     "contenidos": "Marco Legal Ecuatoriano de contratación de empleados y"
+    },
+    {
+     "numero": 4,
+     "nombre": "Determinar el Punto de equilibrio de ventas y por artículos o servicios",
+     "horas": 24,
+     "contenidos": "Proyecciones y Puntos de equilibrio de ventas y por"
+    }
+   ],
+   "codigo": "08080807"
+  },
+  {
+   "nombre": "SEGURIDAD EN EL DESARROLLO DEL SOFTWARE",
+   "nivel": 8,
+   "creditos": 3,
+   "horas": 144,
+   "descripcion": "La asignatura Seguridad en el Desarrollo del Software integra fundamentos teóricos y prácticos para la construcción de aplicaciones seguras a lo largo del ciclo de vida del desarrollo del software, abordando principios de seguridad informática, protección de bases de datos, autenticación y control de acceso, identificación y mitigación de vulnerabilidades en aplicaciones web, y el uso de herramientas y buenas prácticas para el desarrollo seguro. El proceso de enseñanza aprendizaje se desarrolla mediante metodologías activas como el aprendizaje basado en proyectos, resolución de problemas y actividades prácticas de laboratorio, promoviendo el análisis, la aplicación de estándares de seguridad y la implementación de soluciones en escenarios reales. Al finalizar la asignatura, el estudiante será capaz de identificar riesgos y vulnerabilidades, aplicar controles de seguridad en aplicaciones y emplear herramientas y prácticas de programación segura para mitigar amenazas en entornos de desarrollo de software.",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "Conocer las bases teóricas de la seguridad informática",
+     "horas": 18,
+     "contenidos": "Principios de la seguridad informática. Panorama nacional; Teoría de la información"
+    },
+    {
+     "numero": 2,
+     "nombre": "Desarrollar habilidades en el desarrollo seguro del software",
+     "horas": 54,
+     "contenidos": "La seguridad en las bases de datos; La seguridad en el levantamiento de requisitos.; Autenticación del usuario.; Control de acceso"
+    },
+    {
+     "numero": 3,
+     "nombre": "Identificar y solucionar las principales vulnerabilidades y tipos de ataque en entorno web",
+     "horas": 45,
+     "contenidos": "Ataques a aplicaciones web; Detección de vulnerabilidades web; Solución a vulnerabilidades web"
+    },
+    {
+     "numero": 4,
+     "nombre": "Conocer herramientas de apoyo al desarrollo seguro del software.",
+     "horas": 27,
+     "contenidos": "Control de versiones; Patrones de diseño.; Programación limpia."
+    }
+   ],
+   "codigo": "08080808"
+  },
+  {
+   "nombre": "INGENIERIA ECONOMICA PARA SOFTWARE",
+   "nivel": 8,
+   "creditos": 2,
+   "horas": 96,
+   "descripcion": "La asignatura Ingeniería Económica para Software se encuentra estructurada en 16 semanas , las cuales se desarrollan en cuatro unidades de aprendizaje orientadas a la aplicación de herramientas económicas y financieras en proyectos de software. En la primera unidad , se abordan los fundamentos de la ingeniería económica enfocada a la Ingeniería de Software, analizando conceptos básicos, principios económicos y su aplicación en la evaluación de alternativas de inversión. La segunda unidad se centra en el estudio del valor del dinero en el tiempo, permitiendo al estudiante comprender y aplicar conceptos financieros para la gestión de las finanzas personales. En la tercera unidad , se analizan los principios básicos de las finanzas aplicadas al manejo de una startup, considerando aspectos relacionados con costos, ingresos, rentabilidad y sostenibilidad financiera. Finalmente, la cuarta unidad aborda los componentes fundamentales del comercio exterior, orientados a la realización de importaciones en el Ecuador, fortaleciendo la comprensión del entorno económico y comercial que influye en los proyectos tecnológicos. El proceso de enseñanza?aprendizaje se desarrolla mediante metodologías como el Aprendizaje Basado en Proyectos y el método expositivo, apoyado en talleres prácticos, análisis de casos y el uso de recursos tecnológicos, permitiendo una evaluación diagnóstica, formativa y sumativa acorde con los resultados de aprendizaje establecidos.",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "Conocer los fundamentos de la ingeniería económica enfocada a Software.",
+     "horas": 30,
+     "contenidos": "Ingeniería Económica"
+    },
+    {
+     "numero": 2,
+     "nombre": "Comprender los conceptos del valor del dinero en el tiempo para el manejo de las finanzas personales.",
+     "horas": 18,
+     "contenidos": "Finanzas Personales"
+    },
+    {
+     "numero": 3,
+     "nombre": "Identificar los principios básicos de las finanzas para el manejo de una Startup.",
+     "horas": 24,
+     "contenidos": "Finanzas para Startups"
+    },
+    {
+     "numero": 4,
+     "nombre": "Conocer los componentes importantes de comercio exterior para la realización de importaciones a Ecuador.",
+     "horas": 24,
+     "contenidos": "Comercio Exterior Ecuador"
+    }
+   ],
+   "codigo": "08080809"
+  },
+  {
+   "nombre": "DISEÑO DE PROYECTOS",
+   "nivel": 8,
+   "creditos": 3,
+   "horas": 144,
+   "descripcion": "La asignatura Diseño de Proyectos , dirigida a los estudiantes del octavo ciclo de la carrera de Software, se estructura en cuatro unidades curriculares que promueven el desarrollo de una actitud científica frente a los desafíos propios del ámbito tecnológico. A través de la aplicación rigurosa del método científico, los estudiantes aprenden a diseñar, planificar y formular proyectos de investigación orientados a resolver problemáticas desde la perspectiva de desarrollo de software. Asimismo, la asignatura proporciona herramientas metodológicas e instrumentales para la implementación de pruebas piloto, el análisis de sus resultados y la presentación adecuada de los hallazgos obtenidos.",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "Establecer los enfoques de investigación",
+     "horas": 30,
+     "contenidos": "La investigación; Tipos de investigación; Técnicas e instrumentos; El método científico"
+    },
+    {
+     "numero": 2,
+     "nombre": "Identificar el problema de investigación y sustentarlo",
+     "horas": 36,
+     "contenidos": "La situación problemática; Antecedentes y marco teórico; Preguntas, objetivos e hipótesis; Variables, dimensiones e indicadores; Justificación de la Investigación"
+    },
+    {
+     "numero": 3,
+     "nombre": "Determinar los métodos, técnicas, recursos y presupuesto a emplear en un proyecto de investigación",
+     "horas": 42,
+     "contenidos": "Aspectos metodológicos; Técnicas e instrumentos; Población y muetra; Recolección de la información"
+    },
+    {
+     "numero": 4,
+     "nombre": "Sustentar el perfil de proyecto",
+     "horas": 36,
+     "contenidos": "Preguntas y respuestas; La Bibliografía; El Articulo científico; Estructura y redacción de un artículo científico"
+    }
+   ],
+   "codigo": "08080810"
+  },
+  {
+   "nombre": "DESARROLLO DE PROYECTOS",
+   "nivel": 9,
+   "creditos": 6,
+   "horas": 288,
+   "descripcion": "Desarrollo de Proyectos se imparte en el noveno nivel de la carrera de software, la cual tiene como finalidad que el estudiante desarrolle un proyecto de investigacion como su trabajo de titulacion , aplicando experticia en el manejo de sus etapas mediante herramientas e instrumentos, técnicas y tecnologías para la solución de problemas que respondan a los requerimientos del contexto social oempresarial.",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "Evaluar el diseño de proyecto aprobado",
+     "horas": 57,
+     "contenidos": "Lineamientos para el desarrollo; Revisión del diseño del Proyecto de investigación; Análisis de Objetivos de la investigación; Validez de la Justificación; Análisis de la Hipótesis; Ajustes del Proyecto"
+    },
+    {
+     "numero": 2,
+     "nombre": "Desarrollar la Investigación del proyecto",
+     "horas": 72,
+     "contenidos": "Marco teórico de la investigación; Análisis y elaboración de materiales; La recolección de datos; Evaluación y análisis de resultados"
+    },
+    {
+     "numero": 3,
+     "nombre": "Implementar los resultados de la investigación",
+     "horas": 96,
+     "contenidos": "Planificación detallada; Aplicación metodológica; Desarrollo de la propuesta; Revisión del marco teórico; Redacción del trabajo de investigación"
+    },
+    {
+     "numero": 4,
+     "nombre": "Comprobar la hipótesis, conclusiones y recomendaciones",
+     "horas": 63,
+     "contenidos": "Comprobación de la hipótesis; Conclusiones y recomendaciones; Fuentes de información; Anexos"
+    }
+   ],
+   "codigo": "08080904"
+  }
+ ]
+}

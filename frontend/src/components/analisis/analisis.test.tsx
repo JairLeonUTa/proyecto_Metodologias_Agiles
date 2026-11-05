@@ -51,7 +51,7 @@ describe('PanelCreditos (S2-A04)', () => {
     expect(screen.getByText('No disponibles')).toBeInTheDocument();
   });
 
-  it('muestra θ, δ, τ y la versión de la regla aplicada', () => {
+  it('muestra la versión de la regla aplicada sin exponer los umbrales', () => {
     const creditos: EvaluacionCreditos = { pcred: 100, categoria: 'NORMAL', alertas: [], bloqueoDuro: false, detalleCalculo: '' };
     render(
       <PanelCreditos
@@ -60,8 +60,8 @@ describe('PanelCreditos (S2-A04)', () => {
         parametros={{ id: 1, rutaNormativa: 'CAU-P-011', theta: 80, delta: 15, tau: 75, version: 3, actualizadoUtc: '', actualizadoPor: '' }}
       />,
     );
-    expect(screen.getByText(/θ 80 · δ 15 · τ 0,75/)).toBeInTheDocument();
-    expect(screen.getByText('Reglas versión 3')).toBeInTheDocument();
+    expect(screen.getByText('Versión 3')).toBeInTheDocument();
+    expect(screen.queryByText(/θ|δ|τ/)).not.toBeInTheDocument();
     expect(screen.queryByRole('list', { name: 'Alertas de admisibilidad' })).toBeNull();
   });
 });
@@ -96,7 +96,7 @@ describe('TablaCobertura (S2-A06)', () => {
 
     expect(screen.getByText('85,71 %')).toBeInTheDocument();
     expect(screen.getByText('6 de 7 unidades cubiertas')).toBeInTheDocument();
-    expect(screen.getByText('τ = 0,75')).toBeInTheDocument();
+    expect(screen.queryByText(/τ/)).not.toBeInTheDocument();
     expect(screen.getAllByText('✓ Cubierta')).toHaveLength(6);
     const fila = screen.getByText('✗ Faltante').closest('tr') as HTMLElement;
     expect(within(fila).getByText('U.7 Unidad 7')).toBeInTheDocument();

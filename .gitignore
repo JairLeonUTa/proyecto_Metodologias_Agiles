@@ -18,3 +18,8 @@
 *.bak
 *.mdf
 *.ldf
+
+# Descargas crudas de sílabos (el catálogo ya está en src/Services/Siha.MsA.Api/Data/CatalogoUta)
+tools/catalogo-uta/descargas-*/
+**/__pycache__/
+*.pyc
