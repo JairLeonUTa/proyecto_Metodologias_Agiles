@@ -266,21 +266,25 @@ public class ReglasServiceTests
     }
 
     [Fact]
-    public async Task SemillaAgregaFisicaDeIndustrialYSoftwareConPlanCompleto()
+    public async Task SemillaCargaLasMallasOficialesConSusSilabosComoMallaVigente()
     {
         using var db = NuevaDb();
         await Sembrar(db);
         await Sembrar(db); // idempotente: no duplica
 
-        var fisica = await db.Asignaturas.Include(a => a.Unidades).Include(a => a.Malla)
-            .Where(a => a.Codigo == "SW105" || a.Codigo == "IND105" || a.Codigo == "IND205" || a.Codigo == "IND108")
-            .ToListAsync();
-        Assert.Equal(4, fisica.Count);
-        Assert.All(fisica, a => Assert.True(a.PlanCompleto));
-        var sw105 = fisica.Single(a => a.Codigo == "SW105");
-        Assert.Equal(8, sw105.Unidades.Count);
-        var industrial = fisica.Where(a => a.Codigo is "IND105" or "IND205").SelectMany(a => a.Unidades).Select(u => u.Nombre);
-        Assert.Equal(industrial.OrderBy(n => n), sw105.Unidades.Select(u => u.Nombre).OrderBy(n => n));
+        var vigentes = await db.Mallas.Include(m => m.Carrera).Where(m => m.Vigente).ToListAsync();
+        Assert.Contains(vigentes, m => m.Carrera!.Codigo == "SW" && m.Version == DbSeederA.VersionMallaUta);
+        Assert.Contains(vigentes, m => m.Carrera!.Codigo == "TI" && m.Version == DbSeederA.VersionMallaUta);
+        Assert.Single(vigentes, m => m.Carrera!.Codigo == "SW");
+
+        var algoritmos = await db.Asignaturas.Include(a => a.Unidades)
+            .SingleAsync(a => a.Nombre == "ALGORITMOS Y LOGICA DE PROGRAMACION");
+        Assert.Equal(1, algoritmos.Semestre);
+        Assert.Equal(4, algoritmos.Creditos);
+        Assert.Equal(192, algoritmos.Horas);
+        Assert.Equal(4, algoritmos.Unidades.Count);
+        Assert.Contains("Programación con condicionales", algoritmos.Unidades.Single(u => u.Numero == 2).Contenidos);
+        Assert.Equal(192, algoritmos.Unidades.Sum(u => u.Horas));
     }
 
     private static Task Sembrar(SihaDbContextA db) => DbSeederA.SembrarAsync(db,

@@ -24,9 +24,8 @@ public class CatalogoGrpcService : CatalogoGrpc.CatalogoGrpcBase
 
     public override async Task<MallaVigente> ObtenerMallaVigente(SolicitudMalla request, ServerCallContext context)
     {
-        var codigo = (request.CarreraCodigo ?? string.Empty).Trim().ToUpperInvariant();
-        var carrera = await _db.Carreras.AsNoTracking()
-            .FirstOrDefaultAsync(c => c.Codigo.ToUpper() == codigo, context.CancellationToken);
+        var carrera = await BuscarCarreraAsync(request.CarreraCodigo, context.CancellationToken);
+        var codigo = carrera?.Codigo ?? (request.CarreraCodigo ?? string.Empty).Trim().ToUpperInvariant();
         var respuesta = new MallaVigente { CarreraCodigo = codigo };
         if (carrera is null)
         {
@@ -64,6 +63,36 @@ public class CatalogoGrpcService : CatalogoGrpc.CatalogoGrpcBase
         _logger.LogInformation("gRPC ObtenerMallaVigente {Carrera} v{Version}: {Asignaturas} asignatura(s).",
             codigo, malla.Version, asignaturas.Count);
         return respuesta;
+    }
+
+    public override async Task<CarreraResuelta> ResolverCarrera(SolicitudCarrera request, ServerCallContext context)
+    {
+        var carrera = await BuscarCarreraAsync(request.Nombre, context.CancellationToken);
+        return carrera is null
+            ? new CarreraResuelta()
+            : new CarreraResuelta { Encontrada = true, Codigo = carrera.Codigo, Nombre = carrera.Nombre };
+    }
+
+    /// <summary>Código exacto o nombre equivalente: "Software" = "Ingeniería de Software".</summary>
+    private async Task<Siha.MsA.Api.Domain.Entities.Carrera?> BuscarCarreraAsync(string? texto, CancellationToken cancellationToken)
+    {
+        var buscado = (texto ?? string.Empty).Trim();
+        if (buscado.Length == 0) return null;
+        var carreras = await _db.Carreras.AsNoTracking().ToListAsync(cancellationToken);
+        var clave = ClaveCarrera(buscado);
+        return carreras.FirstOrDefault(c => string.Equals(c.Codigo, buscado, StringComparison.OrdinalIgnoreCase))
+            ?? carreras.FirstOrDefault(c => ClaveCarrera(c.Nombre) == clave)
+            ?? carreras.FirstOrDefault(c => clave.Length >= 5 && (ClaveCarrera(c.Nombre).Contains(clave) || clave.Contains(ClaveCarrera(c.Nombre))));
+    }
+
+    public static string ClaveCarrera(string nombre)
+    {
+        var sinTildes = new string(nombre.Normalize(System.Text.NormalizationForm.FormD)
+            .Where(ch => System.Globalization.CharUnicodeInfo.GetUnicodeCategory(ch) != System.Globalization.UnicodeCategory.NonSpacingMark)
+            .ToArray()).ToLowerInvariant();
+        var palabras = System.Text.RegularExpressions.Regex.Split(sinTildes, "[^a-z0-9]+")
+            .Where(p => p.Length > 0 && p is not ("ingenieria" or "en" or "de" or "la" or "y" or "carrera" or "las" or "los"));
+        return string.Join(" ", palabras.OrderBy(p => p));
     }
 
     public override async Task<RespuestaDocentes> VerificarDocentes(SolicitudDocentes request, ServerCallContext context)

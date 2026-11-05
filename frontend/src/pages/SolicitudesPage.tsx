@@ -61,14 +61,19 @@ export function SolicitudesPage(): JSX.Element {
     },
     {
       clave: 'carreras',
-      encabezado: 'Carreras',
-      render: ({ expediente }) => `${expediente.carreraOrigenCodigo} → ${expediente.carreraDestinoCodigo}`,
+      encabezado: 'Cambio de carrera',
+      render: ({ expediente }) => (
+        <span className="text-sm">
+          {expediente.carreraOrigenNombre ?? expediente.carreraOrigenCodigo} → <strong>{expediente.carreraDestinoNombre ?? expediente.carreraDestinoCodigo}</strong>
+        </span>
+      ),
     },
     {
       clave: 'materias',
-      encabezado: 'Materias',
+      encabezado: 'Materias pedidas',
       className: 'num',
-      render: ({ expediente }) => expediente.asignaturas.length,
+      render: ({ analisis, expediente }) =>
+        analisis?.resultado?.evaluaciones.length ?? new Set(expediente.asignaturas.map((a) => a.solicitudNumero).filter(Boolean)).size,
     },
     {
       clave: 'revisores',
@@ -86,7 +91,16 @@ export function SolicitudesPage(): JSX.Element {
       encabezado: 'Estado',
       render: ({ analisis }) => {
         const estado = estadoSolicitud(analisis);
-        return <Etiqueta tono={estado.tono}>{estado.texto}</Etiqueta>;
+        const meToca =
+          esDocente &&
+          analisis?.estado === 'ANALIZADO' &&
+          analisis.revisores.some((rv) => rv.correo === usuario?.correoInstitucional?.toLowerCase() && !rv.respondio);
+        return (
+          <div className="flex flex-col items-start gap-1">
+            <Etiqueta tono={estado.tono}>{estado.texto}</Etiqueta>
+            {meToca ? <Etiqueta tono="marca">Falta su decisión</Etiqueta> : null}
+          </div>
+        );
       },
     },
     { clave: 'fecha', encabezado: 'Registrada', render: ({ expediente }) => formatearFechaHora(expediente.fechaCreacionUtc) },
@@ -94,7 +108,10 @@ export function SolicitudesPage(): JSX.Element {
       clave: 'abrir',
       encabezado: '',
       render: ({ expediente }) => (
-        <Link to={`/solicitudes/${expediente.id}`} className="text-sm font-semibold text-institucional-700 hover:underline">
+        <Link
+          to={`/solicitudes/${expediente.id}`}
+          className="rounded-md bg-institucional-700 px-3 py-1.5 text-sm font-semibold text-white hover:bg-institucional-800"
+        >
           Abrir
         </Link>
       ),

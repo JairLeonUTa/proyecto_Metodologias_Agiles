@@ -42,7 +42,6 @@ public class SihaDbContextC : DbContext
             e.Property(x => x.Observacion).HasMaxLength(1000);
             e.HasIndex(x => x.ExpedienteId);
             e.HasIndex(x => x.DocumentoId);
-            e.Property(x => x.Nota).HasPrecision(4, 2);
         });
 
         modelBuilder.Entity<AnalisisExpediente>(e =>
@@ -63,6 +62,9 @@ public class SihaDbContextC : DbContext
             e.Property(x => x.Revisor2Correo).HasMaxLength(150);
             e.Property(x => x.Estado).HasMaxLength(20).IsRequired();
             e.Property(x => x.ResultadoJson).HasColumnType("NVARCHAR(MAX)");
+            e.Property(x => x.CertificadoJson).HasColumnType("NVARCHAR(MAX)").IsRequired();
+            e.Property(x => x.CarreraOrigenNombre).HasMaxLength(150);
+            e.Property(x => x.CarreraDestinoNombre).HasMaxLength(150);
             e.Property(x => x.Mensaje).HasMaxLength(1000);
         });
 

@@ -37,9 +37,11 @@ public record AsignaturaResponse(
     double? Nota,
     DateOnly? FechaAprobacionCertificada,
     int? NumeroMatriculaDestino = null,
-    int? Semestre = null,
-    int? Creditos = null,
-    int? Horas = null);
+    int? Nivel = null,
+    string? PeriodoAcademico = null,
+    bool? Aprobada = null,
+    string? AsignaturaDestinoNombre = null,
+    int? SolicitudNumero = null);
 
 public record ExpedienteResponse(
     Guid Id,
@@ -61,7 +63,9 @@ public record ExpedienteResponse(
     string? NumeroCertificado = null,
     string? EstudianteNombre = null,
     string? EstudianteIdentificacion = null,
-    IReadOnlyCollection<RevisorResponse>? Revisores = null);
+    IReadOnlyCollection<RevisorResponse>? Revisores = null,
+    string? CarreraOrigenNombre = null,
+    string? CarreraDestinoNombre = null);
 
 /// <summary>Docente revisor asignado a la solicitud.</summary>
 public record RevisorResponse(string Nombre, string Correo);

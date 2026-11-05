@@ -1,28 +1,23 @@
-"""Genera la plantilla y los certificados de ejemplo con el formato oficial SIHA-CH-01.
+"""Genera los certificados de ejemplo con el formato oficial SIHA-CH-01.
 
-Uso:  python tools/certificados-siha/generar_certificados.py
-Requiere: pip install reportlab
+El certificado trae: estudiante, trámite, carreras con su nombre completo, historial académico
+(materias aprobadas y reprobadas con nivel, período académico y nota), qué materia quiere homologar
+por cuál y los dos docentes revisores. Créditos, horas y contenidos NO van aquí: el agente los toma
+de los sílabos oficiales (src/Services/Siha.MsA.Api/Data/CatalogoUta).
 
-Salida:
-  documentos-prueba/certificados/*.pdf   (pruebas automáticas y demostración)
-  frontend/public/plantillas/*.pdf        (descargables desde la pantalla de registro)
+Uso:  python tools/certificados-siha/generar_certificados.py      (requiere: pip install reportlab)
+Salida: documentos-prueba/certificados/*.pdf y frontend/public/plantillas/*.pdf
 """
 from __future__ import annotations
 
 import os
 import shutil
-import sys
 from dataclasses import dataclass, field
 
 from reportlab.lib.colors import HexColor
 from reportlab.lib.pagesizes import A4
 from reportlab.pdfbase.pdfmetrics import stringWidth
 from reportlab.pdfgen import canvas
-
-sys.path.insert(0, os.path.dirname(__file__))
-from datos_catalogo import (  # noqa: E402
-    ESTRUCTURAS_UC, FISICA_I_IND, FISICA_II_IND, PROGRAMACION_BASICA_IND, PROGRAMACION_UC,
-)
 
 RAIZ = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 SALIDA = os.path.join(RAIZ, "documentos-prueba", "certificados")
@@ -42,16 +37,12 @@ MARGEN = 50
 
 
 @dataclass
-class Asignatura:
-    codigo: str
+class Materia:
     nombre: str
-    semestre: int
-    creditos: int
-    horas: int
-    fecha: str
+    nivel: int
+    periodo: str
     nota: str
-    matricula: int
-    unidades: list
+    estado: str  # Aprobada / Reprobada
 
 
 @dataclass
@@ -66,12 +57,9 @@ class Certificado:
     institucion: str
     carrera_origen: str
     carrera_destino: str
-    asignaturas: list = field(default_factory=list)
+    materias: list
+    solicitudes: list  # [( [materias aprobadas], materia de destino )]
     revisores: list = field(default_factory=lambda: [REVISORES["hnaranjo"], REVISORES["mvaca"]])
-
-
-def materia(codigo, nombre, semestre, creditos, fecha, nota, matricula, unidades):
-    return Asignatura(codigo, nombre, semestre, creditos, sum(u[1] for u in unidades), fecha, nota, matricula, unidades)
 
 
 class Escritor:
@@ -179,7 +167,7 @@ def dibujar(cert: Certificado, ruta: str, total: int | None) -> int:
     e.c.setFont("Helvetica", 9)
     e.c.drawCentredString(ANCHO / 2, e.y, "Formato SIHA-CH-01 · Documento preaprobado por Secretaría Académica")
     e.y -= 11
-    e.c.drawCentredString(ANCHO / 2, e.y, "Incluye solo materias aprobadas en los últimos 10 años y sin tercera matrícula")
+    e.c.drawCentredString(ANCHO / 2, e.y, "Solo incluye materias de los últimos 10 años y sin tercera matrícula")
     e.y -= 16
     e.pares([("Número de certificado", cert.numero), ("Fecha de emisión", cert.fecha_emision)])
     e.pares([("Emitido por", "Secretaría Académica FISEI")])
@@ -198,16 +186,19 @@ def dibujar(cert: Certificado, ruta: str, total: int | None) -> int:
     for i, (nombre, correo) in enumerate(cert.revisores, start=1):
         e.pares([(f"Docente revisor {i}", f"{nombre} - {correo}")])
 
-    e.seccion("ASIGNATURAS APROBADAS")
-    for a in cert.asignaturas:
-        e.espacio(70)
-        e.y -= 4
-        e.pares([("Asignatura", f"{a.codigo} - {a.nombre}")], bold_valor=True)
-        e.pares([("Semestre", str(a.semestre)), ("Créditos", str(a.creditos)), ("Horas totales", str(a.horas))], x0=MARGEN + 12)
-        e.pares([("Fecha de aprobación", a.fecha), ("Nota", a.nota)], x0=MARGEN + 12)
-        for i, (nombre, horas, contenidos) in enumerate(a.unidades, start=1):
-            e.linea_simple(f"Unidad {i}: {nombre} ({horas} horas)", "Helvetica-Bold", 9, MARGEN + 12)
-            e.texto_largo("Contenidos", contenidos, MARGEN + 24)
+    e.seccion("HISTORIAL ACADÉMICO EN LA CARRERA DE ORIGEN")
+    for m in sorted(cert.materias, key=lambda m: (m.nivel, m.nombre)):
+        e.espacio(32)
+        e.pares([("Materia", m.nombre)], bold_valor=True)
+        e.pares([("Nivel", str(m.nivel)), ("Período académico", m.periodo), ("Nota", m.nota), ("Estado", m.estado)], x0=MARGEN + 12)
+
+    e.seccion("MATERIAS QUE SOLICITA HOMOLOGAR")
+    for i, (origen, destino) in enumerate(cert.solicitudes, start=1):
+        e.espacio(14 * (len(origen) + 2))
+        e.linea_simple(f"Solicitud {i}", "Helvetica-Bold", 9)
+        for o in origen:
+            e.pares([("Materia aprobada", o)], x0=MARGEN + 12)
+        e.pares([("Homologar por", destino)], x0=MARGEN + 12, bold_valor=True)
 
     e.y -= 10
     e.linea_simple("FIN DEL CERTIFICADO", "Helvetica-Bold", 10)
@@ -229,55 +220,89 @@ def plan_analitico_no_valido(ruta: str):
     """PDF que NO sigue la plantilla (plan analítico suelto): debe rechazarse."""
     c = canvas.Canvas(ruta, pagesize=A4)
     c.setFont("Helvetica-Bold", 14)
-    c.drawString(MARGEN, ALTO - 70, "PLAN ANALÍTICO - FÍSICA I")
+    c.drawString(MARGEN, ALTO - 70, "PLAN ANALÍTICO - FÍSICA")
     c.setFont("Helvetica", 10)
     y = ALTO - 100
-    for linea in ["Código: IND105", "Créditos: 4", "Horas totales: 192",
-                  "Unidad 1: Magnitudes físicas y vectores (48 horas)", "Unidad 2: Cinemática de la partícula (48 horas)"]:
+    for linea in ["Créditos: 3", "Horas totales: 144", "Unidad 1: Estática (36 horas)", "Unidad 2: Dinámica (36 horas)"]:
         c.drawString(MARGEN, y, linea)
         y -= 16
     c.save()
 
 
+P1, P2 = "Abr-Sep 2025", "Oct 2025-Mar 2026"
+
+
 def main():
-    ind_sw = dict(
-        tipo="INTERNO", ruta="CAU-P-011", institucion="Universidad Técnica de Ambato",
-        carrera_origen="IND - Ingeniería Industrial", carrera_destino="SW - Ingeniería de Software",
-    )
-    certificados = [
-        Certificado("SIHA-IND-SW-completo.pdf", "SIHA-2026-0147", "2026-10-30",
-                    "Pérez Gómez Ana Lucía", "1804567890", **ind_sw, asignaturas=[
-                        materia("IND105", "Física I", 1, 4, "2024-02-16", "8.60", 1, FISICA_I_IND),
-                        materia("IND108", "Programación Básica", 2, 4, "2024-08-02", "9.10", 1, PROGRAMACION_BASICA_IND),
-                        materia("IND205", "Física II", 2, 4, "2024-08-09", "8.20", 1, FISICA_II_IND),
-                    ]),
-        Certificado("SIHA-IND-SW-solo-fisica1.pdf", "SIHA-2026-0148", "2026-10-30",
-                    "Villacís Mora Carlos Andrés", "1805123456", **ind_sw, asignaturas=[
-                        materia("IND105", "Física I", 1, 4, "2025-02-14", "7.80", 1, FISICA_I_IND),
-                        materia("IND108", "Programación Básica", 2, 4, "2025-08-01", "8.40", 2, PROGRAMACION_BASICA_IND),
-                    ], revisores=[REVISORES["mvaca"], REVISORES["jcastro"]]),
-        Certificado("SIHA-UCuenca-SW-externo.pdf", "SIHA-2026-0151", "2026-10-31",
-                    "Ortiz Salazar María José", "0104567891", tipo="EXTERNO", ruta="CAU-P-122",
-                    institucion="Universidad de Cuenca", carrera_origen="CC - Ciencias de la Computación",
-                    carrera_destino="SW - Ingeniería de Software", asignaturas=[
-                        materia("UC-ED", "Estructuras de Datos", 3, 4, "2023-07-21", "8.90", 1, ESTRUCTURAS_UC),
-                        materia("UC-PROG", "Programación I", 1, 4, "2021-07-23", "7.50", 1, PROGRAMACION_UC),
-                    ], revisores=[REVISORES["hnaranjo"], REVISORES["jcastro"]]),
-    ]
+    ti_sw = Certificado(
+        "SIHA-TI-SW-cambio-de-carrera.pdf", "SIHA-2026-0147", "2026-10-30",
+        "Pérez Gómez Ana Lucía", "1804567890", "Cambio de carrera", "CAU-P-011",
+        "Universidad Técnica de Ambato", "Tecnologías de la Información", "Software",
+        materias=[
+            Materia("Álgebra Lineal", 1, P1, "8.40", "Aprobada"),
+            Materia("Fundamentos de Programación", 1, P1, "8.90", "Aprobada"),
+            Materia("Cálculo Diferencial", 1, P1, "7.60", "Aprobada"),
+            Materia("Física", 1, P1, "8.10", "Aprobada"),
+            Materia("Metodología de la Investigación", 1, P1, "9.00", "Aprobada"),
+            Materia("Cálculo Integral", 2, P2, "6.20", "Reprobada"),
+            Materia("Lógica Matemática", 2, P2, "7.80", "Aprobada"),
+            Materia("Medidas Eléctricas", 2, P2, "5.90", "Reprobada"),
+            Materia("Estructura de Datos", 2, P2, "8.00", "Aprobada"),
+            Materia("Realidad Nacional", 2, P2, "8.50", "Aprobada"),
+            Materia("Programación Orientada a Objetos", 2, P2, "7.90", "Aprobada"),
+        ],
+        solicitudes=[
+            (["Fundamentos de Programación"], "Algoritmos y Lógica de Programación"),
+            (["Física"], "Física"),
+            (["Álgebra Lineal"], "Álgebra Lineal"),
+            (["Programación Orientada a Objetos"], "Programación Orientada a Objetos"),
+            (["Estructura de Datos"], "Estructura de Datos"),
+        ])
 
-    # Certificado con errores para demostrar el rechazo: nota reprobatoria y horas que no cuadran.
-    erroneo = Certificado("SIHA-con-errores.pdf", "SIHA-2026-0199", "2026-10-30",
-                          "Prueba Errores Juan", "18045", **ind_sw, asignaturas=[
-                              materia("IND105", "Física I", 1, 4, "2024-02-16", "6.40", 1, FISICA_I_IND),
-                              materia("IND108", "Programación Básica", 2, 4, "2014-08-01", "8.00", 1, PROGRAMACION_BASICA_IND),
-                          ], revisores=[REVISORES["hnaranjo"], ("Docente Externo", "docente@gmail.com")])
-    erroneo.asignaturas[0].horas = 160
+    ind_sw = Certificado(
+        "SIHA-IND-SW-cambio-de-carrera.pdf", "SIHA-2026-0148", "2026-10-30",
+        "Villacís Mora Carlos Andrés", "1805123456", "Cambio de carrera", "CAU-P-011",
+        "Universidad Técnica de Ambato", "Ingeniería Industrial", "Software",
+        materias=[
+            Materia("Química", 1, P1, "7.40", "Aprobada"),
+            Materia("Física Básica", 1, P1, "8.20", "Aprobada"),
+            Materia("Álgebra", 1, P1, "7.90", "Aprobada"),
+            Materia("Introducción a la Ingeniería Industrial", 1, P1, "8.80", "Aprobada"),
+            Materia("Lógica Matemática", 1, P1, "8.00", "Aprobada"),
+            Materia("Tecnologías de la Información y la Comunicación (TIC)", 1, P1, "9.10", "Aprobada"),
+            Materia("Física Aplicada", 2, P2, "6.50", "Reprobada"),
+            Materia("Cálculo Diferencial", 2, P2, "7.20", "Aprobada"),
+            Materia("Programación", 2, P2, "8.60", "Aprobada"),
+        ],
+        solicitudes=[
+            (["Física Básica"], "Física"),
+            (["Lógica Matemática"], "Lógica Matemática"),
+            (["Programación"], "Algoritmos y Lógica de Programación"),
+            (["Cálculo Diferencial"], "Cálculo Diferencial"),
+        ],
+        revisores=[REVISORES["mvaca"], REVISORES["jcastro"]])
 
-    rutas = [generar(c) for c in certificados + [erroneo]]
+    # Rechazado: siglas en la carrera, primer nivel no aprobado, pide una reprobada y revisor con Gmail.
+    erroneo = Certificado(
+        "SIHA-con-errores.pdf", "SIHA-2026-0199", "2026-10-30",
+        "Prueba Errores Juan", "18045", "Cambio de carrera", "CAU-P-011",
+        "Universidad Técnica de Ambato", "TI", "Software",
+        materias=[
+            Materia("Fundamentos de Programación", 1, P1, "8.90", "Aprobada"),
+            Materia("Física", 1, P1, "5.40", "Reprobada"),
+            Materia("Álgebra Lineal", 1, "Abr-Sep 2013", "8.00", "Aprobada"),
+        ],
+        solicitudes=[(["Física"], "Física"), (["Fundamentos de Programación"], "Algoritmos y Lógica de Programación")],
+        revisores=[REVISORES["hnaranjo"], ("Docente Externo", "docente@gmail.com")])
+
+    rutas = [generar(c) for c in (ti_sw, ind_sw, erroneo)]
     invalido = os.path.join(SALIDA, "plan-analitico-no-valido.pdf")
     plan_analitico_no_valido(invalido)
     rutas.append(invalido)
 
+    for viejo in os.listdir(SALIDA):
+        if viejo.endswith(".pdf") and os.path.join(SALIDA, viejo) not in rutas:
+            os.remove(os.path.join(SALIDA, viejo))
+    shutil.rmtree(PUBLICO, ignore_errors=True)
     os.makedirs(PUBLICO, exist_ok=True)
     for r in rutas:
         shutil.copy(r, PUBLICO)

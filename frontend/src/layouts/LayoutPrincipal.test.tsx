@@ -47,7 +47,7 @@ describe('LayoutPrincipal — navegación simple según rol', () => {
 
     expect(screen.getByRole('button', { name: /Solicitudes/ })).toBeInTheDocument();
     expect(screen.getByText('Usuarios y roles')).toBeInTheDocument();
-    expect(screen.getByText('Reglas')).toBeInTheDocument();
+    expect(screen.getByText('Configurar mínimo (80 %)')).toBeInTheDocument();
     expect(screen.getByText('Asignaturas y contenidos')).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /Catálogo académico|Evaluación|Expedientes/ })).toBeNull();
   });
@@ -57,7 +57,7 @@ describe('LayoutPrincipal — navegación simple según rol', () => {
 
     expect(screen.getByRole('button', { name: /Solicitudes/ })).toBeInTheDocument();
     expect(screen.queryByText('Usuarios y roles')).toBeNull();
-    expect(screen.queryByText('Reglas')).toBeNull();
+    expect(screen.queryByText('Configurar mínimo (80 %)')).toBeNull();
   });
 
   it('el operador solo ve Solicitudes (registrar y listar), sin administración', () => {

@@ -36,10 +36,24 @@ namespace Siha.MsC.Api.Migrations
                         .HasMaxLength(20)
                         .HasColumnType("nvarchar(20)");
 
+                    b.Property<string>("CarreraDestinoNombre")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
                     b.Property<string>("CarreraOrigenCodigo")
                         .IsRequired()
                         .HasMaxLength(20)
                         .HasColumnType("nvarchar(20)");
+
+                    b.Property<string>("CarreraOrigenNombre")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.Property<string>("CertificadoJson")
+                        .IsRequired()
+                        .HasColumnType("NVARCHAR(MAX)");
 
                     b.Property<string>("CodigoExpediente")
                         .IsRequired()
@@ -261,9 +275,6 @@ namespace Siha.MsC.Api.Migrations
                     b.Property<Guid>("ExpedienteId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<DateOnly?>("FechaAprobacion")
-                        .HasColumnType("date");
-
                     b.Property<int?>("Horas")
                         .HasColumnType("int");
 
@@ -272,16 +283,9 @@ namespace Siha.MsC.Api.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
 
-                    b.Property<decimal?>("Nota")
-                        .HasPrecision(4, 2)
-                        .HasColumnType("decimal(4,2)");
-
                     b.Property<string>("Observacion")
                         .HasMaxLength(1000)
                         .HasColumnType("nvarchar(1000)");
-
-                    b.Property<int?>("Semestre")
-                        .HasColumnType("int");
 
                     b.HasKey("Id");
 

@@ -9,65 +9,33 @@ import { useAuth } from '../hooks/useAuth';
 import { useTituloPagina } from '../hooks/useTituloPagina';
 import { RUTAS } from '../layouts/navegacion';
 import { ETIQUETA_TIPO_TRAMITE } from '../types/comunes';
-import type { AsignaturaCertificada, CertificadoLeido, SolicitudCertificado } from '../types/expedientes';
-import { anosDesdeFecha } from '../utils/analisis';
+import type { CertificadoLeido, MateriaCursada, SolicitudCertificado } from '../types/expedientes';
 import { formatearBytes } from '../utils/formato';
 
 const TAMANO_MAXIMO = 10 * 1024 * 1024;
 
 /** PDF de ejemplo con la plantilla SIHA-CH-01 (carpeta `public/plantillas`). */
 const EJEMPLOS = [
-  { archivo: 'SIHA-IND-SW-completo.pdf', texto: 'Industrial → Software (Física I y II)' },
-  { archivo: 'SIHA-IND-SW-solo-fisica1.pdf', texto: 'Industrial → Software (solo Física I)' },
-  { archivo: 'SIHA-UCuenca-SW-externo.pdf', texto: 'Universidad de Cuenca → Software (externo)' },
+  { archivo: 'SIHA-TI-SW-cambio-de-carrera.pdf', texto: 'Tecnologías de la Información → Software' },
+  { archivo: 'SIHA-IND-SW-cambio-de-carrera.pdf', texto: 'Ingeniería Industrial → Software' },
+  { archivo: 'SIHA-con-errores.pdf', texto: 'Certificado con errores (se rechaza)' },
 ];
 
 const urlEjemplo = (archivo: string): string => `${import.meta.env.BASE_URL}plantillas/${archivo}`;
 
-const COLUMNAS: Array<ColumnaTabla<AsignaturaCertificada>> = [
+const COLUMNAS: Array<ColumnaTabla<MateriaCursada>> = [
+  { clave: 'materia', encabezado: 'Materia', render: (m) => <span className="text-sm text-ink">{m.nombre}</span> },
+  { clave: 'nivel', encabezado: 'Nivel', className: 'num', render: (m) => m.nivel },
+  { clave: 'periodo', encabezado: 'Período académico', render: (m) => m.periodoAcademico },
+  { clave: 'nota', encabezado: 'Nota', className: 'num', render: (m) => m.nota.toFixed(2).replace('.', ',') },
   {
-    clave: 'asignatura',
-    encabezado: 'Asignatura aprobada',
-    render: (a) => (
-      <div>
-        <p className="text-sm font-medium text-ink">{a.nombre}</p>
-        <p className="font-mono text-xs text-faint">{a.codigo}</p>
-      </div>
-    ),
-  },
-  { clave: 'semestre', encabezado: 'Semestre', className: 'num', render: (a) => a.semestre },
-  { clave: 'creditos', encabezado: 'Créditos', className: 'num', render: (a) => a.creditos },
-  { clave: 'horas', encabezado: 'Horas', className: 'num', render: (a) => a.horasTotales },
-  {
-    clave: 'fecha',
-    encabezado: 'Aprobada el',
-    render: (a) => {
-      const anos = anosDesdeFecha(a.fechaAprobacion);
-      return (
-        <div>
-          <p className="text-sm">{a.fechaAprobacion}</p>
-          <p className="text-xs text-faint">{anos === null ? '—' : anos === 1 ? 'hace 1 año' : `hace ${anos} años`}</p>
-        </div>
-      );
-    },
-  },
-  { clave: 'nota', encabezado: 'Nota', className: 'num', render: (a) => a.nota.toFixed(2) },
-  {
-    clave: 'unidades',
-    encabezado: 'Contenidos',
-    render: (a) => (
-      <ul className="space-y-0.5 text-xs text-muted">
-        {a.unidades.map((u) => (
-          <li key={u.numero}>
-            U{u.numero}. {u.nombre} ({u.horas} h)
-          </li>
-        ))}
-      </ul>
-    ),
+    clave: 'estado',
+    encabezado: 'Estado',
+    render: (m) => <Etiqueta tono={m.aprobada ? 'exito' : 'error'}>{m.aprobada ? 'Aprobada' : 'Reprobada'}</Etiqueta>,
   },
 ];
 
-/** Datos leídos del certificado: estudiante, trámite, carreras y materias aprobadas. */
+/** Datos leídos del certificado: estudiante, carreras, historial y lo que pide homologar. */
 function ResumenCertificado({ certificado }: { certificado: CertificadoLeido }): JSX.Element {
   const dato = (etiqueta: string, valor: string): JSX.Element => (
     <div>
@@ -77,27 +45,38 @@ function ResumenCertificado({ certificado }: { certificado: CertificadoLeido }):
   );
 
   return (
-    <div className="space-y-4">
-      <dl className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+    <div className="space-y-5">
+      <dl className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {dato('Estudiante', `${certificado.estudianteNombre} · ${certificado.estudianteIdentificacion}`)}
-        {dato('Certificado', `${certificado.numeroCertificado} · ${certificado.fechaEmision}`)}
+        {dato('Cambio', `${certificado.carreraOrigen} → ${certificado.carreraDestino}`)}
         {dato('Trámite', `${ETIQUETA_TIPO_TRAMITE[certificado.tipoTramite] ?? certificado.tipoTramite} · ${certificado.rutaNormativa}`)}
+        {dato('Certificado', `${certificado.numeroCertificado} · ${certificado.fechaEmision}`)}
         {dato('Institución de origen', certificado.institucionOrigen)}
-        {dato('Carrera de origen', `${certificado.carreraOrigenCodigo} — ${certificado.carreraOrigenNombre}`)}
-        {dato('Carrera de destino', `${certificado.carreraDestinoCodigo} — ${certificado.carreraDestinoNombre}`)}
-        {dato('Emitido por', certificado.emitidoPor)}
         {dato('Docentes revisores', certificado.revisores.map((r) => r.nombre).join(' y '))}
       </dl>
-      <Tabla columnas={COLUMNAS} filas={certificado.asignaturas} claveFila={(a) => a.codigo} />
+      <div>
+        <p className="mb-2 text-sm font-semibold text-ink">Materias que pide homologar</p>
+        <ul className="space-y-1">
+          {certificado.solicitudes.map((s) => (
+            <li key={s.numero} className="rounded-md border border-slate-200 px-3 py-2 text-sm">
+              {s.materiasOrigen.join(' + ')} <span aria-hidden="true">→</span> <strong>{s.materiaDestino}</strong>
+            </li>
+          ))}
+        </ul>
+      </div>
+      <div>
+        <p className="mb-2 text-sm font-semibold text-ink">Historial académico</p>
+        <Tabla columnas={COLUMNAS} filas={certificado.materias} claveFila={(m) => m.nombre} />
+      </div>
     </div>
   );
 }
 
 /**
  * Registro de la solicitud con UN SOLO PDF: el certificado de homologación SIHA (SIHA-CH-01).
- * El certificado llega preaprobado por Secretaría con todos los datos (estudiante, carreras, materias
- * aprobadas con semestre, créditos, horas, fecha, nota, matrícula y contenidos). El operador no
- * digita ni selecciona nada: el sistema lo lee, lo valida y, si cumple, lo registra y lo envía.
+ * El certificado llega preaprobado por Secretaría (estudiante, carreras, historial con aprobadas y
+ * reprobadas, materias que pide homologar y revisores). Contenidos y horas los pone el agente desde los
+ * sílabos oficiales. El operador no digita nada: el sistema lo lee, lo valida y lo registra.
  */
 export function SolicitudNuevaPage(): JSX.Element {
   useTituloPagina('Registrar solicitud');
@@ -168,7 +147,7 @@ export function SolicitudNuevaPage(): JSX.Element {
     <div className="space-y-6">
       <EncabezadoPagina
         titulo="Registrar solicitud de homologación"
-        descripcion="Cargue el certificado de homologación SIHA (PDF preaprobado por Secretaría). Trae todo: estudiante, carreras, materias aprobadas con notas y contenidos, y los dos docentes revisores. Al registrarla, el agente la analiza y queda asignada a esos docentes."
+        descripcion="Cargue el certificado de homologación SIHA (PDF preaprobado por Secretaría). Trae al estudiante, las carreras, su historial (materias aprobadas y reprobadas con notas), qué materias quiere homologar y los dos docentes revisores. Al registrarla, el agente la analiza con los sílabos oficiales y queda asignada a esos docentes."
         acciones={usuario ? <Etiqueta tono="marca">Operador: {usuario.nombreCompleto}</Etiqueta> : null}
       />
 
@@ -179,8 +158,8 @@ export function SolicitudNuevaPage(): JSX.Element {
         >
           <div className="space-y-4">
             <Alerta tono={resultado.publicado ? 'exito' : 'advertencia'} titulo={`Expediente ${resultado.expediente.codigo}`}>
-              {resultado.certificado.estudianteNombre} · {resultado.certificado.carreraOrigenCodigo} →{' '}
-              {resultado.certificado.carreraDestinoCodigo} · {resultado.certificado.asignaturas.length} materia(s) aprobada(s).
+              {resultado.certificado.estudianteNombre} · {resultado.certificado.carreraOrigen} →{' '}
+              {resultado.certificado.carreraDestino} · {resultado.certificado.solicitudes.length} materia(s) pedida(s).
               Asignada a {resultado.certificado.revisores.map((r) => r.nombre).join(' y ')}. El agente ya está analizando los contenidos.
             </Alerta>
             <div className="flex flex-wrap gap-2">

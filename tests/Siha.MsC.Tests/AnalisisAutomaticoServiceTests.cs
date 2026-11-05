@@ -1,14 +1,15 @@
 using System.Security.Cryptography;
+using System.Text.Json;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Moq;
+using Siha.Certificados;
 using Siha.Contracts.Events;
 using Siha.MsA.Api.Grpc;
 using Siha.MsC.Api.Contracts.Dtos;
 using Siha.MsC.Api.Data;
-using Siha.MsC.Api.Domain;
 using Siha.MsC.Api.Domain.Entities;
 using Siha.MsC.Api.Grpc;
 using Siha.MsC.Api.Options;
@@ -17,232 +18,60 @@ using Siha.MsC.Api.Services;
 namespace Siha.MsC.Tests;
 
 /// <summary>
-/// Homologación automática por contenidos con el certificado SIHA.
-/// Embeddings deterministas: cada tema es un eje distinto, así se sabe exactamente qué cubre qué.
-/// Caso guía: Física I de Software (SW105) reúne los 8 temas de Física I y Física II de Industrial.
+/// Agente de homologación con certificado SIHA: compara cada materia pedida con los sílabos oficiales
+/// (contenidos, profundidad y carga horaria al 80 %) y lo explica. Embeddings deterministas: cada tema
+/// es un eje, así se sabe exactamente qué unidad cubre a cuál.
 /// </summary>
 public class AnalisisAutomaticoServiceTests
 {
-    private static readonly string[] TemasFisicaI =
-        { "Magnitudes y vectores", "Cinemática", "Dinámica", "Trabajo y energía" };
-    private static readonly string[] TemasFisicaII =
-        { "Fluidos", "Temperatura y calor", "Oscilaciones y ondas", "Electrostática" };
-    private static readonly string[] TemasProgramacion =
-        { "Introducción y entorno", "Estructuras de control", "Arreglos y cadenas" };
-    private static readonly string[] TemasEstructuras = { "Listas y pilas", "Árboles", "Grafos" };
+    private static readonly List<string> Temas = new();
 
-    private static readonly string[] Todos =
-        TemasFisicaI.Concat(TemasFisicaII).Concat(TemasProgramacion).Concat(TemasEstructuras).ToArray();
+    private static UnidadCatalogoRequest U(int n, string tema, int horas) => new(n, tema, horas, $"Temas de {tema}");
 
-    private static readonly DateOnly Reciente = DateOnly.FromDateTime(DateTime.UtcNow).AddYears(-2);
+    private static DestinoAnalisisRequest A(string codigo, string nombre, int nivel, int creditos, params UnidadCatalogoRequest[] u)
+        => new(codigo, nombre, creditos, nivel, u);
 
-    [Fact]
-    public async Task Fisica_I_y_II_de_industrial_juntas_homologan_Fisica_I_de_software()
+    // Tecnologías de la Información (origen)
+    private static readonly List<DestinoAnalisisRequest> MallaTi = new()
     {
-        await using var db = CrearDb();
-        var expediente = await Sembrar(db, ("IND105", "Física I", TemasFisicaI), ("IND205", "Física II", TemasFisicaII),
-            ("IND108", "Programación Básica", TemasProgramacion));
+        A("TI-FP", "FUNDAMENTOS DE PROGRAMACION", 1, 4, U(1, "Algoritmos", 48), U(2, "Control", 48), U(3, "Funciones", 48), U(4, "Arreglos", 48)),
+        A("TI-FIS", "FISICA", 1, 3, U(1, "Estatica", 36), U(2, "Dinamica", 36), U(3, "Energia", 36), U(4, "Electricidad", 36)),
+        A("TI-POO", "PROGRAMACION ORIENTADA A OBJETOS", 2, 3, U(1, "Clases", 36), U(2, "Herencia", 36), U(3, "Polimorfismo", 36), U(4, "Excepciones", 36)),
+        A("TI-F1", "FISICA I", 1, 3, U(1, "Estatica", 72), U(2, "Dinamica", 72)),
+        A("TI-F2", "FISICA II", 2, 3, U(1, "Energia", 72), U(2, "Electricidad", 72)),
+    };
 
-        var r = await Servicio(db).AnalizarAsync(expediente, Solicitud(
-            ("IND105", Reciente, 1), ("IND205", Reciente, 1), ("IND108", Reciente, 1)));
-
-        var fisica = r.Propuestas.Single(p => p.CodigoDestino == "SW105");
-        fisica.Origenes.Select(o => o.Codigo).Should().BeEquivalentTo("IND105", "IND205");
-        fisica.Pcont.Should().Be(100m);
-        fisica.AlcanzaContenido.Should().BeTrue();
-        fisica.EstadoFinal.Should().Be(EstadoEvaluacionFinal.ListaParaDictamen);
-        fisica.Unidades.Should().HaveCount(8).And.OnlyContain(u => u.Cubierta);
-        fisica.Unidades.Single(u => u.Nombre == "Fluidos").CodigoOrigen.Should().Be("IND205");
-        fisica.Unidades.Single(u => u.Nombre == "Cinemática").CodigoOrigen.Should().Be("IND105");
-
-        r.Propuestas.Single(p => p.CodigoDestino == "SW101").Origenes.Single().Codigo.Should().Be("IND108");
-        r.Propuestas.Should().NotContain(p => p.CodigoDestino == "SW201");
-        r.SinCoberturaSuficiente.Should().BeEmpty();
-        r.OrigenesSinAsignar.Should().BeEmpty();
-    }
-
-    [Fact]
-    public async Task Solo_Fisica_I_de_industrial_no_alcanza_Fisica_I_de_software()
+    // Software (destino)
+    private static readonly List<DestinoAnalisisRequest> MallaSw = new()
     {
-        await using var db = CrearDb();
-        var expediente = await Sembrar(db, ("IND105", "Física I", TemasFisicaI), ("IND108", "Programación Básica", TemasProgramacion));
+        A("SW-ALG", "ALGORITMOS Y LOGICA DE PROGRAMACION", 1, 4, U(1, "Algoritmos", 48), U(2, "Control", 48), U(3, "Funciones", 48), U(4, "Arreglos", 48)),
+        A("SW-FIS", "FISICA", 1, 3, U(1, "Estatica", 36), U(2, "Dinamica", 36), U(3, "Energia", 36), U(4, "Electricidad", 36)),
+        A("SW-POO", "PROGRAMACION ORIENTADA A OBJETOS", 2, 4, U(1, "Clases", 48), U(2, "Herencia", 48), U(3, "Polimorfismo", 48), U(4, "Excepciones", 48)),
+    };
 
-        var r = await Servicio(db).AnalizarAsync(expediente, Solicitud(("IND105", Reciente, 1), ("IND108", Reciente, 1)));
+    private static MateriaCursada M(string nombre, int nivel, decimal nota = 8.5m, bool aprobada = true)
+        => new(nombre, nivel, nivel == 1 ? "Abr-Sep 2025" : "Oct 2025-Mar 2026", nota, aprobada);
 
-        r.Propuestas.Should().ContainSingle(p => p.CodigoDestino == "SW101");
-        r.Propuestas.Should().NotContain(p => p.CodigoDestino == "SW105");
-
-        var parcial = r.SinCoberturaSuficiente.Single(p => p.CodigoDestino == "SW105");
-        parcial.Pcont.Should().Be(50m);
-        parcial.AlcanzaContenido.Should().BeFalse();
-        parcial.EstadoFinal.Should().Be(EstadoEvaluacionFinal.ContenidoInsuficiente);
-        parcial.Alertas.First().Should().Contain("cubre el 50 %").And.Contain("a criterio del docente")
-            .And.Contain("Fluidos");
-        parcial.Unidades.Where(u => !u.Cubierta).Select(u => u.Nombre).Should().BeEquivalentTo(TemasFisicaII);
-        r.OrigenesSinAsignar.Select(o => o.Codigo).Should().Equal("IND105");
-    }
-
-    [Fact]
-    public async Task Los_textos_de_pantalla_no_mencionan_los_umbrales()
-    {
-        await using var db = CrearDb();
-        var expediente = await Sembrar(db, ("IND105", "Física I", TemasFisicaI));
-
-        var r = await Servicio(db).AnalizarAsync(expediente, Solicitud(("IND105", Reciente, 1)));
-
-        var textos = r.Alertas.Concat(r.SinCoberturaSuficiente.SelectMany(p => p.Alertas)).ToList();
-        textos.Should().NotBeEmpty();
-        textos.Should().NotContain(t => t.Contains('θ') || t.Contains('δ') || t.Contains('τ') || t.Contains("theta", StringComparison.OrdinalIgnoreCase));
-    }
-
-    [Fact]
-    public async Task Una_materia_aprobada_no_se_usa_para_dos_destinos_RN19()
-    {
-        await using var db = CrearDb();
-        var expediente = await Sembrar(db, ("IND108", "Programación Básica", TemasProgramacion));
-        var solicitud = Solicitud(("IND108", Reciente, 1)) with
+    private static CertificadoSiha Certificado(params (string[] Origen, string Destino)[] pedidas) => new(
+        "SIHA-1", new DateOnly(2026, 10, 30), "Secretaría", "Ana", "1804567890", "INTERNO", "CAU-P-011", "UTA",
+        "Tecnologías de la Información", "Software",
+        new[]
         {
-            AsignaturasDestino = new[]
-            {
-                Destino("SW101", "Fundamentos de Programación", 1, TemasProgramacion),
-                Destino("TI101", "Programación I", 1, TemasProgramacion)
-            }
-        };
+            M("Fundamentos de Programación", 1), M("Física", 1), M("Física I", 1),
+            M("Programación Orientada a Objetos", 2), M("Física II", 2), M("Cálculo Integral", 2, 6.2m, false)
+        },
+        pedidas.Select((p, i) => new SolicitudHomologacion(i + 1, p.Origen, p.Destino)).ToList(),
+        new[] { new RevisorCertificado("Ing. Naranjo", "hnaranjo@uta.edu.ec"), new RevisorCertificado("Ing. Vaca", "mvaca@uta.edu.ec") });
 
-        var r = await Servicio(db).AnalizarAsync(expediente, solicitud);
-
-        r.Propuestas.Should().ContainSingle();
-        r.Propuestas.Single().Origenes.Single().Codigo.Should().Be("IND108");
-    }
-
-    [Fact]
-    public async Task Materia_aprobada_hace_mas_de_10_anos_requiere_validacion_de_conocimientos()
+    private static async Task<Guid> Sembrar(SihaDbContextC db, CertificadoSiha c)
     {
-        await using var db = CrearDb();
-        var expediente = await Sembrar(db, ("IND108", "Programación Básica", TemasProgramacion));
-        var antigua = DateOnly.FromDateTime(DateTime.UtcNow).AddYears(-11);
-
-        var r = await Servicio(db).AnalizarAsync(expediente, Solicitud(("IND108", antigua, 1)));
-
-        var p = r.Propuestas.Single();
-        p.Origenes.Single().AnosTranscurridos.Should().Be(11);
-        p.EstadoFinal.Should().Be(EstadoEvaluacionFinal.RequiereValidacionConocimientos);
-    }
-
-    [Fact]
-    public async Task Tercera_matricula_bloquea_la_propuesta()
-    {
-        await using var db = CrearDb();
-        var expediente = await Sembrar(db, ("IND108", "Programación Básica", TemasProgramacion));
-
-        var r = await Servicio(db).AnalizarAsync(expediente, Solicitud(("IND108", Reciente, 3)));
-
-        r.Propuestas.Single().EstadoFinal.Should().Be(EstadoEvaluacionFinal.BloqueoTerceraMatricula);
-    }
-
-    [Fact]
-    public async Task Materias_sin_confirmar_impiden_el_analisis()
-    {
-        await using var db = CrearDb();
-        var expediente = await Sembrar(db, ("IND108", "Programación Básica", TemasProgramacion));
-        (await db.Extracciones.SingleAsync()).Estado = EstadosExtraccion.PendienteConfirmacion;
-        await db.SaveChangesAsync();
-
-        var accion = () => Servicio(db).AnalizarAsync(expediente, Solicitud(("IND108", Reciente, 1)));
-
-        (await accion.Should().ThrowAsync<AnalisisAutomaticoException>()).Which.CodigoHttp.Should().Be(409);
-    }
-
-    [Fact]
-    public async Task Sin_servicio_de_reglas_no_se_inventan_umbrales()
-    {
-        await using var db = CrearDb();
-        var expediente = await Sembrar(db, ("IND108", "Programación Básica", TemasProgramacion));
-        var grpc = new Mock<IReglasGrpcClient>();
-        grpc.Setup(g => g.ObtenerConfiguracionAsync(It.IsAny<string>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()))
-            .ThrowsAsync(new ReglasGrpcException("caído"));
-
-        var accion = () => Servicio(db, grpc.Object).AnalizarAsync(expediente, Solicitud(("IND108", Reciente, 1)));
-
-        (await accion.Should().ThrowAsync<AnalisisAutomaticoException>()).Which.CodigoHttp.Should().Be(503);
-    }
-
-    [Fact]
-    public async Task Umbral_de_contenido_lo_decide_MS_A_por_gRPC()
-    {
-        await using var db = CrearDb();
-        var expediente = await Sembrar(db, ("IND105", "Física I", TemasFisicaI));
-
-        // Si el administrador bajara θ a 50, Física I sola sí alcanzaría SW105.
-        var r = await Servicio(db, Reglas(theta: 50)).AnalizarAsync(expediente, Solicitud(("IND105", Reciente, 1)));
-
-        r.Propuestas.Should().ContainSingle(p => p.CodigoDestino == "SW105" && p.Pcont == 50m);
-    }
-
-    [Fact]
-    public async Task El_certificado_SIHA_crea_una_extraccion_confirmada_por_materia()
-    {
-        using var temp = new Soporte.DirectorioTemporal();
-        var pdf = File.ReadAllBytes(RutaEjemplo("SIHA-IND-SW-completo.pdf"));
-        temp.CrearArchivo("cert.pdf", pdf);
-        await using var db = CrearDb();
-        var opciones = Options.Create(new AlmacenOptions { RutaAlmacenamiento = temp.Ruta });
-        var servicio = new ProcesarSolicitudCreadaService(db, new AlmacenDocumentos(opciones),
-            new ExtractorPdfService(opciones, NullLogger<ExtractorPdfService>.Instance),
-            NullLogger<ProcesarSolicitudCreadaService>.Instance,
-            new LectorCertificadosAlmacen(opciones));
-        var documento = new DocumentoReferencia
-        {
-            DocumentoId = Guid.NewGuid(),
-            RutaAlmacenamiento = "cert.pdf",
-            HashSha256 = Convert.ToHexString(SHA256.HashData(pdf)).ToLowerInvariant(),
-            TamanoBytes = pdf.Length
-        };
-        var evento = new SolicitudCreadaEvent
-        {
-            ExpedienteId = Guid.NewGuid(),
-            CorrelationId = Guid.NewGuid(),
-            TipoTramite = "INTERNO",
-            RutaNormativa = "CAU-P-011",
-            DocumentoIds = new[] { documento.DocumentoId },
-            Documentos = new[] { documento },
-            AsignaturasOrigen = new[] { "IND105", "IND108", "IND205" }
-        };
-
-        await servicio.ProcesarAsync(evento, Guid.NewGuid());
-
-        var extracciones = await db.Extracciones.Include(e => e.Unidades).OrderBy(e => e.CodigoAsignaturaOrigen).ToListAsync();
-        extracciones.Select(e => e.CodigoAsignaturaOrigen).Should().Equal("IND105", "IND108", "IND205");
-        extracciones.Should().OnlyContain(e => e.Estado == EstadosExtraccion.Confirmada && e.Confianza == 1.00m
-                                               && e.ConfirmadoPor == "CERTIFICADO_SIHA" && e.DocumentoId == documento.DocumentoId);
-        extracciones[0].Creditos.Should().Be(4);
-        extracciones[0].Horas.Should().Be(192);
-        extracciones[0].Unidades.Should().HaveCount(4);
-        extracciones[2].Unidades.Select(u => u.Nombre).Should().Contain("Mecánica de fluidos");
-        extracciones[0].Nota.Should().Be(8.60m);
-        extracciones[0].FechaAprobacion.Should().Be(new DateOnly(2024, 2, 16));
-        var contexto = await db.AnalisisExpedientes.SingleAsync();
-        contexto.CarreraDestinoCodigo.Should().Be("SW");
-        contexto.Revisor1Correo.Should().Be("hnaranjo@uta.edu.ec");
-        contexto.Revisor2Correo.Should().Be("mvaca@uta.edu.ec");
-        contexto.Estado.Should().Be(EstadosAnalisis.Pendiente);
-    }
-
-    // ---------- solicitud completa: agente + dos docentes ----------
-
-    private sealed class CatalogoFalso(IReadOnlyList<DestinoAnalisisRequest> malla) : ICatalogoGrpcCliente
-    {
-        public Task<IReadOnlyList<DestinoAnalisisRequest>> ObtenerMallaAsync(string carreraCodigo, CancellationToken cancellationToken = default)
-            => Task.FromResult(malla);
-    }
-
-    private static async Task<Guid> SembrarSolicitud(SihaDbContextC db, params (string Codigo, string Nombre, string[] Temas)[] materias)
-    {
-        var expediente = await Sembrar(db, materias);
+        var expediente = Guid.NewGuid();
         db.AnalisisExpedientes.Add(new AnalisisExpediente
         {
             ExpedienteId = expediente, CodigoExpediente = "EXP-1", RutaNormativa = "CAU-P-011", TipoTramite = "INTERNO",
-            InstitucionOrigen = "UTA", CarreraOrigenCodigo = "IND", CarreraDestinoCodigo = "SW",
+            InstitucionOrigen = "UTA", CarreraOrigenCodigo = "TI", CarreraDestinoCodigo = "SW",
+            CarreraOrigenNombre = "Tecnologías de la Información", CarreraDestinoNombre = "Software",
+            CertificadoJson = JsonSerializer.Serialize(c),
             Revisor1Nombre = "Ing. Naranjo", Revisor1Correo = "hnaranjo@uta.edu.ec",
             Revisor2Nombre = "Ing. Vaca", Revisor2Correo = "mvaca@uta.edu.ec"
         });
@@ -250,157 +79,32 @@ public class AnalisisAutomaticoServiceTests
         return expediente;
     }
 
-    private static AnalisisAutomaticoService ServicioConCatalogo(SihaDbContextC db, IReadOnlyList<DestinoAnalisisRequest>? malla = null)
+    private sealed class CatalogoFalso(IReadOnlyList<DestinoAnalisisRequest> sw, IReadOnlyList<DestinoAnalisisRequest> ti) : ICatalogoGrpcCliente
     {
-        var precedentes = new Mock<IPrecedenteService>();
-        precedentes.Setup(p => p.BuscarAsync(It.IsAny<BuscarPrecedenteRequest>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(Array.Empty<PrecedenteResponse>());
-        return new AnalisisAutomaticoService(db, Reglas(), new ReglaCreditosStrategy(), new ReglaContenidoStrategy(),
-            precedentes.Object, Embeddings(), NullLogger<AnalisisAutomaticoService>.Instance, null,
-            new CatalogoFalso(malla ?? Solicitud().AsignaturasDestino.ToList()));
+        public Task<IReadOnlyList<DestinoAnalisisRequest>> ObtenerMallaAsync(string carrera, CancellationToken cancellationToken = default)
+            => Task.FromResult(carrera == "SW" ? sw : carrera == "TI" ? ti : Array.Empty<DestinoAnalisisRequest>());
     }
 
-    private static DictamenRequest Decidir(params (string Codigo, bool Aprueba)[] d)
-        => new(d.Select(x => new DecisionMateriaRequest(x.Codigo, x.Aprueba, null)).ToList(), "Revisado");
-
-    [Fact]
-    public async Task El_agente_trae_la_malla_por_gRPC_analiza_y_guarda_la_estimacion()
+    /// <summary>"Estatica. Temas de Estatica" → eje propio; mismo tema → coseno 1, distinto → 0.</summary>
+    private static IOllamaEmbeddingService Embeddings()
     {
-        await using var db = CrearDb();
-        var expediente = await SembrarSolicitud(db, ("IND105", "Física I", TemasFisicaI), ("IND108", "Programación Básica", TemasProgramacion));
-
-        await ServicioConCatalogo(db).AnalizarYGuardarAsync(expediente);
-
-        var solicitudes = new SolicitudesAnalisisService(db);
-        var vista = (await solicitudes.ObtenerAsync(expediente, "admin@uta.edu.ec", esDocente: false))!;
-        vista.Estado.Should().Be(EstadosAnalisis.Analizado);
-        vista.Resultado!.Propuestas.Should().ContainSingle(p => p.CodigoDestino == "SW101");
-        vista.ResultadoFinal.Should().HaveCount(2);
-        vista.ResultadoFinal.Single(m => m.CodigoDestino == "SW101").Estimacion.Should().Be(SolicitudesAnalisisService.Cumple);
-        vista.ResultadoFinal.Single(m => m.CodigoDestino == "SW105").Estimacion.Should().Be(SolicitudesAnalisisService.CriterioDocente);
-        vista.EstadoRevision.Should().Be("PENDIENTE");
-        vista.PuedeResponder.Should().BeFalse("el administrador no es revisor");
-    }
-
-    [Fact]
-    public async Task Solo_los_dos_docentes_asignados_ven_y_responden_la_solicitud()
-    {
-        await using var db = CrearDb();
-        var expediente = await SembrarSolicitud(db, ("IND108", "Programación Básica", TemasProgramacion));
-        await ServicioConCatalogo(db).AnalizarYGuardarAsync(expediente);
-        var solicitudes = new SolicitudesAnalisisService(db);
-
-        (await solicitudes.ObtenerAsync(expediente, "otro@uta.edu.ec", esDocente: true)).Should().BeNull();
-        (await solicitudes.ObtenerAsync(expediente, "mvaca@uta.edu.ec", esDocente: true))!.PuedeResponder.Should().BeTrue();
-        var (_, error, codigo) = await solicitudes.ResponderAsync(expediente, "otro@uta.edu.ec", "Otro", Decidir(("SW101", true)));
-        codigo.Should().Be(404);
-        error.Should().Contain("no está asignada");
-    }
-
-    [Fact]
-    public async Task Con_dos_aprobaciones_queda_homologada_y_si_discrepan_sin_acuerdo()
-    {
-        await using var db = CrearDb();
-        var expediente = await SembrarSolicitud(db, ("IND105", "Física I", TemasFisicaI), ("IND108", "Programación Básica", TemasProgramacion));
-        await ServicioConCatalogo(db).AnalizarYGuardarAsync(expediente);
-        var solicitudes = new SolicitudesAnalisisService(db);
-
-        var uno = await solicitudes.ResponderAsync(expediente, "hnaranjo@uta.edu.ec", "Naranjo", Decidir(("SW101", true), ("SW105", false)));
-        uno.Respuesta!.EstadoRevision.Should().Be("EN_REVISION");
-        var dos = await solicitudes.ResponderAsync(expediente, "mvaca@uta.edu.ec", "Vaca", Decidir(("SW101", true), ("SW105", true)));
-
-        var final = dos.Respuesta!;
-        final.EstadoRevision.Should().Be("RESUELTA");
-        final.ResultadoFinal.Single(m => m.CodigoDestino == "SW101").Resultado.Should().Be("HOMOLOGADA");
-        final.ResultadoFinal.Single(m => m.CodigoDestino == "SW105").Resultado.Should().Be("SIN_ACUERDO");
-        final.Revisores.Should().OnlyContain(r => r.Respondio);
-    }
-
-    [Fact]
-    public async Task El_docente_debe_decidir_todas_las_materias()
-    {
-        await using var db = CrearDb();
-        var expediente = await SembrarSolicitud(db, ("IND105", "Física I", TemasFisicaI), ("IND108", "Programación Básica", TemasProgramacion));
-        await ServicioConCatalogo(db).AnalizarYGuardarAsync(expediente);
-
-        var (_, error, codigo) = await new SolicitudesAnalisisService(db)
-            .ResponderAsync(expediente, "hnaranjo@uta.edu.ec", "Naranjo", Decidir(("SW101", true)));
-
-        codigo.Should().Be(400);
-        error.Should().Contain("SW105");
-    }
-
-    [Fact]
-    public async Task Si_la_carrera_de_destino_no_tiene_malla_queda_en_error_con_el_motivo()
-    {
-        await using var db = CrearDb();
-        var expediente = await SembrarSolicitud(db, ("IND108", "Programación Básica", TemasProgramacion));
-
-        await ServicioConCatalogo(db, Array.Empty<DestinoAnalisisRequest>()).AnalizarYGuardarAsync(expediente);
-
-        var contexto = await db.AnalisisExpedientes.SingleAsync();
-        contexto.Estado.Should().Be(EstadosAnalisis.Error);
-        contexto.Mensaje.Should().Contain("no tiene una malla");
-    }
-
-    // ---------- soporte ----------
-
-    private static string RutaEjemplo(string nombre)
-    {
-        var dir = new DirectoryInfo(AppContext.BaseDirectory);
-        while (dir is not null && !Directory.Exists(Path.Combine(dir.FullName, "documentos-prueba")))
-            dir = dir.Parent;
-        return Path.Combine(dir!.FullName, "documentos-prueba", "certificados", nombre);
-    }
-
-    private static SihaDbContextC CrearDb()
-        => new(new DbContextOptionsBuilder<SihaDbContextC>()
-            .UseInMemoryDatabase($"siha-msc-automatico-{Guid.NewGuid():N}").Options);
-
-    private static async Task<Guid> Sembrar(SihaDbContextC db, params (string Codigo, string Nombre, string[] Temas)[] materias)
-    {
-        var expediente = Guid.NewGuid();
-        foreach (var (codigo, nombre, temas) in materias)
-        {
-            db.Extracciones.Add(new Extraccion
+        var ollama = new Mock<IOllamaEmbeddingService>();
+        ollama.Setup(o => o.GenerarEmbeddingAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((string texto, CancellationToken _) =>
             {
-                ExpedienteId = expediente,
-                CodigoAsignaturaOrigen = codigo,
-                NombreAsignaturaOrigen = nombre,
-                Creditos = 4,
-                Horas = 192,
-                Confianza = 1m,
-                Estado = EstadosExtraccion.Confirmada,
-                ConfirmadoPor = "CERTIFICADO_SIHA",
-                ConfirmadoUtc = DateTimeOffset.UtcNow,
-                Unidades = temas.Select((t, i) => new ExtraccionUnidad
+                var tema = texto.Split('.')[0];
+                lock (Temas)
                 {
-                    Numero = i + 1, Nombre = t, Horas = 192 / temas.Length, Contenidos = t
-                }).ToList()
+                    if (!Temas.Contains(tema)) Temas.Add(tema);
+                    var v = new float[64];
+                    v[Temas.IndexOf(tema)] = 1f;
+                    return v;
+                }
             });
-        }
-
-        await db.SaveChangesAsync();
-        return expediente;
+        return ollama.Object;
     }
 
-    private static AnalisisAutomaticoRequest Solicitud(params (string Codigo, DateOnly Fecha, int Matricula)[] origen) => new(
-        "CAU-P-011",
-        "INTERNO",
-        "Universidad Técnica de Ambato",
-        origen.Select(o => new OrigenAnalisisRequest(o.Codigo, o.Fecha, o.Matricula)).ToList(),
-        new[]
-        {
-            Destino("SW101", "Fundamentos de Programación", 1, TemasProgramacion),
-            Destino("SW105", "Física I", 1, TemasFisicaI.Concat(TemasFisicaII).ToArray()),
-            Destino("SW201", "Estructuras de Datos", 2, TemasEstructuras)
-        });
-
-    private static DestinoAnalisisRequest Destino(string codigo, string nombre, int semestre, string[] temas) => new(
-        codigo, nombre, 4, semestre,
-        temas.Select((t, i) => new UnidadCatalogoRequest(i + 1, t, 24, t)).ToList());
-
-    private static IReglasGrpcClient Reglas(double theta = 80, double tau = 75)
+    private static IReglasGrpcClient Reglas(double theta = 80)
     {
         var grpc = new Mock<IReglasGrpcClient>();
         grpc.Setup(g => g.ObtenerConfiguracionAsync(It.IsAny<string>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()))
@@ -408,31 +112,238 @@ public class AnalisisAutomaticoServiceTests
             {
                 RutaNormativa = "CAU-P-011",
                 ParametrosConfigurados = true,
-                Parametros = new ParametrosEvaluacionMensaje { Theta = theta, Delta = 15, Tau = tau, Version = 1 }
+                Parametros = new ParametrosEvaluacionMensaje { Theta = theta, Delta = 15, Tau = 75, Version = 1 }
             });
         return grpc.Object;
     }
 
-    /// <summary>Cada tema es un eje: mismo tema → coseno 1; temas distintos → coseno 0.</summary>
-    private static IOllamaEmbeddingService Embeddings()
-    {
-        var ollama = new Mock<IOllamaEmbeddingService>();
-        ollama.Setup(o => o.GenerarEmbeddingAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync((string texto, CancellationToken _) =>
-            {
-                var v = new float[Todos.Length];
-                v[Array.IndexOf(Todos, texto)] = 1f;
-                return v;
-            });
-        return ollama.Object;
-    }
-
-    private static AnalisisAutomaticoService Servicio(SihaDbContextC db, IReglasGrpcClient? reglas = null)
+    private static AnalisisAutomaticoService Agente(SihaDbContextC db, IReadOnlyList<DestinoAnalisisRequest>? sw = null, double theta = 80)
     {
         var precedentes = new Mock<IPrecedenteService>();
         precedentes.Setup(p => p.BuscarAsync(It.IsAny<BuscarPrecedenteRequest>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Array.Empty<PrecedenteResponse>());
-        return new AnalisisAutomaticoService(db, reglas ?? Reglas(), new ReglaCreditosStrategy(), new ReglaContenidoStrategy(),
-            precedentes.Object, Embeddings(), NullLogger<AnalisisAutomaticoService>.Instance);
+        return new AnalisisAutomaticoService(db, Reglas(theta), precedentes.Object, Embeddings(),
+            NullLogger<AnalisisAutomaticoService>.Instance, null, new CatalogoFalso(sw ?? MallaSw, MallaTi));
+    }
+
+    private static SihaDbContextC CrearDb()
+        => new(new DbContextOptionsBuilder<SihaDbContextC>().UseInMemoryDatabase($"siha-agente-{Guid.NewGuid():N}").Options);
+
+    private static async Task<AnalisisAutomaticoResponse> Analizar(SihaDbContextC db, CertificadoSiha c, IReadOnlyList<DestinoAnalisisRequest>? sw = null)
+    {
+        var expediente = await Sembrar(db, c);
+        await Agente(db, sw).AnalizarYGuardarAsync(expediente);
+        var contexto = await db.AnalisisExpedientes.SingleAsync();
+        contexto.Mensaje.Should().BeNull();
+        return JsonSerializer.Deserialize<AnalisisAutomaticoResponse>(contexto.ResultadoJson!, AnalisisAutomaticoService.Json)!;
+    }
+
+    [Fact]
+    public async Task Materia_equivalente_cumple_y_explica_cada_unidad()
+    {
+        await using var db = CrearDb();
+        var r = await Analizar(db, Certificado((new[] { "Fundamentos de Programación" }, "Algoritmos y Lógica de Programación")));
+
+        var e = r.Evaluaciones.Single();
+        e.CodigoDestino.Should().Be("SW-ALG");
+        e.Contenidos.Should().Be(100m);
+        e.Profundidad.Should().Be(100m);
+        e.CargaHoraria.Should().Be(100m);
+        e.Estimacion.Should().Be(AnalisisAutomaticoService.Cumple);
+        e.Explicacion.Should().Contain(x => x.StartsWith("✔ Unidad 2") && x.Contains("«Fundamentos de Programación»"));
+        e.Explicacion.Should().Contain(x => x.StartsWith("Carga horaria: 192 horas aprobadas frente a 192"));
+        e.Conclusion.Should().Contain("recomienda homologar");
+        e.MateriasOrigen.Single().PeriodoAcademico.Should().Be("Abr-Sep 2025");
+    }
+
+    [Fact]
+    public async Task Pocas_horas_dejan_la_materia_a_criterio_del_docente_aunque_los_temas_coincidan()
+    {
+        await using var db = CrearDb();
+        var r = await Analizar(db, Certificado((new[] { "Programación Orientada a Objetos" }, "Programación Orientada a Objetos")));
+
+        var e = r.Evaluaciones.Single();
+        e.Contenidos.Should().Be(100m);
+        e.CargaHoraria.Should().Be(75m, "144 horas aprobadas frente a 192");
+        e.Profundidad.Should().Be(75m, "cada tema tiene 36 horas aprobadas frente a 48");
+        e.Estimacion.Should().Be(AnalisisAutomaticoService.CriterioDocente);
+        e.Conclusion.Should().Contain("carga horaria (75 %)").And.Contain("criterio de los docentes");
+    }
+
+    [Fact]
+    public async Task Materias_que_no_tienen_que_ver_no_se_parecen()
+    {
+        await using var db = CrearDb();
+        var r = await Analizar(db, Certificado((new[] { "Física" }, "Algoritmos y Lógica de Programación")));
+
+        var e = r.Evaluaciones.Single();
+        e.Contenidos.Should().Be(0m);
+        e.Unidades.Should().OnlyContain(u => !u.Cubierta);
+        e.Explicacion.Should().Contain(x => x.StartsWith("✘ Unidad 1") && x.Contains("no aparece en lo aprobado"));
+        e.Estimacion.Should().Be(AnalisisAutomaticoService.CriterioDocente);
+    }
+
+    [Fact]
+    public async Task Fisica_I_y_II_juntas_cubren_Fisica_de_software()
+    {
+        await using var db = CrearDb();
+        var r = await Analizar(db, Certificado((new[] { "Física I", "Física II" }, "Física")));
+
+        var e = r.Evaluaciones.Single();
+        e.MateriasOrigen.Select(o => o.Nombre).Should().Equal("Física I", "Física II");
+        e.Contenidos.Should().Be(100m);
+        e.Unidades.Single(u => u.Numero == 4).MateriaOrigen.Should().Be("Física II");
+        e.Estimacion.Should().Be(AnalisisAutomaticoService.Cumple);
+    }
+
+    [Fact]
+    public async Task Requisitos_del_instructivo_se_explican()
+    {
+        await using var db = CrearDb();
+        var r = await Analizar(db, Certificado(
+            (new[] { "Fundamentos de Programación" }, "Algoritmos y Lógica de Programación"),
+            (new[] { "Programación Orientada a Objetos" }, "Programación Orientada a Objetos")));
+
+        r.Requisitos.Should().Contain(q => q.Regla.StartsWith("Aprobó al menos el primer período") && q.Cumple);
+        r.Requisitos.Should().Contain(q => q.Regla == "Solo se piden materias aprobadas" && q.Explicacion.Contains("Cálculo Integral"));
+        r.Requisitos.Should().Contain(q => q.Regla.StartsWith("Tiene al menos una materia") && q.Cumple && q.Explicacion.Contains("1 de 2"));
+        r.Resumen.Should().Contain("1 cumple(n)").And.Contain("1 queda(n) a criterio");
+        string.Join(" ", r.Requisitos.Select(q => q.Explicacion)).Should().NotContainAny("θ", "δ", "τ");
+    }
+
+    [Fact]
+    public async Task Materia_de_destino_que_no_existe_en_la_malla_queda_a_criterio_del_docente()
+    {
+        await using var db = CrearDb();
+        var r = await Analizar(db, Certificado((new[] { "Física" }, "Mecánica Cuántica")));
+
+        var e = r.Evaluaciones.Single();
+        e.Estimacion.Should().Be(AnalisisAutomaticoService.CriterioDocente);
+        e.Explicacion.Should().Contain(x => x.Contains("no existe en la malla vigente de Software"));
+    }
+
+    [Fact]
+    public async Task Sin_malla_de_destino_queda_en_error_con_el_motivo()
+    {
+        await using var db = CrearDb();
+        var expediente = await Sembrar(db, Certificado((new[] { "Física" }, "Física")));
+
+        await Agente(db, Array.Empty<DestinoAnalisisRequest>()).AnalizarYGuardarAsync(expediente);
+
+        var contexto = await db.AnalisisExpedientes.SingleAsync();
+        contexto.Estado.Should().Be(EstadosAnalisis.Error);
+        contexto.Mensaje.Should().Contain("no tiene malla");
+    }
+
+    // ---------- docentes revisores ----------
+
+    private static DictamenRequest Decidir(params (string Materia, bool Aprueba)[] d)
+        => new(d.Select(x => new DecisionMateriaRequest(x.Materia, x.Aprueba, null)).ToList(), "Revisado");
+
+    private static async Task<Guid> SolicitudAnalizada(SihaDbContextC db)
+    {
+        var expediente = await Sembrar(db, Certificado(
+            (new[] { "Fundamentos de Programación" }, "Algoritmos y Lógica de Programación"),
+            (new[] { "Programación Orientada a Objetos" }, "Programación Orientada a Objetos")));
+        await Agente(db).AnalizarYGuardarAsync(expediente);
+        return expediente;
+    }
+
+    [Fact]
+    public async Task La_solicitud_muestra_historial_estimacion_y_revisores()
+    {
+        await using var db = CrearDb();
+        var expediente = await SolicitudAnalizada(db);
+
+        var vista = (await new SolicitudesAnalisisService(db).ObtenerAsync(expediente, "admin@uta.edu.ec", esDocente: false))!;
+        vista.CarreraOrigen.Should().Be("Tecnologías de la Información");
+        vista.Historial.Should().Contain(m => m.Nombre == "Cálculo Integral" && !m.Aprobada);
+        vista.ResultadoFinal.Select(m => (m.CodigoDestino, m.Estimacion)).Should().Equal(
+            ("Algoritmos y Lógica de Programación", AnalisisAutomaticoService.Cumple),
+            ("Programación Orientada a Objetos", AnalisisAutomaticoService.CriterioDocente));
+        vista.PuedeResponder.Should().BeFalse("el administrador no es revisor");
+    }
+
+    [Fact]
+    public async Task Solo_los_dos_docentes_asignados_ven_y_responden()
+    {
+        await using var db = CrearDb();
+        var expediente = await SolicitudAnalizada(db);
+        var solicitudes = new SolicitudesAnalisisService(db);
+
+        (await solicitudes.ObtenerAsync(expediente, "otro@uta.edu.ec", esDocente: true)).Should().BeNull();
+        (await solicitudes.ObtenerAsync(expediente, "mvaca@uta.edu.ec", esDocente: true))!.PuedeResponder.Should().BeTrue();
+        var (_, _, codigo) = await solicitudes.ResponderAsync(expediente, "otro@uta.edu.ec", "Otro",
+            Decidir(("Algoritmos y Lógica de Programación", true)));
+        codigo.Should().Be(404);
+    }
+
+    [Fact]
+    public async Task Con_dos_aprobaciones_queda_homologada_y_si_discrepan_sin_acuerdo()
+    {
+        await using var db = CrearDb();
+        var expediente = await SolicitudAnalizada(db);
+        var solicitudes = new SolicitudesAnalisisService(db);
+        const string alg = "Algoritmos y Lógica de Programación", poo = "Programación Orientada a Objetos";
+
+        var uno = await solicitudes.ResponderAsync(expediente, "hnaranjo@uta.edu.ec", "Naranjo", Decidir((alg, true), (poo, false)));
+        uno.Respuesta!.EstadoRevision.Should().Be("EN_REVISION");
+        var dos = await solicitudes.ResponderAsync(expediente, "mvaca@uta.edu.ec", "Vaca", Decidir((alg, true), (poo, true)));
+
+        dos.Respuesta!.EstadoRevision.Should().Be("RESUELTA");
+        dos.Respuesta.ResultadoFinal.Single(m => m.CodigoDestino == alg).Resultado.Should().Be("HOMOLOGADA");
+        dos.Respuesta.ResultadoFinal.Single(m => m.CodigoDestino == poo).Resultado.Should().Be("SIN_ACUERDO");
+    }
+
+    [Fact]
+    public async Task El_docente_debe_decidir_todas_las_materias()
+    {
+        await using var db = CrearDb();
+        var expediente = await SolicitudAnalizada(db);
+
+        var (_, error, codigo) = await new SolicitudesAnalisisService(db)
+            .ResponderAsync(expediente, "hnaranjo@uta.edu.ec", "Naranjo", Decidir(("Algoritmos y Lógica de Programación", true)));
+
+        codigo.Should().Be(400);
+        error.Should().Contain("Programación Orientada a Objetos");
+    }
+
+    // ---------- llegada del certificado ----------
+
+    [Fact]
+    public async Task El_certificado_SIHA_guarda_el_contexto_para_el_agente_sin_extracciones()
+    {
+        using var temp = new Soporte.DirectorioTemporal();
+        var dir = new DirectoryInfo(AppContext.BaseDirectory);
+        while (!Directory.Exists(Path.Combine(dir!.FullName, "documentos-prueba"))) dir = dir.Parent;
+        var pdf = File.ReadAllBytes(Path.Combine(dir.FullName, "documentos-prueba", "certificados", "SIHA-TI-SW-cambio-de-carrera.pdf"));
+        temp.CrearArchivo("cert.pdf", pdf);
+        await using var db = CrearDb();
+        var opciones = Options.Create(new AlmacenOptions { RutaAlmacenamiento = temp.Ruta });
+        var servicio = new ProcesarSolicitudCreadaService(db, new AlmacenDocumentos(opciones),
+            new ExtractorPdfService(opciones, NullLogger<ExtractorPdfService>.Instance),
+            NullLogger<ProcesarSolicitudCreadaService>.Instance, new LectorCertificadosAlmacen(opciones));
+        var documento = new DocumentoReferencia
+        {
+            DocumentoId = Guid.NewGuid(), RutaAlmacenamiento = "cert.pdf",
+            HashSha256 = Convert.ToHexString(SHA256.HashData(pdf)).ToLowerInvariant(), TamanoBytes = pdf.Length
+        };
+        var evento = new SolicitudCreadaEvent
+        {
+            ExpedienteId = Guid.NewGuid(), CorrelationId = Guid.NewGuid(), CodigoExpediente = "EXP-1",
+            TipoTramite = "INTERNO", RutaNormativa = "CAU-P-011", CarreraOrigenCodigo = "TI", CarreraDestinoCodigo = "SW",
+            DocumentoIds = new[] { documento.DocumentoId }, Documentos = new[] { documento }
+        };
+
+        await servicio.ProcesarAsync(evento, Guid.NewGuid());
+
+        (await db.Extracciones.CountAsync()).Should().Be(0, "el certificado no trae contenidos: el agente usa los sílabos");
+        var contexto = await db.AnalisisExpedientes.SingleAsync();
+        contexto.CarreraOrigenCodigo.Should().Be("TI");
+        contexto.CarreraDestinoNombre.Should().Be("Software");
+        contexto.Revisor1Correo.Should().Be("hnaranjo@uta.edu.ec");
+        var certificado = JsonSerializer.Deserialize<CertificadoSiha>(contexto.CertificadoJson)!;
+        certificado.Solicitudes.Should().HaveCount(5);
+        certificado.Materias.Should().Contain(m => m.Nombre == "Medidas Eléctricas" && !m.Aprobada);
     }
 }

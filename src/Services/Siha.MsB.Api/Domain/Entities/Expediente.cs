@@ -55,6 +55,10 @@ public class Expediente
     /// <summary>Cédula del estudiante según el certificado SIHA.</summary>
     public string? EstudianteIdentificacion { get; set; }
 
+    /// <summary>Nombres completos de las carreras (los códigos se resuelven en MS A).</summary>
+    public string? CarreraOrigenNombre { get; set; }
+    public string? CarreraDestinoNombre { get; set; }
+
     /// <summary>Docentes revisores asignados en el certificado (usuarios DOCENTE de MS A).</summary>
     public string? Revisor1Nombre { get; set; }
     public string? Revisor1Correo { get; set; }

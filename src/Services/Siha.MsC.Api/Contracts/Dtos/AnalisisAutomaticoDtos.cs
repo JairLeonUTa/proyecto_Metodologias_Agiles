@@ -1,21 +1,6 @@
 namespace Siha.MsC.Api.Contracts.Dtos;
 
-/// <summary>
-/// Análisis automático de un expediente completo: compara los contenidos de TODAS las asignaturas
-/// aprobadas del certificado con TODAS las asignaturas de la carrera de destino y propone solo las
-/// homologaciones que alcanzan el mínimo de contenido vigente.
-/// </summary>
-public record AnalisisAutomaticoRequest(
-    string RutaNormativa,
-    string TipoTramite,
-    string InstitucionOrigen,
-    IReadOnlyCollection<OrigenAnalisisRequest> AsignaturasOrigen,
-    IReadOnlyCollection<DestinoAnalisisRequest> AsignaturasDestino);
-
-/// <summary>Datos del certificado (MS B) que no están en la extracción: fecha y matrícula.</summary>
-public record OrigenAnalisisRequest(string Codigo, DateOnly? FechaAprobacion, int? NumeroMatricula);
-
-/// <summary>Asignatura de la malla de destino con su plan analítico (catálogo de MS A).</summary>
+/// <summary>Asignatura de una malla oficial (catálogo de MS A) con sus unidades: lo que "sabe" el agente.</summary>
 public record DestinoAnalisisRequest(
     string Codigo,
     string Nombre,
@@ -25,53 +10,66 @@ public record DestinoAnalisisRequest(
 
 public record UnidadCatalogoRequest(int Numero, string Nombre, int Horas, string? Contenidos);
 
+/// <summary>
+/// Estimación del agente para una solicitud con certificado SIHA: reglas del instructivo y, por cada
+/// materia que el estudiante pide homologar, la comparación de contenidos, profundidad y carga horaria
+/// con su explicación en lenguaje sencillo.
+/// </summary>
 public record AnalisisAutomaticoResponse(
     Guid ExpedienteId,
-    /// <summary>Homologaciones que alcanzan el contenido mínimo (cada materia de origen se usa una sola vez).</summary>
-    IReadOnlyCollection<PropuestaHomologacionResponse> Propuestas,
-    /// <summary>Materias de destino con coincidencias parciales que NO alcanzan el mínimo.</summary>
-    IReadOnlyCollection<PropuestaHomologacionResponse> SinCoberturaSuficiente,
-    /// <summary>Materias aprobadas que no sirven para ninguna materia de destino.</summary>
-    IReadOnlyCollection<OrigenPropuestaResponse> OrigenesSinAsignar,
+    IReadOnlyCollection<RequisitoResponse> Requisitos,
+    IReadOnlyCollection<EvaluacionMateriaResponse> Evaluaciones,
     IReadOnlyCollection<string> Alertas,
-    /// <summary>Trazabilidad técnica (reglas y versiones aplicadas). No se muestra en pantalla.</summary>
+    string Resumen,
+    /// <summary>Trazabilidad técnica (reglas y versión aplicadas). No se muestra en pantalla.</summary>
     string DetalleTrazabilidad);
 
-public record PropuestaHomologacionResponse(
-    string CodigoDestino,
-    string NombreDestino,
-    int CreditosDestino,
-    int? SemestreDestino,
-    IReadOnlyCollection<OrigenPropuestaResponse> Origenes,
-    decimal Pcont,
-    decimal Pcred,
-    string CategoriaCreditos,
-    bool AlcanzaContenido,
-    EstadoEvaluacionFinal EstadoFinal,
+/// <summary>Regla del instructivo de homologación y si la solicitud la cumple, con la razón.</summary>
+public record RequisitoResponse(string Regla, bool Cumple, string Explicacion);
+
+public record EvaluacionMateriaResponse(
+    int Numero,
+    /// <summary>Materia de la carrera de destino tal como la pide el certificado.</summary>
+    string MateriaDestino,
+    string? CodigoDestino,
+    int? NivelDestino,
+    int? CreditosDestino,
+    int HorasDestino,
+    IReadOnlyCollection<MateriaOrigenEvaluadaResponse> MateriasOrigen,
+    /// <summary>% de horas de la materia de destino cuyos temas están cubiertos.</summary>
+    decimal Contenidos,
+    /// <summary>% de horas dedicadas a esos temas en lo aprobado frente a lo que exige el destino.</summary>
+    decimal Profundidad,
+    /// <summary>% de horas aprobadas frente a las horas de la materia de destino (máximo 100).</summary>
+    decimal CargaHoraria,
+    /// <summary>CUMPLE (los tres criterios llegan al mínimo) o CRITERIO_DOCENTE.</summary>
+    string Estimacion,
     IReadOnlyCollection<CoberturaUnidadPropuestaResponse> Unidades,
-    IReadOnlyCollection<string> Alertas,
+    /// <summary>Explicación paso a paso de cómo se llegó al resultado.</summary>
+    IReadOnlyCollection<string> Explicacion,
+    string Conclusion,
     IReadOnlyCollection<PrecedenteResponse> Precedentes);
 
-public record OrigenPropuestaResponse(
-    Guid ExtraccionId,
-    string Codigo,
+public record MateriaOrigenEvaluadaResponse(
     string Nombre,
-    int? Creditos,
+    int Nivel,
+    string PeriodoAcademico,
+    decimal Nota,
     int? Horas,
-    DateOnly? FechaAprobacion,
-    int? AnosTranscurridos,
-    int? NumeroMatricula);
+    string? CodigoCatalogo,
+    bool EncontradaEnMalla);
 
-/// <summary>Cobertura de una unidad de destino y la unidad de origen que mejor la cubre.</summary>
+/// <summary>Cobertura de una unidad de destino y la unidad aprobada que mejor la cubre.</summary>
 public record CoberturaUnidadPropuestaResponse(
     int Numero,
     string Nombre,
     int Horas,
     double Similitud,
     bool Cubierta,
-    string? CodigoOrigen,
+    string? MateriaOrigen,
     int? NumeroUnidadOrigen,
-    string? NombreUnidadOrigen);
+    string? NombreUnidadOrigen,
+    int? HorasUnidadOrigen);
 
 /// <summary>Decisión de un docente revisor sobre una materia de destino.</summary>
 public record DecisionMateriaRequest(string CodigoDestino, bool Aprobada, string? Observacion);
@@ -89,7 +87,7 @@ public record DictamenResponse(
 public record RevisorAnalisisResponse(string Nombre, string Correo, bool Respondio);
 
 /// <summary>
-/// Resultado combinado por materia de destino: estimación del agente (CUMPLE ≥ 80 % o CRITERIO_DOCENTE)
+/// Resultado combinado por materia de destino: estimación del agente (CUMPLE o CRITERIO_DOCENTE)
 /// y decisión de los dos revisores (PENDIENTE, HOMOLOGADA, NO_HOMOLOGADA o SIN_ACUERDO).
 /// </summary>
 public record ResultadoFinalMateriaResponse(
@@ -100,6 +98,9 @@ public record ResultadoFinalMateriaResponse(
     int Rechazos,
     string Resultado);
 
+/// <summary>Materia del historial del certificado (aprobada o reprobada).</summary>
+public record MateriaHistorialResponse(string Nombre, int Nivel, string PeriodoAcademico, decimal Nota, bool Aprobada);
+
 /// <summary>Todo lo que ve el operador o el docente al abrir una solicitud.</summary>
 public record SolicitudAnalisisResponse(
     Guid ExpedienteId,
@@ -109,8 +110,9 @@ public record SolicitudAnalisisResponse(
     string TipoTramite,
     string RutaNormativa,
     string InstitucionOrigen,
-    string CarreraOrigenCodigo,
-    string CarreraDestinoCodigo,
+    string CarreraOrigen,
+    string CarreraDestino,
+    IReadOnlyCollection<MateriaHistorialResponse> Historial,
     IReadOnlyCollection<RevisorAnalisisResponse> Revisores,
     /// <summary>PENDIENTE (el agente está analizando), ANALIZADO o ERROR.</summary>
     string Estado,

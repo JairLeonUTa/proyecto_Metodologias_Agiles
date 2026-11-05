@@ -13,8 +13,8 @@ namespace Siha.MsC.Api.Services;
 /// </summary>
 public sealed class SolicitudesAnalisisService
 {
-    public const string Cumple = "CUMPLE";
-    public const string CriterioDocente = "CRITERIO_DOCENTE";
+    public const string Cumple = AnalisisAutomaticoService.Cumple;
+    public const string CriterioDocente = AnalisisAutomaticoService.CriterioDocente;
 
     private readonly SihaDbContextC _db;
 
@@ -84,7 +84,16 @@ public sealed class SolicitudesAnalisisService
 
     private static SolicitudAnalisisResponse Armar(AnalisisExpediente c, List<DictamenDocente> dictamenes, bool puedeResponder)
     {
-        var resultado = c.ResultadoJson is null ? null : Leer(c.ResultadoJson);
+        AnalisisAutomaticoResponse? resultado = null;
+        try
+        {
+            resultado = c.ResultadoJson is null ? null : Leer(c.ResultadoJson);
+            if (resultado?.Evaluaciones is null) resultado = null;
+        }
+        catch (JsonException)
+        {
+            // Resultado del formato anterior: se debe volver a analizar.
+        }
         var respuestas = dictamenes.Select(d => new DictamenResponse(
             d.CorreoDocente,
             d.NombreDocente,
@@ -115,16 +124,29 @@ public sealed class SolicitudesAnalisisService
         var respondieron = revisores.Count(r => r.Respondio);
         var estadoRevision = respondieron == 0 ? "PENDIENTE" : respondieron < 2 ? "EN_REVISION" : "RESUELTA";
 
+        Siha.Certificados.CertificadoSiha? certificado = null;
+        try
+        {
+            certificado = JsonSerializer.Deserialize<Siha.Certificados.CertificadoSiha>(c.CertificadoJson);
+        }
+        catch (JsonException)
+        {
+            // Solicitudes registradas con el formato anterior del certificado: sin historial.
+        }
+        var historial = (certificado?.Materias ?? (IReadOnlyList<Siha.Certificados.MateriaCursada>)Array.Empty<Siha.Certificados.MateriaCursada>())
+            .OrderBy(m => m.Nivel).ThenBy(m => m.Nombre)
+            .Select(m => new MateriaHistorialResponse(m.Nombre, m.Nivel, m.PeriodoAcademico, m.Nota, m.Aprobada))
+            .ToList();
+
         return new SolicitudAnalisisResponse(
             c.ExpedienteId, c.CodigoExpediente, c.NumeroCertificado, c.EstudianteNombre, c.TipoTramite, c.RutaNormativa,
-            c.InstitucionOrigen, c.CarreraOrigenCodigo, c.CarreraDestinoCodigo, revisores, c.Estado, c.Mensaje, c.AnalizadoUtc,
+            c.InstitucionOrigen, c.CarreraOrigenNombre, c.CarreraDestinoNombre, historial, revisores, c.Estado, c.Mensaje, c.AnalizadoUtc,
             resultado, respuestas, final, estadoRevision, puedeResponder && c.Estado == EstadosAnalisis.Analizado);
     }
 
     /// <summary>Materias que los docentes deben decidir: las que cumplen y las que quedan a su criterio.</summary>
     private static IEnumerable<(string Codigo, string Nombre, string Estimacion)> Materias(AnalisisAutomaticoResponse r)
-        => r.Propuestas.Select(p => (p.CodigoDestino, p.NombreDestino, Cumple))
-            .Concat(r.SinCoberturaSuficiente.Select(p => (p.CodigoDestino, p.NombreDestino, CriterioDocente)));
+        => (r.Evaluaciones ?? Array.Empty<EvaluacionMateriaResponse>()).Select(e => (e.MateriaDestino, e.MateriaDestino, e.Estimacion));
 
     private static AnalisisAutomaticoResponse Leer(string json)
         => JsonSerializer.Deserialize<AnalisisAutomaticoResponse>(json, AnalisisAutomaticoService.Json)!;

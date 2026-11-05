@@ -10,24 +10,17 @@ public record CertificadoLeidoResponse(
     string TipoTramite,
     string RutaNormativa,
     string InstitucionOrigen,
-    string CarreraOrigenCodigo,
-    string CarreraOrigenNombre,
-    string CarreraDestinoCodigo,
-    string CarreraDestinoNombre,
-    IReadOnlyCollection<AsignaturaCertificadaResponse> Asignaturas,
+    string CarreraOrigen,
+    string CarreraDestino,
+    IReadOnlyCollection<MateriaCursadaResponse> Materias,
+    IReadOnlyCollection<SolicitudHomologacionResponse> Solicitudes,
     IReadOnlyCollection<RevisorResponse> Revisores);
 
-public record AsignaturaCertificadaResponse(
-    string Codigo,
-    string Nombre,
-    int Semestre,
-    int Creditos,
-    int HorasTotales,
-    DateOnly FechaAprobacion,
-    decimal Nota,
-    IReadOnlyCollection<UnidadCertificadaResponse> Unidades);
+/// <summary>Materia del historial académico (aprobada o reprobada).</summary>
+public record MateriaCursadaResponse(string Nombre, int Nivel, string PeriodoAcademico, decimal Nota, bool Aprobada);
 
-public record UnidadCertificadaResponse(int Numero, string Nombre, int Horas, string Contenidos);
+/// <summary>Materia(s) aprobada(s) que pide homologar por una materia de la carrera de destino.</summary>
+public record SolicitudHomologacionResponse(int Numero, IReadOnlyCollection<string> MateriasOrigen, string MateriaDestino);
 
 /// <summary>Respuesta del registro por certificado: expediente creado y publicado (o en reintento).</summary>
 public record SolicitudCertificadoResponse(

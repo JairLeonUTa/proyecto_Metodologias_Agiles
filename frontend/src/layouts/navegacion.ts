@@ -15,6 +15,7 @@ export const RUTAS = {
   nuevaSolicitud: '/solicitudes/nueva',
   solicitudes: '/solicitudes',
   detalleSolicitud: '/solicitudes/:id',
+  reglasHomologacion: '/reglas-homologacion',
   expedientes: '/expedientes',
   consultaExpediente: '/expedientes/consulta',
   detalleExpediente: '/expedientes/:id',
@@ -70,14 +71,21 @@ export const MENU: GrupoNavegacion[] = [
         icono: 'bandeja',
         rolesPermitidos: TODOS_LOS_ROLES,
       },
+      {
+        etiqueta: 'Reglas de homologación',
+        descripcion: 'Qué se necesita y cómo se decide, explicado de forma sencilla',
+        ruta: RUTAS.reglasHomologacion,
+        icono: 'reglas',
+        rolesPermitidos: TODOS_LOS_ROLES,
+      },
     ],
   },
   {
     titulo: 'Administración',
     elementos: [
       {
-        etiqueta: 'Reglas',
-        descripcion: 'Contenido mínimo para homologar (80 %)',
+        etiqueta: 'Configurar mínimo (80 %)',
+        descripcion: 'Contenido mínimo para homologar',
         ruta: RUTAS.reglas,
         icono: 'reglas',
         rolesPermitidos: [ROLES.ADMINISTRADOR],

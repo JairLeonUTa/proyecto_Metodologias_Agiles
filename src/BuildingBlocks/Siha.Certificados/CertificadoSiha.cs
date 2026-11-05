@@ -3,10 +3,12 @@ namespace Siha.Certificados;
 /// <summary>
 /// Certificado de homologación SIHA (formato oficial <c>SIHA-CH-01</c>).
 ///
-/// Es el único documento que se acepta para registrar una solicitud: llega preaprobado por la
-/// secretaría y trae todo lo necesario para homologar (estudiante, trámite, carreras y cada
-/// asignatura aprobada con semestre, créditos, horas, fecha, nota, matrícula y unidades temáticas).
-/// Nadie vuelve a digitar esos datos en el sistema.
+/// Es el único documento que se acepta para registrar una solicitud. Llega preaprobado por la
+/// secretaría y trae: el estudiante, el trámite, las carreras con su nombre completo, el historial
+/// académico (materias aprobadas y reprobadas con nivel, período académico y nota), qué materia(s)
+/// aprobada(s) quiere homologar por cuál materia de la carrera de destino y los dos docentes revisores.
+/// Los contenidos, horas y créditos NO van en el certificado: el agente los toma de las mallas y sílabos
+/// oficiales que conoce.
 /// </summary>
 public sealed record CertificadoSiha(
     string NumeroCertificado,
@@ -17,32 +19,23 @@ public sealed record CertificadoSiha(
     string TipoTramite,
     string RutaNormativa,
     string InstitucionOrigen,
-    string CarreraOrigenCodigo,
-    string CarreraOrigenNombre,
-    string CarreraDestinoCodigo,
-    string CarreraDestinoNombre,
-    IReadOnlyList<AsignaturaCertificada> Asignaturas,
+    string CarreraOrigen,
+    string CarreraDestino,
+    IReadOnlyList<MateriaCursada> Materias,
+    IReadOnlyList<SolicitudHomologacion> Solicitudes,
     IReadOnlyList<RevisorCertificado> Revisores);
+
+/// <summary>Materia del historial académico (aprobada o reprobada).</summary>
+public sealed record MateriaCursada(string Nombre, int Nivel, string PeriodoAcademico, decimal Nota, bool Aprobada);
+
+/// <summary>Una o varias materias aprobadas que el estudiante pide homologar por una materia de destino.</summary>
+public sealed record SolicitudHomologacion(int Numero, IReadOnlyList<string> MateriasOrigen, string MateriaDestino);
 
 /// <summary>
 /// Docente revisor asignado en el certificado. Debe existir en MS A como usuario activo con rol DOCENTE
 /// (lo verifica MS B por gRPC al registrar).
 /// </summary>
 public sealed record RevisorCertificado(string Nombre, string Correo);
-
-/// <summary>Asignatura aprobada que consta en el certificado, con su plan analítico resumido.</summary>
-public sealed record AsignaturaCertificada(
-    string Codigo,
-    string Nombre,
-    int Semestre,
-    int Creditos,
-    int HorasTotales,
-    DateOnly FechaAprobacion,
-    decimal Nota,
-    IReadOnlyList<UnidadCertificada> Unidades);
-
-/// <summary>Unidad temática de una asignatura aprobada (nombre, horas y contenidos).</summary>
-public sealed record UnidadCertificada(int Numero, string Nombre, int Horas, string Contenidos);
 
 /// <summary>
 /// Resultado de leer un PDF con el formato SIHA. Si <see cref="EsValido"/> es falso,

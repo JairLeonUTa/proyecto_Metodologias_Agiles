@@ -17,6 +17,13 @@ public class AnalisisExpediente
     public string CarreraOrigenCodigo { get; set; } = string.Empty;
     public string CarreraDestinoCodigo { get; set; } = string.Empty;
 
+    /// <summary>Nombres completos tal como vienen en el certificado.</summary>
+    public string CarreraOrigenNombre { get; set; } = string.Empty;
+    public string CarreraDestinoNombre { get; set; } = string.Empty;
+
+    /// <summary>Certificado SIHA leído (historial, solicitudes y revisores) serializado.</summary>
+    public string CertificadoJson { get; set; } = "{}";
+
     public string Revisor1Nombre { get; set; } = string.Empty;
     public string Revisor1Correo { get; set; } = string.Empty;
     public string Revisor2Nombre { get; set; } = string.Empty;

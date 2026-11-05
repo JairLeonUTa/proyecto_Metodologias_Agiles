@@ -38,6 +38,8 @@ public class SihaDbContextB : DbContext
             e.Property(x => x.NumeroCertificado).HasMaxLength(40);
             e.Property(x => x.EstudianteNombre).HasMaxLength(200);
             e.Property(x => x.EstudianteIdentificacion).HasMaxLength(20);
+            e.Property(x => x.CarreraOrigenNombre).HasMaxLength(150);
+            e.Property(x => x.CarreraDestinoNombre).HasMaxLength(150);
             e.Property(x => x.Revisor1Nombre).HasMaxLength(200);
             e.Property(x => x.Revisor1Correo).HasMaxLength(150);
             e.Property(x => x.Revisor2Nombre).HasMaxLength(200);
@@ -81,6 +83,8 @@ public class SihaDbContextB : DbContext
             e.Property(x => x.AsignaturaOrigenNombre).HasMaxLength(200).IsRequired();
             e.Property(x => x.AsignaturaDestinoCodigo).HasMaxLength(30);
             e.Property(x => x.NumeroMatriculaDestino);
+            e.Property(x => x.PeriodoAcademico).HasMaxLength(40);
+            e.Property(x => x.AsignaturaDestinoNombre).HasMaxLength(200);
             e.HasOne(x => x.Expediente)
                 .WithMany(x => x.Asignaturas)
                 .HasForeignKey(x => x.ExpedienteId)

@@ -9,24 +9,28 @@ namespace Siha.Certificados;
 /// <summary>
 /// Lee y valida el certificado de homologación SIHA (formato <c>SIHA-CH-01</c>).
 ///
-/// El formato es un texto con etiquetas fijas (<c>Etiqueta: valor</c>). Varias etiquetas pueden ir en
-/// la misma línea (por ejemplo <c>Semestre: 1   Créditos: 4   Horas totales: 64</c>). Las tildes y las
-/// mayúsculas no importan. Cualquier dato faltante o incoherente hace que el documento se rechace con
-/// la lista completa de errores: el sistema nunca completa ni adivina datos.
+/// El formato es un texto con etiquetas fijas (<c>Etiqueta: valor</c>); varias pueden ir en la misma
+/// línea y no importan tildes ni mayúsculas. Cualquier dato faltante o incoherente hace que el documento
+/// se rechace con la lista completa de errores: el sistema nunca completa ni adivina datos.
+///
+/// Reglas del instructivo UTA de cambio de carrera que se comprueban aquí:
+///  - Haber aprobado al menos el primer período académico (todas las materias de nivel 1 aprobadas).
+///  - Pedir al menos una homologación, y solo con materias aprobadas (las reprobadas no se homologan).
+///  - Materias vigentes: aprobadas en los últimos 10 años (el certificado ya excluye terceras matrículas).
 /// </summary>
 public static class LectorCertificadoSiha
 {
     /// <summary>Código del formato oficial que debe aparecer en el encabezado del PDF.</summary>
     public const string CodigoFormato = "SIHA-CH-01";
 
-    /// <summary>Nota mínima aprobatoria en la escala de 0 a 10 que usa el certificado.</summary>
+    /// <summary>Nota mínima aprobatoria en la escala de 0 a 10.</summary>
     public const decimal NotaMinimaAprobatoria = 7.0m;
 
-    /// <summary>
-    /// Vigencia máxima de una materia aprobada. El certificado llega ya filtrado por Secretaría:
-    /// solo trae materias de hasta 10 años y sin tercera matrícula, así que el sistema ya no las controla.
-    /// </summary>
+    /// <summary>Vigencia máxima de una materia aprobada para homologarse.</summary>
     public const int VigenciaMaximaAnos = 10;
+
+    /// <summary>Dominio institucional obligatorio de los correos de los docentes revisores.</summary>
+    public const string DominioInstitucional = "@uta.edu.ec";
 
     private static readonly string[] EtiquetasGenerales =
     {
@@ -35,30 +39,19 @@ public static class LectorCertificadoSiha
         "docente revisor 1", "docente revisor 2"
     };
 
-    /// <summary>Dominio institucional obligatorio de los correos de los docentes revisores.</summary>
-    public const string DominioInstitucional = "@uta.edu.ec";
+    private static readonly string[] EtiquetasMateria = { "materia", "nivel", "periodo academico", "nota", "estado" };
 
-    private static readonly Regex RegexCorreo = new(@"[A-Za-z0-9._%+\-]+@[A-Za-z0-9.\-]+\.[A-Za-z]{2,}", RegexOptions.Compiled);
+    private static readonly string[] EtiquetasSolicitud = { "materia aprobada", "homologar por" };
 
-    private static readonly string[] EtiquetasAsignatura =
-    {
-        "asignatura", "semestre", "creditos", "horas totales", "fecha de aprobacion", "nota",
-        "numero de matricula", "matricula", "contenidos"
-    };
-
-    // Las etiquetas más largas primero para que "numero de matricula" gane a "matricula".
+    // Las etiquetas más largas primero para que "materia aprobada" gane a "materia".
     private static readonly Regex RegexEtiqueta = new(
-        @"(?<![a-z0-9])(?<clave>" + string.Join("|", EtiquetasGenerales.Concat(EtiquetasAsignatura)
+        @"(?<![a-z0-9])(?<clave>" + string.Join("|", EtiquetasGenerales.Concat(EtiquetasMateria).Concat(EtiquetasSolicitud)
             .Distinct().OrderByDescending(e => e.Length).Select(Regex.Escape)) + @")\s*:",
         RegexOptions.Compiled);
 
-    private static readonly Regex RegexUnidad = new(
-        @"^unidad\s+(?<num>\d+)\s*[:.\-–]\s*(?<nombre>.+?)\s*\(\s*(?<horas>\d+)\s*(h|horas?)\s*\)\s*$",
-        RegexOptions.Compiled);
+    private static readonly Regex RegexCorreo = new(@"[A-Za-z0-9._%+\-]+@[A-Za-z0-9.\-]+\.[A-Za-z]{2,}", RegexOptions.Compiled);
 
-    // "CÓDIGO - Nombre": el guion separador va entre espacios, así los códigos pueden llevar guiones (UC-ED).
-    private static readonly Regex RegexCodigoNombre = new(
-        @"^(?<codigo>[A-Za-z0-9][A-Za-z0-9._/\-]*?)\s+[-–—]\s+(?<nombre>.+)$", RegexOptions.Compiled);
+    private static readonly Regex RegexAnio = new(@"\b(19|20)\d{2}\b", RegexOptions.Compiled);
 
     // Pie de página ("SIHA-CH-01   Página 1 de 2"): se descarta la línea completa.
     private static readonly Regex RegexPagina = new(@"(^|\s)pagina\s+\d+\s+de\s+\d+$", RegexOptions.Compiled);
@@ -148,86 +141,54 @@ public static class LectorCertificadoSiha
         }
 
         var generales = new Dictionary<string, string>();
-        var asignaturas = new List<AsignaturaEnLectura>();
-        AsignaturaEnLectura? asignatura = null;
-        UnidadEnLectura? unidad = null;
-        var leyendoContenidos = false;
+        var materias = new List<Dictionary<string, string>>();
+        var solicitudes = new List<(List<string> Origen, string? Destino)>();
+        Dictionary<string, string>? materia = null;
 
         foreach (var linea in lineas)
         {
             var normal = Normalizar(linea);
-            // Todo lo que sigue a la marca de cierre (firmas, sellos) no forma parte de los datos.
+            // Lo que sigue a la marca de cierre (firmas, sellos) no forma parte de los datos.
             if (normal.StartsWith("fin del certificado")) break;
             if (RegexPagina.IsMatch(normal)) continue;
 
-            var unidadMatch = RegexUnidad.Match(normal);
-            if (unidadMatch.Success && asignatura is not null)
+            foreach (var (clave, valor) in Pares(linea, normal))
             {
-                var inicioNombre = unidadMatch.Groups["nombre"].Index;
-                unidad = new UnidadEnLectura
-                {
-                    Numero = int.Parse(unidadMatch.Groups["num"].Value, CultureInfo.InvariantCulture),
-                    Nombre = linea.Substring(inicioNombre, unidadMatch.Groups["nombre"].Length).Trim(),
-                    Horas = int.Parse(unidadMatch.Groups["horas"].Value, CultureInfo.InvariantCulture)
-                };
-                asignatura.Unidades.Add(unidad);
-                leyendoContenidos = false;
-                continue;
-            }
-
-            var pares = Pares(linea, normal);
-            if (pares.Count == 0)
-            {
-                // Línea sin etiqueta: continuación de los contenidos de la unidad en curso
-                // (el PDF corta los textos largos en varias líneas). Encabezados se ignoran.
-                if (leyendoContenidos && unidad is not null)
-                {
-                    unidad.Contenidos.Append(' ').Append(linea);
-                }
-
-                continue;
-            }
-
-            foreach (var (clave, valor) in pares)
-            {
-                leyendoContenidos = false;
                 switch (clave)
                 {
-                    case "asignatura":
-                        asignatura = new AsignaturaEnLectura { Encabezado = valor };
-                        asignaturas.Add(asignatura);
-                        unidad = null;
+                    case "materia":
+                        materia = new Dictionary<string, string> { ["materia"] = valor };
+                        materias.Add(materia);
                         break;
-                    case "contenidos":
-                        if (unidad is null)
-                        {
-                            asignatura?.Errores.Add("Hay contenidos sin una línea 'Unidad N: nombre (H horas)' antes.");
-                            break;
-                        }
-
-                        unidad.Contenidos.Append(valor);
-                        leyendoContenidos = true;
+                    case "materia aprobada":
+                        // Varias "Materia aprobada" seguidas se suman a la misma solicitud (varias para una).
+                        if (solicitudes.Count == 0 || solicitudes[^1].Destino is not null)
+                            solicitudes.Add((new List<string>(), null));
+                        solicitudes[^1].Origen.Add(valor);
+                        break;
+                    case "homologar por":
+                        if (solicitudes.Count == 0 || solicitudes[^1].Destino is not null)
+                            solicitudes.Add((new List<string>(), valor));
+                        else
+                            solicitudes[^1] = (solicitudes[^1].Origen, valor);
                         break;
                     default:
-                        if (asignatura is not null && EtiquetasAsignatura.Contains(clave))
-                        {
-                            asignatura.Campos[clave == "numero de matricula" ? "matricula" : clave] = valor;
-                        }
+                        if (EtiquetasMateria.Contains(clave) && materia is not null)
+                            materia[clave] = valor;
                         else if (EtiquetasGenerales.Contains(clave))
-                        {
                             generales[clave] = valor;
-                        }
-
                         break;
                 }
             }
         }
 
-        return Validar(generales, asignaturas);
+        return Validar(generales, materias, solicitudes);
     }
 
     private static ResultadoLecturaCertificado Validar(
-        Dictionary<string, string> g, List<AsignaturaEnLectura> leidas)
+        Dictionary<string, string> g,
+        List<Dictionary<string, string>> leidas,
+        List<(List<string> Origen, string? Destino)> pedidas)
     {
         var errores = new List<string>();
 
@@ -246,36 +207,43 @@ public static class LectorCertificadoSiha
         var tipoTexto = Requerido("tipo de tramite", "Tipo de trámite");
         var rutaTexto = Requerido("ruta normativa", "Ruta normativa");
         var institucion = Requerido("institucion de origen", "Institución de origen");
-        var carreraOrigenTexto = Requerido("carrera de origen", "Carrera de origen");
-        var carreraDestinoTexto = Requerido("carrera de destino", "Carrera de destino");
+        var carreraOrigen = Requerido("carrera de origen", "Carrera de origen");
+        var carreraDestino = Requerido("carrera de destino", "Carrera de destino");
 
+        var hoy = DateOnly.FromDateTime(DateTime.UtcNow);
         var fechaEmision = default(DateOnly);
         if (fechaEmisionTexto.Length > 0 && !IntentarFecha(fechaEmisionTexto, out fechaEmision))
             errores.Add($"La fecha de emisión '{fechaEmisionTexto}' no es válida (use AAAA-MM-DD o DD/MM/AAAA).");
-        else if (fechaEmisionTexto.Length > 0 && fechaEmision > DateOnly.FromDateTime(DateTime.UtcNow).AddDays(1))
+        else if (fechaEmisionTexto.Length > 0 && fechaEmision > hoy.AddDays(1))
             errores.Add("La fecha de emisión está en el futuro.");
 
         if (cedula.Length > 0 && !Regex.IsMatch(cedula, @"^\d{10}$"))
             errores.Add($"La cédula '{cedula}' debe tener 10 dígitos.");
 
-        var tipo = Normalizar(tipoTexto).ToUpperInvariant();
-        if (tipoTexto.Length > 0 && !TiposTramite.Todos.Contains(tipo))
-            errores.Add($"El tipo de trámite '{tipoTexto}' no es válido (INTERNO o EXTERNO).");
+        var tipoNormal = Normalizar(tipoTexto);
+        var tipo = tipoNormal.Contains("interno") || tipoNormal.Contains("cambio de carrera") ? TiposTramite.Interno
+            : tipoNormal.Contains("externo") || tipoNormal.Contains("movilidad") ? TiposTramite.Externo
+            : string.Empty;
+        if (tipoTexto.Length > 0 && tipo.Length == 0)
+            errores.Add($"El tipo de trámite '{tipoTexto}' no es válido (Cambio de carrera o Movilidad externa).");
 
         var ruta = RutasNormativas.Todas.FirstOrDefault(r => rutaTexto.ToUpperInvariant().Contains(r)) ?? string.Empty;
         if (rutaTexto.Length > 0 && ruta.Length == 0)
             errores.Add($"La ruta normativa '{rutaTexto}' no es válida ({string.Join(" o ", RutasNormativas.Todas)}).");
-
         if (tipo == TiposTramite.Interno && ruta.Length > 0 && ruta != RutasNormativas.CambioCarreraOu)
-            errores.Add($"Un trámite INTERNO (cambio de carrera) debe usar la ruta {RutasNormativas.CambioCarreraOu}.");
+            errores.Add($"Un cambio de carrera debe usar la ruta {RutasNormativas.CambioCarreraOu}.");
         if (tipo == TiposTramite.Externo && ruta.Length > 0 && ruta != RutasNormativas.Movilidad)
-            errores.Add($"Un trámite EXTERNO (otra institución) debe usar la ruta {RutasNormativas.Movilidad}.");
+            errores.Add($"Una movilidad externa debe usar la ruta {RutasNormativas.Movilidad}.");
 
-        var (codOrigen, nomOrigen) = CodigoYNombre(carreraOrigenTexto, "Carrera de origen", errores);
-        var (codDestino, nomDestino) = CodigoYNombre(carreraDestinoTexto, "Carrera de destino", errores);
-        if (codOrigen.Length > 0 && codOrigen == codDestino && tipo == TiposTramite.Interno)
+        if (carreraOrigen.Length > 0 && Normalizar(carreraOrigen) == Normalizar(carreraDestino) && tipo == TiposTramite.Interno)
             errores.Add("En un cambio de carrera la carrera de origen y la de destino deben ser distintas.");
+        foreach (var (texto, etiqueta) in new[] { (carreraOrigen, "Carrera de origen"), (carreraDestino, "Carrera de destino") })
+        {
+            if (Regex.IsMatch(texto, @"^[A-Z]{2,5}(\s*-|$)"))
+                errores.Add($"'{etiqueta}' debe escribirse con el nombre completo de la carrera, sin siglas (se leyó '{texto}').");
+        }
 
+        // ---- Docentes revisores ----
         var revisores = new List<RevisorCertificado>();
         foreach (var n in new[] { 1, 2 })
         {
@@ -298,108 +266,106 @@ public static class LectorCertificadoSiha
         if (revisores.Count == 2 && revisores[0].Correo == revisores[1].Correo)
             errores.Add("Los dos docentes revisores deben ser personas distintas.");
 
+        // ---- Historial académico ----
         if (leidas.Count == 0)
-            errores.Add("El certificado no lista ninguna asignatura aprobada (líneas 'Asignatura: CÓDIGO - Nombre').");
+            errores.Add("El certificado no tiene historial académico (líneas 'Materia: Nombre completo').");
 
-        var asignaturas = new List<AsignaturaCertificada>();
-        var hoy = DateOnly.FromDateTime(DateTime.UtcNow);
-        foreach (var a in leidas)
+        var materias = new List<MateriaCursada>();
+        var anioEmision = fechaEmision != default ? fechaEmision.Year : hoy.Year;
+        foreach (var m in leidas)
         {
-            var (codigo, nombre) = CodigoYNombre(a.Encabezado, "Asignatura", errores);
-            var prefijo = $"Asignatura {(codigo.Length > 0 ? codigo : a.Encabezado)}";
-            errores.AddRange(a.Errores.Select(e => $"{prefijo}: {e}"));
+            var nombre = m["materia"].Trim();
+            var prefijo = $"Materia '{nombre}'";
 
-            int Entero(string clave, string etiqueta, int minimo, int maximo)
-            {
-                if (!a.Campos.TryGetValue(clave, out var texto) || string.IsNullOrWhiteSpace(texto))
-                {
-                    errores.Add($"{prefijo}: falta '{etiqueta}'.");
-                    return 0;
-                }
+            var nivel = 0;
+            if (!m.TryGetValue("nivel", out var nivelTexto) || !int.TryParse(Regex.Match(nivelTexto, @"\d+").Value, out nivel) || nivel is < 1 or > 10)
+                errores.Add($"{prefijo}: falta el 'Nivel' (1 a 10).");
 
-                var limpio = Regex.Match(texto, @"\d+").Value;
-                if (!int.TryParse(limpio, NumberStyles.None, CultureInfo.InvariantCulture, out var n) || n < minimo || n > maximo)
-                {
-                    errores.Add($"{prefijo}: '{etiqueta}' = '{texto}' no es válido ({minimo} a {maximo}).");
-                    return 0;
-                }
+            m.TryGetValue("periodo academico", out var periodo);
+            periodo = periodo?.Trim() ?? string.Empty;
+            var anio = RegexAnio.Matches(periodo).Select(x => int.Parse(x.Value, CultureInfo.InvariantCulture)).DefaultIfEmpty(0).Max();
+            if (periodo.Length == 0 || anio == 0)
+                errores.Add($"{prefijo}: falta el 'Período académico' (por ejemplo 'Abr-Sep 2025').");
 
-                return n;
-            }
+            var nota = -1m;
+            if (!m.TryGetValue("nota", out var notaTexto) ||
+                !decimal.TryParse(notaTexto.Replace(',', '.').Split(' ')[0], NumberStyles.Number, CultureInfo.InvariantCulture, out nota) ||
+                nota is < 0 or > 10)
+                errores.Add($"{prefijo}: falta la 'Nota' (escala de 0 a 10).");
 
-            var semestre = Entero("semestre", "Semestre", 1, 12);
-            var creditos = Entero("creditos", "Créditos", 1, 30);
-            var horas = Entero("horas totales", "Horas totales", 1, 2000);
-            // La matrícula ya no forma parte del formato (el certificado excluye las terceras matrículas).
+            var estado = Normalizar(m.GetValueOrDefault("estado") ?? string.Empty);
+            var aprobada = estado.StartsWith("aprob");
+            if (!aprobada && !estado.StartsWith("reprob"))
+                errores.Add($"{prefijo}: el 'Estado' debe ser Aprobada o Reprobada.");
+            else if (aprobada && nota is >= 0 and < NotaMinimaAprobatoria)
+                errores.Add($"{prefijo}: figura como Aprobada pero su nota {Formato(nota)} es menor que {Formato(NotaMinimaAprobatoria)}.");
+            else if (!aprobada && nota >= NotaMinimaAprobatoria)
+                errores.Add($"{prefijo}: figura como Reprobada pero su nota {Formato(nota)} es aprobatoria.");
 
-            var fecha = default(DateOnly);
-            if (!a.Campos.TryGetValue("fecha de aprobacion", out var fechaTexto) || string.IsNullOrWhiteSpace(fechaTexto))
-                errores.Add($"{prefijo}: falta 'Fecha de aprobación'.");
-            else if (!IntentarFecha(fechaTexto, out fecha))
-                errores.Add($"{prefijo}: la fecha de aprobación '{fechaTexto}' no es válida.");
-            else if (fecha > hoy || (fechaEmision != default && fecha > fechaEmision))
-                errores.Add($"{prefijo}: la fecha de aprobación {fecha:yyyy-MM-dd} es posterior a la emisión del certificado.");
-            else if (fecha < (fechaEmision != default ? fechaEmision : hoy).AddYears(-VigenciaMaximaAnos))
-                errores.Add($"{prefijo}: fue aprobada el {fecha:yyyy-MM-dd}, hace más de {VigenciaMaximaAnos} años; el certificado solo debe incluir materias vigentes.");
+            if (aprobada && anio > 0 && anio < anioEmision - VigenciaMaximaAnos)
+                errores.Add($"{prefijo}: se aprobó en {periodo}, hace más de {VigenciaMaximaAnos} años; el certificado solo debe incluir materias vigentes.");
 
-            var nota = 0m;
-            if (!a.Campos.TryGetValue("nota", out var notaTexto) || string.IsNullOrWhiteSpace(notaTexto))
-                errores.Add($"{prefijo}: falta 'Nota'.");
-            else if (!decimal.TryParse(notaTexto.Replace(',', '.').Split(' ')[0], NumberStyles.Number, CultureInfo.InvariantCulture, out nota) || nota < 0 || nota > 10)
-                errores.Add($"{prefijo}: la nota '{notaTexto}' no es válida (escala de 0 a 10).");
-            else if (nota < NotaMinimaAprobatoria)
-                errores.Add($"{prefijo}: la nota {nota.ToString("0.##", CultureInfo.InvariantCulture)} no es aprobatoria (mínimo {NotaMinimaAprobatoria.ToString("0", CultureInfo.InvariantCulture)}).");
-
-            if (a.Unidades.Count == 0)
-                errores.Add($"{prefijo}: no tiene unidades temáticas ('Unidad N: nombre (H horas)' y 'Contenidos: ...').");
-
-            foreach (var u in a.Unidades.Where(u => u.Contenidos.ToString().Trim().Length == 0))
-                errores.Add($"{prefijo}: la unidad {u.Numero} ({u.Nombre}) no tiene contenidos.");
-
-            if (a.Unidades.GroupBy(u => u.Numero).Any(grupo => grupo.Count() > 1))
-                errores.Add($"{prefijo}: hay unidades con el mismo número.");
-
-            var sumaHoras = a.Unidades.Sum(u => u.Horas);
-            if (horas > 0 && a.Unidades.Count > 0 && sumaHoras != horas)
-                errores.Add($"{prefijo}: las horas de las unidades suman {sumaHoras} y no coinciden con las horas totales ({horas}).");
-
-            asignaturas.Add(new AsignaturaCertificada(
-                codigo.ToUpperInvariant(), nombre, semestre, creditos, horas, fecha, nota,
-                a.Unidades.Select(u => new UnidadCertificada(
-                    u.Numero, u.Nombre, u.Horas, Regex.Replace(u.Contenidos.ToString(), @"\s+", " ").Trim())).ToList()));
+            materias.Add(new MateriaCursada(nombre, nivel, periodo, Math.Max(nota, 0), aprobada));
         }
 
-        foreach (var repetida in asignaturas.Where(a => a.Codigo.Length > 0).GroupBy(a => a.Codigo).Where(gr => gr.Count() > 1))
-            errores.Add($"La asignatura {repetida.Key} aparece más de una vez.");
+        foreach (var repetida in materias.GroupBy(x => Normalizar(x.Nombre)).Where(gr => gr.Count() > 1))
+            errores.Add($"La materia '{repetida.First().Nombre}' aparece más de una vez en el historial.");
+
+        // Regla UTA: haber aprobado al menos el primer período académico.
+        var primerNivel = materias.Where(x => x.Nivel == 1).ToList();
+        if (materias.Count > 0 && primerNivel.Count == 0)
+            errores.Add("El historial no incluye materias del primer nivel: debe constar que aprobó al menos el primer período académico.");
+        else if (primerNivel.Any(x => !x.Aprobada))
+            errores.Add("No aprobó todo el primer período académico (" +
+                        string.Join(", ", primerNivel.Where(x => !x.Aprobada).Select(x => x.Nombre)) +
+                        "); el instructivo exige haberlo aprobado para solicitar el cambio.");
+
+        // ---- Materias que solicita homologar ----
+        var solicitudes = new List<SolicitudHomologacion>();
+        if (pedidas.Count == 0)
+            errores.Add("El certificado no indica qué materia quiere homologar ('Materia aprobada: ...' y 'Homologar por: ...').");
+
+        var usadas = new HashSet<string>();
+        for (var i = 0; i < pedidas.Count; i++)
+        {
+            var (origen, destino) = pedidas[i];
+            var prefijo = $"Solicitud {i + 1}";
+            if (string.IsNullOrWhiteSpace(destino))
+                errores.Add($"{prefijo}: falta 'Homologar por' (la materia de la carrera de destino).");
+            if (origen.Count == 0)
+                errores.Add($"{prefijo}: falta 'Materia aprobada'.");
+
+            foreach (var o in origen)
+            {
+                var cursada = materias.FirstOrDefault(x => Normalizar(x.Nombre) == Normalizar(o));
+                if (cursada is null)
+                    errores.Add($"{prefijo}: '{o}' no está en el historial académico.");
+                else if (!cursada.Aprobada)
+                    errores.Add($"{prefijo}: '{o}' está reprobada; solo se pueden homologar materias aprobadas.");
+                if (!usadas.Add(Normalizar(o)))
+                    errores.Add($"{prefijo}: '{o}' ya se usa en otra solicitud; una materia aprobada sirve para una sola homologación.");
+            }
+
+            solicitudes.Add(new SolicitudHomologacion(i + 1, origen.Select(o => o.Trim()).ToList(), destino?.Trim() ?? string.Empty));
+        }
+
+        foreach (var repetido in solicitudes.Where(s => s.MateriaDestino.Length > 0).GroupBy(s => Normalizar(s.MateriaDestino)).Where(gr => gr.Count() > 1))
+            errores.Add($"La materia de destino '{repetido.First().MateriaDestino}' se pide más de una vez.");
 
         if (errores.Count > 0) return ResultadoLecturaCertificado.Invalido(errores.Distinct());
 
         return ResultadoLecturaCertificado.Valido(new CertificadoSiha(
             numero, fechaEmision, emitidoPor, estudiante, cedula, tipo, ruta, institucion,
-            codOrigen.ToUpperInvariant(), nomOrigen, codDestino.ToUpperInvariant(), nomDestino, asignaturas, revisores));
+            carreraOrigen, carreraDestino, materias, solicitudes, revisores));
     }
 
-    private static (string Codigo, string Nombre) CodigoYNombre(string texto, string etiqueta, List<string> errores)
-    {
-        if (string.IsNullOrWhiteSpace(texto)) return (string.Empty, string.Empty);
-        var m = RegexCodigoNombre.Match(texto.Trim());
-        if (m.Success) return (m.Groups["codigo"].Value.Trim(), m.Groups["nombre"].Value.Trim());
-        errores.Add($"'{etiqueta}' debe tener el formato 'CÓDIGO - Nombre' (se leyó '{texto}').");
-        return (string.Empty, string.Empty);
-    }
+    private static string Formato(decimal n) => n.ToString("0.##", CultureInfo.InvariantCulture);
 
     private static List<(string Clave, string Valor)> Pares(string original, string normal)
     {
         var resultado = new List<(string, string)>();
         var coincidencias = RegexEtiqueta.Matches(normal);
         if (coincidencias.Count == 0 || coincidencias[0].Index != 0) return resultado;
-
-        // "Contenidos:" ocupa el resto de la línea aunque el texto contenga otra etiqueta.
-        if (coincidencias[0].Groups["clave"].Value == "contenidos")
-        {
-            resultado.Add(("contenidos", original[coincidencias[0].Length..].Trim()));
-            return resultado;
-        }
 
         for (var i = 0; i < coincidencias.Count; i++)
         {
@@ -432,21 +398,5 @@ public static class LectorCertificadoSiha
         }
 
         return sb.ToString();
-    }
-
-    private sealed class AsignaturaEnLectura
-    {
-        public string Encabezado { get; init; } = string.Empty;
-        public Dictionary<string, string> Campos { get; } = new();
-        public List<UnidadEnLectura> Unidades { get; } = new();
-        public List<string> Errores { get; } = new();
-    }
-
-    private sealed class UnidadEnLectura
-    {
-        public int Numero { get; init; }
-        public string Nombre { get; init; } = string.Empty;
-        public int Horas { get; init; }
-        public StringBuilder Contenidos { get; } = new();
     }
 }

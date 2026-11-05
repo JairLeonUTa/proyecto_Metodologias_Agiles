@@ -94,42 +94,14 @@ public class ProcesarSolicitudCreadaService
             if (await _db.Extracciones.AnyAsync(x => x.DocumentoId == documento.DocumentoId, cancellationToken))
                 continue;
 
-            // Certificado SIHA (SIHA-CH-01): documento preaprobado con todas las materias. Cada materia
-            // queda como una extracción CONFIRMADA con confianza 1.00; no requiere revisión del operador.
+            // Certificado SIHA (SIHA-CH-01): documento preaprobado con el historial, las materias que pide
+            // homologar y los dos revisores. No trae contenidos: el agente los toma de las mallas oficiales.
+            // Se guarda el contexto y el análisis corre en cuanto se confirma este procesamiento.
             var certificado = _certificados is null
                 ? null
                 : await _certificados.LeerAsync(documento.RutaAlmacenamiento, cancellationToken);
             if (certificado is not null)
             {
-                foreach (var asignatura in certificado.Asignaturas)
-                {
-                    _db.Extracciones.Add(new Extraccion
-                    {
-                        ExpedienteId = evento.ExpedienteId,
-                        DocumentoId = documento.DocumentoId,
-                        CodigoAsignaturaOrigen = asignatura.Codigo,
-                        NombreAsignaturaOrigen = asignatura.Nombre,
-                        Creditos = asignatura.Creditos,
-                        Horas = asignatura.HorasTotales,
-                        Confianza = 1.00m,
-                        Estado = EstadosExtraccion.Confirmada,
-                        ConfirmadoUtc = DateTimeOffset.UtcNow,
-                        ConfirmadoPor = "CERTIFICADO_SIHA",
-                        Observacion = $"Datos del certificado SIHA {certificado.NumeroCertificado} (documento preaprobado, plantilla SIHA-CH-01).",
-                        FechaAprobacion = asignatura.FechaAprobacion,
-                        Nota = asignatura.Nota,
-                        Semestre = asignatura.Semestre,
-                        Unidades = asignatura.Unidades.Select(u => new ExtraccionUnidad
-                        {
-                            Numero = u.Numero,
-                            Nombre = u.Nombre,
-                            Horas = u.Horas,
-                            Contenidos = u.Contenidos
-                        }).ToList()
-                    });
-                }
-
-                // Contexto para el agente: el análisis se ejecuta en cuanto se confirma este procesamiento.
                 if (!await _db.AnalisisExpedientes.AnyAsync(a => a.ExpedienteId == evento.ExpedienteId, cancellationToken))
                 {
                     var r1 = certificado.Revisores.ElementAtOrDefault(0);
@@ -143,8 +115,11 @@ public class ProcesarSolicitudCreadaService
                         TipoTramite = certificado.TipoTramite,
                         RutaNormativa = certificado.RutaNormativa,
                         InstitucionOrigen = certificado.InstitucionOrigen,
-                        CarreraOrigenCodigo = certificado.CarreraOrigenCodigo,
-                        CarreraDestinoCodigo = certificado.CarreraDestinoCodigo,
+                        CarreraOrigenCodigo = evento.CarreraOrigenCodigo,
+                        CarreraDestinoCodigo = evento.CarreraDestinoCodigo,
+                        CarreraOrigenNombre = certificado.CarreraOrigen,
+                        CarreraDestinoNombre = certificado.CarreraDestino,
+                        CertificadoJson = System.Text.Json.JsonSerializer.Serialize(certificado),
                         Revisor1Nombre = r1?.Nombre ?? string.Empty,
                         Revisor1Correo = r1?.Correo ?? string.Empty,
                         Revisor2Nombre = r2?.Nombre ?? string.Empty,
@@ -153,8 +128,8 @@ public class ProcesarSolicitudCreadaService
                 }
 
                 _logger.LogInformation(
-                    "Certificado SIHA {Certificado} leído: {Asignaturas} materia(s) confirmada(s). ExpedienteId={ExpedienteId}",
-                    certificado.NumeroCertificado, certificado.Asignaturas.Count, evento.ExpedienteId);
+                    "Certificado SIHA {Certificado} recibido: {Solicitudes} solicitud(es) de homologación. ExpedienteId={ExpedienteId}",
+                    certificado.NumeroCertificado, certificado.Solicitudes.Count, evento.ExpedienteId);
                 continue;
             }
 

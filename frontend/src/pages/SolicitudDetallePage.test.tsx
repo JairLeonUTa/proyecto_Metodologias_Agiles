@@ -4,14 +4,13 @@ import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { SolicitudDetallePage } from './SolicitudDetallePage';
 
-const api = vi.hoisted(() => ({ obtener: vi.fn(), obtenerSolicitud: vi.fn(), responder: vi.fn(), reanalizar: vi.fn() }));
+const api = vi.hoisted(() => ({ obtenerSolicitud: vi.fn(), responder: vi.fn(), reanalizar: vi.fn() }));
 
 vi.mock('../api', async (importOriginal) => {
   const real = await importOriginal<typeof import('../api')>();
   return {
     ...real,
-    expedientesApi: { ...real.expedientesApi, obtener: api.obtener },
-    extraccionesApi: { ...real.extraccionesApi, obtenerSolicitud: api.obtenerSolicitud, responder: api.responder, reanalizar: api.reanalizar },
+    extraccionesApi: { ...real.extraccionesApi, ...api },
   };
 });
 
@@ -19,19 +18,21 @@ vi.mock('../hooks/useAuth', () => ({
   useAuth: () => ({ usuario: { rol: 'DOCENTE', correoInstitucional: 'hnaranjo@uta.edu.ec', nombreCompleto: 'Ing. Hernán Naranjo' } }),
 }));
 
-const propuesta = (codigo: string, nombre: string, pcont: number) => ({
-  codigoDestino: codigo,
-  nombreDestino: nombre,
+const evaluacion = (numero: number, destino: string, origen: string, valor: number) => ({
+  numero,
+  materiaDestino: destino,
+  codigoDestino: 'X',
+  nivelDestino: 1,
   creditosDestino: 4,
-  semestreDestino: 1,
-  origenes: [{ extraccionId: 'x', codigo: 'IND105', nombre: 'Física I', creditos: 4, horas: 192, fechaAprobacion: '2024-02-16', anosTranscurridos: 2, numeroMatricula: null }],
-  pcont,
-  pcred: 100,
-  categoriaCreditos: 'NORMAL',
-  alcanzaContenido: pcont >= 80,
-  estadoFinal: pcont >= 80 ? 0 : 6,
+  horasDestino: 192,
+  materiasOrigen: [{ nombre: origen, nivel: 1, periodoAcademico: 'Abr-Sep 2025', nota: 8.9, horas: 192, codigoCatalogo: 'Y', encontradaEnMalla: true }],
+  contenidos: valor,
+  profundidad: valor,
+  cargaHoraria: 100,
+  estimacion: valor >= 80 ? 'CUMPLE' : 'CRITERIO_DOCENTE',
   unidades: [],
-  alertas: [],
+  explicacion: [`✔ Unidad 1 «Algoritmos» (48 h): la cubre la unidad 1 de «${origen}».`],
+  conclusion: valor >= 80 ? 'Cumple el 80 %: el agente recomienda homologar.' : 'No llega al 80 % en contenidos: queda a criterio de los docentes revisores.',
   precedentes: [],
 });
 
@@ -39,12 +40,16 @@ const SOLICITUD = {
   expedienteId: 'e1',
   codigoExpediente: 'EXP-1',
   numeroCertificado: 'SIHA-1',
-  estudianteNombre: 'Ana',
+  estudianteNombre: 'Ana Pérez',
   tipoTramite: 'INTERNO',
   rutaNormativa: 'CAU-P-011',
   institucionOrigen: 'UTA',
-  carreraOrigenCodigo: 'IND',
-  carreraDestinoCodigo: 'SW',
+  carreraOrigen: 'Tecnologías de la Información',
+  carreraDestino: 'Software',
+  historial: [
+    { nombre: 'Fundamentos de Programación', nivel: 1, periodoAcademico: 'Abr-Sep 2025', nota: 8.9, aprobada: true },
+    { nombre: 'Medidas Eléctricas', nivel: 2, periodoAcademico: 'Oct 2025-Mar 2026', nota: 5.9, aprobada: false },
+  ],
   revisores: [
     { nombre: 'Ing. Hernán Naranjo', correo: 'hnaranjo@uta.edu.ec', respondio: false },
     { nombre: 'Ing. María Vaca', correo: 'mvaca@uta.edu.ec', respondio: false },
@@ -54,29 +59,26 @@ const SOLICITUD = {
   analizadoUtc: '2026-11-04T00:00:00Z',
   resultado: {
     expedienteId: 'e1',
-    propuestas: [propuesta('SW101', 'Fundamentos de Programación', 100)],
-    sinCoberturaSuficiente: [propuesta('SW105', 'Física I', 62.5)],
-    origenesSinAsignar: [],
+    requisitos: [{ regla: 'Aprobó al menos el primer período académico', cumple: true, explicacion: 'Aprobó las 5 materias del primer nivel.' }],
+    evaluaciones: [
+      evaluacion(1, 'Algoritmos y Lógica de Programación', 'Fundamentos de Programación', 100),
+      evaluacion(2, 'Cálculo Diferencial', 'Cálculo Diferencial', 50),
+    ],
     alertas: [],
+    resumen: 'Se analizaron 2 materias.',
     detalleTrazabilidad: '',
   },
   dictamenes: [],
   resultadoFinal: [
-    { codigoDestino: 'SW101', nombreDestino: 'Fundamentos de Programación', estimacion: 'CUMPLE', aprobaciones: 0, rechazos: 0, resultado: 'PENDIENTE' },
-    { codigoDestino: 'SW105', nombreDestino: 'Física I', estimacion: 'CRITERIO_DOCENTE', aprobaciones: 0, rechazos: 0, resultado: 'PENDIENTE' },
+    { codigoDestino: 'Algoritmos y Lógica de Programación', nombreDestino: 'Algoritmos y Lógica de Programación', estimacion: 'CUMPLE', aprobaciones: 0, rechazos: 0, resultado: 'PENDIENTE' },
+    { codigoDestino: 'Cálculo Diferencial', nombreDestino: 'Cálculo Diferencial', estimacion: 'CRITERIO_DOCENTE', aprobaciones: 0, rechazos: 0, resultado: 'PENDIENTE' },
   ],
   estadoRevision: 'PENDIENTE',
   puedeResponder: true,
 };
 
-describe('Solicitud: análisis del agente y respuesta del docente', () => {
+describe('Solicitud: análisis explicado y decisión del docente', () => {
   beforeEach(() => {
-    api.obtener.mockResolvedValue({
-      id: 'e1', codigo: 'EXP-1', estudianteNombre: 'Ana', numeroCertificado: 'SIHA-1', carreraOrigenCodigo: 'IND',
-      carreraDestinoCodigo: 'SW', rutaNormativa: 'CAU-P-011', institucionOrigen: 'UTA',
-      revisores: [{ nombre: 'Ing. Hernán Naranjo', correo: 'hnaranjo@uta.edu.ec' }, { nombre: 'Ing. María Vaca', correo: 'mvaca@uta.edu.ec' }],
-      asignaturas: [{ codigoOrigen: 'IND105', nombreOrigen: 'Física I', codigoDestino: null, nota: 8.6, fechaAprobacionCertificada: '2024-02-16', semestre: 1, creditos: 4, horas: 192 }],
-    });
     api.obtenerSolicitud.mockResolvedValue(SOLICITUD);
     api.responder.mockResolvedValue({ ...SOLICITUD, estadoRevision: 'EN_REVISION' });
   });
@@ -90,30 +92,32 @@ describe('Solicitud: análisis del agente y respuesta del docente', () => {
       </MemoryRouter>,
     );
 
-  it('muestra las notas, lo que cumple el 80 % y lo que queda a criterio del docente, sin umbrales', async () => {
+  it('muestra el cambio de carrera, el historial con reprobadas, las reglas y la explicación del agente', async () => {
     abrir();
 
-    expect(await screen.findByText('8.60')).toBeInTheDocument();
-    expect(screen.getByText('Cumple')).toBeInTheDocument();
-    expect(screen.getByText('A criterio del docente')).toBeInTheDocument();
+    expect(await screen.findByText('Tecnologías de la Información')).toBeInTheDocument();
+    expect(screen.getAllByText('Reprobada').length).toBeGreaterThan(0);
+    expect(screen.getByText('Aprobó al menos el primer período académico')).toBeInTheDocument();
+    expect(screen.getAllByText(/la cubre la unidad 1/).length).toBeGreaterThan(0);
+    expect(screen.getByText(/queda a criterio de los docentes/)).toBeInTheDocument();
     expect(screen.queryByText(/θ|δ|τ|0,65/)).not.toBeInTheDocument();
   });
 
-  it('el docente debe decidir lo que queda a su criterio antes de enviar', async () => {
+  it('el docente decide con botones y debe decidir lo que queda a su criterio', async () => {
     const user = userEvent.setup();
     abrir();
 
-    const enviar = await screen.findByRole('button', { name: 'Enviar mi respuesta' });
+    const enviar = await screen.findByRole('button', { name: 'Enviar mi decisión' });
     expect(enviar).toBeDisabled();
 
-    const [, noAprobarFisica] = screen.getAllByLabelText('No aprobar');
-    await user.click(noAprobarFisica);
+    const grupo = screen.getByRole('group', { name: 'Decisión para Cálculo Diferencial' });
+    await user.click(grupo.querySelectorAll('button')[1]);
     await user.click(enviar);
 
     expect(api.responder).toHaveBeenCalledWith('e1', {
       decisiones: [
-        { codigoDestino: 'SW101', aprobada: true, observacion: null },
-        { codigoDestino: 'SW105', aprobada: false, observacion: null },
+        { codigoDestino: 'Algoritmos y Lógica de Programación', aprobada: true, observacion: null },
+        { codigoDestino: 'Cálculo Diferencial', aprobada: false, observacion: null },
       ],
       comentario: null,
     });

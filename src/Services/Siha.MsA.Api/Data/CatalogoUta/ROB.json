@@ -1,0 +1,1067 @@
+{
+ "carrera": "ROB",
+ "nombre": "Automatización y Robótica",
+ "fuente": "Sílabos oficiales publicados en uta.edu.ec (2026)",
+ "asignaturas": [
+  {
+   "nombre": "METODOLOGÍA DE LA INVESTIGACIÓN",
+   "nivel": 1,
+   "creditos": 2,
+   "horas": 96,
+   "descripcion": "La metodología de la investigación es una asignatura que trata en forma concreta de los diferentes pasos a llevarse a cabo en una investigación de carácter científico y tecnológico y como un proceso dinámico, cambiante y continuo. Este proceso está compuesto por una serie de etapas, las cuales se derivan en forma lógica una de otras, cuando se trata de resolver problemas con la consecuente generación de nuevos conocimientos,",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "Identificar los fundamentos de la metodología de la investigación científica que influyen en la generación de conocimiento.",
+     "horas": 24,
+     "contenidos": "Fundamentos de la metodología de la investigación"
+    },
+    {
+     "numero": 2,
+     "nombre": "Analizar los tipos y métodos de investigación científica.",
+     "horas": 24,
+     "contenidos": "Tipos y métodos de investigación"
+    },
+    {
+     "numero": 3,
+     "nombre": "Aplicar las técnicas e instrumentos de investigación.",
+     "horas": 24,
+     "contenidos": "Técnicas e instrumentos de recolección de datos"
+    },
+    {
+     "numero": 4,
+     "nombre": "Desarrollar los componentes estructurales del perfil de investigación.",
+     "horas": 24,
+     "contenidos": "Componentes del perfil de investigación"
+    }
+   ],
+   "codigo": "08090101"
+  },
+  {
+   "nombre": "CALCULO I",
+   "nivel": 1,
+   "creditos": 3,
+   "horas": 144,
+   "descripcion": "La asignatura de Cálculo I, perteneciente a la unidad curricular básica de la carrera de Automatizaciòn y Robòtica, se estructura en cuatro unidades temáticas: Funciones y Lìmites, Derivadas, Integrales y Aplicaciones de derivadas e integrales. Los contenidos se desarrollan mediante clases expositivas, resolución de ejercicios, actividades prácticas y trabajo colaborativo, complementados con el aprendizaje autónomo del estudiante, con el propósito de fortalecer las destrezas matemáticas necesarias para analizar funciones, resolver problemas geométricos y de optimización, y aplicar el cálculo en contextos propios de la ingeniería.",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "Analizar la teoría básica de los límites de una función para resolver ejercicios que permitan interpretar su comportamiento y continuidad.",
+     "horas": 36,
+     "contenidos": "Funciones; Límites; Tipos de límites"
+    },
+    {
+     "numero": 2,
+     "nombre": "Aplicar adecuadamente las reglas de derivación para varios tipos de funciones y utilizar el criterio de derivada a la solución de problemas",
+     "horas": 36,
+     "contenidos": "Derivada; Reglas de derivacion; Derivadas especiales; Aplicaciones"
+    },
+    {
+     "numero": 3,
+     "nombre": "Aplicar los diferentes métodos de integración y comprender que la diferenciación y la integración son procesos inversos.",
+     "horas": 36,
+     "contenidos": "Integral indefinida; Métodos de Integración; Integrales trigonometricas; Integrales racionales"
+    },
+    {
+     "numero": 4,
+     "nombre": "Utilizar la integral para el cálculo de áreas y volúmenes, relacionando con problemas reales.",
+     "horas": 36,
+     "contenidos": "Integral definida; Propiedades de la integral definida; Longitud y areas; Areas y volumenes de revolucion"
+    }
+   ],
+   "codigo": "08090102"
+  },
+  {
+   "nombre": "FUNDAMENTOS DE PROGRAMACION",
+   "nivel": 1,
+   "creditos": 2,
+   "horas": 96,
+   "descripcion": "Fundamentos de Programación propone, diseña e implementa algoritmos con criterios de eficiencia y precisión para el desarrollo de aplicaciones informáticas con la utilización de las herramientas adecuadas, que permitan la solución de problemas de manejo y procesamiento de la información. Aplicando criterios de ingeniería de software aceptados internacionalmente.",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "Comprender los fundamentos de programación.",
+     "horas": 24,
+     "contenidos": "Introducción a la programación"
+    },
+    {
+     "numero": 2,
+     "nombre": "Manejar estructuras de datos con arreglos unidimensionales y bidimensionales",
+     "horas": 24,
+     "contenidos": "Algoritmos de Programación lineal y tipos de datos"
+    },
+    {
+     "numero": 3,
+     "nombre": "Aplicar las características de la P.O.O.",
+     "horas": 24,
+     "contenidos": "Sentencias condicionales y cíclicas, métodos, clases,"
+    },
+    {
+     "numero": 4,
+     "nombre": "Potenciar la P.O.O. por medio herencias y polimorfismo",
+     "horas": 24,
+     "contenidos": "Herencia y polimorfismo"
+    }
+   ],
+   "codigo": "08090103"
+  },
+  {
+   "nombre": "MECANICA BASICA",
+   "nivel": 1,
+   "creditos": 2,
+   "horas": 96,
+   "descripcion": "La asignatura de Mecánica Básica desarrolla la destreza de los estudiantes de la Carrera de Ingeniería en Robótica y Automatización mediante el desarrollo teórico-prácticos de los contenidos de la materia. Se estructura de 4 unidades: la primera se concentra en algebra de vectores de dos y tres dimensiones; la segunda unidad consiste en el estudio de la cinemática de una partícula; en la tercera unidad aborda el estudio de la dinámica de los cuerpos con la aplicación de las leyes de newton; finalmente, la cuarta unidad se presenta el trabajio, energía y potencia.",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "Aplicar el algegra vectorial en 2D y 3D en la resolución de problemas y la descripción de fenómenos físicos.",
+     "horas": 24,
+     "contenidos": "Tipos de coordenadas y transformaciones; Concepto de vector y vector unitario; Operaciones con vectores"
+    },
+    {
+     "numero": 2,
+     "nombre": "Analizar la cinemática de una partícula en los diferentes contextos de la física.",
+     "horas": 27,
+     "contenidos": "Movimientos Rectilíneos; Movimientos Parabólicos; Movimientos Circulares"
+    },
+    {
+     "numero": 3,
+     "nombre": "Identificar la dínámica de los sistemas físicos para estudiar el movimiento de los objetos y las causas que lo producen.",
+     "horas": 27,
+     "contenidos": "Primera Ley de Newton; Segunda Ley de Newton; Impulso y cantidad de movimiento lineal."
+    },
+    {
+     "numero": 4,
+     "nombre": "Analizar y aplicar los conceptos y principios de trabajo, energía y potencia para establecer soluciones a los problemas inherentes a este tipo de",
+     "horas": 18,
+     "contenidos": "Trabajo producido por fuerzas constantes y variables; Energías cinética y potencial; Potencia. Fuerzas conservativas y no conservativas"
+    }
+   ],
+   "codigo": "08090104"
+  },
+  {
+   "nombre": "INTRODUCCION A LA AUTOMATIZACION Y ROBOTICA",
+   "nivel": 1,
+   "creditos": 2,
+   "horas": 96,
+   "descripcion": "La asignatura de introducción a la automatización y robótica nos permite realizar mediciones destinadas a la determinación de magnitudes eléctricas, como son: intensidad de corriente, tensión, potencia, resistencia, inductancia, capacidad, frecuencia, entre otras. Estas magnitudes pueden medirse con instrumentos que dan directamente el valor correspondiente mediante una lectura clara y constante, por medio de instrumentos que reciben el nombre de la magnitud a medir, como, por ejemplo, amperímetro, voltímetro, vatímetro, etc. Dentro de los instrumentos nos encontramos con los analógicos, los cuales son de medición directa, basándose la lectura en la posición de una aguja sobre una escala adecuada y los digitales, en los cuales el instrumento por “si” lee el valor de la medición y la misma aparece en un display",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "-Identificar las aplicaciones de la automatización y la robótica en la industria",
+     "horas": 24,
+     "contenidos": "Introducción a la automatización y robótica"
+    },
+    {
+     "numero": 2,
+     "nombre": "-Analizar los conceptos básicos de teoría de medidas para su aplicación en la resolución de ejercicios.",
+     "horas": 24,
+     "contenidos": "Equipos de medida, medidas y errores"
+    },
+    {
+     "numero": 3,
+     "nombre": "Establecer la importancia de la simulación de procesos automatizados y robotizados",
+     "horas": 24,
+     "contenidos": "Simulación de circuitos"
+    },
+    {
+     "numero": 4,
+     "nombre": "Identificar las aplicaciones de la robótica básica en la automatización de procesos utilizando Arduino.",
+     "horas": 24,
+     "contenidos": "Fundamentos de la robótica"
+    }
+   ],
+   "codigo": "08090105"
+  },
+  {
+   "nombre": "ALGEBRA LINEAL",
+   "nivel": 1,
+   "creditos": 2,
+   "horas": 96,
+   "descripcion": "Esta asignatura abarca conceptos tales como números complejos, estructuras algebraicas, espacios vectoriales, matrices, sistemas de ecuaciones lineales y su enfoque de manera más formal; por lo que su aporte en la formación profesional de los estudiantes es proporcionar algunos conocimientos básicos.",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "Reconocer el conjunto de Números Complejos, sus relaciones, operaciones y propiedades para la resolución de problemas.",
+     "horas": 24,
+     "contenidos": "Números complejos; Operaciones con números complejos"
+    },
+    {
+     "numero": 2,
+     "nombre": "Determinar plenamente el tipo de estructura algebraica que es el conjunto.",
+     "horas": 24,
+     "contenidos": "Conceptos esenciales; Propiedades principales; Estructuras algebraicas"
+    },
+    {
+     "numero": 3,
+     "nombre": "Utilizar la teoría de Matrices de orden n, sus relaciones, operaciones, y propiedades en la resolución de problemas.",
+     "horas": 24,
+     "contenidos": "Matrices y operaciones con matrices; Determinantes y Matrices inversas de orden n; Solución de sistemas de ecuaciones lineales con métodos"
+    },
+    {
+     "numero": 4,
+     "nombre": "Analizar los espacios vectoriales y su aplicación en operaciones definidas con vectores en el plano (R^2) y en el espacio (R^3) y su",
+     "horas": 24,
+     "contenidos": "Espacios vectoriales; Combinación lineal; Independencia, Dependencia lineal"
+    }
+   ],
+   "codigo": "08090106"
+  },
+  {
+   "nombre": "TECNOLOGIAS DEL APRENDIZAJE Y EL CONOCIMIENTO(TAC)",
+   "nivel": 1,
+   "creditos": 2,
+   "horas": 96,
+   "descripcion": "La utilización de las TACS permite integrar los conocimientos de todos los módulos y representarlos a través de archivos desarrollados en herramientas informáticas a través del análisis de los principios generales de la comunicación y su importancia en el uso de herramientas colaborativas, búsqueda de información en bases de datos científicas para el desarrollo de documentos científicos, aplicación de herramien",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "Analizar los principios generales de la comunicación y su importancia en el uso de herramientas colaborativas",
+     "horas": 20,
+     "contenidos": "Principíos generales de la comunicación, Bases de; Herramientas de búsqueda de información; Estructura de Documentos científicos y herramientas de; Herramientas para escribir documentos académicos"
+    },
+    {
+     "numero": 2,
+     "nombre": "Utilizar los entornos virtuales de aprendizaje para fortalecer el desarrollo de competencias técnicas",
+     "horas": 20,
+     "contenidos": "Herramientas colaborativas; Tecnologías Emergentes - Internet de las cosas.; Herramientas para reuniones Virtuales; Herramientas Digitales para Ingeniería"
+    },
+    {
+     "numero": 3,
+     "nombre": "Aplicar herramientas digitales para el manejo de datos y el diseño de sistemas automatizados",
+     "horas": 20,
+     "contenidos": "Servicios y recursos web; Herramientas de edición de imágenes y videos; Diseño de infografias y materiales visuales; Análisis descriptivo"
+    },
+    {
+     "numero": 4,
+     "nombre": "Analizar los principios generales de la inteligencia artificial en el aprendizaje",
+     "horas": 20,
+     "contenidos": "Redes Sociales educativas; Plataformas EVA especializadas para la industria; Realidad Virtual y Aumentada; Introducción a la Inteligencia Artificial y Aprendizaje"
+    }
+   ],
+   "codigo": "08090107"
+  },
+  {
+   "nombre": "CALCULO II",
+   "nivel": 2,
+   "creditos": 3,
+   "horas": 144,
+   "descripcion": "Cálculo II es una materia que introduce al estudiante en el ámbito de la matemática superior, mediante el conocimiento progresivo de teoremas, reglas, principios y técnicas para calcular: límites, derivadas, integrales definidas de funciones vectoriales, de varias variables, integrales de línea y de superficie, y sus aplicaciones, a fin de que haga suyo el lenguaje de las Ciencias, que es matemática",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "Utilizar los principios y propiedades límites, derivadas e integrales de funciones vectoriales en la solución de problemas y aplicaciones de",
+     "horas": 36,
+     "contenidos": "Funciones Vectoriales de variable real; Operaciones de funciones vectoriales; Derivadas e integrales de funciones vectoriales; Integración de funciones vectoriales"
+    },
+    {
+     "numero": 2,
+     "nombre": "Solucionar problemas de cálculo de varias variables haciendo gala de dominio de los principios y propiedades de la derivación relacionándolo",
+     "horas": 36,
+     "contenidos": "Introducción a las funciones de varias variables; Límites; Derivadas Parciales; Optimización de funciones"
+    },
+    {
+     "numero": 3,
+     "nombre": "Analizar problemas de integrales múltiples haciendo gala de dominio de los principios y propiedades en la solución de los mismos,",
+     "horas": 36,
+     "contenidos": "Integrales dobles; Integrales triples"
+    },
+    {
+     "numero": 4,
+     "nombre": "Desarrollar los fundamentos necesarios para la interpretación de gradiente de una función de varias variables aplicados al principio de Gauss",
+     "horas": 36,
+     "contenidos": "Campos Vectoriales; Integrales de Línea; Teorema fundamental de las integrales de línea."
+    }
+   ],
+   "codigo": "08090201"
+  },
+  {
+   "nombre": "PROGRAMACION AVANZADA",
+   "nivel": 2,
+   "creditos": 2,
+   "horas": 96,
+   "descripcion": "En esta asignatura, los estudiantes realizan la programación de Interfaces Gráficas de Usuarios con las cuales se monitorean y controlan procesos industriales en el ámbito de la Automatización y Robótica. Además, los estudiantes realizarán la programación y configuración de sistemas embebidos para la adquisición de datos, variables y control de actuadores. A lo largo del curso, los estudiantes aprenderán a diseñar y desarrollar interfaces interactivas que permitan la supervisión en tiempo real",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "Desarrollar interfaces gráficas de usuario con diferentes escenarios de aplicación relacionados a la industria y a la automatización y robótica.",
+     "horas": 24,
+     "contenidos": "Librerías disponibles para el desarrollo de interfaces; Widgets fundamentales y Manejo de eventos; Aplicaciones graficas"
+    },
+    {
+     "numero": 2,
+     "nombre": "Aplicar la programación en plataformas de desarrollo para crear aplicaciones que interactúen con sensores y actuadores electrónicos.",
+     "horas": 27,
+     "contenidos": "Programación de plataformas de desarrollo basadas en; Sensores y actuadores; Protocolos e interfaces de comunicación."
+    },
+    {
+     "numero": 3,
+     "nombre": "Identificar las bases de datos y operaciones transaccionales a ser utilizados en la interacción de sistemas automatizados.",
+     "horas": 21,
+     "contenidos": "Modelado de Bases de Datos Relacionales para Sistemas; Operaciones Transaccionales en Bases de Datos; Integración de Bases de Datos con Sistemas Embebidos y"
+    },
+    {
+     "numero": 4,
+     "nombre": "Desarrollar aplicaciones con la integración de sistemas embebidos e interfaces graficas.",
+     "horas": 24,
+     "contenidos": "Comunicación entre Sistemas Embebidos; Integración de Sistemas Embebidos con Interfaces Gráficas"
+    }
+   ],
+   "codigo": "08090202"
+  },
+  {
+   "nombre": "FISICA APLICADA",
+   "nivel": 2,
+   "creditos": 3,
+   "horas": 144,
+   "descripcion": "Física Aplicada es una asignatura que permite analizar y comprender la aplicación de los fenómenos físicos de los campos eléctricos, campos magnéticos, ondas mecánicas y la óptica geométrica. Se estructura en 4 unidades curriculares. La primera unidad está dedicada al estudio de la Electrostática, en la segunda unidad se abordan los conceptos y leyes del Magnetismo, en la tercera unidad se realiza una revisión de las Ondas Mecánicas y finalmente en la cuarta unidad se aborda los fundamentos de",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "Identificar el comportamiento de los sistemas físicos que presentan fuerzas o campos eléctricos y contiene dispositivos capacitivos y/o",
+     "horas": 54,
+     "contenidos": "Carga eléctrica, Fuerzas eléctricas y Campo Eléctrico.; Ley de Gauss.; Potencial eléctrico.; Capacitancia y resistenciaeléctrica."
+    },
+    {
+     "numero": 2,
+     "nombre": "Diferenciar el comportamiento de los sistemas magnético intrínsecos de los sistemas magnéticos inducidos para resolver problemas de",
+     "horas": 45,
+     "contenidos": "Fuerzas y campos magnético.; Fuentes de campo magnético.; Inducción Magnética.; Inductancia."
+    },
+    {
+     "numero": 3,
+     "nombre": "Describir el comportamiento de sistemas físicos en los cuales existe presencia de ondas mecánicas para resolver problemas de fenómenos",
+     "horas": 18,
+     "contenidos": "Ondas Mecánicas.; Sonido"
+    },
+    {
+     "numero": 4,
+     "nombre": "Analizar el comportamiento de la luz en sistemas ópticos de diferente naturaleza para resolver problemas de fenómenos físicos que presenten",
+     "horas": 27,
+     "contenidos": "Naturaleza y propagación de la luz; Óptica Geométrica."
+    }
+   ],
+   "codigo": "08090203"
+  },
+  {
+   "nombre": "DISPOSITIVOS Y MEDIDAS",
+   "nivel": 2,
+   "creditos": 3,
+   "horas": 144,
+   "descripcion": "La asignatura proporciona al estudiante los conocimientos fundamentales sobre dispositivos de medición electrónicos y sus aplicaciones en la ingeniería, con un enfoque especial en el uso de sensores en sistemas robóticos y la industria. A lo largo del curso, el estudiante aprenderá a manejar y utilizar diversos instrumentos de medición como multímetros, osciloscopios y generadores de señal, así como a interpretar los resultados obtenidos. Las prácticas de laboratorio estarán orientadas al uso y calibración de sensores aplicados a la robótica, permitiendo al estudiante diseñar y analizar sistemas que integren mediciones precisas y confiables en entornos controlados.",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "Comprender los principios de funcionamiento de los dispositivos de medición.",
+     "horas": 36,
+     "contenidos": "Lenguaje en las mediciones eléctricas.; Medición y error"
+    },
+    {
+     "numero": 2,
+     "nombre": "Desarrollar habilidades en el uso de instrumentos de medición.",
+     "horas": 36,
+     "contenidos": "Medidores Analógicos CC y CA; Medidores Electrónicos Digitales"
+    },
+    {
+     "numero": 3,
+     "nombre": "Interpretar y analizar datos de medición en elementos pasivos.",
+     "horas": 36,
+     "contenidos": "Resistores y medición de la resistencia, disipación; Capacitancia, Inductancia e Impedancia"
+    },
+    {
+     "numero": 4,
+     "nombre": "Aplicar técnicas de calibración y verificación de sensores aplicados a la Robótica.",
+     "horas": 36,
+     "contenidos": "Sensores usados en la industria.; Sensores usados en la Robótica."
+    }
+   ],
+   "codigo": "08090204"
+  },
+  {
+   "nombre": "GESTION AMBIENTAL",
+   "nivel": 2,
+   "creditos": 2,
+   "horas": 96,
+   "descripcion": "La asignatura de Gestión Ambiental es de naturaleza teórico-práctico y se estructura en cuatro unidades curriculares, está diseñada para dotar a los estudiantes de Automatización y Robótica de los conocimientos y habilidades necesarios para analizar y gestionar los desafíos ambientales en el contexto empresarial y tecnológico, integrando la teoría con aplicaciones prácticas, casos reales y habilidades blandas, fomentando un ambiente participativo y colaborativo que promueve el pensamiento crítico y la resolución de problemas de carácter ambiental. Al finalizar la asignatura, se espera que los estudiantes dominen los fundamentos y legislación ambiental, evaluación de impactos ambientales, desarrollo sostenible e innovación y tecnologías para la sostenibilidad.",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "Comprender los principios fundamentales de la gestión ambiental y la normativa vigente.",
+     "horas": 24,
+     "contenidos": "Fundamentos de gestión ambiental y legislación aplicada y"
+    },
+    {
+     "numero": 2,
+     "nombre": "Evaluar los principales aspectos e impactos ambientales derivados de los procesos industriales y tecnológicos.",
+     "horas": 24,
+     "contenidos": "Aspectos e Impactos Ambientales"
+    },
+    {
+     "numero": 3,
+     "nombre": "Analizar la integración de conceptos de desarrollo sostenible en procesos empresariales y de innovación.",
+     "horas": 24,
+     "contenidos": "Desarrollo Sostenible y Empresas. Procesos de Innovación"
+    },
+    {
+     "numero": 4,
+     "nombre": "Proponer la implementación de tecnologías emergentes que faciliten la transición hacia procesos productivos sostenibles.",
+     "horas": 24,
+     "contenidos": "Tecnologías para el Desarrollo Sostenible"
+    }
+   ],
+   "codigo": "08090205"
+  },
+  {
+   "nombre": "ESTATICA Y DINAMICA",
+   "nivel": 2,
+   "creditos": 2,
+   "horas": 96,
+   "descripcion": "La Estática y Dinámica es una materia que introduce al estudiante en el ámbito de la robótica, desde el punto de vista estructural de los cuerpos, así como el conocimiento progresivo de reglas, principios y técnicas. Está estructurada con cuatro unidades curriculares, iniciando por cuerpos rígidos y sistemas equivalentes de fuerza, análisis de estructuras, cinemática del cuerpo rígido y vibraciones mecánicas. Para el desarrollo de la asignatura se emplearán metodologías de Aprendizaje Expositivo, Colaborativo y Aula Invertida, a través de las cuáles el estudiante podrá mejorar sus destrezas numéricas, orientados a la resolución de ejercicios que permiten el desarrollo cognitivo y analítico en los estudiantes.",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "Analizar el comportamiento de los cuerpos rígidos en equilibrio y los sistemas equivalentes de fuerzas, para la aplicación en la resolución de",
+     "horas": 24,
+     "contenidos": "Introducción.; Momento de una fuerza con respecto a un punto, con; Sistemas equivalentes de fuerzas.; Equilibrio de cuerpos rígidos."
+    },
+    {
+     "numero": 2,
+     "nombre": "Explicar el tratamiento de las fuerzas externas e internas en sólidos rígidos compuestos, para la aplicación en la resolución de problemas de",
+     "horas": 24,
+     "contenidos": "Áreas y líneas; Volúmenes; Armaduras; Armazones y Máquinas"
+    },
+    {
+     "numero": 3,
+     "nombre": "Aplicar las leyes del movimiento y el tratamiento de la cinemática del cuerpo rígido, para la aplicación en la resolución de problemas de",
+     "horas": 24,
+     "contenidos": "Introducción.; Cinemática de cuerpos rígidos.; Cinética plana de un cuerpo rígido: fuerza y aceleración"
+    },
+    {
+     "numero": 4,
+     "nombre": "Describir las vibraciones mecánicas de una partícula o un cuerpo en torno a una posición de equilibrio, para la aplicación en la resolución de",
+     "horas": 24,
+     "contenidos": "Vibraciones sin amortiguamiento; Vibraciones forzadas; Vibraciones amortiguadas"
+    }
+   ],
+   "codigo": "08090206"
+  },
+  {
+   "nombre": "ECUACIONES DIFERENCIALES",
+   "nivel": 3,
+   "creditos": 3,
+   "horas": 144,
+   "descripcion": "La asignatura de Ecuaciones Diferenciales en la carrera de Ingeniería en Robótica - Automatización proporciona las herramientas matemáticas fundamentales para modelar, analizar y resolver problemas dinámicos en sistemas físicos y de comunicación. Se abordan conceptos esenciales como la clasificación, solución y aplicación de ecuaciones diferenciales de primer y superior orden, incluyendo métodos clásicos de resolución y técnicas avanzadas como la transformada de Laplace y la serie de Fourier. A lo largo del curso, los estudiantes desarrollarán competencias para aplicar ecuaciones diferenciales en el análisis de circuitos eléctricos, control de sistemas robóticos, propagación de señales, fortaleciendo su capacidad para la innovación y optimización de procesos en ingeniería.",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "Comprender los conceptos fundamentales de las ecuaciones diferenciales, su clasificación y métodos de solución, para modelar sistemas",
+     "horas": 36,
+     "contenidos": "Definiciones y terminología; Clasificación de las ecuaciones diferenciales; Orden de las ecuaciones diferenciales.; Grado de las ecuaciones diferenciales; Soluciones de las ecuaciones diferenciales; Ecuaciones diferenciales modelos matemáticos."
+    },
+    {
+     "numero": 2,
+     "nombre": "Aplicar métodos de solución de ecuaciones diferenciales ordinarias de primer orden para modelar y analizar sistemas en robótica y",
+     "horas": 35,
+     "contenidos": "Ecuaciones de variables separables; Ecuaciones diferenciales ordinarias homogéneas; Ecuaciones diferenciales Ordinarias exactas; Ecuaciones diferenciales lineales de primer orden; Ecuaciones Diferenciales no resueltas con la primera; Soluciones singulares."
+    },
+    {
+     "numero": 3,
+     "nombre": "Aplicar métodos de solución de ecuaciones diferenciales de orden superior para modelar y analizar sistemas avanzados en robótica y",
+     "horas": 36,
+     "contenidos": "Ecuaciones diferenciales de orden superior; Independencia lineal de funciones; Ecuaciones diferenciales lineales homogéneas de; Ecuaciones diferenciales lineales no homogéneas; Ecuaciones diferenciales de Cauchy- Euler.; Método del operador"
+    },
+    {
+     "numero": 4,
+     "nombre": "Desarrollar la capacidad de los estudiantes para aplicar las ecuaciones diferenciales y sus transformadas en la resolución de problemas",
+     "horas": 36,
+     "contenidos": "Sistemas de ecuaciones diferenciales con coeficientes; .Introducción a la transformada de Laplace; Transformada inversa; Aplicaciones.; Introducción a la serie de Fourier; Problemas aplicativos."
+    }
+   ],
+   "codigo": "08090301"
+  },
+  {
+   "nombre": "SOFTWARE DE SIMULACION",
+   "nivel": 3,
+   "creditos": 3,
+   "horas": 144,
+   "descripcion": "La asignatura de Software de Simulación es de carácter teórico-práctico y está diseñada para desarrollar las competencias necesarias para modelar, simular y controlar sistemas robotizados mediante herramientas de software de ingeniería. Se estructura en cuatro unidades curriculares y la metodología de aprendizaje combina clases teóricas, actividades prácticas y habilidades blandas, fomentando un ambiente participativo y colaborativo que promueve el pensamiento crítico y la resolución de problemas. Al finalizar la asignatura se espera que los estudiantes desarrollen habilidades para crear representaciones gráficas precisas y métodos de control eficientes, consolidando su capacidad para enfrentar los desafíos tecnológicos en el ámbito de la automatización y la robótica.",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "Diseñar representaciones gráficas, precisas y detalladas en 2D.",
+     "horas": 36,
+     "contenidos": "Dibujo asistido por computador 2D"
+    },
+    {
+     "numero": 2,
+     "nombre": "Diseñar representaciones precisas y detalladas de modelos 3D.",
+     "horas": 36,
+     "contenidos": "Dibujo asistido por computador 3D."
+    },
+    {
+     "numero": 3,
+     "nombre": "Simular sistemas robotizados mediante software de ingeniería.",
+     "horas": 36,
+     "contenidos": "Simulación de sistemas robotizados."
+    },
+    {
+     "numero": 4,
+     "nombre": "Implementar estrategias de control en sistemas robóticos simulados.",
+     "horas": 36,
+     "contenidos": "Control de sistemas robóticos simulados"
+    }
+   ],
+   "codigo": "08090302"
+  },
+  {
+   "nombre": "METODOS NUMERICOS",
+   "nivel": 3,
+   "creditos": 3,
+   "horas": 144,
+   "descripcion": "Los métodos numéricos constituyen una herramienta importante que permite el desarrollo de la ciencia y la tecnología porque permite la resolución de problemas complejos que se presentan en el campo del conocimiento, que no pueden ser resueltos mediante métodos analíticos. La exactitud de los resultados depende de la metodología aplicada y son comparables a los resultados de los métodos analíticos. Los contenidos de la asignatura como errores y solución de ecuaciones no lineales, métodos para la solución de sistemas de ecuaciones lineales, Integración numérica y solución de ecuaciones diferenciales (EDOs y EDPs), proveen a los estudiantes las herramientas básicas para la aproximación numérica de problemas reales aplicados a la ingeniería y ciencias.",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "Resolver ecuaciones no lineales por métodos iterativos",
+     "horas": 36,
+     "contenidos": "Análisis de errores; Métodos de resolución de Ecuaciones no lineales"
+    },
+    {
+     "numero": 2,
+     "nombre": "Solucionar sistemas de ecuaciones lineales por métodos directos y por métodos iterativos",
+     "horas": 36,
+     "contenidos": "Métodos directos de resolución de sistemas de ecuaciones; Métodos iterativos de solución de sistemas de ecuaciones"
+    },
+    {
+     "numero": 3,
+     "nombre": "Utilizar la aproximación funcional y la interpolación para la obtención de ecuaciones que representen un conjunto de datos.",
+     "horas": 36,
+     "contenidos": "Ajuste de funciones; Integración numérica"
+    },
+    {
+     "numero": 4,
+     "nombre": "Aplicar cálculos numéricos en integrales y ecuaciones diferenciales para la resolución de ejercicios.",
+     "horas": 36,
+     "contenidos": "Ecuaciones Diferenciales; Ecuaciones Diferenciales Parciales"
+    }
+   ],
+   "codigo": "08090303"
+  },
+  {
+   "nombre": "CIRCUITOS ELECTRICOS",
+   "nivel": 3,
+   "creditos": 2,
+   "horas": 96,
+   "descripcion": "En el presente modulo los alumnos serán capaces de aplicar procedimientos matemáticos, físicos y de análisis de circuitos en la solución de problemas relacionados con elementos pasivos, activos, basados en la ley de Ohm, leyes de Kirchhoff, teoremas fundamentales, gráficas de lugares geométricos, análisi senoidal, circuitos trifásicos balanceados y desbalanceados, circuitos resonantes, determinación de respuesta completa a la red. Las metodologías de aprendizaje que se emplean para garantizar las capacidades de exploración, construcción y el desarrollo del pensamiento crítico y creativo en los estudiantes serán: El aprendizaje basado en problemas (ABP), eprendizaje colaborativo y el aprendizajeorientado a proyectos.",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "Analizar los conceptos y leyes básicas de circuitos",
+     "horas": 24,
+     "contenidos": "Circuitos de DC, conceptos fundamentales, leyes de Ohm,"
+    },
+    {
+     "numero": 2,
+     "nombre": "Estudiar los Métodos de análisis de circuitos y los Teoremas de Circuitos",
+     "horas": 24,
+     "contenidos": "Circuitos en AC, métodos de análisis"
+    },
+    {
+     "numero": 3,
+     "nombre": "Estudiar los circuitos de ca, análisis senoidal en estado estable y su aplicación en el estudio de circuitos trifásicos",
+     "horas": 24,
+     "contenidos": "Circuitos CA, circuitos trifásicos"
+    },
+    {
+     "numero": 4,
+     "nombre": "Estudiar los principios electromagnéticos que tiene que ver con el acoplamiento magnético, y el análisis de respuesta de frecuencia",
+     "horas": 24,
+     "contenidos": "Circuitos acoplados magnéticamente"
+    }
+   ],
+   "codigo": "08090304"
+  },
+  {
+   "nombre": "SEGURIDAD INDUSTRIAL",
+   "nivel": 3,
+   "creditos": 2,
+   "horas": 96,
+   "descripcion": "La asignatura de Seguridad Industrial es de carácter teórico-práctico y está diseñada para desarrollar competencias fundamentales en la formación del Ingeniero en Automatización y Robótica, ofreciendo una comprensión integral de la gestión de riesgos laborales en entornos industriales. Se estructura en cuatro unidades curriculares y la metodología de aprendizaje combina clases teóricas, actividades prácticas y habilidades blandas, fomentando un ambiente participativo y colaborativo que promueve el pensamiento crítico y la resolución de problemas. Al finalizar la asignatura, se espera que los estudiantes sean capaces de gestionar de manera proactiva los factores de riesgo, garantizando ambientes de trabajo seguros y eficientes en el contexto de la automatización y la robótica.",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "Comprender los principios básicos de la prevención de riesgos laborales.",
+     "horas": 24,
+     "contenidos": "Fundamentos teóricos en la prevención de riesgos"
+    },
+    {
+     "numero": 2,
+     "nombre": "Aplicar la normativa y legislación vigente en prevención de riesgos laborales.",
+     "horas": 24,
+     "contenidos": "Legislación en prevención de riesgos laborales."
+    },
+    {
+     "numero": 3,
+     "nombre": "Gestionar el factor de riesgo mecánico.",
+     "horas": 24,
+     "contenidos": "Identificar y evaluar los riesgos asociados a componentes y"
+    },
+    {
+     "numero": 4,
+     "nombre": "Gestionar el factor de riesgo eléctrico.",
+     "horas": 24,
+     "contenidos": "Identificar y evaluar el factor de riesgo eléctrico en entornos"
+    }
+   ],
+   "codigo": "08090305"
+  },
+  {
+   "nombre": "PROBABILIDAD Y ESTADISTICA",
+   "nivel": 3,
+   "creditos": 2,
+   "horas": 96,
+   "descripcion": "La asignatura de Probabilidad y Estadística se estructura en cuatro Unidades curriculares y pretende que el estudiante desarrolle habilidades, para el manejo y tratamiento de datos de fenómenos masivos, utilizando fórmulas y grafos, regresiones estadísticas, probabilidades y distribución de variables aleatorias, como herramientas de control estadístico para el mejoramiento de la calidad de procesos automatizados.",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "Analizar la tendencia central y dispersión de datos agrupados y no agrupados, así como calcular el sesgo y la curtosis.",
+     "horas": 24,
+     "contenidos": "Datos No agrupados; Datos Agrupados. Tablas de distribución de frecuencias."
+    },
+    {
+     "numero": 2,
+     "nombre": "Estudiar la correlación y dispersión de datos estadísticos, así como realizar el ajuste de curvas.",
+     "horas": 24,
+     "contenidos": "Correlación Lineal y no lineal; Regresión lineal y no lineal"
+    },
+    {
+     "numero": 3,
+     "nombre": "Estudiar la teoría elemental de probabilidades y las distribuciones probabilísticas.",
+     "horas": 24,
+     "contenidos": "Distribuciones probabilísticas discretas; Distribuciones probabilísticas continúas"
+    },
+    {
+     "numero": 4,
+     "nombre": "Aplicar el control estadístico de procesos para el mejoramiento de la calidad.",
+     "horas": 24,
+     "contenidos": "Muestreo y Prueba de hipótesis; Distribuciones de Datos"
+    }
+   ],
+   "codigo": "08090306"
+  },
+  {
+   "nombre": "SEÑALES Y SISTEMAS",
+   "nivel": 4,
+   "creditos": 3,
+   "horas": 144,
+   "descripcion": "Señales y Sistemas forma y desarrolla criterios sobre los diferentes tipos de señales y sus aplicaciones en los diferentes sistemas, la aplicación de la transformada de Laplace a la solución de los circuitos eléctricos, la determinación de la serie y transformada de Fourier. Análisis y comportamiento de los filtros en la transmisión sin distorsión así como el estudio y la aplicación de la convolución y la transformada Z",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "Analizar los diferentes tipos de señales y sistemas y sus aplicaciones",
+     "horas": 36,
+     "contenidos": "1 Introducción Señales y Sistemas"
+    },
+    {
+     "numero": 2,
+     "nombre": "Aplicar la transformada de Laplace en la solución de circuitos",
+     "horas": 36,
+     "contenidos": "Propiedades de la transformada de Laplace y aplicaciones"
+    },
+    {
+     "numero": 3,
+     "nombre": "Aplicar la Serie de Fourier y Transformada de Fourier en el análisis de circuitos",
+     "horas": 36,
+     "contenidos": "Introducción a la transformada de Fourier, series de Fourier"
+    },
+    {
+     "numero": 4,
+     "nombre": "Aplicar la transformada Z en el procesamiento de señales.",
+     "horas": 36,
+     "contenidos": "Introducción a la transformada Z para aplicaciones en"
+    }
+   ],
+   "codigo": "08090401"
+  },
+  {
+   "nombre": "GESTION DE CALIDAD",
+   "nivel": 4,
+   "creditos": 2,
+   "horas": 96,
+   "descripcion": "La asignatura aborda los fundamentos de la gestión de calidad total, el enfoque de gestión por procesos, la aplicación del estándar ISO 9001 y la integración de sistemas de gestión en entornos industriales y automatizados. A través de clases teóricas, talleres prácticos y estudios de caso, el estudiante desarrollará las competencias necesarias para diseñar, documentar, evaluar y optimizar procesos con criterios de calidad, seguridad y sostenibilidad.",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "Comprender los principios básicos de la gestión de calidad total y su relación con las estructuras organizacionales, para aplicarlos en entornos",
+     "horas": 24,
+     "contenidos": "Fundamentos de Gestión de Calidad Total y estructuras"
+    },
+    {
+     "numero": 2,
+     "nombre": "Analizar los conceptos clave de la calidad total y la gestión por procesos, destacando su importancia en la optimización de los sistemas de",
+     "horas": 24,
+     "contenidos": "Generalidades de la calidad total y su relación con la"
+    },
+    {
+     "numero": 3,
+     "nombre": "Aplicar el enfoque organizacional basado en procesos y conocer los requisitos del estándar ISO 9001, para garantizar la calidad en proyectos",
+     "horas": 24,
+     "contenidos": "Enfoque organizacional por procesos según ISO"
+    },
+    {
+     "numero": 4,
+     "nombre": "Evaluar los sistemas integrados de gestión como herramientas para garantizar la eficiencia, calidad, seguridad y sostenibilidad en proyectos de",
+     "horas": 24,
+     "contenidos": "Sistemas Integrados de Gestión (SIG)"
+    }
+   ],
+   "codigo": "08090402"
+  },
+  {
+   "nombre": "TEORIA ELECTROMAGNETICA",
+   "nivel": 4,
+   "creditos": 3,
+   "horas": 144,
+   "descripcion": "La asignatura Teoría Electromagnética es de naturaleza teórico-práctica y pertenece al área de estudios específicos. Durante el curso, el estudiante explorará los principios fundamentales del electromagnetismo, comenzando con los conceptos básicos de campos y fuerzas. A través de cuatro unidades temáticas (Fundamentos del electromagnetismo, Electrostática, Magnetostática y Electrodinámica), se analizarán fenómenos como la inducción electromagnética y las ondas electromagnéticas. El curso enfatiza la aplicación de estos conceptos para la solución de problemas relacionados con componentes y sistemas utilizados en automatización y robótica, como motores, generadores y blindajes electromagnéticos.",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "Comprender los conceptos matemáticos y físicos fundamentales (cálculo vectorial, campos) que rigen los fenómenos electromagnéticos como",
+     "horas": 36,
+     "contenidos": "Análisis Vectorial; Campos y operadores diferenciales.; Teoremas integrales y leyes fundamentales."
+    },
+    {
+     "numero": 2,
+     "nombre": "Analizar el comportamiento de cargas eléctricas en reposo, el campo eléctrico y el potencial, para interpretar el funcionamiento de componentes",
+     "horas": 36,
+     "contenidos": "Campo eléctrico y potencial; Ley de Gauss y aplicaciones; Capacitancia y energía electrostática"
+    },
+    {
+     "numero": 3,
+     "nombre": "Examinar los principios de campos magnéticos generados por corrientes estacionarias, así como sus fuerzas y materiales magnéticos, para",
+     "horas": 36,
+     "contenidos": "Fuentes de campo magnético; Fuerzas y pares magnéticos; Materiales magnéticos e inductancia"
+    },
+    {
+     "numero": 4,
+     "nombre": "Aplicar las leyes de la inducción electromagnética y las ecuaciones de Maxwell para explicar la generación de ondas, la transferencia",
+     "horas": 36,
+     "contenidos": "Inducción electromagnética; Ecuaciones de Maxwell; Ondas Electromagnéticas; Compatibilidad electromagnética (EMC)"
+    }
+   ],
+   "codigo": "08090403"
+  },
+  {
+   "nombre": "CIRCUITOS ELECTRONICOS",
+   "nivel": 4,
+   "creditos": 2,
+   "horas": 96,
+   "descripcion": "La presente asignatura permite a los alumnos aplicar procedimientos matemáticos, físicos y de medidas eléctricas en la solución de problemas relacionados con diodos, basados en las propiedades de los materiales semiconductores, también determinar el comportamiento de un diodo semiconductor en circuitos sujetadores, recortadores, duplicadores y rectificadores de voltaje, así mismo analizar la estructura de otros dispositivos de dos terminales y el compo",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "Analizar los conceptos de materiales semiconductores, teoría de bandas de energía, Diodos semiconductores (ecuaciones del diodo,",
+     "horas": 15,
+     "contenidos": "Teoría de semiconductores, Diodo semiconductor,"
+    },
+    {
+     "numero": 2,
+     "nombre": "Estudiar el Transistor bipolar: funcionamiento, características, circuito equivalente, circuitos de polarización (configuraciones); transistor de",
+     "horas": 21,
+     "contenidos": "El transistor BJT, circuitos de polarización; El"
+    },
+    {
+     "numero": 3,
+     "nombre": "Analizar Amplificadores para pequeña señal, modelos de parámetros híbridos",
+     "horas": 21,
+     "contenidos": "Amplificadores de pequeña señal. Modelo de parámetros"
+    },
+    {
+     "numero": 4,
+     "nombre": "Estudiar Amplificadores de potencia (clase A, B, AB, C), disipadores de potencia; Diseño de fuentes reguladas de voltaje (regulación en",
+     "horas": 21,
+     "contenidos": "Amplificadores de potencia; amplificadores clase A, B, AB,"
+    },
+    {
+     "numero": 5,
+     "nombre": "Estudiar y analizar Amplificadores Operacionales: funcionamiento y características, circuitos de aplicación, filtros activos",
+     "horas": 18,
+     "contenidos": "Amplificadores operacionales; Circuitos de aplicación"
+    }
+   ],
+   "codigo": "08090404"
+  },
+  {
+   "nombre": "INSTALACIONES ELECTRICAS",
+   "nivel": 4,
+   "creditos": 2,
+   "horas": 96,
+   "descripcion": "Esta asignatura introduce al estudiante en el diseño y aplicación de instalaciones eléctricas en los ámbitos residencial, comercial e industrial, con un énfasis particular en los requerimientos de la industria 4.0. Se estudian las normas técnicas y los componentes necesarios para soportar las cargas eléctricas de robots industriales, controladores lógicos programables (PLC) y otros sistemas automatizados.",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "Aplicar la normativa técnica y seleccionar los componentes adecuados para el desarrollo de instalaciones eléctricas destinadas a entornos con",
+     "horas": 24,
+     "contenidos": "Normas Técnicas y Componentes de las Instalaciones"
+    },
+    {
+     "numero": 2,
+     "nombre": "Diseñar instalaciones eléctricas para aplicaciones residenciales y comerciales, considerando la integración de tecnologías de automatización y",
+     "horas": 24,
+     "contenidos": "Instalaciones Eléctricas Residenciales y Comerciales"
+    },
+    {
+     "numero": 3,
+     "nombre": "Evaluar los requerimientos de carga y dimensionar las instalaciones eléctricas industriales para soportar la operación de maquinaria, celdas",
+     "horas": 24,
+     "contenidos": "Instalaciones Eléctricas Industriales"
+    },
+    {
+     "numero": 4,
+     "nombre": "Simular sistemas de protecciones eléctricas y puestas a tierra eficaces para salvaguardar la integridad de equipos electrónicos sensibles y",
+     "horas": 24,
+     "contenidos": "Protecciones Eléctricas y Puestas a Tierra"
+    }
+   ],
+   "codigo": "08090405"
+  },
+  {
+   "nombre": "MECANISMOS",
+   "nivel": 4,
+   "creditos": 3,
+   "horas": 144,
+   "descripcion": "La asignatura de Mecanismos es de naturaleza teórico-práctica y está dirigida a que el estudiante de Ingeniería en Automatización y Robótica adquiera las bases conceptuales y metodológicas para el análisis, diseño y evaluación de sistemas mecánicos utilizados en la transmisión y transformación de movimiento. El curso se estructura en cuatro unidades curriculares: mecanismos de eslabones articulados, velocidad y aceleración en movimientos coplanares, mecanismos de correa, biela y manivela, y contactos con rodamientos y trenes de engranajes.",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "Analizar la configuración, cinemática y funciones de los mecanismos de eslabones articulados",
+     "horas": 36,
+     "contenidos": "Mecanismos de eslabones articulados"
+    },
+    {
+     "numero": 2,
+     "nombre": "Determinar las velocidades y aceleraciones en mecanismos de movimiento coplanar",
+     "horas": 36,
+     "contenidos": "Velocidad y aceleración en movimientos coplanares"
+    },
+    {
+     "numero": 3,
+     "nombre": "Evaluar el funcionamiento y la transmisión de movimiento en mecanismos de correa, biela y manivela",
+     "horas": 36,
+     "contenidos": "Mecanismos de correa, biela y manivela"
+    },
+    {
+     "numero": 4,
+     "nombre": "Analizar el comportamiento de contactos mecánicos en rodamientos y trenes de engranajes",
+     "horas": 36,
+     "contenidos": "Contactos con rodamientos y trenes de engranajes"
+    }
+   ],
+   "codigo": "08090406"
+  },
+  {
+   "nombre": "SISTEMAS DE CONTROL",
+   "nivel": 5,
+   "creditos": 3,
+   "horas": 144,
+   "descripcion": "El presente módulo trata de formar en los estudiantes las capacidades integradas a los Sistemas de Control, permitiendo tener las herramientas que les permita solucionar problemas referentes al control de procesos industriales.",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "Analizar los diferentes tipos de sistemas de control y sus aplicaciones",
+     "horas": 36,
+     "contenidos": "Introducción a los sistemas de control"
+    },
+    {
+     "numero": 2,
+     "nombre": "Analizar los conceptos de Modelación, para la solución de sistemas de control industriales.",
+     "horas": 36,
+     "contenidos": "Introducción a los modelamientos matemáticos y su análisis"
+    },
+    {
+     "numero": 3,
+     "nombre": "Simular el comportamiento transitorio y estacionario de un proceso industrial",
+     "horas": 36,
+     "contenidos": "Simulación de sistemas de control industrial."
+    },
+    {
+     "numero": 4,
+     "nombre": "Utilizar los fundamentos de lugar geométrico de las raíces para el diseño de sistemas de control.",
+     "horas": 36,
+     "contenidos": "Fundamentos de los controladores"
+    }
+   ],
+   "codigo": "08090502"
+  },
+  {
+   "nombre": "ELECTRONICA DE POTENCIA",
+   "nivel": 5,
+   "creditos": 2,
+   "horas": 96,
+   "descripcion": "La asignatura desarrolla fundamentos teóricos y prácticos de la conversión electrónica de energía, incluyendo el análisis y diseño de convertidores AC-DC, DC-DC y DC-AC, aplicados a sistemas industriales, energías renovables y accionamientos eléctricos.",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "Analizar el funcionamiento físico y eléctrico de los dispositivos semiconductores de potencia (diodos, MOSFET, IGBT y tecnologías de banda",
+     "horas": 24,
+     "contenidos": "Introducción a la Electrónica de Potencia; Diodos de Potencia; Transistores de Potencia; Materiales de Banda Ancha"
+    },
+    {
+     "numero": 2,
+     "nombre": "Diseñar y analizar topologías básicas de convertidores AC-DC, DC-DC y DC-AC, aplicando principios de modulación por ancho de pulso",
+     "horas": 24,
+     "contenidos": "Convertidores AC-DC: Rectificación y Control; Convertidores DC-DC y Control por PWM; Convertidores DC-AC (Inversores) y Técnicas de; Consideraciones de operación de sistemas polifásicos"
+    },
+    {
+     "numero": 3,
+     "nombre": "Analizar y diseñar convertidores controlados AC/DC e inversores DC/AC, aplicando técnicas de control y modulación para regular magnitudes",
+     "horas": 24,
+     "contenidos": "Fundamentos de Control y Modulación en Convertidores de; Convertidores controlados AC/DC e inversores DC/AC; Diseño y Regulación de Convertidores Controlados; Evaluación del Desempeño y Calidad de Energía en"
+    },
+    {
+     "numero": 4,
+     "nombre": "Analizar e implementar sistemas electrónicos de accionamientos de motores, integrando convertidores electrónicos de potencia y estrategias",
+     "horas": 24,
+     "contenidos": "Fundamentos de Máquinas Eléctricas y Control de; Convertidores Electrónicos Aplicados a Accionamientos; Sistemas electrónicos de accionamiento de motores; Implementación, Evaluación y Desempeño en Aplicaciones"
+    }
+   ],
+   "codigo": "08090503"
+  },
+  {
+   "nombre": "REALIDAD NACIONAL",
+   "nivel": 5,
+   "creditos": 2,
+   "horas": 96,
+   "descripcion": "Este silabo está conformado por 4 unidades temáticas, las cuales desde un enfoque deductivo aborda las temáticas basadas en los fundamentos teóricos conceptuales que registran las etapas, momentos y escenarios de la realidad socioeconómica del mundo y particularmente del Ecuador. En su primera parte desde una manera contextual se analiza el dinamismo del nuevo orden hegemónico mundial y su relación con la economía y sociedad ecuatoriana, en la segunda parte se contrasta la historia del Ecuador con el actual contexto político, económico, cultural y social en el Ecuador En la tercera parte se interpreta el marco constitucional y normativo desde la perspectiva de la economía y la sociedad y finalmente en la cuarta parte se realiza una revisión del Plan Nacional de Desarrollo y las agendas locales desde la perspectiva socioeconómica.",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "Analizar el dinamismo del nuevo orden hegemónico mundial y su relación con la economía y sociedad ecuatoriana.",
+     "horas": 24,
+     "contenidos": "Nuevo Orden Mundial"
+    },
+    {
+     "numero": 2,
+     "nombre": "Contrastar la historia del Ecuador con el actual contexto político, económico, cultural y social en el Ecuador.",
+     "horas": 24,
+     "contenidos": "Historia del ecuador en el contexto político,"
+    },
+    {
+     "numero": 3,
+     "nombre": "Interpretar el marco constitucional y normativo desde la perspectiva de la economía y la sociedad",
+     "horas": 24,
+     "contenidos": "Marco constitucional y normativo desde la perspectiva de"
+    },
+    {
+     "numero": 4,
+     "nombre": "Analizar el Plan nacional de desarrollo y las agendas locales desde la perspectiva socioeconómica.",
+     "horas": 24,
+     "contenidos": "Plan nacional de desarrollo y las agendas locales desde"
+    }
+   ],
+   "codigo": "08090504"
+  },
+  {
+   "nombre": "SISTEMAS DIGITALES",
+   "nivel": 5,
+   "creditos": 2,
+   "horas": 96,
+   "descripcion": "El estudio de sistemas y códigos de numeración, álgebra de Boole, circuitos lógicos combinacionales, secuenciales, contadores, registros de desplazamiento, temporizadores, conversores de señal y los diferentes tipos de memorias; son las unidades curriculares que aborda esta asignatura, las que a través de un aprendizaje colaborativo permitirán al estudiante diseñar y construir sistemas digitales utilizando dispositivos de baja y mediana escala de integración con criterios de optimización",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "Aplicar sistemas de numeración y códigos digitales para la correcta representación y procesamiento de la información en sistemas digitales,",
+     "horas": 24,
+     "contenidos": "Sistemas de Numeración y Códigos Digitales"
+    },
+    {
+     "numero": 2,
+     "nombre": "Diseñar circuitos lógicos combinacionales, aplicando técnicas de álgebra de Boole, normas, estándares y software aplicativo para su correcta",
+     "horas": 24,
+     "contenidos": "Circuitos Lógicos Combinacionales"
+    },
+    {
+     "numero": 3,
+     "nombre": "Diseñar circuitos lógicos secuenciales, empleando elementos de memoria, contadores y autómatas finitos, considerando criterios de operación",
+     "horas": 24,
+     "contenidos": "Circuitos Lógicos Secuenciales"
+    },
+    {
+     "numero": 4,
+     "nombre": "Analizar y diseñar sistemas de conversión y almacenamiento digital, incluyendo conversores A/D, D/A y memorias, aplicando normas,",
+     "horas": 24,
+     "contenidos": "Conversión de Señales y Sistemas de Memoria"
+    }
+   ],
+   "codigo": "08090505"
+  },
+  {
+   "nombre": "MAQUINAS ELECTRICAS",
+   "nivel": 5,
+   "creditos": 2,
+   "horas": 96,
+   "descripcion": "Máquinas Eléctricas es una asignatura básica y específica de profesionalización que se estructura en cuatro unidades curriculares básicas, relacionadas con los principios físicos y matemáticos de la conversión de energía eléctrica a mecánica, enfocándose en el análisis, simulación y pruebas de laboratorio de maquinaria eléctrica mediante un enfoque mayormente práctico. A través de la resolución de problemas y el desarrollo de proyectos, los estudiantes aplicarán conceptos teóricos en situaciones reales, fortaleciendo además habilidades blandas como el trabajo en equipo, la comunicación efectiva y el pensamiento crítico. Como resultado, los alumnos serán capaces de analizar, diseñar y optimizar sistemas electromecánicos, interpretar y validar resultados experimentales, y proponer soluciones innovadoras a desafíos técnicos e industriales, integrando de forma efectiva la teoría y la práctica",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "Establecer los principios fundamentales del electromagnetismo y de los sistemas de conversión de energía en las máquinas eléctricas",
+     "horas": 24,
+     "contenidos": "Aspectos Básico del Electromagnetismo"
+    },
+    {
+     "numero": 2,
+     "nombre": "Diseñar transformadores mediante el cálculo y la aplicación de las leyes electromagnéticas, asegurando su buen funcionamiento en",
+     "horas": 24,
+     "contenidos": "Transformadores"
+    },
+    {
+     "numero": 3,
+     "nombre": "Analizar el principio de funcionamiento de los generadores de corriente alterna y continua, a partir de las leyes del electromagnetismo y la",
+     "horas": 24,
+     "contenidos": "Generados de corriente alterna y continua"
+    },
+    {
+     "numero": 4,
+     "nombre": "Implementar estrategias para el arranque de motores de corriente continua y alterna aplicando los principios basicos para el control industrial",
+     "horas": 24,
+     "contenidos": "Motores eléctricos"
+    }
+   ],
+   "codigo": "08090506"
+  },
+  {
+   "nombre": "INDUSTRIA 4.0",
+   "nivel": 5,
+   "creditos": 2,
+   "horas": 96,
+   "descripcion": "Industria 4.0 es una asignatura de carácter teórico–práctico que aborda los principios de la transformación digital en la industria, enfatizando el rol de las tecnologías habilitadoras, la automatización inteligente y los sistemas ciberfísicos. La asignatura se estructura en cuatro unidades temáticas que combinan clases magistrales, análisis de casos, actividades prácticas y aprendizaje basado en problemas, fomentando el pensamiento crítico y la toma de decisiones en contextos industriales reales.",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "Analizar los fundamentos y principios de la Industria 4.0 y su evolución histórica.",
+     "horas": 12,
+     "contenidos": "Origen y fundamentos de Industria 4.0"
+    },
+    {
+     "numero": 2,
+     "nombre": "Comprender la integración de la automatización y la robótica en entornos industriales inteligentes.",
+     "horas": 36,
+     "contenidos": "Tecnologías complementarias de la robótica"
+    },
+    {
+     "numero": 3,
+     "nombre": "Identificar las principales tecnologías habilitadoras de la Industria 4.0.",
+     "horas": 24,
+     "contenidos": "Tecnologías facilitadoras de la industria 4.0"
+    },
+    {
+     "numero": 4,
+     "nombre": "Comprender las estrategias de transformación digital aplicadas a procesos industriales.",
+     "horas": 24,
+     "contenidos": "Transformación digital"
+    }
+   ],
+   "codigo": "08090507"
+  }
+ ]
+}

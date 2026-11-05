@@ -10,10 +10,22 @@ option csharp_namespace = "Siha.MsA.Api.Grpc";
 service CatalogoGrpc {
   rpc ObtenerMallaVigente (SolicitudMalla) returns (MallaVigente);
   rpc VerificarDocentes (SolicitudDocentes) returns (RespuestaDocentes);
+  // Busca una carrera por su nombre completo (o código), sin importar tildes ni "Ingeniería en/de".
+  rpc ResolverCarrera (SolicitudCarrera) returns (CarreraResuelta);
+}
+
+message SolicitudCarrera {
+  string nombre = 1;
+}
+
+message CarreraResuelta {
+  bool encontrada = 1;
+  string codigo = 2;
+  string nombre = 3;
 }
 
 message SolicitudMalla {
-  // Código de la carrera (p. ej. SW).
+  // Código (p. ej. SW) o nombre de la carrera (p. ej. "Software").
   string carrera_codigo = 1;
 }
 

@@ -141,54 +141,6 @@ export const ESTADO_FINAL = {
   CONTENIDO_INSUFICIENTE: 6,
 } as const;
 
-export interface OrigenPropuesta {
-  extraccionId: string;
-  codigo: string;
-  nombre: string;
-  creditos: number | null;
-  horas: number | null;
-  fechaAprobacion: string | null;
-  anosTranscurridos: number | null;
-  numeroMatricula: number | null;
-}
-
-export interface CoberturaUnidadPropuesta {
-  numero: number;
-  nombre: string;
-  horas: number;
-  /** Similitud coseno en porcentaje (0–100) con la unidad de origen más parecida. */
-  similitud: number;
-  cubierta: boolean;
-  codigoOrigen: string | null;
-  numeroUnidadOrigen: number | null;
-  nombreUnidadOrigen: string | null;
-}
-
-export interface PropuestaHomologacion {
-  codigoDestino: string;
-  nombreDestino: string;
-  creditosDestino: number;
-  semestreDestino: number | null;
-  origenes: OrigenPropuesta[];
-  pcont: number;
-  pcred: number;
-  categoriaCreditos: string;
-  alcanzaContenido: boolean;
-  estadoFinal: number;
-  unidades: CoberturaUnidadPropuesta[];
-  alertas: string[];
-  precedentes: Precedente[];
-}
-
-export interface AnalisisAutomatico {
-  expedienteId: string;
-  propuestas: PropuestaHomologacion[];
-  sinCoberturaSuficiente: PropuestaHomologacion[];
-  origenesSinAsignar: OrigenPropuesta[];
-  alertas: string[];
-  detalleTrazabilidad: string;
-}
-
 export interface AnalisisCompleto {
   extraccion: Extraccion;
   creditos: EvaluacionCreditos;
@@ -196,6 +148,65 @@ export interface AnalisisCompleto {
   precedentes: Precedente[];
   estadoFinal: number;
   alertasGlobales: string[];
+  detalleTrazabilidad: string;
+}
+
+/** Regla del instructivo de homologación y si la solicitud la cumple. */
+export interface Requisito {
+  regla: string;
+  cumple: boolean;
+  explicacion: string;
+}
+
+export interface MateriaOrigenEvaluada {
+  nombre: string;
+  nivel: number;
+  periodoAcademico: string;
+  nota: number;
+  horas: number | null;
+  codigoCatalogo: string | null;
+  encontradaEnMalla: boolean;
+}
+
+export interface CoberturaUnidad {
+  numero: number;
+  nombre: string;
+  horas: number;
+  /** Parecido de temas en porcentaje (0–100) con la unidad aprobada más parecida. */
+  similitud: number;
+  cubierta: boolean;
+  materiaOrigen: string | null;
+  numeroUnidadOrigen: number | null;
+  nombreUnidadOrigen: string | null;
+  horasUnidadOrigen: number | null;
+}
+
+/** Evaluación del agente de una materia pedida: contenidos, profundidad y carga horaria. */
+export interface EvaluacionMateria {
+  numero: number;
+  materiaDestino: string;
+  codigoDestino: string | null;
+  nivelDestino: number | null;
+  creditosDestino: number | null;
+  horasDestino: number;
+  materiasOrigen: MateriaOrigenEvaluada[];
+  contenidos: number;
+  profundidad: number;
+  cargaHoraria: number;
+  /** CUMPLE o CRITERIO_DOCENTE. */
+  estimacion: 'CUMPLE' | 'CRITERIO_DOCENTE';
+  unidades: CoberturaUnidad[];
+  explicacion: string[];
+  conclusion: string;
+  precedentes: Precedente[];
+}
+
+export interface AnalisisAutomatico {
+  expedienteId: string;
+  requisitos: Requisito[];
+  evaluaciones: EvaluacionMateria[];
+  alertas: string[];
+  resumen: string;
   detalleTrazabilidad: string;
 }
 
@@ -233,8 +244,9 @@ export interface SolicitudAnalisis {
   tipoTramite: string;
   rutaNormativa: string;
   institucionOrigen: string;
-  carreraOrigenCodigo: string;
-  carreraDestinoCodigo: string;
+  carreraOrigen: string;
+  carreraDestino: string;
+  historial: Array<{ nombre: string; nivel: number; periodoAcademico: string; nota: number; aprobada: boolean }>;
   revisores: Array<{ nombre: string; correo: string; respondio: boolean }>;
   /** PENDIENTE (el agente está analizando), ANALIZADO o ERROR. */
   estado: string;

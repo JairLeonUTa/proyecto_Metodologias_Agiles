@@ -30,26 +30,17 @@ const CERTIFICADO = {
   tipoTramite: 'INTERNO',
   rutaNormativa: 'CAU-P-011',
   institucionOrigen: 'Universidad Técnica de Ambato',
-  carreraOrigenCodigo: 'IND',
-  carreraOrigenNombre: 'Ingeniería Industrial',
-  carreraDestinoCodigo: 'SW',
-  carreraDestinoNombre: 'Ingeniería de Software',
+  carreraOrigen: 'Tecnologías de la Información',
+  carreraDestino: 'Software',
   revisores: [
     { nombre: 'Ing. Hernán Naranjo', correo: 'hnaranjo@uta.edu.ec' },
     { nombre: 'Ing. María Vaca', correo: 'mvaca@uta.edu.ec' },
   ],
-  asignaturas: [
-    {
-      codigo: 'IND105',
-      nombre: 'Física I',
-      semestre: 1,
-      creditos: 4,
-      horasTotales: 192,
-      fechaAprobacion: '2024-02-16',
-      nota: 8.6,
-      unidades: [{ numero: 1, nombre: 'Cinemática', horas: 192, contenidos: 'Movimiento' }],
-    },
+  materias: [
+    { nombre: 'Fundamentos de Programación', nivel: 1, periodoAcademico: 'Abr-Sep 2025', nota: 8.9, aprobada: true },
+    { nombre: 'Medidas Eléctricas', nivel: 2, periodoAcademico: 'Oct 2025-Mar 2026', nota: 5.9, aprobada: false },
   ],
+  solicitudes: [{ numero: 1, materiasOrigen: ['Fundamentos de Programación'], materiaDestino: 'Algoritmos y Lógica de Programación' }],
 };
 
 const pdf = (): File => new File(['%PDF-1.4'], 'certificado.pdf', { type: 'application/pdf' });
@@ -84,10 +75,11 @@ describe('Registro con un único certificado SIHA', () => {
     await user.upload(screen.getByTestId('certificado-pdf'), pdf());
 
     expect(await screen.findByText('Pérez Gómez Ana Lucía · 1804567890')).toBeInTheDocument();
-    expect(screen.getByText('IND — Ingeniería Industrial')).toBeInTheDocument();
-    expect(screen.getByText('Física I')).toBeInTheDocument();
-    expect(screen.getByText('2024-02-16')).toBeInTheDocument();
-    expect(screen.getByText('8.60')).toBeInTheDocument();
+    expect(screen.getAllByText('Tecnologías de la Información → Software').length).toBeGreaterThan(1);
+    expect(screen.getByText('Algoritmos y Lógica de Programación')).toBeInTheDocument();
+    expect(screen.getByText('Abr-Sep 2025')).toBeInTheDocument();
+    expect(screen.getByText('8,90')).toBeInTheDocument();
+    expect(screen.getByText('Reprobada')).toBeInTheDocument();
     expect(screen.getByText('Ing. Hernán Naranjo y Ing. María Vaca')).toBeInTheDocument();
 
     await user.click(screen.getByRole('button', { name: 'Registrar y enviar solicitud' }));

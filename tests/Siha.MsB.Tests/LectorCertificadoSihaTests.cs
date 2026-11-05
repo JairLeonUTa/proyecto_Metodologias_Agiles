@@ -6,8 +6,9 @@ using Xunit;
 namespace Siha.MsB.Tests;
 
 /// <summary>
-/// Lectura de la plantilla oficial SIHA-CH-01: un único PDF preaprobado trae todos los datos de la
-/// solicitud. Se prueba con los PDF reales de <c>documentos-prueba/certificados</c>.
+/// Lectura de la plantilla oficial SIHA-CH-01: estudiante, carreras con nombre completo, historial
+/// (aprobadas y reprobadas con período académico y nota), materias a homologar y dos revisores.
+/// Se prueba con los PDF reales de <c>documentos-prueba/certificados</c>.
 /// </summary>
 public class LectorCertificadoSihaTests
 {
@@ -21,64 +22,31 @@ public class LectorCertificadoSihaTests
     }
 
     [Fact]
-    public void Certificado_industrial_a_software_se_lee_completo()
+    public void Certificado_TI_a_Software_se_lee_completo()
     {
-        var resultado = LectorCertificadoSiha.Leer(Pdf("SIHA-IND-SW-completo.pdf"));
+        var resultado = LectorCertificadoSiha.Leer(Pdf("SIHA-TI-SW-cambio-de-carrera.pdf"));
 
         resultado.Errores.Should().BeEmpty();
-        resultado.EsValido.Should().BeTrue();
         var c = resultado.Certificado!;
         c.NumeroCertificado.Should().Be("SIHA-2026-0147");
-        c.FechaEmision.Should().Be(new DateOnly(2026, 10, 30));
         c.EstudianteNombre.Should().Be("Pérez Gómez Ana Lucía");
-        c.EstudianteIdentificacion.Should().Be("1804567890");
         c.TipoTramite.Should().Be(TiposTramite.Interno);
         c.RutaNormativa.Should().Be(RutasNormativas.CambioCarreraOu);
-        c.InstitucionOrigen.Should().Be("Universidad Técnica de Ambato");
-        c.CarreraOrigenCodigo.Should().Be("IND");
-        c.CarreraDestinoCodigo.Should().Be("SW");
-        c.CarreraDestinoNombre.Should().Be("Ingeniería de Software");
+        c.CarreraOrigen.Should().Be("Tecnologías de la Información");
+        c.CarreraDestino.Should().Be("Software");
 
-        c.Asignaturas.Select(a => a.Codigo).Should().Equal("IND105", "IND108", "IND205");
-        var fisica1 = c.Asignaturas[0];
-        fisica1.Nombre.Should().Be("Física I");
-        fisica1.Semestre.Should().Be(1);
-        fisica1.Creditos.Should().Be(4);
-        fisica1.HorasTotales.Should().Be(192);
-        fisica1.FechaAprobacion.Should().Be(new DateOnly(2024, 2, 16));
-        fisica1.Nota.Should().Be(8.60m);
-        c.Revisores.Should().Equal(
-            new RevisorCertificado("Ing. Hernán Naranjo", "hnaranjo@uta.edu.ec"),
-            new RevisorCertificado("Ing. María Vaca", "mvaca@uta.edu.ec"));
-        fisica1.Unidades.Should().HaveCount(4);
-        fisica1.Unidades[1].Nombre.Should().Be("Cinemática de la partícula");
-        fisica1.Unidades[1].Horas.Should().Be(48);
-        // El texto partido en dos líneas del PDF se vuelve a unir.
-        fisica1.Unidades[0].Contenidos.Should().EndWith("producto escalar y producto vectorial.");
-        fisica1.Unidades[0].Contenidos.Should().Contain("vectores en el plano y en el espacio");
-    }
+        c.Materias.Should().HaveCount(11);
+        c.Materias.Count(m => !m.Aprobada).Should().Be(2, "perdió Cálculo Integral y Medidas Eléctricas");
+        var fundamentos = c.Materias.Single(m => m.Nombre == "Fundamentos de Programación");
+        fundamentos.Nivel.Should().Be(1);
+        fundamentos.PeriodoAcademico.Should().Be("Abr-Sep 2025");
+        fundamentos.Nota.Should().Be(8.90m);
+        c.Materias.Single(m => m.Nombre == "Medidas Eléctricas").Aprobada.Should().BeFalse();
 
-    [Fact]
-    public void Contenidos_que_cruzan_de_pagina_no_arrastran_el_pie_de_pagina()
-    {
-        var c = LectorCertificadoSiha.Leer(Pdf("SIHA-IND-SW-completo.pdf")).Certificado!;
-
-        c.Asignaturas.SelectMany(a => a.Unidades).Should()
-            .NotContain(u => u.Contenidos.Contains("Página") || u.Contenidos.Contains("SIHA-CH-01"));
-        c.Asignaturas.Single(a => a.Codigo == "IND205").Unidades.Should().HaveCount(4);
-    }
-
-    [Fact]
-    public void Certificado_externo_lee_institucion_y_ruta_de_movilidad()
-    {
-        var r = LectorCertificadoSiha.Leer(Pdf("SIHA-UCuenca-SW-externo.pdf"));
-        r.Errores.Should().BeEmpty();
-        var c = r.Certificado!;
-
-        c.TipoTramite.Should().Be(TiposTramite.Externo);
-        c.RutaNormativa.Should().Be(RutasNormativas.Movilidad);
-        c.InstitucionOrigen.Should().Be("Universidad de Cuenca");
-        c.Asignaturas.Single(a => a.Codigo == "UC-PROG").FechaAprobacion.Should().Be(new DateOnly(2021, 7, 23));
+        c.Solicitudes.Should().HaveCount(5);
+        c.Solicitudes[0].MateriasOrigen.Should().Equal("Fundamentos de Programación");
+        c.Solicitudes[0].MateriaDestino.Should().Be("Algoritmos y Lógica de Programación");
+        c.Revisores.Select(r => r.Correo).Should().Equal("hnaranjo@uta.edu.ec", "mvaca@uta.edu.ec");
     }
 
     [Fact]
@@ -96,11 +64,12 @@ public class LectorCertificadoSihaTests
         var resultado = LectorCertificadoSiha.Leer(Pdf("SIHA-con-errores.pdf"));
 
         resultado.EsValido.Should().BeFalse();
-        resultado.Errores.Should().Contain(e => e.Contains("cédula") && e.Contains("10 dígitos"));
-        resultado.Errores.Should().Contain(e => e.Contains("no es aprobatoria"));
-        resultado.Errores.Should().Contain(e => e.Contains("no coinciden con las horas totales"));
+        resultado.Errores.Should().Contain(e => e.Contains("cédula"));
+        resultado.Errores.Should().Contain(e => e.Contains("nombre completo de la carrera"));
+        resultado.Errores.Should().Contain(e => e.Contains("primer período académico"));
+        resultado.Errores.Should().Contain(e => e.Contains("'Física' está reprobada"));
         resultado.Errores.Should().Contain(e => e.Contains("hace más de 10 años"));
-        resultado.Errores.Should().Contain(e => e.Contains("docente@gmail.com") && e.Contains("institucional"));
+        resultado.Errores.Should().Contain(e => e.Contains("docente@gmail.com"));
     }
 
     [Fact]
@@ -109,42 +78,50 @@ public class LectorCertificadoSihaTests
         LectorCertificadoSiha.Leer("hola"u8.ToArray()).Errores.Should().ContainSingle("El archivo no es un PDF.");
     }
 
-    private static IEnumerable<string> Base(string tipo = "INTERNO", string ruta = "CAU-P-011") => new[]
+    private static List<string> Base() => new()
     {
         "CERTIFICADO DE HOMOLOGACIÓN SIHA-IA", "Formato SIHA-CH-01",
         "Número de certificado: SIHA-1 Fecha de emisión: 2026-10-30", "Emitido por: Secretaría",
         "Estudiante: Ana", "Cédula: 1804567890",
-        $"Tipo de trámite: {tipo} Ruta normativa: {ruta}", "Institución de origen: UTA",
-        "Carrera de origen: IND - Industrial", "Carrera de destino: SW - Software",
+        "Tipo de trámite: Cambio de carrera Ruta normativa: CAU-P-011", "Institución de origen: UTA",
+        "Carrera de origen: Ingeniería Industrial", "Carrera de destino: Software",
         "Docente revisor 1: Ing. Ana Ruiz - aruiz@uta.edu.ec", "Docente revisor 2: Ing. Luis Paz <lpaz@uta.edu.ec>",
-        "ASIGNATURAS APROBADAS",
-        "Asignatura: IND105 - Física I", "Semestre: 1 Créditos: 4 Horas totales: 10",
-        "Fecha de aprobación: 15/02/2024 Nota: 8,5",
-        "Unidad 1: Vectores (10 horas)", "Contenidos: Suma de vectores; nota: incluye producto escalar.",
+        "Materia: Física I", "Nivel: 1 Período académico: Abr-Sep 2025 Nota: 8,5 Estado: Aprobada",
+        "Materia: Física II", "Nivel: 2 Período académico: Oct 2025-Mar 2026 Nota: 8 Estado: Aprobada",
+        "Materia: Química", "Nivel: 2 Período académico: Oct 2025-Mar 2026 Nota: 5.5 Estado: Reprobada",
+        "Solicitud 1", "Materia aprobada: Física I", "Materia aprobada: Física II", "Homologar por: Física",
         "FIN DEL CERTIFICADO", "Estudiante: esto ya no se lee"
     };
 
     [Fact]
-    public void Texto_admite_fechas_ddmmaaaa_comas_decimales_y_etiquetas_dentro_de_contenidos()
+    public void Varias_materias_aprobadas_pueden_pedirse_para_una_sola_de_destino()
     {
         var resultado = LectorCertificadoSiha.LeerTexto(Base());
 
         resultado.Errores.Should().BeEmpty();
-        var a = resultado.Certificado!.Asignaturas.Single();
-        a.FechaAprobacion.Should().Be(new DateOnly(2024, 2, 15));
-        a.Nota.Should().Be(8.5m);
-        a.Unidades.Single().Contenidos.Should().Be("Suma de vectores; nota: incluye producto escalar.");
+        var s = resultado.Certificado!.Solicitudes.Single();
+        s.MateriasOrigen.Should().Equal("Física I", "Física II");
+        s.MateriaDestino.Should().Be("Física");
+        resultado.Certificado.Materias.Single(m => m.Nombre == "Química").Aprobada.Should().BeFalse();
         resultado.Certificado.EstudianteNombre.Should().Be("Ana");
     }
 
     [Fact]
-    public void Lee_los_dos_revisores_con_guion_o_con_angulos()
+    public void Reprobar_en_segundo_nivel_no_impide_la_solicitud_pero_no_se_puede_pedir_una_reprobada()
     {
-        var revisores = LectorCertificadoSiha.LeerTexto(Base()).Certificado!.Revisores;
+        var conReprobada = Base();
+        conReprobada.InsertRange(conReprobada.IndexOf("FIN DEL CERTIFICADO"), new[] { "Materia aprobada: Química", "Homologar por: Química" });
 
-        revisores.Should().Equal(
-            new RevisorCertificado("Ing. Ana Ruiz", "aruiz@uta.edu.ec"),
-            new RevisorCertificado("Ing. Luis Paz", "lpaz@uta.edu.ec"));
+        LectorCertificadoSiha.LeerTexto(Base()).EsValido.Should().BeTrue("una reprobada en el segundo nivel no impide el cambio");
+        LectorCertificadoSiha.LeerTexto(conReprobada).Errores.Should().Contain(e => e.Contains("'Química' está reprobada"));
+    }
+
+    [Fact]
+    public void Estado_y_nota_deben_coincidir()
+    {
+        var lineas = Base().Select(l => l.Replace("Nota: 5.5 Estado: Reprobada", "Nota: 5.5 Estado: Aprobada")).ToList();
+
+        LectorCertificadoSiha.LeerTexto(lineas).Errores.Should().Contain(e => e.Contains("Química") && e.Contains("menor que 7"));
     }
 
     [Fact]
@@ -159,23 +136,19 @@ public class LectorCertificadoSihaTests
     }
 
     [Fact]
-    public void Tramite_interno_con_ruta_de_movilidad_se_rechaza()
+    public void Una_materia_aprobada_no_se_usa_en_dos_solicitudes()
     {
-        var resultado = LectorCertificadoSiha.LeerTexto(Base("INTERNO", "CAU-P-122"));
+        var lineas = Base();
+        lineas.InsertRange(lineas.IndexOf("FIN DEL CERTIFICADO"), new[] { "Materia aprobada: Física I", "Homologar por: Física General" });
 
-        resultado.EsValido.Should().BeFalse();
-        resultado.Errores.Should().Contain(e => e.Contains("INTERNO") && e.Contains("CAU-P-011"));
+        LectorCertificadoSiha.LeerTexto(lineas).Errores.Should().Contain(e => e.Contains("una sola homologación"));
     }
 
     [Fact]
-    public void Faltan_datos_obligatorios_se_informan_uno_por_uno()
+    public void Movilidad_con_ruta_de_cambio_de_carrera_se_rechaza()
     {
-        var lineas = Base().Where(l => !l.StartsWith("Cédula") && !l.StartsWith("Fecha de aprobación")).ToList();
+        var lineas = Base().Select(l => l.Replace("Cambio de carrera", "Movilidad externa")).ToList();
 
-        var resultado = LectorCertificadoSiha.LeerTexto(lineas);
-
-        resultado.Errores.Should().Contain("Falta el dato 'Cédula'.");
-        resultado.Errores.Should().Contain(e => e.Contains("IND105") && e.Contains("Fecha de aprobación"));
-        resultado.Errores.Should().Contain(e => e.Contains("IND105") && e.Contains("Nota"));
+        LectorCertificadoSiha.LeerTexto(lineas).Errores.Should().Contain(e => e.Contains("CAU-P-122"));
     }
 }

@@ -23,7 +23,7 @@ public static class DbSeederA
         await SembrarParametrosAsync(db, logger);
         await SembrarReglasAsync(db, logger);
         await SembrarCatalogoAsync(db, logger);
-        await SembrarCatalogoHomologacionAsync(db, logger);
+        await SembrarCatalogoUtaAsync(db, logger);
         if (!string.IsNullOrWhiteSpace(docentesDemoPassword))
         {
             await SembrarDocentesDemoAsync(db, hasher, docentesDemoPassword, logger);
@@ -275,91 +275,90 @@ public static class DbSeederA
         logger.LogInformation("Semilla de catálogo académico aplicada (5 carreras y malla SW 2024-A).");
     }
 
+    /// <summary>Versión de malla que se crea con los sílabos oficiales publicados por la UTA.</summary>
+    public const string VersionMallaUta = "UTA-2022";
+
     /// <summary>
-    /// Asignaturas que usan los certificados SIHA de ejemplo (documentos-prueba/certificados).
-    /// En Industrial, Física I y Física II son dos materias; en Software, Física I (SW105) reúne los
-    /// temas de ambas. Por eso Física I de Industrial sola no alcanza el contenido de SW105.
-    /// Es incremental: agrega solo lo que falta, también en bases ya sembradas.
+    /// Conocimiento del agente: mallas y sílabos oficiales de las carreras de la FISEI (Software,
+    /// Tecnologías de la Información, Industrial, Telecomunicaciones y Robótica), extraídos de los PDF
+    /// publicados en uta.edu.ec (tools/catalogo-uta). Cada asignatura trae nivel, créditos, horas y sus
+    /// unidades con temas y horas. Se carga una sola vez por carrera y queda como malla vigente.
     /// </summary>
-    private static async Task SembrarCatalogoHomologacionAsync(SihaDbContextA db, ILogger logger)
+    private static async Task SembrarCatalogoUtaAsync(SihaDbContextA db, ILogger logger)
     {
-        var software = await db.Carreras.FirstOrDefaultAsync(c => c.Codigo == "SW");
-        var industrial = await db.Carreras.FirstOrDefaultAsync(c => c.Codigo == "IND");
-        if (software is null || industrial is null)
+        var ensamblado = typeof(DbSeederA).Assembly;
+        foreach (var recurso in ensamblado.GetManifestResourceNames().Where(r => r.Contains(".CatalogoUta.") && r.EndsWith(".json")))
         {
-            return;
+            await using var flujo = ensamblado.GetManifestResourceStream(recurso)!;
+            var catalogo = await System.Text.Json.JsonSerializer.DeserializeAsync<CatalogoUtaJson>(flujo,
+                new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+            if (catalogo is null || catalogo.Asignaturas.Count == 0) continue;
+
+            var carrera = await db.Carreras.FirstOrDefaultAsync(c => c.Codigo == catalogo.Carrera);
+            if (carrera is null)
+            {
+                carrera = new Carrera { Codigo = catalogo.Carrera, Nombre = catalogo.Nombre };
+                db.Carreras.Add(carrera);
+                await db.SaveChangesAsync();
+            }
+
+            if (await db.Mallas.AnyAsync(m => m.CarreraId == carrera.Id && m.Version == VersionMallaUta)) continue;
+
+            foreach (var anterior in await db.Mallas.Where(m => m.CarreraId == carrera.Id && m.Vigente).ToListAsync())
+                anterior.Vigente = false;
+
+            var malla = new MallaCurricular
+            {
+                CarreraId = carrera.Id,
+                Version = VersionMallaUta,
+                Anio = 2022,
+                Fuente = catalogo.Fuente,
+                RutaNormativa = RutasNormativas.CambioCarreraOu,
+                Vigente = true
+            };
+            db.Mallas.Add(malla);
+            await db.SaveChangesAsync();
+
+            var existentes = (await db.Asignaturas.Select(a => a.Codigo).ToListAsync()).ToHashSet();
+            foreach (var a in catalogo.Asignaturas.Where(a => !existentes.Contains(a.Codigo)))
+            {
+                var asignatura = new Asignatura
+                {
+                    MallaId = malla.Id,
+                    Codigo = a.Codigo,
+                    Nombre = a.Nombre,
+                    Creditos = Math.Clamp(a.Creditos ?? 1, 1, 30),
+                    Horas = a.Horas ?? a.Unidades.Sum(u => u.Horas),
+                    Semestre = Math.Clamp(a.Nivel ?? 1, 1, 20)
+                };
+                foreach (var u in a.Unidades)
+                {
+                    asignatura.Unidades.Add(new UnidadTematica
+                    {
+                        Numero = u.Numero,
+                        Nombre = u.Nombre.Length > 200 ? u.Nombre[..200] : u.Nombre,
+                        Horas = Math.Max(1, u.Horas),
+                        Contenidos = u.Contenidos
+                    });
+                }
+
+                var (error, advertencias) = Services.ValidacionCatalogo.Evaluar(asignatura);
+                asignatura.PlanCompleto = error is null && advertencias.Count == 0;
+                db.Asignaturas.Add(asignatura);
+            }
+
+            await db.SaveChangesAsync();
+            logger.LogInformation("Malla oficial de {Carrera} cargada: {Asignaturas} asignaturas con sus sílabos.",
+                catalogo.Nombre, catalogo.Asignaturas.Count);
         }
-
-        var mallaSw = await MallaVigenteAsync(db, software.Id);
-        var mallaInd = await MallaVigenteAsync(db, industrial.Id);
-        var existentes = await db.Asignaturas.Select(a => a.Codigo).ToListAsync();
-        var nuevas = new List<Asignatura>();
-
-        void Agregar(Asignatura asignatura)
-        {
-            if (!existentes.Contains(asignatura.Codigo)) nuevas.Add(asignatura);
-        }
-
-        Agregar(NuevaAsignatura(mallaSw.Id, "SW105", "Física I", 4, 1,
-            FisicaIInd.Concat(FisicaIIInd).Select(u => (u.Nombre, 24, u.Contenidos)).ToArray()));
-        Agregar(NuevaAsignatura(mallaInd.Id, "IND105", "Física I", 4, 1, FisicaIInd));
-        Agregar(NuevaAsignatura(mallaInd.Id, "IND108", "Programación Básica", 4, 2, ProgramacionBasicaInd));
-        Agregar(NuevaAsignatura(mallaInd.Id, "IND205", "Física II", 4, 2, FisicaIIInd));
-
-        if (nuevas.Count == 0)
-        {
-            return;
-        }
-
-        db.Asignaturas.AddRange(nuevas);
-        await db.SaveChangesAsync();
-        logger.LogInformation("Catálogo de homologación ampliado: {Asignaturas}.", string.Join(", ", nuevas.Select(a => a.Codigo)));
     }
 
-    private static async Task<MallaCurricular> MallaVigenteAsync(SihaDbContextA db, int carreraId)
-    {
-        var malla = await db.Mallas.FirstOrDefaultAsync(m => m.CarreraId == carreraId && m.Vigente);
-        if (malla is not null)
-        {
-            return malla;
-        }
+    private sealed record CatalogoUtaJson(string Carrera, string Nombre, string Fuente, List<AsignaturaUtaJson> Asignaturas);
 
-        malla = new MallaCurricular
-        {
-            CarreraId = carreraId,
-            Version = "2024-A",
-            Anio = 2024,
-            Fuente = "Rediseño curricular FISEI 2024",
-            RutaNormativa = RutasNormativas.CambioCarreraOu,
-            Vigente = true
-        };
-        db.Mallas.Add(malla);
-        await db.SaveChangesAsync();
-        return malla;
-    }
+    private sealed record AsignaturaUtaJson(
+        string Codigo, string Nombre, int? Nivel, int? Creditos, int? Horas, string? Descripcion, List<UnidadUtaJson> Unidades);
 
-    private static readonly (string Nombre, int Horas, string Contenidos)[] FisicaIInd =
-    {
-        ("Magnitudes físicas y vectores", 48, "Sistema internacional de unidades, conversión de unidades, cifras significativas, análisis dimensional, vectores en el plano y en el espacio, suma de vectores, producto escalar y producto vectorial."),
-        ("Cinemática de la partícula", 48, "Posición, desplazamiento, velocidad y aceleración; movimiento rectilíneo uniforme y uniformemente variado; caída libre; movimiento parabólico; movimiento circular uniforme."),
-        ("Dinámica de la partícula", 48, "Leyes de Newton, diagramas de cuerpo libre, fuerzas de rozamiento estático y cinético, fuerza elástica, dinámica del movimiento circular."),
-        ("Trabajo, energía y cantidad de movimiento", 48, "Trabajo de una fuerza, energía cinética y energía potencial, conservación de la energía mecánica, potencia, impulso, cantidad de movimiento y choques.")
-    };
-
-    private static readonly (string Nombre, int Horas, string Contenidos)[] FisicaIIInd =
-    {
-        ("Mecánica de fluidos", 48, "Densidad y presión, principio de Pascal, principio de Arquímedes y flotación, ecuación de continuidad, ecuación de Bernoulli."),
-        ("Temperatura y calor", 48, "Temperatura y escalas termométricas, dilatación térmica, calor específico, cambios de fase, transferencia de calor, primera ley de la termodinámica."),
-        ("Oscilaciones y ondas", 48, "Movimiento armónico simple, péndulo simple, ondas mecánicas transversales y longitudinales, sonido, efecto Doppler."),
-        ("Electrostática y circuitos", 48, "Carga eléctrica, ley de Coulomb, campo eléctrico, potencial eléctrico, corriente eléctrica, ley de Ohm, circuitos de corriente continua.")
-    };
-
-    private static readonly (string Nombre, int Horas, string Contenidos)[] ProgramacionBasicaInd =
-    {
-        ("Introducción y entorno", 48, "Estructura de un programa, compilación y depuración; entorno de desarrollo, variables y tipos de datos."),
-        ("Estructuras de control", 80, "Condicionales, bucles y funciones; paso de parámetros y ámbito de variables."),
-        ("Arreglos y cadenas", 64, "Recorrido y manipulación básica de arreglos y cadenas de caracteres.")
-    };
+    private sealed record UnidadUtaJson(int Numero, string Nombre, int Horas, string Contenidos);
 
     private static Asignatura NuevaAsignatura(
         int mallaId, string codigo, string nombre, int creditos, int semestre,

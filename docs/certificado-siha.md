@@ -3,36 +3,39 @@
 Flujo completo, en pocas pantallas:
 
 1. **Operador**: sube un solo PDF, el certificado de homologación preaprobado por Secretaría.
-2. **Agente (MS C)**: en cuanto llega, pide a MS A por gRPC la malla vigente de la carrera de destino,
-   compara contenidos y guarda la estimación. Con **80 % o más** la materia *cumple*; con menos, queda
-   **a criterio del docente**. Solo compara materias con contenidos afines (al menos una unidad parecida):
-   no intenta homologar Programación I con Física I.
-3. **Los dos docentes revisores** que vienen en el PDF ven la solicitud con el análisis ya hecho y responden
-   materia por materia (aprobar / no aprobar). Queda **homologada** si los dos la aprueban; si discrepan,
-   *sin acuerdo*.
+2. **Agente (MS C)**: en cuanto llega, trae de MS A por gRPC las mallas y sílabos oficiales de la carrera
+   de origen y de destino y compara cada materia que se pide homologar en tres criterios (mínimo 80 % cada
+   uno): **contenidos**, **profundidad** y **carga horaria**. Si los tres llegan, la materia *cumple*; si no,
+   queda **a criterio del docente**. Todo se explica unidad por unidad.
+3. **Los dos docentes revisores** que vienen en el PDF ven la solicitud con el análisis ya hecho y deciden
+   cada materia (Sí, homologar / No homologar). Queda **homologada** si los dos la aprueban.
 
-## Qué debe traer el PDF
+## Conocimiento del agente: sílabos oficiales
 
-Texto seleccionable (no escaneado) con etiquetas `Etiqueta: valor` (tildes y mayúsculas no importan).
+`src/Services/Siha.MsA.Api/Data/CatalogoUta/*.json` contiene las mallas de Software, Tecnologías de la
+Información, Ingeniería Industrial, Telecomunicaciones y Automatización y Robótica, extraídas de los sílabos
+publicados en uta.edu.ec (nivel, créditos, horas y cada unidad con sus temas y horas). MS A las carga al
+arrancar como malla vigente `UTA-2022`. Para actualizarlas:
+`python tools/catalogo-uta/bajar.py SW software` y `python tools/catalogo-uta/parsear.py silabos-SW SW.json`.
+
+## Qué debe traer el PDF (sin créditos, horas ni contenidos)
 
 | Sección | Etiquetas |
 |---|---|
 | Encabezado | `CERTIFICADO DE HOMOLOGACIÓN` y el código `SIHA-CH-01` |
 | Certificado | `Número de certificado`, `Fecha de emisión`, `Emitido por` |
 | Estudiante | `Estudiante`, `Cédula` (10 dígitos) |
-| Trámite | `Tipo de trámite` (INTERNO/EXTERNO), `Ruta normativa` (CAU-P-011/CAU-P-122), `Institución de origen`, `Carrera de origen` y `Carrera de destino` como `CÓDIGO - Nombre` |
+| Trámite | `Tipo de trámite` (Cambio de carrera / Movilidad externa), `Ruta normativa` (CAU-P-011 / CAU-P-122), `Institución de origen`, `Carrera de origen` y `Carrera de destino` con el **nombre completo** (sin siglas) |
 | Revisores | `Docente revisor 1` y `Docente revisor 2` como `Nombre - correo@uta.edu.ec` |
-| Cada materia | `Asignatura: CÓDIGO - Nombre`, `Semestre`, `Créditos`, `Horas totales`, `Fecha de aprobación`, `Nota` (0–10, mínimo 7); luego `Unidad N: nombre (H horas)` y `Contenidos: ...` |
-| Cierre | `FIN DEL CERTIFICADO` (firmas y sellos posteriores no se leen) |
+| Historial | Por cada materia cursada: `Materia: nombre completo` y `Nivel`, `Período académico` (ej. `Abr-Sep 2025`), `Nota`, `Estado` (Aprobada / Reprobada) |
+| Solicitudes | Por cada pedido: una o varias `Materia aprobada: ...` y `Homologar por: materia de destino` |
+| Cierre | `FIN DEL CERTIFICADO` |
 
-El certificado ya viene filtrado por Secretaría: **no incluye terceras matrículas ni materias de hace más de
-10 años**. Por eso no hay campo de matrícula y una materia con más de 10 años hace que se rechace.
-
-Se rechaza con la lista completa de errores si falta un dato, si INTERNO no usa CAU-P-011 (o EXTERNO no
-usa CAU-P-122), si una nota no es aprobatoria, si las horas de las unidades no suman las horas totales, si
-los revisores no son dos personas distintas con correo institucional, **si algún revisor no existe en el
-sistema como usuario activo con rol DOCENTE** (MS B lo verifica en MS A por gRPC) o si el certificado ya
-se registró.
+Reglas que se verifican al leerlo (instructivo UTA): haber aprobado todo el **primer período académico**,
+pedir **al menos una** homologación y **solo con materias aprobadas** (una materia aprobada sirve para una
+sola solicitud), materias vigentes (**10 años**), nota coherente con el estado, dos revisores distintos con
+correo institucional que existan en el sistema como **DOCENTE activos**, y carreras que existan en el
+catálogo. Reprobar materias después del primer período no impide el cambio.
 
 ## API
 
@@ -41,25 +44,21 @@ se registró.
 | MS B | `POST /api/expedientes/certificado/validar` | Vista previa de lo leído |
 | MS B | `POST /api/expedientes/certificado` | Registra, guarda el PDF y publica `SolicitudCreadaEvent` |
 | MS B | `GET /api/expedientes` | El docente solo recibe las solicitudes donde es revisor |
-| MS C | `GET /api/extracciones/expedientes/{id}/analisis` | Estimación, revisores, respuestas y resultado final |
+| MS C | `GET /api/extracciones/expedientes/{id}/analisis` | Historial, reglas, análisis explicado, revisores y resultado final |
 | MS C | `POST /api/extracciones/expedientes/{id}/analisis-automatico` | Reintentar si la IA no estaba disponible |
-| MS C | `POST /api/extracciones/expedientes/{id}/dictamen` | Respuesta del docente revisor (rol DOCENTE) |
-| MS A (gRPC) | `CatalogoGrpc.ObtenerMallaVigente` / `VerificarDocentes` | Malla para el agente / revisores válidos |
-
-El contenido mínimo (80 %) se configura en **Reglas** (solo administrador). La comparación por unidad
-(parecido semántico) sigue siendo interna y no se muestra.
+| MS C | `POST /api/extracciones/expedientes/{id}/dictamen` | Decisión del docente revisor (rol DOCENTE) |
+| MS A (gRPC) | `CatalogoGrpc.ObtenerMallaVigente` / `ResolverCarrera` / `VerificarDocentes` | Sílabos para el agente / carreras por nombre / revisores válidos |
 
 ## Ejemplos (`documentos-prueba/certificados`, también descargables en la pantalla de registro)
 
-Los revisores de los ejemplos (`hnaranjo`, `mvaca`, `jcastro` @uta.edu.ec) se crean como docentes al
-arrancar MS A con `Seed__DocentePassword` (en Docker: `SIHA_DOCENTE_PASSWORD`, o la del administrador).
+Los revisores de ejemplo (`hnaranjo`, `mvaca`, `jcastro` @uta.edu.ec) se crean como docentes con
+`Seed__DocentePassword` (en Docker: `SIHA_DOCENTE_PASSWORD`, o la del administrador).
 
-| PDF | Resultado esperado |
+| PDF | Resultado con los sílabos reales |
 |---|---|
-| `SIHA-IND-SW-completo.pdf` | SW105 Física I ← IND105 Física I + IND205 Física II (cumple); SW101 ← IND108 (cumple) |
-| `SIHA-IND-SW-solo-fisica1.pdf` | SW105 queda **a criterio del docente** (Física I de Industrial cubre ~62 %); SW101 cumple |
-| `SIHA-UCuenca-SW-externo.pdf` | Trámite externo CAU-P-122: SW101 y SW201 cumplen |
-| `SIHA-con-errores.pdf` | Rechazado: cédula, revisor con Gmail, nota 6,40, horas que no cuadran y materia de hace más de 10 años |
+| `SIHA-TI-SW-cambio-de-carrera.pdf` | TI → Software. Reprobó 2 materias del segundo nivel. Cumplen: Algoritmos y Lógica de Programación, Física, Álgebra Lineal y Estructura de Datos. Programación Orientada a Objetos queda a criterio del docente (144 h frente a 192 h) |
+| `SIHA-IND-SW-cambio-de-carrera.pdf` | Industrial → Software: las cuatro materias quedan a criterio del docente (temas o horas por debajo del 80 %) |
+| `SIHA-con-errores.pdf` | Rechazado: siglas en la carrera, primer nivel no aprobado, pide una reprobada, materia de hace más de 10 años, cédula y revisor con Gmail |
 | `plan-analitico-no-valido.pdf` | Rechazado: no es la plantilla SIHA-CH-01 |
 
 Para regenerarlos: `pip install reportlab` y `python tools/certificados-siha/generar_certificados.py`.

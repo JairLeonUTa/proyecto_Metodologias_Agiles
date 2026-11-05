@@ -19,6 +19,7 @@ import { SolicitudDetallePage } from './pages/SolicitudDetallePage';
 import { SolicitudesPage } from './pages/SolicitudesPage';
 import { LoginPage } from './pages/LoginPage';
 import { MallasPage } from './pages/MallasPage';
+import { ReglasHomologacionPage } from './pages/ReglasHomologacionPage';
 import { ReglasPage } from './pages/ReglasPage';
 import { SolicitudNuevaPage } from './pages/SolicitudNuevaPage';
 import { UsuariosPage } from './pages/UsuariosPage';
@@ -69,6 +70,14 @@ export default function App(): JSX.Element {
           element={
             <RutaProtegida rolesPermitidos={TODOS_LOS_ROLES}>
               <SolicitudesPage />
+            </RutaProtegida>
+          }
+        />
+        <Route
+          path="reglas-homologacion"
+          element={
+            <RutaProtegida rolesPermitidos={TODOS_LOS_ROLES}>
+              <ReglasHomologacionPage />
             </RutaProtegida>
           }
         />

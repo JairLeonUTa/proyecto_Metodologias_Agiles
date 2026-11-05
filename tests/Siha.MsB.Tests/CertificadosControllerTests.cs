@@ -42,6 +42,15 @@ public class CertificadosControllerTests : IDisposable
             => Task.FromResult<IReadOnlyList<DocenteRevisorVerificado>>(correos.Select(c => usuarios.TryGetValue(c, out var u)
                 ? new DocenteRevisorVerificado(c, true, u.Docente, u.Activo, $"Docente {c.Split('@')[0]}")
                 : new DocenteRevisorVerificado(c, false, false, false, string.Empty)).ToList());
+
+        public Task<CarreraCatalogo?> ResolverCarreraAsync(string nombre, CancellationToken cancellationToken = default)
+            => Task.FromResult<CarreraCatalogo?>(nombre switch
+            {
+                "Software" => new CarreraCatalogo("SW", "Ingeniería de Software"),
+                "Tecnologías de la Información" => new CarreraCatalogo("TI", "Tecnologías de la Información"),
+                "Ingeniería Industrial" => new CarreraCatalogo("IND", "Ingeniería Industrial"),
+                _ => null
+            });
     }
 
     public CertificadosControllerTests()
@@ -76,7 +85,7 @@ public class CertificadosControllerTests : IDisposable
     [Fact]
     public async Task Un_solo_pdf_crea_el_expediente_completo_y_lo_envia()
     {
-        var resultado = await Controlador().Registrar(Certificado("SIHA-IND-SW-completo.pdf"), CancellationToken.None);
+        var resultado = await Controlador().Registrar(Certificado("SIHA-TI-SW-cambio-de-carrera.pdf"), CancellationToken.None);
 
         var respuesta = resultado.Result.Should().BeOfType<AcceptedResult>().Subject.Value
             .Should().BeOfType<SolicitudCertificadoResponse>().Subject;
@@ -85,25 +94,28 @@ public class CertificadosControllerTests : IDisposable
         var e = respuesta.Expediente;
         e.TipoTramite.Should().Be(TiposTramite.Interno);
         e.RutaNormativa.Should().Be(RutasNormativas.CambioCarreraOu);
-        e.CarreraOrigenCodigo.Should().Be("IND");
+        e.CarreraOrigenCodigo.Should().Be("TI");
         e.CarreraDestinoCodigo.Should().Be("SW");
+        e.CarreraOrigenNombre.Should().Be("Tecnologías de la Información");
+        e.CarreraDestinoNombre.Should().Be("Software");
         e.NumeroCertificado.Should().Be("SIHA-2026-0147");
         e.EstudianteNombre.Should().Be("Pérez Gómez Ana Lucía");
         e.Estado.Should().Be(ExpedienteEstados.PendienteContenidos);
         e.Documentos.Should().ContainSingle();
+        e.Asignaturas.Should().HaveCount(11, "el historial trae aprobadas y reprobadas");
 
-        var fisica = e.Asignaturas.Single(a => a.CodigoOrigen == "IND105");
-        fisica.Semestre.Should().Be(1);
-        fisica.Creditos.Should().Be(4);
-        fisica.Horas.Should().Be(192);
-        fisica.FechaAprobacionCertificada.Should().Be(new DateOnly(2024, 2, 16));
-        fisica.NumeroMatriculaDestino.Should().BeNull("el certificado ya excluye terceras matrículas");
+        var fundamentos = e.Asignaturas.Single(a => a.NombreOrigen == "Fundamentos de Programación");
+        fundamentos.Nivel.Should().Be(1);
+        fundamentos.PeriodoAcademico.Should().Be("Abr-Sep 2025");
+        fundamentos.Nota.Should().Be(8.9);
+        fundamentos.Aprobada.Should().BeTrue();
+        fundamentos.AsignaturaDestinoNombre.Should().Be("Algoritmos y Lógica de Programación");
+        e.Asignaturas.Single(a => a.NombreOrigen == "Medidas Eléctricas").Aprobada.Should().BeFalse();
         e.Revisores!.Select(r => r.Correo).Should().Equal("hnaranjo@uta.edu.ec", "mvaca@uta.edu.ec");
         e.Revisores!.First().Nombre.Should().Be("Docente hnaranjo", "se usa el nombre registrado en MS A");
-        fisica.CodigoDestino.Should().BeNull("el destino lo propone el análisis automático");
 
         var evento = _publicados.Should().ContainSingle().Subject;
-        evento.AsignaturasOrigen.Should().BeEquivalentTo("IND105", "IND108", "IND205");
+        evento.AsignaturasOrigen.Should().HaveCount(11);
         evento.Documentos.Should().ContainSingle();
     }
 
@@ -125,15 +137,15 @@ public class CertificadosControllerTests : IDisposable
 
         var cuerpo = resultado.Result.Should().BeOfType<UnprocessableEntityObjectResult>().Subject.Value!;
         var detalles = (IEnumerable<string>)cuerpo.GetType().GetProperty("detalles")!.GetValue(cuerpo)!;
-        detalles.Should().Contain(d => d.Contains("no es aprobatoria"));
+        detalles.Should().Contain(d => d.Contains("primer período académico"));
     }
 
     [Fact]
     public async Task El_mismo_certificado_no_se_registra_dos_veces()
     {
-        await Controlador().Registrar(Certificado("SIHA-IND-SW-completo.pdf"), CancellationToken.None);
+        await Controlador().Registrar(Certificado("SIHA-TI-SW-cambio-de-carrera.pdf"), CancellationToken.None);
 
-        var segunda = await Controlador().Registrar(Certificado("SIHA-IND-SW-completo.pdf"), CancellationToken.None);
+        var segunda = await Controlador().Registrar(Certificado("SIHA-TI-SW-cambio-de-carrera.pdf"), CancellationToken.None);
 
         segunda.Result.Should().BeOfType<ConflictObjectResult>();
         _db.Expedientes.Should().ContainSingle();
@@ -142,14 +154,25 @@ public class CertificadosControllerTests : IDisposable
     [Fact]
     public async Task Validar_lee_el_certificado_sin_registrar()
     {
-        var resultado = await Controlador().Validar(Certificado("SIHA-UCuenca-SW-externo.pdf"), CancellationToken.None);
+        var resultado = await Controlador().Validar(Certificado("SIHA-IND-SW-cambio-de-carrera.pdf"), CancellationToken.None);
 
         var leido = resultado.Result.Should().BeOfType<OkObjectResult>().Subject.Value
             .Should().BeOfType<CertificadoLeidoResponse>().Subject;
-        leido.TipoTramite.Should().Be(TiposTramite.Externo);
-        leido.InstitucionOrigen.Should().Be("Universidad de Cuenca");
-        leido.Asignaturas.Should().HaveCount(2);
+        leido.CarreraOrigen.Should().Be("Ingeniería Industrial");
+        leido.Materias.Should().Contain(m => m.Nombre == "Física Aplicada" && !m.Aprobada);
+        leido.Solicitudes.Should().HaveCount(4);
         _db.Expedientes.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task Carrera_que_no_existe_en_el_catalogo_impide_registrar()
+    {
+        var lectura = Siha.Certificados.LectorCertificadoSiha.Leer(File.ReadAllBytes(
+            Path.Combine(Pruebas.RaizRepositorio(), "documentos-prueba", "certificados", "SIHA-TI-SW-cambio-de-carrera.pdf")));
+        lectura.EsValido.Should().BeTrue();
+        var verificador = new VerificadorFalso(_usuarios);
+
+        (await verificador.ResolverCarreraAsync("Arquitectura")).Should().BeNull();
     }
 
     [Fact]
@@ -158,7 +181,7 @@ public class CertificadosControllerTests : IDisposable
         _usuarios["mvaca@uta.edu.ec"] = (false, true);
         _usuarios.Remove("hnaranjo@uta.edu.ec");
 
-        var resultado = await Controlador().Registrar(Certificado("SIHA-IND-SW-completo.pdf"), CancellationToken.None);
+        var resultado = await Controlador().Registrar(Certificado("SIHA-TI-SW-cambio-de-carrera.pdf"), CancellationToken.None);
 
         var cuerpo = resultado.Result.Should().BeOfType<UnprocessableEntityObjectResult>().Subject.Value!;
         var detalles = (IEnumerable<string>)cuerpo.GetType().GetProperty("detalles")!.GetValue(cuerpo)!;
@@ -170,8 +193,8 @@ public class CertificadosControllerTests : IDisposable
     [Fact]
     public async Task Cada_docente_ve_solo_las_solicitudes_que_le_asignaron()
     {
-        await Controlador().Registrar(Certificado("SIHA-IND-SW-completo.pdf"), CancellationToken.None);      // hnaranjo + mvaca
-        await Controlador().Registrar(Certificado("SIHA-IND-SW-solo-fisica1.pdf"), CancellationToken.None);  // mvaca + jcastro
+        await Controlador().Registrar(Certificado("SIHA-TI-SW-cambio-de-carrera.pdf"), CancellationToken.None);      // hnaranjo + mvaca
+        await Controlador().Registrar(Certificado("SIHA-IND-SW-cambio-de-carrera.pdf"), CancellationToken.None);  // mvaca + jcastro
         var envio = new ExpedienteEnvioService(_db, Pruebas.CrearAlmacenamiento(Pruebas.OpcionesArchivos(_directorio)), _publicador.Object,
             Options.Create(Pruebas.OpcionesArchivos(_directorio)), Options.Create(new RepublicacionOptions()), NullLogger<ExpedienteEnvioService>.Instance);
 

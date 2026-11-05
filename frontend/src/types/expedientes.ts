@@ -88,36 +88,35 @@ export interface Expediente {
     nota: number | null;
     fechaAprobacionCertificada?: string | null;
     numeroMatriculaDestino?: number | null;
-    semestre?: number | null;
-    creditos?: number | null;
-    horas?: number | null;
+    nivel?: number | null;
+    periodoAcademico?: string | null;
+    aprobada?: boolean | null;
+    asignaturaDestinoNombre?: string | null;
+    solicitudNumero?: number | null;
   }>;
   /** Datos del certificado SIHA del que se creó el expediente (nulos en registros manuales antiguos). */
   numeroCertificado?: string | null;
   estudianteNombre?: string | null;
   estudianteIdentificacion?: string | null;
   revisores?: Array<{ nombre: string; correo: string }> | null;
+  carreraOrigenNombre?: string | null;
+  carreraDestinoNombre?: string | null;
 }
 
-/** Unidad temática de una asignatura del certificado SIHA. */
-export interface UnidadCertificada {
-  numero: number;
+/** Materia del historial académico del certificado (aprobada o reprobada). */
+export interface MateriaCursada {
   nombre: string;
-  horas: number;
-  contenidos: string;
-}
-
-/** Asignatura aprobada que consta en el certificado SIHA. */
-export interface AsignaturaCertificada {
-  codigo: string;
-  nombre: string;
-  semestre: number;
-  creditos: number;
-  horasTotales: number;
-  /** AAAA-MM-DD */
-  fechaAprobacion: string;
+  nivel: number;
+  periodoAcademico: string;
   nota: number;
-  unidades: UnidadCertificada[];
+  aprobada: boolean;
+}
+
+/** Materia(s) aprobada(s) que el estudiante pide homologar por una materia de la carrera de destino. */
+export interface SolicitudHomologacion {
+  numero: number;
+  materiasOrigen: string[];
+  materiaDestino: string;
 }
 
 /** Respuesta de `POST /api/expedientes/certificado/validar`: lo que el sistema leyó del PDF. */
@@ -130,11 +129,10 @@ export interface CertificadoLeido {
   tipoTramite: string;
   rutaNormativa: string;
   institucionOrigen: string;
-  carreraOrigenCodigo: string;
-  carreraOrigenNombre: string;
-  carreraDestinoCodigo: string;
-  carreraDestinoNombre: string;
-  asignaturas: AsignaturaCertificada[];
+  carreraOrigen: string;
+  carreraDestino: string;
+  materias: MateriaCursada[];
+  solicitudes: SolicitudHomologacion[];
   /** Docentes revisores (usuarios DOCENTE verificados en MS A). */
   revisores: Array<{ nombre: string; correo: string }>;
 }

@@ -33,10 +33,18 @@ namespace Siha.MsB.Api.Migrations
                         .HasMaxLength(20)
                         .HasColumnType("nvarchar(20)");
 
+                    b.Property<string>("CarreraDestinoNombre")
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
                     b.Property<string>("CarreraOrigenCodigo")
                         .IsRequired()
                         .HasMaxLength(20)
                         .HasColumnType("nvarchar(20)");
+
+                    b.Property<string>("CarreraOrigenNombre")
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
 
                     b.Property<string>("Codigo")
                         .IsRequired()
@@ -147,9 +155,16 @@ namespace Siha.MsB.Api.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<bool?>("Aprobada")
+                        .HasColumnType("bit");
+
                     b.Property<string>("AsignaturaDestinoCodigo")
                         .HasMaxLength(30)
                         .HasColumnType("nvarchar(30)");
+
+                    b.Property<string>("AsignaturaDestinoNombre")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
 
                     b.Property<string>("AsignaturaOrigenCodigo")
                         .IsRequired()
@@ -161,16 +176,13 @@ namespace Siha.MsB.Api.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
 
-                    b.Property<int?>("Creditos")
-                        .HasColumnType("int");
-
                     b.Property<Guid>("ExpedienteId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<DateOnly?>("FechaAprobacionCertificada")
                         .HasColumnType("date");
 
-                    b.Property<int?>("Horas")
+                    b.Property<int?>("Nivel")
                         .HasColumnType("int");
 
                     b.Property<double?>("NotaOrigen")
@@ -179,7 +191,11 @@ namespace Siha.MsB.Api.Migrations
                     b.Property<int?>("NumeroMatriculaDestino")
                         .HasColumnType("int");
 
-                    b.Property<int?>("Semestre")
+                    b.Property<string>("PeriodoAcademico")
+                        .HasMaxLength(40)
+                        .HasColumnType("nvarchar(40)");
+
+                    b.Property<int?>("SolicitudNumero")
                         .HasColumnType("int");
 
                     b.HasKey("Id");

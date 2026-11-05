@@ -265,9 +265,11 @@ public class ExpedientesController : ControllerBase
                 a.NotaOrigen,
                 a.FechaAprobacionCertificada,
                 a.NumeroMatriculaDestino,
-                a.Semestre,
-                a.Creditos,
-                a.Horas))
+                a.Nivel,
+                a.PeriodoAcademico,
+                a.Aprobada,
+                a.AsignaturaDestinoNombre,
+                a.SolicitudNumero))
             .ToList(),
         expediente.NumeroCertificado,
         expediente.EstudianteNombre,
@@ -275,5 +277,7 @@ public class ExpedientesController : ControllerBase
         new[] { (expediente.Revisor1Nombre, expediente.Revisor1Correo), (expediente.Revisor2Nombre, expediente.Revisor2Correo) }
             .Where(r => !string.IsNullOrWhiteSpace(r.Item2))
             .Select(r => new RevisorResponse(r.Item1 ?? r.Item2!, r.Item2!))
-            .ToList());
+            .ToList(),
+        expediente.CarreraOrigenNombre,
+        expediente.CarreraDestinoNombre);
 }
