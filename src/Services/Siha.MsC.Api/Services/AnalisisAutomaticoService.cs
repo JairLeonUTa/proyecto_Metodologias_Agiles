@@ -162,8 +162,13 @@ public sealed class AnalisisAutomaticoService : IAnalisisAutomaticoService
 
         var requisitos = Requisitos(certificado, mallaOrigen, evaluaciones, theta, contexto);
         var cumplen = evaluaciones.Count(e => e.Estimacion == Cumple);
-        var resumen = $"Se analizaron {evaluaciones.Count} materia(s) pedida(s): {cumplen} cumple(n) el {Num(theta)} % en contenidos, profundidad y carga horaria" +
-                      (evaluaciones.Count - cumplen > 0 ? $" y {evaluaciones.Count - cumplen} queda(n) a criterio de los docentes revisores." : ".");
+        var sinSilabo = evaluaciones.Count(e => e.SinSilabo);
+        var criterio = evaluaciones.Count - cumplen - sinSilabo;
+        var partes = new List<string>();
+        if (sinSilabo < evaluaciones.Count) partes.Add($"{cumplen} cumple(n) el {Num(theta)} % en contenidos, profundidad y carga horaria");
+        if (criterio > 0) partes.Add($"{criterio} queda(n) a criterio de los docentes revisores");
+        if (sinSilabo > 0) partes.Add($"{sinSilabo} no tiene(n) sílabo para comparar y la(s) deciden los docentes");
+        var resumen = $"Se analizaron {evaluaciones.Count} materia(s) pedida(s): {Unir(partes)}.";
 
         return new AnalisisAutomaticoResponse(contexto.ExpedienteId, requisitos, evaluaciones, Array.Empty<string>(), resumen, string.Join(" | ", traza));
     }
@@ -192,19 +197,25 @@ public sealed class AnalisisAutomaticoService : IAnalisisAutomaticoService
         var nombresOrigen = Unir(origenes.Select(o => $"«{o.Cursada.Nombre}»"));
         var explicacion = new List<string>();
 
-        // Sin sílabo no hay con qué comparar: lo decide el docente con la documentación.
-        if (destino is null || origenes.Any(o => o.Malla is null))
+        // Sin sílabo no hay con qué comparar: lo decide el docente con la documentación. También cuenta
+        // como "sin sílabo" una materia del catálogo sin unidades o sin horas (no se compara con 0 horas).
+        static bool SinUnidades(DestinoAnalisisRequest? a) => a is not null && (a.Unidades.Count == 0 || a.Unidades.Sum(u => u.Horas) <= 0);
+        if (destino is null || SinUnidades(destino) || origenes.Any(o => o.Malla is null || SinUnidades(o.Malla)))
         {
             if (destino is null)
                 explicacion.Add($"La materia «{solicitud.MateriaDestino}» no existe en la malla vigente de {contexto.CarreraDestinoNombre}; revise que el nombre sea el oficial.");
+            else if (SinUnidades(destino))
+                explicacion.Add($"El sílabo de «{solicitud.MateriaDestino}» en {contexto.CarreraDestinoNombre} no tiene unidades publicadas.");
+            foreach (var o in origenes.Where(o => o.Malla is not null && SinUnidades(o.Malla)))
+                explicacion.Add($"El sílabo de «{o.Cursada.Nombre}» en {contexto.CarreraOrigenNombre} no tiene unidades publicadas.");
             foreach (var o in origenes.Where(o => o.Malla is null))
                 explicacion.Add(contexto.TipoTramite == TiposTramite.Interno
                     ? $"La materia «{o.Cursada.Nombre}» no aparece en la malla de {contexto.CarreraOrigenNombre}, así que el agente no tiene su sílabo."
                     : $"La materia «{o.Cursada.Nombre}» es de otra institución ({contexto.InstitucionOrigen}); el agente no tiene su sílabo.");
             return new EvaluacionMateriaResponse(solicitud.Numero, solicitud.MateriaDestino, destino?.Codigo, destino?.Semestre, destino?.Creditos,
                 destino?.Unidades.Sum(u => u.Horas) ?? 0, origenDto, 0, 0, 0, CriterioDocente, Array.Empty<CoberturaUnidadPropuestaResponse>(),
-                explicacion, "Sin sílabos para comparar: queda a criterio de los docentes revisores, con el plan analítico que presente el estudiante.",
-                Array.Empty<PrecedenteResponse>());
+                explicacion, "Sin sílabo para comparar: queda a criterio de los docentes revisores, con el plan analítico que presente el estudiante.",
+                Array.Empty<PrecedenteResponse>(), SinSilabo: true);
         }
 
         // Vectores (caché EMBEDDING_UNIDAD por asignatura y unidad; Ollama si no están).
@@ -306,19 +317,24 @@ public sealed class AnalisisAutomaticoService : IAnalisisAutomaticoService
                 : $"Reprobó {Unir(reprobadas.Select(m => $"«{m.Nombre}» (nivel {m.Nivel}, nota {Num((double)m.Nota)})"))}, pero no las pide homologar. Reprobar materias después del primer período no impide el cambio."));
 
         var cumplen = evaluaciones.Count(e => e.Estimacion == Cumple);
+        var comparables = evaluaciones.Where(e => !e.SinSilabo).ToList();
         requisitos.Add(new RequisitoResponse("Tiene al menos una materia susceptible de homologación", cumplen > 0,
             cumplen > 0
                 ? $"{cumplen} de {evaluaciones.Count} materia(s) pedida(s) llegan al {Num(theta)} %."
-                : $"Ninguna materia pedida llega al {Num(theta)} %; los docentes deciden si alguna procede."));
+                : comparables.Count == 0
+                    ? "El agente no tiene sílabos para comparar estas materias; los docentes deciden con el plan analítico del estudiante."
+                    : $"Ninguna materia pedida llega al {Num(theta)} %; los docentes deciden si alguna procede."));
 
         requisitos.Add(new RequisitoResponse("Materias vigentes y sin tercera matrícula", true,
             "El certificado de Secretaría solo incluye materias de los últimos 10 años y sin tercera matrícula."));
 
-        var detalle = evaluaciones.Select(e =>
-            $"«{e.MateriaDestino}»: {Estado(e.Estimacion)} (contenidos {Num((double)e.Contenidos)} %, " +
-            $"profundidad {Num((double)e.Profundidad)} %, carga horaria {Num((double)e.CargaHoraria)} %).");
+        // Las materias sin sílabo no cuentan como que fallaron el mínimo: no se pudieron medir.
+        var detalle = evaluaciones.Select(e => e.SinSilabo
+            ? $"«{e.MateriaDestino}»: sin sílabo para comparar (deciden los docentes)."
+            : $"«{e.MateriaDestino}»: {Estado(e.Estimacion)} (contenidos {Num((double)e.Contenidos)} %, " +
+              $"profundidad {Num((double)e.Profundidad)} %, carga horaria {Num((double)e.CargaHoraria)} %).");
         requisitos.Add(new RequisitoResponse($"Equivalencia mínima del {Num(theta)} % en contenidos, profundidad y carga horaria",
-            cumplen == evaluaciones.Count, string.Join(" ", detalle)));
+            comparables.All(e => e.Estimacion == Cumple), string.Join(" ", detalle)));
         return requisitos;
     }
 

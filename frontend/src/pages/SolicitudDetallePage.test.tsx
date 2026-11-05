@@ -103,6 +103,26 @@ describe('Solicitud: análisis explicado y decisión del docente', () => {
     expect(screen.queryByText(/θ|δ|τ|0,65/)).not.toBeInTheDocument();
   });
 
+  it('sin sílabo para comparar no muestra barras ni porcentajes', async () => {
+    const sinSilabo = {
+      ...evaluacion(1, 'Física', 'Física General', 0),
+      estimacion: 'CRITERIO_DOCENTE' as const,
+      unidades: [],
+      sinSilabo: true,
+      conclusion: 'Sin sílabo para comparar: queda a criterio de los docentes revisores.',
+    };
+    api.obtenerSolicitud.mockResolvedValue({
+      ...SOLICITUD,
+      resultado: { ...SOLICITUD.resultado, evaluaciones: [sinSilabo] },
+      resultadoFinal: [{ ...SOLICITUD.resultadoFinal[1], codigoDestino: 'Física', nombreDestino: 'Física' }],
+    });
+    abrir();
+
+    expect((await screen.findAllByText(/Sin sílabo para comparar · decide el docente/)).length).toBeGreaterThan(0);
+    expect(screen.queryByRole('img', { name: /Contenidos/ })).not.toBeInTheDocument();
+    expect(screen.queryByText('0 %')).not.toBeInTheDocument();
+  });
+
   it('el docente decide con botones y debe decidir lo que queda a su criterio', async () => {
     const user = userEvent.setup();
     abrir();

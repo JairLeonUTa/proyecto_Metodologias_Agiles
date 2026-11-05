@@ -1,4 +1,4 @@
-using System.Security.Cryptography;
+﻿using System.Security.Cryptography;
 using System.Text.Json;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
@@ -68,9 +68,9 @@ public class AnalisisAutomaticoServiceTests
         var expediente = Guid.NewGuid();
         db.AnalisisExpedientes.Add(new AnalisisExpediente
         {
-            ExpedienteId = expediente, CodigoExpediente = "EXP-1", RutaNormativa = "CAU-P-011", TipoTramite = "INTERNO",
-            InstitucionOrigen = "UTA", CarreraOrigenCodigo = "TI", CarreraDestinoCodigo = "SW",
-            CarreraOrigenNombre = "Tecnologías de la Información", CarreraDestinoNombre = "Software",
+            ExpedienteId = expediente, CodigoExpediente = "EXP-1", RutaNormativa = c.RutaNormativa, TipoTramite = c.TipoTramite,
+            InstitucionOrigen = c.InstitucionOrigen, CarreraOrigenCodigo = c.TipoTramite == "EXTERNO" ? "EXTERNA" : "TI", CarreraDestinoCodigo = "SW",
+            CarreraOrigenNombre = c.CarreraOrigen, CarreraDestinoNombre = "Software",
             CertificadoJson = JsonSerializer.Serialize(c),
             Revisor1Nombre = "Ing. Naranjo", Revisor1Correo = "hnaranjo@uta.edu.ec",
             Revisor2Nombre = "Ing. Vaca", Revisor2Correo = "mvaca@uta.edu.ec"
@@ -220,6 +220,47 @@ public class AnalisisAutomaticoServiceTests
         var e = r.Evaluaciones.Single();
         e.Estimacion.Should().Be(AnalisisAutomaticoService.CriterioDocente);
         e.Explicacion.Should().Contain(x => x.Contains("no existe en la malla vigente de Software"));
+    }
+
+    [Fact]
+    public async Task Materia_sin_unidades_en_el_catalogo_se_trata_como_sin_silabo()
+    {
+        await using var db = CrearDb();
+        var sw = MallaSw.Append(A("SW-ETI", "ETICA PROFESIONAL", 1, 2)).ToList();
+        var r = await Analizar(db, Certificado(
+            (new[] { "Fundamentos de Programación" }, "Algoritmos y Lógica de Programación"),
+            (new[] { "Física" }, "Ética Profesional")), sw);
+
+        var e = r.Evaluaciones.Single(x => x.MateriaDestino == "Ética Profesional");
+        e.SinSilabo.Should().BeTrue();
+        e.Unidades.Should().BeEmpty();
+        e.Explicacion.Should().Contain(x => x.Contains("no tiene unidades publicadas"));
+        e.Conclusion.Should().StartWith("Sin sílabo para comparar");
+
+        // No cuenta como que falló el 80 %: no se pudo medir.
+        r.Requisitos.Single(q => q.Regla.StartsWith("Equivalencia mínima")).Cumple.Should().BeTrue();
+        r.Requisitos.Single(q => q.Regla.StartsWith("Equivalencia mínima")).Explicacion.Should().Contain("sin sílabo para comparar");
+        r.Resumen.Should().Contain("1 cumple(n)").And.Contain("1 no tiene(n) sílabo para comparar").And.NotContain("a criterio");
+    }
+
+    [Fact]
+    public async Task Movilidad_externa_sin_silabos_no_muestra_porcentajes()
+    {
+        await using var db = CrearDb();
+        var c = Certificado((new[] { "Física" }, "Física")) with
+        {
+            TipoTramite = "EXTERNO", RutaNormativa = "CAU-P-122", InstitucionOrigen = "Escuela Politécnica Nacional",
+            CarreraOrigen = "Ingeniería en Computación"
+        };
+        var r = await Analizar(db, c);
+
+        var e = r.Evaluaciones.Single();
+        e.SinSilabo.Should().BeTrue();
+        e.Estimacion.Should().Be(AnalisisAutomaticoService.CriterioDocente);
+        r.Requisitos.Single(q => q.Regla.StartsWith("Equivalencia mínima")).Cumple.Should().BeTrue();
+        r.Requisitos.Single(q => q.Regla.StartsWith("Tiene al menos una materia")).Explicacion.Should().Contain("no tiene sílabos para comparar");
+        r.Resumen.Should().Be("Se analizaron 1 materia(s) pedida(s): 1 no tiene(n) sílabo para comparar y la(s) deciden los docentes.");
+        string.Join(" ", r.Requisitos.Select(q => q.Explicacion)).Should().NotContain("contenidos 0 %");
     }
 
     [Fact]

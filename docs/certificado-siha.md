@@ -7,6 +7,9 @@ Flujo completo, en pocas pantallas:
    de origen y de destino y compara cada materia que se pide homologar en tres criterios (mínimo 80 % cada
    uno): **contenidos**, **profundidad** y **carga horaria**. Si los tres llegan, la materia *cumple*; si no,
    queda **a criterio del docente**. Todo se explica unidad por unidad.
+   Si el agente no tiene el sílabo de alguna de las dos materias (movilidad externa, materia que no está en
+   la malla o que no tiene unidades publicadas) se muestra **"Sin sílabo para comparar"**, sin barras ni
+   porcentajes, y deciden los docentes con el plan analítico del estudiante; no cuenta como que falló el 80 %.
 3. **Los dos docentes revisores** que vienen en el PDF ven la solicitud con el análisis ya hecho y deciden
    cada materia (Sí, homologar / No homologar). Queda **homologada** si los dos la aprueban.
 
@@ -15,7 +18,8 @@ Flujo completo, en pocas pantallas:
 `src/Services/Siha.MsA.Api/Data/CatalogoUta/*.json` contiene las mallas de Software, Tecnologías de la
 Información, Ingeniería Industrial, Telecomunicaciones y Automatización y Robótica, extraídas de los sílabos
 publicados en uta.edu.ec (nivel, créditos, horas y cada unidad con sus temas y horas). MS A las carga al
-arrancar como malla vigente `UTA-2022`. Para actualizarlas:
+arrancar como malla vigente `UTA-2022`; si esa malla ya existe en la base, solo le agrega las materias que
+falten (por código), sin tocar las que ya están. Para actualizarlas:
 `python tools/catalogo-uta/bajar.py SW software` y `python tools/catalogo-uta/parsear.py silabos-SW SW.json`.
 
 ## Qué debe traer el PDF (sin créditos, horas ni contenidos)
@@ -33,7 +37,8 @@ arrancar como malla vigente `UTA-2022`. Para actualizarlas:
 
 Reglas que se verifican al leerlo (instructivo UTA): haber aprobado todo el **primer período académico**,
 pedir **al menos una** homologación y **solo con materias aprobadas** (una materia aprobada sirve para una
-sola solicitud), materias vigentes (**10 años**), nota coherente con el estado, dos revisores distintos con
+sola solicitud), materias vigentes (**10 años**), nota coherente con el estado (los mensajes muestran la nota como
+`6,50`), dos revisores distintos con
 correo institucional que existan en el sistema como **DOCENTE activos**, y carreras que existan en el
 catálogo. Reprobar materias después del primer período no impide el cambio.
 
@@ -62,3 +67,6 @@ Los revisores de ejemplo (`hnaranjo`, `mvaca`, `jcastro` @uta.edu.ec) se crean c
 | `plan-analitico-no-valido.pdf` | Rechazado: no es la plantilla SIHA-CH-01 |
 
 Para regenerarlos: `pip install reportlab` y `python tools/certificados-siha/generar_certificados.py`.
+
+Las solicitudes registradas con el formato anterior del certificado (sin período académico) ya no aparecen en
+la lista de Solicitudes: no se pueden analizar con los sílabos.

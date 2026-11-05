@@ -1,3 +1,4 @@
+﻿using FluentAssertions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -285,6 +286,26 @@ public class ReglasServiceTests
         Assert.Equal(4, algoritmos.Unidades.Count);
         Assert.Contains("Programación con condicionales", algoritmos.Unidades.Single(u => u.Numero == 2).Contenidos);
         Assert.Equal(192, algoritmos.Unidades.Sum(u => u.Horas));
+    }
+
+    [Fact]
+    public async Task Semilla_agrega_a_la_malla_existente_las_materias_que_faltan()
+    {
+        using var db = NuevaDb();
+        await Sembrar(db);
+
+        // Simula una base cargada con una versión anterior del catálogo: le faltan dos materias de Software.
+        var malla = await db.Mallas.Include(m => m.Carrera).SingleAsync(m => m.Carrera!.Codigo == "SW" && m.Version == DbSeederA.VersionMallaUta);
+        var total = await db.Asignaturas.CountAsync(a => a.MallaId == malla.Id);
+        var quitadas = await db.Asignaturas.Where(a => a.MallaId == malla.Id).OrderBy(a => a.Codigo).Take(2).ToListAsync();
+        db.Asignaturas.RemoveRange(quitadas);
+        await db.SaveChangesAsync();
+
+        await Sembrar(db);
+
+        (await db.Asignaturas.CountAsync(a => a.MallaId == malla.Id)).Should().Be(total);
+        (await db.Mallas.CountAsync(m => m.CarreraId == malla.CarreraId && m.Version == DbSeederA.VersionMallaUta)).Should().Be(1);
+        (await db.Asignaturas.Include(a => a.Unidades).SingleAsync(a => a.Codigo == quitadas[0].Codigo)).Unidades.Should().NotBeEmpty();
     }
 
     private static Task Sembrar(SihaDbContextA db) => DbSeederA.SembrarAsync(db,

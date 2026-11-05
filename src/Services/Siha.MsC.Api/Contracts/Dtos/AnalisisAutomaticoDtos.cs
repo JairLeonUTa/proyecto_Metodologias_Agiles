@@ -48,7 +48,12 @@ public record EvaluacionMateriaResponse(
     /// <summary>Explicación paso a paso de cómo se llegó al resultado.</summary>
     IReadOnlyCollection<string> Explicacion,
     string Conclusion,
-    IReadOnlyCollection<PrecedenteResponse> Precedentes);
+    IReadOnlyCollection<PrecedenteResponse> Precedentes,
+    /// <summary>
+    /// True cuando el agente no tiene el sílabo de origen o de destino (otra institución, materia que no
+    /// está en la malla o sin unidades): no hay porcentajes y deciden los docentes.
+    /// </summary>
+    bool SinSilabo = false);
 
 public record MateriaOrigenEvaluadaResponse(
     string Nombre,

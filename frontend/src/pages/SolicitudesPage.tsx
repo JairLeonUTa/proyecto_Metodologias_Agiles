@@ -11,6 +11,7 @@ import type { SolicitudAnalisis } from '../types/analisis';
 import { ROLES } from '../types/comunes';
 import type { Expediente } from '../types/expedientes';
 import { formatearFechaHora } from '../utils/formato';
+import { esFormatoActual } from '../utils/solicitudes';
 
 interface Fila {
   expediente: Expediente;
@@ -19,7 +20,7 @@ interface Fila {
 
 /** Solicitudes con certificado SIHA y su estado (análisis del agente y revisión docente). */
 async function cargar(): Promise<Fila[]> {
-  const expedientes = (await expedientesApi.listar()).filter((e) => e.numeroCertificado);
+  const expedientes = (await expedientesApi.listar()).filter(esFormatoActual);
   return Promise.all(
     expedientes.map(async (expediente) => ({
       expediente,

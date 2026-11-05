@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Siha.Certificados;
 using Siha.Contracts;
 using Xunit;
@@ -122,6 +122,16 @@ public class LectorCertificadoSihaTests
         var lineas = Base().Select(l => l.Replace("Nota: 5.5 Estado: Reprobada", "Nota: 5.5 Estado: Aprobada")).ToList();
 
         LectorCertificadoSiha.LeerTexto(lineas).Errores.Should().Contain(e => e.Contains("Química") && e.Contains("menor que 7"));
+    }
+
+    [Fact]
+    public void Las_notas_del_rechazo_se_muestran_con_coma_y_dos_decimales()
+    {
+        var lineas = Base().Select(l => l.Replace("Nota: 5.5 Estado: Reprobada", "Nota: 6.5 Estado: Aprobada")).ToList();
+
+        LectorCertificadoSiha.LeerTexto(lineas).Errores.Should()
+            .Contain(e => e.Contains("su nota 6,50 es menor que 7,00"))
+            .And.NotContain(e => e.Contains("6.5"));
     }
 
     [Fact]

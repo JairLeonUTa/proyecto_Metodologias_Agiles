@@ -199,6 +199,8 @@ export interface EvaluacionMateria {
   explicacion: string[];
   conclusion: string;
   precedentes: Precedente[];
+  /** True si el agente no tiene sílabo para comparar (otra institución o materia sin unidades): sin porcentajes. */
+  sinSilabo?: boolean;
 }
 
 export interface AnalisisAutomatico {

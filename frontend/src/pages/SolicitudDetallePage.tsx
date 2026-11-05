@@ -40,7 +40,8 @@ function Paso({ id, numero, titulo, ayuda, children }: { id?: string; numero: nu
   );
 }
 
-function Veredicto({ cumple }: { cumple: boolean }): JSX.Element {
+function Veredicto({ cumple, sinSilabo = false }: { cumple: boolean; sinSilabo?: boolean }): JSX.Element {
+  if (sinSilabo) return <Etiqueta tono="neutro">Sin sílabo para comparar · decide el docente</Etiqueta>;
   return cumple ? (
     <Etiqueta tono="exito">✔ Cumple el {MINIMO} %</Etiqueta>
   ) : (
@@ -92,11 +93,11 @@ function AnalisisMateria({ e, carreraOrigen }: { e: EvaluacionMateria; carreraOr
           ← {e.materiasOrigen.map((o) => o.nombre).join(' + ')} ({carreraOrigen})
         </span>
         <span className="ml-auto">
-          <Veredicto cumple={cumple} />
+          <Veredicto cumple={cumple} sinSilabo={e.sinSilabo} />
         </span>
       </header>
 
-      {e.unidades.length > 0 ? (
+      {e.unidades.length > 0 && !e.sinSilabo ? (
         <div className="grid gap-4 md:grid-cols-3">
           <Medidor etiqueta="Contenidos" valor={e.contenidos} ayuda="Temas de la materia de destino que ya estudió." />
           <Medidor etiqueta="Profundidad" valor={e.profundidad} ayuda="Horas dedicadas a esos temas." />
@@ -104,7 +105,7 @@ function AnalisisMateria({ e, carreraOrigen }: { e: EvaluacionMateria; carreraOr
         </div>
       ) : null}
 
-      <p className={`rounded-md px-3 py-2 text-sm font-medium ${cumple ? 'bg-emerald-50 text-emerald-900' : 'bg-amber-50 text-amber-900'}`}>
+      <p className={`rounded-md px-3 py-2 text-sm font-medium ${e.sinSilabo ? 'bg-slate-100 text-slate-800' : cumple ? 'bg-emerald-50 text-emerald-900' : 'bg-amber-50 text-amber-900'}`}>
         {e.conclusion}
       </p>
 
@@ -117,7 +118,7 @@ function AnalisisMateria({ e, carreraOrigen }: { e: EvaluacionMateria; carreraOr
         </ul>
       </div>
 
-      {e.unidades.length > 0 ? (
+      {e.unidades.length > 0 && !e.sinSilabo ? (
         <details>
           <summary className="cursor-pointer text-sm font-semibold text-institucional-700">Ver la comparación en una tabla</summary>
           <div className="mt-2">
@@ -178,7 +179,10 @@ function SuDecision({ solicitud, alGuardar }: { solicitud: SolicitudAnalisis; al
       {solicitud.resultadoFinal.map((m) => (
         <div key={m.codigoDestino} className="flex flex-wrap items-center gap-3 rounded-md bg-white px-3 py-2">
           <span className="min-w-64 flex-1 font-medium text-ink">{m.nombreDestino}</span>
-          <Veredicto cumple={m.estimacion === 'CUMPLE'} />
+          <Veredicto
+            cumple={m.estimacion === 'CUMPLE'}
+            sinSilabo={solicitud.resultado?.evaluaciones.find((e) => e.materiaDestino === m.codigoDestino)?.sinSilabo}
+          />
           <div className="flex gap-2" role="group" aria-label={`Decisión para ${m.nombreDestino}`}>
             <button
               type="button"
@@ -321,7 +325,7 @@ export function SolicitudDetallePage(): JSX.Element {
                 <span aria-hidden="true">→</span>
                 <span className="font-semibold text-ink">{e.materiaDestino}</span>
                 <span className="ml-auto flex gap-2">
-                  <Veredicto cumple={e.estimacion === 'CUMPLE'} />
+                  <Veredicto cumple={e.estimacion === 'CUMPLE'} sinSilabo={e.sinSilabo} />
                   {final && final.resultado !== 'PENDIENTE' ? (
                     <Etiqueta tono={RESULTADO[final.resultado]?.tono ?? 'neutro'}>{RESULTADO[final.resultado]?.texto}</Etiqueta>
                   ) : null}

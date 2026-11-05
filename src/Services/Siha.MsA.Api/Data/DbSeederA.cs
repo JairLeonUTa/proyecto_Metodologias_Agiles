@@ -302,25 +302,33 @@ public static class DbSeederA
                 await db.SaveChangesAsync();
             }
 
-            if (await db.Mallas.AnyAsync(m => m.CarreraId == carrera.Id && m.Version == VersionMallaUta)) continue;
-
-            foreach (var anterior in await db.Mallas.Where(m => m.CarreraId == carrera.Id && m.Vigente).ToListAsync())
-                anterior.Vigente = false;
-
-            var malla = new MallaCurricular
+            // Si la malla UTA-2022 ya existe (una base cargada con una versión anterior del catálogo) no se
+            // salta la carrera: se le agregan las materias nuevas que falten, sin tocar las que ya están.
+            var malla = await db.Mallas.FirstOrDefaultAsync(m => m.CarreraId == carrera.Id && m.Version == VersionMallaUta);
+            var mallaNueva = malla is null;
+            if (malla is null)
             {
-                CarreraId = carrera.Id,
-                Version = VersionMallaUta,
-                Anio = 2022,
-                Fuente = catalogo.Fuente,
-                RutaNormativa = RutasNormativas.CambioCarreraOu,
-                Vigente = true
-            };
-            db.Mallas.Add(malla);
-            await db.SaveChangesAsync();
+                foreach (var anterior in await db.Mallas.Where(m => m.CarreraId == carrera.Id && m.Vigente).ToListAsync())
+                    anterior.Vigente = false;
+
+                malla = new MallaCurricular
+                {
+                    CarreraId = carrera.Id,
+                    Version = VersionMallaUta,
+                    Anio = 2022,
+                    Fuente = catalogo.Fuente,
+                    RutaNormativa = RutasNormativas.CambioCarreraOu,
+                    Vigente = true
+                };
+                db.Mallas.Add(malla);
+                await db.SaveChangesAsync();
+            }
 
             var existentes = (await db.Asignaturas.Select(a => a.Codigo).ToListAsync()).ToHashSet();
-            foreach (var a in catalogo.Asignaturas.Where(a => !existentes.Contains(a.Codigo)))
+            var faltantes = catalogo.Asignaturas.Where(a => !existentes.Contains(a.Codigo)).ToList();
+            if (faltantes.Count == 0) continue;
+
+            foreach (var a in faltantes)
             {
                 var asignatura = new Asignatura
                 {
@@ -348,8 +356,12 @@ public static class DbSeederA
             }
 
             await db.SaveChangesAsync();
-            logger.LogInformation("Malla oficial de {Carrera} cargada: {Asignaturas} asignaturas con sus sílabos.",
-                catalogo.Nombre, catalogo.Asignaturas.Count);
+            if (mallaNueva)
+                logger.LogInformation("Malla oficial de {Carrera} cargada: {Asignaturas} asignaturas con sus sílabos.",
+                    catalogo.Nombre, faltantes.Count);
+            else
+                logger.LogInformation("Malla oficial de {Carrera}: se agregaron {Asignaturas} asignatura(s) que faltaban.",
+                    catalogo.Nombre, faltantes.Count);
         }
     }
 

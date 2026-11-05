@@ -359,7 +359,8 @@ public static class LectorCertificadoSiha
             carreraOrigen, carreraDestino, materias, solicitudes, revisores));
     }
 
-    private static string Formato(decimal n) => n.ToString("0.##", CultureInfo.InvariantCulture);
+    /// <summary>Nota con dos decimales y coma, igual que en el resto de la aplicación ("6,50").</summary>
+    private static string Formato(decimal n) => n.ToString("0.00", CultureInfo.InvariantCulture).Replace('.', ',');
 
     private static List<(string Clave, string Valor)> Pares(string original, string normal)
     {
