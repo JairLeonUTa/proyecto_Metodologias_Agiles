@@ -37,5 +37,14 @@ public class ExpedienteDocumento
     /// <summary>Motivo del rechazo cuando <see cref="EstadoRecepcion"/> es RECHAZADO.</summary>
     public string? ObservacionValidacion { get; set; }
 
+    /// <summary>
+    /// Qué es el PDF dentro de la solicitud (ver <see cref="TiposDocumentoExpediente"/>): el certificado
+    /// SIHA o el sílabo de una materia de otra universidad. Nulo en documentos del flujo anterior.
+    /// </summary>
+    public string? Tipo { get; set; }
+
+    /// <summary>Materia aprobada del certificado a la que corresponde el sílabo (solo sílabos externos).</summary>
+    public string? MateriaOrigen { get; set; }
+
     public DateTimeOffset FechaCargaUtc { get; set; } = DateTimeOffset.UtcNow;
 }

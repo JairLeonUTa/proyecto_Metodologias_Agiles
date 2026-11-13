@@ -182,7 +182,7 @@ public class ExpedientesControllerTests : IDisposable
         evento.CorrelationId.Should().Be(borrador.CorrelationId);
         evento.RutaNormativa.Should().Be(RutasNormativas.Movilidad);
         evento.AsignaturasOrigen.Should().BeEquivalentTo(new[] { "SW101", "SW201" });
-        evento.Version.Should().Be("1.1");
+        evento.Version.Should().Be("1.2");
         evento.DocumentoIds.Should().Equal(documento.Id);
 
         var referencia = evento.Documentos.Should().ContainSingle().Subject;

@@ -8,6 +8,9 @@ namespace Siha.MsC.Api.Services;
 public interface ILectorCertificadosAlmacen
 {
     Task<CertificadoSiha?> LeerAsync(string rutaRelativa, CancellationToken cancellationToken = default);
+
+    /// <summary>Lee el sílabo externo de una materia (movilidad externa) desde el volumen compartido.</summary>
+    Task<SilaboExterno?> LeerSilaboAsync(string rutaRelativa, string materia, CancellationToken cancellationToken = default);
 }
 
 public sealed class LectorCertificadosAlmacen : ILectorCertificadosAlmacen
@@ -30,5 +33,19 @@ public sealed class LectorCertificadosAlmacen : ILectorCertificadosAlmacen
         var bytes = await File.ReadAllBytesAsync(ruta, cancellationToken);
         var lectura = LectorCertificadoSiha.Leer(bytes);
         return lectura.EsValido ? lectura.Certificado : null;
+    }
+
+    public async Task<SilaboExterno?> LeerSilaboAsync(
+        string rutaRelativa, string materia, CancellationToken cancellationToken = default)
+    {
+        var ruta = Path.GetFullPath(Path.Combine(_raiz, rutaRelativa));
+        if (!ruta.StartsWith(_raiz, StringComparison.Ordinal) || !File.Exists(ruta))
+        {
+            return null;
+        }
+
+        var bytes = await File.ReadAllBytesAsync(ruta, cancellationToken);
+        var lectura = LectorSilaboExterno.Leer(bytes, materia);
+        return lectura.EsValido ? lectura.Silabo : null;
     }
 }

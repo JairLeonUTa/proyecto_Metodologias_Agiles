@@ -61,6 +61,8 @@ public class SihaDbContextB : DbContext
             e.Property(x => x.MimeType).HasMaxLength(100);
             e.Property(x => x.EstadoRecepcion).HasMaxLength(30).IsRequired();
             e.Property(x => x.ObservacionValidacion).HasMaxLength(500);
+            e.Property(x => x.Tipo).HasMaxLength(30);
+            e.Property(x => x.MateriaOrigen).HasMaxLength(200);
             e.HasIndex(x => x.HashSha256);
 
             // Un mismo contenido (SHA-256) solo puede estar VALIDADO una vez por expediente: evita

@@ -45,16 +45,28 @@ public class CertificadosController : ControllerBase
         _logger = logger;
     }
 
-    /// <summary>Lee el certificado sin registrar nada (vista previa para el operador).</summary>
+    /// <summary>
+    /// Lee el certificado sin registrar nada (vista previa para el operador). En movilidad externa
+    /// también lee los sílabos de la otra universidad que se adjunten (uno por materia aprobada).
+    /// </summary>
     [HttpPost("validar")]
     [Consumes("multipart/form-data")]
     [ProducesResponseType(typeof(CertificadoLeidoResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
-    public async Task<ActionResult<CertificadoLeidoResponse>> Validar(IFormFile? archivo, CancellationToken cancellationToken)
+    public async Task<ActionResult<CertificadoLeidoResponse>> Validar(
+        IFormFile? archivo,
+        CancellationToken cancellationToken,
+        [FromForm] List<IFormFile>? silabos = null,
+        [FromForm] List<string>? silabosMaterias = null)
     {
         var lectura = await LeerAsync(archivo, cancellationToken);
-        return lectura.Error ?? Ok(ADto(lectura.Certificado!));
+        if (lectura.Error is not null) return lectura.Error;
+
+        var silabosLeidos = await LeerSilabosAsync(lectura.Certificado!, silabos, silabosMaterias, cancellationToken);
+        if (silabosLeidos.Error is not null) return silabosLeidos.Error;
+
+        return Ok(ADto(lectura.Certificado!) with { Silabos = silabosLeidos.Resumen });
     }
 
     /// <summary>
@@ -67,7 +79,11 @@ public class CertificadosController : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status409Conflict)]
     [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
-    public async Task<ActionResult<SolicitudCertificadoResponse>> Registrar(IFormFile? archivo, CancellationToken cancellationToken)
+    public async Task<ActionResult<SolicitudCertificadoResponse>> Registrar(
+        IFormFile? archivo,
+        CancellationToken cancellationToken,
+        [FromForm] List<IFormFile>? silabos = null,
+        [FromForm] List<string>? silabosMaterias = null)
     {
         var lectura = await LeerAsync(archivo, cancellationToken);
         if (lectura.Error is not null)
@@ -76,6 +92,11 @@ public class CertificadosController : ControllerBase
         }
 
         var c = lectura.Certificado!;
+        var silabosLeidos = await LeerSilabosAsync(c, silabos, silabosMaterias, cancellationToken);
+        if (silabosLeidos.Error is not null)
+        {
+            return silabosLeidos.Error;
+        }
         var existente = await _db.Expedientes.AsNoTracking()
             .FirstOrDefaultAsync(e => e.NumeroCertificado == c.NumeroCertificado, cancellationToken);
         if (existente is not null)
@@ -88,28 +109,51 @@ public class CertificadosController : ControllerBase
             });
         }
 
-        DocumentoAlmacenado almacenado;
+        var almacenados = new List<(DocumentoAlmacenado Documento, string Tipo, string? Materia)>();
         try
         {
-            almacenado = await _archivos.GuardarAsync(archivo!, cancellationToken);
+            almacenados.Add((await _archivos.GuardarAsync(archivo!, cancellationToken), TiposDocumentoExpediente.Certificado, null));
+            foreach (var adjunto in silabosLeidos.Adjuntos)
+            {
+                almacenados.Add((await _archivos.GuardarAsync(adjunto.Archivo, cancellationToken),
+                    TiposDocumentoExpediente.SilaboExterno, adjunto.Materia));
+            }
         }
         catch (AlmacenamientoNoDisponibleException ex)
         {
+            foreach (var a in almacenados) _archivos.Eliminar(a.Documento.RutaAlmacenamiento);
             return StatusCode(StatusCodes.Status503ServiceUnavailable, new { mensaje = ex.Message });
         }
 
-        var expediente = ConstruirExpediente(c, lectura.Origen!, lectura.Destino!);
-        expediente.Documentos.Add(new ExpedienteDocumento
+        // El índice único por (expediente, SHA-256) no permite el mismo contenido dos veces.
+        var repetidos = almacenados.GroupBy(a => a.Documento.HashSha256).Where(g => g.Count() > 1).ToList();
+        if (repetidos.Count > 0)
         {
-            NombreArchivo = Recortar(almacenado.NombreOriginal, 255),
-            NombreAlmacenado = almacenado.NombreAlmacenado,
-            RutaAlmacenamiento = almacenado.RutaAlmacenamiento,
-            HashSha256 = almacenado.HashSha256,
-            TamanoBytes = almacenado.TamanoBytes,
-            MimeType = almacenado.MimeType,
-            EstadoRecepcion = EstadosRecepcionDocumento.Validado,
-            FechaCargaUtc = DateTimeOffset.UtcNow
-        });
+            foreach (var a in almacenados) _archivos.Eliminar(a.Documento.RutaAlmacenamiento);
+            return UnprocessableEntity(new
+            {
+                mensaje = "El mismo PDF se adjuntó más de una vez. Cada materia necesita su propio sílabo (y ninguno puede ser el certificado).",
+                detalles = repetidos.Select(g => $"Archivos repetidos: {string.Join(", ", g.Select(a => a.Materia ?? "certificado"))}.").ToList()
+            });
+        }
+
+        var expediente = ConstruirExpediente(c, lectura.Origen!, lectura.Destino!);
+        foreach (var (almacenado, tipo, materia) in almacenados)
+        {
+            expediente.Documentos.Add(new ExpedienteDocumento
+            {
+                NombreArchivo = Recortar(almacenado.NombreOriginal, 255),
+                NombreAlmacenado = almacenado.NombreAlmacenado,
+                RutaAlmacenamiento = almacenado.RutaAlmacenamiento,
+                HashSha256 = almacenado.HashSha256,
+                TamanoBytes = almacenado.TamanoBytes,
+                MimeType = almacenado.MimeType,
+                EstadoRecepcion = EstadosRecepcionDocumento.Validado,
+                FechaCargaUtc = DateTimeOffset.UtcNow,
+                Tipo = tipo,
+                MateriaOrigen = materia is null ? null : Recortar(materia, 200)
+            });
+        }
 
         _db.Expedientes.Add(expediente);
         try
@@ -118,8 +162,8 @@ public class CertificadosController : ControllerBase
         }
         catch (DbUpdateException)
         {
-            // Dos cargas simultáneas del mismo certificado: el índice único decide; se compensa el archivo.
-            _archivos.Eliminar(almacenado.RutaAlmacenamiento);
+            // Dos cargas simultáneas del mismo certificado: el índice único decide; se compensan los archivos.
+            foreach (var a in almacenados) _archivos.Eliminar(a.Documento.RutaAlmacenamiento);
             return Conflict(new { mensaje = $"El certificado {c.NumeroCertificado} ya fue registrado." });
         }
 
@@ -135,7 +179,7 @@ public class CertificadosController : ControllerBase
 
         return Accepted(new SolicitudCertificadoResponse(
             ExpedientesController.AExpedienteResponse(registrado),
-            ADto(c),
+            ADto(c) with { Silabos = silabosLeidos.Resumen },
             registrado.EventoPublicado,
             envio.Mensaje));
     }
@@ -143,6 +187,113 @@ public class CertificadosController : ControllerBase
     private sealed record Lectura(CertificadoSiha? Certificado, CarreraCatalogo? Origen, CarreraCatalogo? Destino, ActionResult? Error)
     {
         public static Lectura Fallo(ActionResult error) => new(null, null, null, error);
+    }
+
+    private sealed record SilaboAdjunto(string Materia, IFormFile Archivo, SilaboExterno Silabo);
+
+    private sealed record LecturaSilabos(
+        IReadOnlyList<SilaboAdjunto> Adjuntos,
+        IReadOnlyList<SilaboLeidoResponse> Resumen,
+        ActionResult? Error)
+    {
+        public static LecturaSilabos Fallo(ActionResult error)
+            => new(Array.Empty<SilaboAdjunto>(), Array.Empty<SilaboLeidoResponse>(), error);
+    }
+
+    /// <summary>
+    /// Lee y valida los sílabos de la otra universidad adjuntados junto al certificado (movilidad
+    /// externa). Cada archivo viene con la materia aprobada a la que corresponde (misma posición en
+    /// <paramref name="materias"/>). Adjuntarlos es opcional: sin sílabo, la materia queda
+    /// "Sin sílabo para comparar" y la deciden los docentes.
+    /// </summary>
+    private async Task<LecturaSilabos> LeerSilabosAsync(
+        CertificadoSiha c, List<IFormFile>? silabos, List<string>? materias, CancellationToken cancellationToken)
+    {
+        silabos ??= new List<IFormFile>();
+        materias ??= new List<string>();
+        if (silabos.Count == 0 && materias.Count == 0)
+        {
+            return new LecturaSilabos(Array.Empty<SilaboAdjunto>(), Array.Empty<SilaboLeidoResponse>(), null);
+        }
+
+        if (c.TipoTramite != TiposTramite.Externo)
+        {
+            return LecturaSilabos.Fallo(UnprocessableEntity(new
+            {
+                mensaje = "Los sílabos de otra universidad solo se adjuntan en una movilidad externa. " +
+                          "En un cambio de carrera el agente ya conoce los sílabos oficiales de la UTA.",
+                detalles = Array.Empty<string>()
+            }));
+        }
+
+        if (silabos.Count != materias.Count || materias.Any(string.IsNullOrWhiteSpace))
+        {
+            return LecturaSilabos.Fallo(BadRequest(new
+            {
+                mensaje = "Cada sílabo debe indicar a qué materia aprobada corresponde (campos 'silabos' y 'silabosMaterias' en el mismo orden)."
+            }));
+        }
+
+        // Solo se aceptan sílabos de materias que el certificado pide homologar.
+        var pedidas = new Dictionary<string, string>();
+        foreach (var m in c.Solicitudes.SelectMany(s => s.MateriasOrigen))
+        {
+            pedidas.TryAdd(LectorCertificadoSiha.Normalizar(m), m);
+        }
+
+        var errores = new List<string>();
+        var vistas = new HashSet<string>();
+        var adjuntos = new List<SilaboAdjunto>();
+        for (var i = 0; i < silabos.Count; i++)
+        {
+            var materia = materias[i].Trim();
+            var clave = LectorCertificadoSiha.Normalizar(materia);
+            if (!pedidas.TryGetValue(clave, out var nombreOficial))
+            {
+                errores.Add($"'{materia}' no es una de las materias aprobadas que el certificado pide homologar.");
+                continue;
+            }
+
+            if (!vistas.Add(clave))
+            {
+                errores.Add($"Se adjuntó más de un sílabo para «{nombreOficial}»; solo se acepta uno por materia.");
+                continue;
+            }
+
+            var validacion = _archivos.ValidarPdf(silabos[i]);
+            if (!validacion.Valido)
+            {
+                errores.Add($"Sílabo de «{nombreOficial}»: {validacion.Error}");
+                continue;
+            }
+
+            using var memoria = new MemoryStream();
+            await silabos[i].CopyToAsync(memoria, cancellationToken);
+            var lectura = LectorSilaboExterno.Leer(memoria.ToArray(), nombreOficial);
+            if (!lectura.EsValido)
+            {
+                errores.AddRange(lectura.Errores);
+                continue;
+            }
+
+            adjuntos.Add(new SilaboAdjunto(nombreOficial, silabos[i], lectura.Silabo!));
+        }
+
+        if (errores.Count > 0)
+        {
+            _logger.LogWarning("Sílabos externos rechazados. Errores={Errores}", string.Join(" | ", errores));
+            return LecturaSilabos.Fallo(UnprocessableEntity(new
+            {
+                mensaje = "No se pudieron leer los sílabos de la otra universidad. Corríjalos o retírelos: sin sílabo, esa materia la deciden los docentes revisores.",
+                detalles = errores
+            }));
+        }
+
+        var resumen = adjuntos
+            .Select(a => new SilaboLeidoResponse(a.Materia, a.Silabo.NombreEnSilabo, a.Silabo.Creditos,
+                a.Silabo.Unidades.Count, a.Silabo.HorasTotales))
+            .ToList();
+        return new LecturaSilabos(adjuntos, resumen, null);
     }
 
     private async Task<Lectura> LeerAsync(

@@ -88,6 +88,59 @@ describe('Registro con un único certificado SIHA', () => {
     expect(api.registrarCertificado).toHaveBeenCalledTimes(1);
   });
 
+  it('en un cambio de carrera no ofrece adjuntar sílabos', async () => {
+    const user = userEvent.setup();
+    api.validarCertificado.mockResolvedValue(CERTIFICADO);
+    render(<MemoryRouter><SolicitudNuevaPage /></MemoryRouter>);
+
+    await user.upload(screen.getByTestId('certificado-pdf'), pdf());
+
+    await screen.findByText('Pérez Gómez Ana Lucía · 1804567890');
+    expect(screen.queryByText(/Sílabos de la otra universidad/)).not.toBeInTheDocument();
+  });
+
+  it('en movilidad externa permite adjuntar el sílabo de cada materia y lo manda al registrar', async () => {
+    const user = userEvent.setup();
+    const externo = {
+      ...CERTIFICADO,
+      tipoTramite: 'EXTERNO',
+      rutaNormativa: 'CAU-P-122',
+      institucionOrigen: 'Escuela Superior Politécnica de Chimborazo',
+    };
+    api.validarCertificado.mockResolvedValueOnce(externo);
+    api.validarCertificado.mockResolvedValueOnce({
+      ...externo,
+      silabos: [{ materia: 'Fundamentos de Programación', nombreEnSilabo: 'Fundamentos de Programación', creditos: 4, unidades: 4, horasTotales: 144 }],
+    });
+    api.registrarCertificado.mockResolvedValue({
+      expediente: { id: 'e1', codigo: 'EXP-1', estado: 'PENDIENTE_CONTENIDOS' },
+      certificado: externo,
+      publicado: true,
+      mensaje: 'Expediente publicado.',
+    });
+    render(<MemoryRouter><SolicitudNuevaPage /></MemoryRouter>);
+
+    await user.upload(screen.getByTestId('certificado-pdf'), pdf());
+
+    expect(await screen.findByText('Sílabos de la otra universidad (opcional)')).toBeInTheDocument();
+    expect(screen.getByText('Sin sílabo: esta materia la deciden los docentes revisores.')).toBeInTheDocument();
+
+    const silabo = new File(['%PDF-1.4'], 'silabo.pdf', { type: 'application/pdf' });
+    await user.upload(screen.getByTestId('silabo-Fundamentos de Programación'), silabo);
+
+    expect(await screen.findByText(/Sílabo leído: 4 unidad\(es\) y 144 hora\(s\)/)).toBeInTheDocument();
+    expect(api.validarCertificado).toHaveBeenLastCalledWith(expect.any(File), [
+      { materia: 'Fundamentos de Programación', archivo: silabo },
+    ]);
+
+    await user.click(screen.getByRole('button', { name: 'Registrar y enviar solicitud' }));
+
+    expect(await screen.findByText('Solicitud registrada y enviada')).toBeInTheDocument();
+    expect(api.registrarCertificado).toHaveBeenCalledWith(expect.any(File), [
+      { materia: 'Fundamentos de Programación', archivo: silabo },
+    ]);
+  });
+
   it('muestra los errores cuando el PDF no cumple la plantilla y no permite registrar', async () => {
     const user = userEvent.setup();
     const { ErrorApi } = await import('../api/httpClient');

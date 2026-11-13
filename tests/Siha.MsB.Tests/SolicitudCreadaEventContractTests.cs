@@ -94,7 +94,7 @@ public class SolicitudCreadaEventContractTests
         var evento = new SolicitudCreadaEvent();
 
         evento.Estado.Should().Be(ExpedienteEstados.PendienteContenidos);
-        evento.Version.Should().Be("1.1");
+        evento.Version.Should().Be("1.2", "v1.2 agrega Tipo y MateriaOrigen a cada documento (sílabos externos)");
         evento.CodigoExpediente.Should().BeEmpty();
         evento.DocumentoIds.Should().BeEmpty();
         evento.AsignaturasOrigen.Should().BeEmpty();
@@ -116,6 +116,6 @@ public class SolicitudCreadaEventContractTests
         recuperado.DocumentoIds.Should().BeEquivalentTo(original.DocumentoIds);
         recuperado.AsignaturasOrigen.Should().BeEquivalentTo(original.AsignaturasOrigen);
         recuperado.RutaNormativa.Should().Be(RutasNormativas.Movilidad);
-        recuperado.Version.Should().Be("1.1");
+        recuperado.Version.Should().Be("1.2");
     }
 }

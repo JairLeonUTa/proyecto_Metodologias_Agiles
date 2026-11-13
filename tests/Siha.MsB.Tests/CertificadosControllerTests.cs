@@ -82,6 +82,19 @@ public class CertificadosControllerTests : IDisposable
         File.ReadAllBytes(Path.Combine(Pruebas.RaizRepositorio(), "documentos-prueba", "certificados", nombre)),
         nombreArchivo: nombre);
 
+    /// <summary>Certificado V06: movilidad externa desde la ESPOCH, TI → Software.</summary>
+    private static IFormFile CertificadoExterno() => Pruebas.Archivo(
+        File.ReadAllBytes(Path.Combine(Pruebas.RaizRepositorio(), "documentos-prueba", "certificados-pruebas",
+            "V06-movilidad-externa-TI-SW.pdf")),
+        nombreArchivo: "V06-movilidad-externa-TI-SW.pdf");
+
+    private static IFormFile Silabo(string nombre) => Pruebas.Archivo(
+        File.ReadAllBytes(Path.Combine(Pruebas.RaizRepositorio(), "documentos-prueba", "silabos-externos", nombre)),
+        nombreArchivo: nombre);
+
+    private static IEnumerable<string> Detalles(object cuerpo)
+        => (IEnumerable<string>)cuerpo.GetType().GetProperty("detalles")!.GetValue(cuerpo)!;
+
     [Fact]
     public async Task Un_solo_pdf_crea_el_expediente_completo_y_lo_envia()
     {
@@ -188,6 +201,79 @@ public class CertificadosControllerTests : IDisposable
         detalles.Should().Contain(d => d.Contains("hnaranjo@uta.edu.ec") && d.Contains("no está registrado"));
         detalles.Should().Contain(d => d.Contains("mvaca@uta.edu.ec") && d.Contains("DOCENTE"));
         _db.Expedientes.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task Movilidad_externa_registra_el_certificado_con_sus_silabos()
+    {
+        var resultado = await Controlador().Registrar(CertificadoExterno(), CancellationToken.None,
+            new List<IFormFile> { Silabo("ESPOCH-fisica.pdf") }, new List<string> { "Física" });
+
+        var respuesta = resultado.Result.Should().BeOfType<AcceptedResult>().Subject.Value
+            .Should().BeOfType<SolicitudCertificadoResponse>().Subject;
+        respuesta.Expediente.TipoTramite.Should().Be(TiposTramite.Externo);
+
+        var silabo = respuesta.Certificado.Silabos.Should().ContainSingle().Subject;
+        silabo.Materia.Should().Be("Física");
+        silabo.Unidades.Should().Be(4);
+        silabo.HorasTotales.Should().Be(128);
+
+        var documentos = _db.ExpedienteDocumentos.ToList();
+        documentos.Should().HaveCount(2, "el certificado y un sílabo");
+        documentos.Should().ContainSingle(d => d.Tipo == TiposDocumentoExpediente.Certificado && d.MateriaOrigen == null);
+        documentos.Should().ContainSingle(d => d.Tipo == TiposDocumentoExpediente.SilaboExterno && d.MateriaOrigen == "Física");
+
+        var evento = _publicados.Should().ContainSingle().Subject;
+        evento.Documentos.Should().HaveCount(2);
+        evento.Documentos.Should().ContainSingle(d => d.Tipo == TiposDocumentoExpediente.SilaboExterno && d.MateriaOrigen == "Física");
+    }
+
+    [Fact]
+    public async Task Silabos_en_cambio_de_carrera_se_rechazan()
+    {
+        var resultado = await Controlador().Registrar(Certificado("SIHA-TI-SW-cambio-de-carrera.pdf"), CancellationToken.None,
+            new List<IFormFile> { Silabo("ESPOCH-fisica.pdf") }, new List<string> { "Física" });
+
+        var cuerpo = resultado.Result.Should().BeOfType<UnprocessableEntityObjectResult>().Subject.Value!;
+        cuerpo.GetType().GetProperty("mensaje")!.GetValue(cuerpo)!.ToString()
+            .Should().Contain("movilidad externa");
+        _db.Expedientes.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task Silabo_de_una_materia_que_no_se_pide_se_rechaza()
+    {
+        var resultado = await Controlador().Registrar(CertificadoExterno(), CancellationToken.None,
+            new List<IFormFile> { Silabo("ESPOCH-fisica.pdf") }, new List<string> { "Química General" });
+
+        var cuerpo = resultado.Result.Should().BeOfType<UnprocessableEntityObjectResult>().Subject.Value!;
+        Detalles(cuerpo).Should().ContainSingle(d => d.Contains("Química General") && d.Contains("no es una de las materias"));
+        _db.Expedientes.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task Silabo_sin_horas_se_rechaza_con_mensaje_claro()
+    {
+        var resultado = await Controlador().Registrar(CertificadoExterno(), CancellationToken.None,
+            new List<IFormFile> { Silabo("silabo-sin-horas.pdf") }, new List<string> { "Física" });
+
+        var cuerpo = resultado.Result.Should().BeOfType<UnprocessableEntityObjectResult>().Subject.Value!;
+        Detalles(cuerpo).Should().ContainSingle(d => d.Contains("Física") && d.Contains("no indica las horas"));
+        _db.Expedientes.Should().BeEmpty();
+        Directory.GetFiles(_directorio, "*", SearchOption.AllDirectories).Should().BeEmpty("no se guarda nada si un sílabo está mal");
+    }
+
+    [Fact]
+    public async Task Validar_tambien_lee_los_silabos_adjuntos()
+    {
+        var resultado = await Controlador().Validar(CertificadoExterno(), CancellationToken.None,
+            new List<IFormFile> { Silabo("ESPOCH-algebra-lineal.pdf") }, new List<string> { "Álgebra Lineal" });
+
+        var leido = resultado.Result.Should().BeOfType<OkObjectResult>().Subject.Value
+            .Should().BeOfType<CertificadoLeidoResponse>().Subject;
+        leido.Silabos.Should().ContainSingle().Which.Materia.Should().Be("Álgebra Lineal");
+        _db.Expedientes.Should().BeEmpty();
+        Directory.GetFiles(_directorio, "*", SearchOption.AllDirectories).Should().BeEmpty();
     }
 
     [Fact]

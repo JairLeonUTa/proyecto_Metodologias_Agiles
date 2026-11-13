@@ -63,7 +63,7 @@ public class AnalisisAutomaticoServiceTests
         pedidas.Select((p, i) => new SolicitudHomologacion(i + 1, p.Origen, p.Destino)).ToList(),
         new[] { new RevisorCertificado("Ing. Naranjo", "hnaranjo@uta.edu.ec"), new RevisorCertificado("Ing. Vaca", "mvaca@uta.edu.ec") });
 
-    private static async Task<Guid> Sembrar(SihaDbContextC db, CertificadoSiha c)
+    private static async Task<Guid> Sembrar(SihaDbContextC db, CertificadoSiha c, IReadOnlyList<SilaboExterno>? silabos = null)
     {
         var expediente = Guid.NewGuid();
         db.AnalisisExpedientes.Add(new AnalisisExpediente
@@ -72,6 +72,7 @@ public class AnalisisAutomaticoServiceTests
             InstitucionOrigen = c.InstitucionOrigen, CarreraOrigenCodigo = c.TipoTramite == "EXTERNO" ? "EXTERNA" : "TI", CarreraDestinoCodigo = "SW",
             CarreraOrigenNombre = c.CarreraOrigen, CarreraDestinoNombre = "Software",
             CertificadoJson = JsonSerializer.Serialize(c),
+            SilabosExternosJson = silabos is null ? null : JsonSerializer.Serialize(silabos),
             Revisor1Nombre = "Ing. Naranjo", Revisor1Correo = "hnaranjo@uta.edu.ec",
             Revisor2Nombre = "Ing. Vaca", Revisor2Correo = "mvaca@uta.edu.ec"
         });
@@ -129,9 +130,10 @@ public class AnalisisAutomaticoServiceTests
     private static SihaDbContextC CrearDb()
         => new(new DbContextOptionsBuilder<SihaDbContextC>().UseInMemoryDatabase($"siha-agente-{Guid.NewGuid():N}").Options);
 
-    private static async Task<AnalisisAutomaticoResponse> Analizar(SihaDbContextC db, CertificadoSiha c, IReadOnlyList<DestinoAnalisisRequest>? sw = null)
+    private static async Task<AnalisisAutomaticoResponse> Analizar(
+        SihaDbContextC db, CertificadoSiha c, IReadOnlyList<DestinoAnalisisRequest>? sw = null, IReadOnlyList<SilaboExterno>? silabos = null)
     {
-        var expediente = await Sembrar(db, c);
+        var expediente = await Sembrar(db, c, silabos);
         await Agente(db, sw).AnalizarYGuardarAsync(expediente);
         var contexto = await db.AnalisisExpedientes.SingleAsync();
         contexto.Mensaje.Should().BeNull();
@@ -263,6 +265,67 @@ public class AnalisisAutomaticoServiceTests
         string.Join(" ", r.Requisitos.Select(q => q.Explicacion)).Should().NotContain("contenidos 0 %");
     }
 
+    private static CertificadoSiha CertificadoExterno(params (string[] Origen, string Destino)[] pedidas)
+        => Certificado(pedidas) with
+        {
+            TipoTramite = "EXTERNO", RutaNormativa = "CAU-P-122",
+            InstitucionOrigen = "Escuela Politécnica Nacional", CarreraOrigen = "Ingeniería en Computación"
+        };
+
+    private static SilaboExterno Silabo(string materia, params (string Tema, int Horas)[] unidades)
+        => new(materia, materia, 3, unidades.Sum(u => u.Horas),
+            unidades.Select((u, i) => new UnidadSilabo(i + 1, u.Tema, u.Horas, $"Temas de {u.Tema}")).ToList());
+
+    [Fact]
+    public async Task Movilidad_externa_con_silabo_adjunto_se_compara_con_porcentajes()
+    {
+        await using var db = CrearDb();
+        var r = await Analizar(db, CertificadoExterno((new[] { "Física" }, "Física")),
+            silabos: new[] { Silabo("Física", ("Estatica", 36), ("Dinamica", 36), ("Energia", 36), ("Electricidad", 36)) });
+
+        var e = r.Evaluaciones.Single();
+        e.SinSilabo.Should().BeFalse("el sílabo adjuntado reemplaza a la malla de origen");
+        e.Contenidos.Should().Be(100m);
+        e.Profundidad.Should().Be(100m);
+        e.CargaHoraria.Should().Be(100m);
+        e.Estimacion.Should().Be(AnalisisAutomaticoService.Cumple);
+        e.MateriasOrigen.Single().EncontradaEnMalla.Should().BeTrue();
+        e.MateriasOrigen.Single().Horas.Should().Be(144);
+        e.Explicacion.Should().Contain(x => x.Contains("sílabo de Escuela Politécnica Nacional adjuntado"));
+        r.Resumen.Should().Contain("1 cumple(n)");
+    }
+
+    [Fact]
+    public async Task Movilidad_externa_con_silabo_incompleto_queda_a_criterio_del_docente()
+    {
+        await using var db = CrearDb();
+        var r = await Analizar(db, CertificadoExterno((new[] { "Física" }, "Física")),
+            silabos: new[] { Silabo("Física", ("Estatica", 36), ("Dinamica", 36)) });
+
+        var e = r.Evaluaciones.Single();
+        e.SinSilabo.Should().BeFalse();
+        e.Contenidos.Should().Be(50m, "el sílabo externo solo cubre 2 de las 4 unidades de destino");
+        e.Estimacion.Should().Be(AnalisisAutomaticoService.CriterioDocente);
+        e.Explicacion.Should().Contain(x => x.StartsWith("✘ Unidad 3"));
+    }
+
+    [Fact]
+    public async Task Movilidad_externa_con_silabo_solo_para_una_materia_mantiene_las_otras_sin_silabo()
+    {
+        await using var db = CrearDb();
+        var r = await Analizar(db, CertificadoExterno(
+                (new[] { "Física" }, "Física"),
+                (new[] { "Fundamentos de Programación" }, "Algoritmos y Lógica de Programación")),
+            silabos: new[] { Silabo("Física", ("Estatica", 36), ("Dinamica", 36), ("Energia", 36), ("Electricidad", 36)) });
+
+        r.Evaluaciones.Single(e => e.MateriaDestino == "Física").Estimacion.Should().Be(AnalisisAutomaticoService.Cumple);
+        var sinSilabo = r.Evaluaciones.Single(e => e.MateriaDestino == "Algoritmos y Lógica de Programación");
+        sinSilabo.SinSilabo.Should().BeTrue();
+        sinSilabo.Explicacion.Should().Contain(x => x.Contains("no se adjuntó su sílabo"));
+        r.Requisitos.Single(q => q.Regla.StartsWith("Equivalencia mínima")).Cumple.Should().BeTrue(
+            "la materia sin sílabo no cuenta como que falló el mínimo");
+    }
+
     [Fact]
     public async Task Sin_malla_de_destino_queda_en_error_con_el_motivo()
     {
@@ -383,8 +446,58 @@ public class AnalisisAutomaticoServiceTests
         contexto.CarreraOrigenCodigo.Should().Be("TI");
         contexto.CarreraDestinoNombre.Should().Be("Software");
         contexto.Revisor1Correo.Should().Be("hnaranjo@uta.edu.ec");
+        contexto.SilabosExternosJson.Should().BeNull();
         var certificado = JsonSerializer.Deserialize<CertificadoSiha>(contexto.CertificadoJson)!;
         certificado.Solicitudes.Should().HaveCount(5);
         certificado.Materias.Should().Contain(m => m.Nombre == "Medidas Eléctricas" && !m.Aprobada);
+    }
+
+    [Fact]
+    public async Task El_silabo_externo_adjunto_se_guarda_para_el_agente_y_no_pasa_por_el_extractor()
+    {
+        using var temp = new Soporte.DirectorioTemporal();
+        var dir = new DirectoryInfo(AppContext.BaseDirectory);
+        while (!Directory.Exists(Path.Combine(dir!.FullName, "documentos-prueba"))) dir = dir.Parent;
+        var cert = File.ReadAllBytes(Path.Combine(dir.FullName, "documentos-prueba", "certificados-pruebas", "V06-movilidad-externa-TI-SW.pdf"));
+        var silabo = File.ReadAllBytes(Path.Combine(dir.FullName, "documentos-prueba", "silabos-externos", "ESPOCH-fisica.pdf"));
+        temp.CrearArchivo("cert.pdf", cert);
+        temp.CrearArchivo("silabo.pdf", silabo);
+        await using var db = CrearDb();
+        var opciones = Options.Create(new AlmacenOptions { RutaAlmacenamiento = temp.Ruta });
+        var servicio = new ProcesarSolicitudCreadaService(db, new AlmacenDocumentos(opciones),
+            new ExtractorPdfService(opciones, NullLogger<ExtractorPdfService>.Instance),
+            NullLogger<ProcesarSolicitudCreadaService>.Instance, new LectorCertificadosAlmacen(opciones));
+        var documentos = new[]
+        {
+            new DocumentoReferencia
+            {
+                DocumentoId = Guid.NewGuid(), RutaAlmacenamiento = "cert.pdf",
+                HashSha256 = Convert.ToHexString(SHA256.HashData(cert)).ToLowerInvariant(), TamanoBytes = cert.Length,
+                Tipo = Siha.Contracts.TiposDocumentoExpediente.Certificado
+            },
+            new DocumentoReferencia
+            {
+                DocumentoId = Guid.NewGuid(), RutaAlmacenamiento = "silabo.pdf",
+                HashSha256 = Convert.ToHexString(SHA256.HashData(silabo)).ToLowerInvariant(), TamanoBytes = silabo.Length,
+                Tipo = Siha.Contracts.TiposDocumentoExpediente.SilaboExterno, MateriaOrigen = "Física"
+            }
+        };
+        var evento = new SolicitudCreadaEvent
+        {
+            ExpedienteId = Guid.NewGuid(), CorrelationId = Guid.NewGuid(), CodigoExpediente = "EXP-2",
+            TipoTramite = "EXTERNO", RutaNormativa = "CAU-P-122", CarreraOrigenCodigo = "EXTERNA", CarreraDestinoCodigo = "SW",
+            DocumentoIds = documentos.Select(d => d.DocumentoId).ToArray(), Documentos = documentos
+        };
+
+        await servicio.ProcesarAsync(evento, Guid.NewGuid());
+
+        (await db.Extracciones.CountAsync()).Should().Be(0, "el sílabo externo no debe generar una extracción del flujo anterior");
+        var contexto = await db.AnalisisExpedientes.SingleAsync();
+        contexto.SilabosExternosJson.Should().NotBeNull();
+        var silabos = JsonSerializer.Deserialize<List<SilaboExterno>>(contexto.SilabosExternosJson!)!;
+        var fisica = silabos.Should().ContainSingle().Subject;
+        fisica.Materia.Should().Be("Física");
+        fisica.Unidades.Should().HaveCount(4);
+        fisica.HorasTotales.Should().Be(128);
     }
 }

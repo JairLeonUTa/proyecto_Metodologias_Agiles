@@ -14,7 +14,17 @@ public record CertificadoLeidoResponse(
     string CarreraDestino,
     IReadOnlyCollection<MateriaCursadaResponse> Materias,
     IReadOnlyCollection<SolicitudHomologacionResponse> Solicitudes,
-    IReadOnlyCollection<RevisorResponse> Revisores);
+    IReadOnlyCollection<RevisorResponse> Revisores,
+    /// <summary>Sílabos de la otra universidad adjuntados y leídos (solo movilidad externa).</summary>
+    IReadOnlyCollection<SilaboLeidoResponse>? Silabos = null);
+
+/// <summary>Resumen de un sílabo externo leído: cuántas unidades y horas se encontraron.</summary>
+public record SilaboLeidoResponse(
+    string Materia,
+    string? NombreEnSilabo,
+    int? Creditos,
+    int Unidades,
+    int HorasTotales);
 
 /// <summary>Materia del historial académico (aprobada o reprobada).</summary>
 public record MateriaCursadaResponse(string Nombre, int Nivel, string PeriodoAcademico, decimal Nota, bool Aprobada);

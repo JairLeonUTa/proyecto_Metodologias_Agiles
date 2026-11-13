@@ -9,7 +9,7 @@ import { useAuth } from '../hooks/useAuth';
 import { useTituloPagina } from '../hooks/useTituloPagina';
 import { RUTAS } from '../layouts/navegacion';
 import { ETIQUETA_TIPO_TRAMITE } from '../types/comunes';
-import type { CertificadoLeido, MateriaCursada, SolicitudCertificado } from '../types/expedientes';
+import type { CertificadoLeido, MateriaCursada, SilaboAdjunto, SolicitudCertificado } from '../types/expedientes';
 import { formatearBytes } from '../utils/formato';
 
 const TAMANO_MAXIMO = 10 * 1024 * 1024;
@@ -72,6 +72,92 @@ function ResumenCertificado({ certificado }: { certificado: CertificadoLeido }):
   );
 }
 
+/** Materias aprobadas que el certificado pide homologar, sin repetir (para adjuntar su sílabo). */
+function materiasParaSilabo(certificado: CertificadoLeido): string[] {
+  const vistas = new Set<string>();
+  const materias: string[] = [];
+  for (const solicitud of certificado.solicitudes) {
+    for (const materia of solicitud.materiasOrigen) {
+      const clave = materia.trim().toLowerCase();
+      if (!vistas.has(clave)) {
+        vistas.add(clave);
+        materias.push(materia);
+      }
+    }
+  }
+  return materias;
+}
+
+/** Sílabos de la otra universidad, uno por materia aprobada (solo movilidad externa, opcionales). */
+function SilabosExternos({
+  certificado,
+  silabos,
+  deshabilitado,
+  onCambiar,
+}: {
+  certificado: CertificadoLeido;
+  silabos: SilaboAdjunto[];
+  deshabilitado: boolean;
+  onCambiar: (materia: string, archivo: File | null) => void;
+}): JSX.Element {
+  const leidoDe = (materia: string) =>
+    certificado.silabos?.find((s) => s.materia.trim().toLowerCase() === materia.trim().toLowerCase());
+  const adjuntoDe = (materia: string) =>
+    silabos.find((s) => s.materia.trim().toLowerCase() === materia.trim().toLowerCase());
+
+  return (
+    <Tarjeta
+      titulo="Sílabos de la otra universidad (opcional)"
+      descripcion={`El certificado es de una movilidad externa desde ${certificado.institucionOrigen}. Adjunte el sílabo o plan analítico (PDF con texto) de cada materia aprobada para que el agente compare sus contenidos con los de la UTA. Si una materia va sin sílabo, la deciden los docentes revisores con la documentación del estudiante.`}
+    >
+      <ul className="space-y-3">
+        {materiasParaSilabo(certificado).map((materia) => {
+          const adjunto = adjuntoDe(materia);
+          const leido = leidoDe(materia);
+          return (
+            <li key={materia} className="rounded-md border border-slate-200 px-3 py-3">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <div>
+                  <p className="text-sm font-semibold text-ink">{materia}</p>
+                  <p className="mt-0.5 text-xs text-faint">
+                    {adjunto
+                      ? leido
+                        ? `Sílabo leído: ${leido.unidades} unidad(es) y ${leido.horasTotales} hora(s)${leido.nombreEnSilabo ? ` de «${leido.nombreEnSilabo}»` : ''}.`
+                        : adjunto.archivo.name
+                      : 'Sin sílabo: esta materia la deciden los docentes revisores.'}
+                  </p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <label className="cursor-pointer rounded-md border border-slate-300 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50">
+                    {adjunto ? 'Cambiar sílabo' : 'Adjuntar sílabo'}
+                    <input
+                      type="file"
+                      accept="application/pdf,.pdf"
+                      className="sr-only"
+                      data-testid={`silabo-${materia}`}
+                      disabled={deshabilitado}
+                      onChange={(e: ChangeEvent<HTMLInputElement>) => {
+                        const archivo = e.target.files?.[0] ?? null;
+                        e.target.value = '';
+                        onCambiar(materia, archivo);
+                      }}
+                    />
+                  </label>
+                  {adjunto ? (
+                    <Boton variante="secundario" disabled={deshabilitado} onClick={() => onCambiar(materia, null)}>
+                      Quitar
+                    </Boton>
+                  ) : null}
+                </div>
+              </div>
+            </li>
+          );
+        })}
+      </ul>
+    </Tarjeta>
+  );
+}
+
 /**
  * Registro de la solicitud con UN SOLO PDF: el certificado de homologación SIHA (SIHA-CH-01).
  * El certificado llega preaprobado por Secretaría (estudiante, carreras, historial con aprobadas y
@@ -89,12 +175,14 @@ export function SolicitudNuevaPage(): JSX.Element {
   const [registrando, setRegistrando] = useState(false);
   const [resultado, setResultado] = useState<SolicitudCertificado | null>(null);
   const [arrastrando, setArrastrando] = useState(false);
+  const [silabos, setSilabos] = useState<SilaboAdjunto[]>([]);
 
   const reiniciar = (): void => {
     setArchivo(null);
     setCertificado(null);
     setError(null);
     setResultado(null);
+    setSilabos([]);
     if (entrada.current) entrada.current.value = '';
   };
 
@@ -114,10 +202,31 @@ export function SolicitudNuevaPage(): JSX.Element {
     }
 
     setArchivo(seleccionado);
+    setSilabos([]);
     setLeyendo(true);
     try {
       setCertificado(await expedientesApi.validarCertificado(seleccionado));
     } catch (fallo) {
+      setError({ texto: mensajeDeError(fallo), detalles: detallesDeError(fallo) });
+    } finally {
+      setLeyendo(false);
+    }
+  };
+
+  /** Agrega, cambia o quita el sílabo de una materia y vuelve a validar para mostrar lo leído. */
+  const cambiarSilabo = async (materia: string, archivoSilabo: File | null): Promise<void> => {
+    if (!archivo) return;
+    const clave = materia.trim().toLowerCase();
+    const nuevos = silabos.filter((s) => s.materia.trim().toLowerCase() !== clave);
+    if (archivoSilabo) nuevos.push({ materia, archivo: archivoSilabo });
+    setSilabos(nuevos);
+    setError(null);
+    setLeyendo(true);
+    try {
+      setCertificado(await expedientesApi.validarCertificado(archivo, nuevos));
+    } catch (fallo) {
+      // El sílabo no se pudo leer: se retira para no bloquear el registro y se muestra el motivo.
+      setSilabos(silabos);
       setError({ texto: mensajeDeError(fallo), detalles: detallesDeError(fallo) });
     } finally {
       setLeyendo(false);
@@ -129,7 +238,7 @@ export function SolicitudNuevaPage(): JSX.Element {
     setRegistrando(true);
     setError(null);
     try {
-      setResultado(await expedientesApi.registrarCertificado(archivo));
+      setResultado(await expedientesApi.registrarCertificado(archivo, silabos));
     } catch (fallo) {
       setError({ texto: mensajeDeError(fallo), detalles: detallesDeError(fallo) });
     } finally {
@@ -245,6 +354,15 @@ export function SolicitudNuevaPage(): JSX.Element {
             ) : null}
           </div>
         </Tarjeta>
+      ) : null}
+
+      {certificado && !resultado && certificado.tipoTramite === 'EXTERNO' ? (
+        <SilabosExternos
+          certificado={certificado}
+          silabos={silabos}
+          deshabilitado={leyendo || registrando}
+          onCambiar={(materia, archivoSilabo) => void cambiarSilabo(materia, archivoSilabo)}
+        />
       ) : null}
 
       {certificado && !resultado ? (

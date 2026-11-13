@@ -6,12 +6,17 @@ import type {
   DocumentosExpediente,
   Expediente,
   ExpedienteAceptado,
+  SilaboAdjunto,
   SolicitudCertificado,
 } from '../types/expedientes';
 
-function formularioPdf(archivo: File): FormData {
+function formularioPdf(archivo: File, silabos: SilaboAdjunto[] = []): FormData {
   const formulario = new FormData();
   formulario.append('archivo', archivo, archivo.name);
+  for (const silabo of silabos) {
+    formulario.append('silabos', silabo.archivo, silabo.archivo.name);
+    formulario.append('silabosMaterias', silabo.materia);
+  }
   return formulario;
 }
 
@@ -24,13 +29,22 @@ function formularioPdf(archivo: File): FormData {
  *  3. `enviar` pide al servidor verificar los PDF en disco y publicar el evento si se cumplen los requisitos.
  */
 export const expedientesApi = {
-  /** Lee el certificado SIHA sin registrar nada. 422 con `detalles` si no cumple la plantilla. */
-  validarCertificado: (archivo: File) =>
-    peticion<CertificadoLeido>('/api/expedientes/certificado/validar', { metodo: 'POST', cuerpo: formularioPdf(archivo) }),
+  /**
+   * Lee el certificado SIHA sin registrar nada. 422 con `detalles` si no cumple la plantilla.
+   * En movilidad externa también lee los sílabos de la otra universidad que se adjunten.
+   */
+  validarCertificado: (archivo: File, silabos: SilaboAdjunto[] = []) =>
+    peticion<CertificadoLeido>('/api/expedientes/certificado/validar', {
+      metodo: 'POST',
+      cuerpo: formularioPdf(archivo, silabos),
+    }),
 
-  /** Registra y envía la solicitud a partir del certificado SIHA (único documento aceptado). */
-  registrarCertificado: (archivo: File) =>
-    peticion<SolicitudCertificado>('/api/expedientes/certificado', { metodo: 'POST', cuerpo: formularioPdf(archivo) }),
+  /** Registra y envía la solicitud a partir del certificado SIHA (más los sílabos externos adjuntos). */
+  registrarCertificado: (archivo: File, silabos: SilaboAdjunto[] = []) =>
+    peticion<SolicitudCertificado>('/api/expedientes/certificado', {
+      metodo: 'POST',
+      cuerpo: formularioPdf(archivo, silabos),
+    }),
 
   /** Registra el borrador del expediente. El servidor responde 201 Created. */
   registrar: (expediente: CrearExpediente) =>

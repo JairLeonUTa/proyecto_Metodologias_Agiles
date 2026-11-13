@@ -227,6 +227,10 @@ namespace Siha.MsB.Api.Migrations
                         .HasMaxLength(64)
                         .HasColumnType("nvarchar(64)");
 
+                    b.Property<string>("MateriaOrigen")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
                     b.Property<string>("MimeType")
                         .IsRequired()
                         .HasMaxLength(100)
@@ -253,6 +257,10 @@ namespace Siha.MsB.Api.Migrations
 
                     b.Property<long>("TamanoBytes")
                         .HasColumnType("bigint");
+
+                    b.Property<string>("Tipo")
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
 
                     b.HasKey("Id");
 

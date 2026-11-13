@@ -135,6 +135,23 @@ export interface CertificadoLeido {
   solicitudes: SolicitudHomologacion[];
   /** Docentes revisores (usuarios DOCENTE verificados en MS A). */
   revisores: Array<{ nombre: string; correo: string }>;
+  /** Sílabos de la otra universidad adjuntados y leídos (solo movilidad externa). */
+  silabos?: SilaboLeido[] | null;
+}
+
+/** Sílabo externo que el operador adjunta para una materia aprobada (movilidad externa). */
+export interface SilaboAdjunto {
+  materia: string;
+  archivo: File;
+}
+
+/** Resumen de un sílabo externo leído por el servidor: unidades y horas encontradas. */
+export interface SilaboLeido {
+  materia: string;
+  nombreEnSilabo?: string | null;
+  creditos?: number | null;
+  unidades: number;
+  horasTotales: number;
 }
 
 /** Respuesta 202 de `POST /api/expedientes/certificado`. */

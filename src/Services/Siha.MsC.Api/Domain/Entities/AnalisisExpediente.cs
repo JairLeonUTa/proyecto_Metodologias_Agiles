@@ -24,6 +24,12 @@ public class AnalisisExpediente
     /// <summary>Certificado SIHA leído (historial, solicitudes y revisores) serializado.</summary>
     public string CertificadoJson { get; set; } = "{}";
 
+    /// <summary>
+    /// Sílabos de la otra universidad adjuntados en la movilidad externa, leídos y serializados
+    /// (lista de <c>Siha.Certificados.SilaboExterno</c>). Nulo cuando no se adjuntó ninguno.
+    /// </summary>
+    public string? SilabosExternosJson { get; set; }
+
     public string Revisor1Nombre { get; set; } = string.Empty;
     public string Revisor1Correo { get; set; } = string.Empty;
     public string Revisor2Nombre { get; set; } = string.Empty;

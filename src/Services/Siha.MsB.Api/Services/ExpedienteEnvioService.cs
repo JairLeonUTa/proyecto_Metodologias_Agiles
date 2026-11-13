@@ -190,7 +190,9 @@ public class ExpedienteEnvioService
                 DocumentoId = d.Id,
                 RutaAlmacenamiento = d.RutaAlmacenamiento,
                 HashSha256 = d.HashSha256,
-                TamanoBytes = d.TamanoBytes
+                TamanoBytes = d.TamanoBytes,
+                Tipo = d.Tipo,
+                MateriaOrigen = d.MateriaOrigen
             })
             .ToList(),
         AsignaturasOrigen = expediente.Asignaturas.Select(a => a.AsignaturaOrigenCodigo).ToList(),

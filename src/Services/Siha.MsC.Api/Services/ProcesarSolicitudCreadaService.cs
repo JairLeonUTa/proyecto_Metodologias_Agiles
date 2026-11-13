@@ -89,7 +89,13 @@ public class ProcesarSolicitudCreadaService
                 $"No se pudo verificar los documentos del expediente {evento.ExpedienteId}: {string.Join(" | ", problemas)}");
         }
 
-        foreach (var documento in evento.Documentos)
+        // Sílabos de la otra universidad (movilidad externa): no pasan por el extractor; se leen y se
+        // guardan junto al certificado para que el agente los compare contra los sílabos de la UTA.
+        var silabosDocumentos = evento.Documentos
+            .Where(d => d.Tipo == Siha.Contracts.TiposDocumentoExpediente.SilaboExterno)
+            .ToList();
+
+        foreach (var documento in evento.Documentos.Except(silabosDocumentos))
         {
             if (await _db.Extracciones.AnyAsync(x => x.DocumentoId == documento.DocumentoId, cancellationToken))
                 continue;
@@ -106,6 +112,7 @@ public class ProcesarSolicitudCreadaService
                 {
                     var r1 = certificado.Revisores.ElementAtOrDefault(0);
                     var r2 = certificado.Revisores.ElementAtOrDefault(1);
+                    var silabos = await LeerSilabosExternosAsync(silabosDocumentos, evento.ExpedienteId, cancellationToken);
                     _db.AnalisisExpedientes.Add(new AnalisisExpediente
                     {
                         ExpedienteId = evento.ExpedienteId,
@@ -123,7 +130,8 @@ public class ProcesarSolicitudCreadaService
                         Revisor1Nombre = r1?.Nombre ?? string.Empty,
                         Revisor1Correo = r1?.Correo ?? string.Empty,
                         Revisor2Nombre = r2?.Nombre ?? string.Empty,
-                        Revisor2Correo = r2?.Correo ?? string.Empty
+                        Revisor2Correo = r2?.Correo ?? string.Empty,
+                        SilabosExternosJson = silabos
                     });
                 }
 
@@ -200,6 +208,38 @@ public class ProcesarSolicitudCreadaService
             evento.ExpedienteId, messageId, evento.Documentos.Count);
 
         return ResultadoProcesamiento.Procesado;
+    }
+
+    /// <summary>
+    /// Lee cada sílabo externo del volumen compartido y los serializa para el agente. MS B ya los
+    /// validó al registrar; si aquí alguno no se puede leer, solo se registra la advertencia y esa
+    /// materia quedará "Sin sílabo para comparar".
+    /// </summary>
+    private async Task<string?> LeerSilabosExternosAsync(
+        IReadOnlyList<Siha.Contracts.Events.DocumentoReferencia> documentos,
+        Guid expedienteId,
+        CancellationToken cancellationToken)
+    {
+        if (documentos.Count == 0 || _certificados is null) return null;
+
+        var silabos = new List<Siha.Certificados.SilaboExterno>();
+        foreach (var documento in documentos)
+        {
+            var materia = documento.MateriaOrigen ?? string.Empty;
+            var silabo = await _certificados.LeerSilaboAsync(documento.RutaAlmacenamiento, materia, cancellationToken);
+            if (silabo is not null)
+            {
+                silabos.Add(silabo);
+            }
+            else
+            {
+                _logger.LogWarning(
+                    "No se pudo leer el sílabo externo de «{Materia}» ({DocumentoId}); la materia quedará sin sílabo para comparar. ExpedienteId={ExpedienteId}",
+                    materia, documento.DocumentoId, expedienteId);
+            }
+        }
+
+        return silabos.Count > 0 ? System.Text.Json.JsonSerializer.Serialize(silabos) : null;
     }
 
     private static bool EsDuplicado(DbUpdateException ex)

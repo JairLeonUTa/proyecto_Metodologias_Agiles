@@ -115,6 +115,9 @@ namespace Siha.MsC.Api.Migrations
                         .HasMaxLength(20)
                         .HasColumnType("nvarchar(20)");
 
+                    b.Property<string>("SilabosExternosJson")
+                        .HasColumnType("NVARCHAR(MAX)");
+
                     b.Property<string>("TipoTramite")
                         .IsRequired()
                         .HasMaxLength(20)

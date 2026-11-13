@@ -151,13 +151,17 @@ public sealed class AnalisisAutomaticoService : IAnalisisAutomaticoService
             throw new AnalisisAutomaticoException(StatusCodes.Status404NotFound,
                 $"La carrera de destino {contexto.CarreraDestinoNombre} no tiene malla con sílabos en el catálogo.");
 
-        traza.Add($"Malla destino {contexto.CarreraDestinoCodigo}: {mallaDestino.Count} asignaturas; origen {contexto.CarreraOrigenCodigo}: {mallaOrigen.Count}");
+        // Movilidad externa: los sílabos de la otra universidad adjuntados al registrar hacen de
+        // "malla de origen" de esas materias.
+        var silabosExternos = SilabosExternos(contexto);
+
+        traza.Add($"Malla destino {contexto.CarreraDestinoCodigo}: {mallaDestino.Count} asignaturas; origen {contexto.CarreraOrigenCodigo}: {mallaOrigen.Count}; sílabos adjuntados: {silabosExternos.Count}");
 
         // 3) Cada materia pedida.
         var evaluaciones = new List<EvaluacionMateriaResponse>();
         foreach (var solicitud in certificado.Solicitudes)
         {
-            evaluaciones.Add(await EvaluarAsync(solicitud, certificado, contexto, mallaOrigen, mallaDestino, theta, tau, cancellationToken));
+            evaluaciones.Add(await EvaluarAsync(solicitud, certificado, contexto, mallaOrigen, mallaDestino, silabosExternos, theta, tau, cancellationToken));
         }
 
         var requisitos = Requisitos(certificado, mallaOrigen, evaluaciones, theta, contexto);
@@ -179,6 +183,7 @@ public sealed class AnalisisAutomaticoService : IAnalisisAutomaticoService
         AnalisisExpediente contexto,
         IReadOnlyList<DestinoAnalisisRequest> mallaOrigen,
         IReadOnlyList<DestinoAnalisisRequest> mallaDestino,
+        IReadOnlyDictionary<string, DestinoAnalisisRequest> silabosExternos,
         double theta,
         double tau,
         CancellationToken cancellationToken)
@@ -187,7 +192,15 @@ public sealed class AnalisisAutomaticoService : IAnalisisAutomaticoService
         var origenes = solicitud.MateriasOrigen.Select(nombre =>
         {
             var cursada = certificado.Materias.First(m => Clave(m.Nombre) == Clave(nombre));
-            return (Cursada: cursada, Malla: Buscar(mallaOrigen, nombre));
+            var malla = Buscar(mallaOrigen, nombre);
+            var deSilabo = false;
+            if (malla is null && silabosExternos.TryGetValue(Clave(nombre), out var externo))
+            {
+                malla = externo;
+                deSilabo = true;
+            }
+
+            return (Cursada: cursada, Malla: malla, DeSilabo: deSilabo);
         }).ToList();
 
         var origenDto = origenes.Select(o => new MateriaOrigenEvaluadaResponse(
@@ -211,7 +224,7 @@ public sealed class AnalisisAutomaticoService : IAnalisisAutomaticoService
             foreach (var o in origenes.Where(o => o.Malla is null))
                 explicacion.Add(contexto.TipoTramite == TiposTramite.Interno
                     ? $"La materia «{o.Cursada.Nombre}» no aparece en la malla de {contexto.CarreraOrigenNombre}, así que el agente no tiene su sílabo."
-                    : $"La materia «{o.Cursada.Nombre}» es de otra institución ({contexto.InstitucionOrigen}); el agente no tiene su sílabo.");
+                    : $"La materia «{o.Cursada.Nombre}» es de otra institución ({contexto.InstitucionOrigen}) y no se adjuntó su sílabo al registrar, así que el agente no puede compararla.");
             return new EvaluacionMateriaResponse(solicitud.Numero, solicitud.MateriaDestino, destino?.Codigo, destino?.Semestre, destino?.Creditos,
                 destino?.Unidades.Sum(u => u.Horas) ?? 0, origenDto, 0, 0, 0, CriterioDocente, Array.Empty<CoberturaUnidadPropuestaResponse>(),
                 explicacion, "Sin sílabo para comparar: queda a criterio de los docentes revisores, con el plan analítico que presente el estudiante.",
@@ -229,6 +242,9 @@ public sealed class AnalisisAutomaticoService : IAnalisisAutomaticoService
         explicacion.Add($"«{solicitud.MateriaDestino}» de {contexto.CarreraDestinoNombre} (nivel {destino.Semestre}, {destino.Creditos} créditos) tiene " +
                         $"{destino.Unidades.Count} unidades y {horasDestino} horas. Se comparó con {nombresOrigen} de {contexto.CarreraOrigenNombre} " +
                         $"({horasOrigen} horas), aprobada(s) en {Unir(origenes.Select(o => $"{o.Cursada.PeriodoAcademico} con nota {Num((double)o.Cursada.Nota)}"))}.");
+        if (origenes.Any(o => o.DeSilabo))
+            explicacion.Add($"Las unidades y horas de {Unir(origenes.Where(o => o.DeSilabo).Select(o => $"«{o.Cursada.Nombre}»"))} " +
+                            $"se tomaron del sílabo de {contexto.InstitucionOrigen} adjuntado al registrar la solicitud.");
 
         var unidades = new List<CoberturaUnidadPropuestaResponse>();
         double cubiertas = 0, horasEnTemasCubiertos = 0, horasExigidasCubiertas = 0;
@@ -340,17 +356,57 @@ public sealed class AnalisisAutomaticoService : IAnalisisAutomaticoService
 
     private static string Estado(string estimacion) => estimacion == Cumple ? "cumple" : "a criterio del docente";
 
+    /// <summary>Prefijo de los códigos sintéticos de las materias que vienen de un sílabo externo adjuntado.</summary>
+    internal const string PrefijoSilaboExterno = "EXT-";
+
     private async Task<float[]> VectorAsync(string codigoAsignatura, UnidadCatalogoRequest u, CancellationToken cancellationToken)
     {
         // Nombre de la unidad + sus temas: con ambos el parecido distingue mejor las materias afines.
+        // Los sílabos externos no pasan por la caché: su código es sintético y cambia por solicitud.
         var texto = $"{u.Nombre}. {u.Contenidos}".Trim();
-        var vector = _cache is not null
-            ? await _cache.ObtenerAsync(codigoAsignatura, u.Numero, texto, cancellationToken)
+        var usarCache = _cache is not null && !codigoAsignatura.StartsWith(PrefijoSilaboExterno, StringComparison.Ordinal);
+        var vector = usarCache
+            ? await _cache!.ObtenerAsync(codigoAsignatura, u.Numero, texto, cancellationToken)
             : await _ollama.GenerarEmbeddingAsync(texto, cancellationToken);
         return vector is { Length: > 0 }
             ? vector
             : throw new AnalisisAutomaticoException(StatusCodes.Status503ServiceUnavailable,
                 "El servicio de IA (Ollama) no respondió: no se pudo comparar los contenidos.");
+    }
+
+    /// <summary>
+    /// Sílabos de la otra universidad guardados con la solicitud (movilidad externa), convertidos a la
+    /// misma forma que una asignatura del catálogo para poder compararlos, indexados por el nombre
+    /// normalizado de la materia aprobada.
+    /// </summary>
+    private static IReadOnlyDictionary<string, DestinoAnalisisRequest> SilabosExternos(AnalisisExpediente contexto)
+    {
+        var silabos = new Dictionary<string, DestinoAnalisisRequest>();
+        if (string.IsNullOrWhiteSpace(contexto.SilabosExternosJson)) return silabos;
+
+        List<SilaboExterno>? lista;
+        try
+        {
+            lista = JsonSerializer.Deserialize<List<SilaboExterno>>(contexto.SilabosExternosJson);
+        }
+        catch (JsonException)
+        {
+            return silabos;
+        }
+
+        var numero = 0;
+        foreach (var s in lista ?? new List<SilaboExterno>())
+        {
+            numero++;
+            silabos[Clave(s.Materia)] = new DestinoAnalisisRequest(
+                $"{PrefijoSilaboExterno}{numero:00}",
+                s.Materia,
+                s.Creditos ?? 0,
+                Semestre: null,
+                s.Unidades.Select(u => new UnidadCatalogoRequest(u.Numero, u.Nombre, u.Horas, u.Contenidos)).ToList());
+        }
+
+        return silabos;
     }
 
     /// <summary>Busca una asignatura en la malla por su nombre (sin tildes ni mayúsculas).</summary>

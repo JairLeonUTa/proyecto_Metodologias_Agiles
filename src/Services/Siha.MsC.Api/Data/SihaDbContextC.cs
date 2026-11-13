@@ -63,6 +63,7 @@ public class SihaDbContextC : DbContext
             e.Property(x => x.Estado).HasMaxLength(20).IsRequired();
             e.Property(x => x.ResultadoJson).HasColumnType("NVARCHAR(MAX)");
             e.Property(x => x.CertificadoJson).HasColumnType("NVARCHAR(MAX)").IsRequired();
+            e.Property(x => x.SilabosExternosJson).HasColumnType("NVARCHAR(MAX)");
             e.Property(x => x.CarreraOrigenNombre).HasMaxLength(150);
             e.Property(x => x.CarreraDestinoNombre).HasMaxLength(150);
             e.Property(x => x.Mensaje).HasMaxLength(1000);

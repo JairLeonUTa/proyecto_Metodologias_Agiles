@@ -2,16 +2,53 @@
 
 Flujo completo, en pocas pantallas:
 
-1. **Operador**: sube un solo PDF, el certificado de homologación preaprobado por Secretaría.
+1. **Operador**: sube un solo PDF, el certificado de homologación preaprobado por Secretaría. En una
+   **movilidad externa** puede adjuntar además el sílabo (plan analítico) de cada materia aprobada en la
+   otra universidad.
 2. **Agente (MS C)**: en cuanto llega, trae de MS A por gRPC las mallas y sílabos oficiales de la carrera
    de origen y de destino y compara cada materia que se pide homologar en tres criterios (mínimo 80 % cada
    uno): **contenidos**, **profundidad** y **carga horaria**. Si los tres llegan, la materia *cumple*; si no,
    queda **a criterio del docente**. Todo se explica unidad por unidad.
-   Si el agente no tiene el sílabo de alguna de las dos materias (movilidad externa, materia que no está en
-   la malla o que no tiene unidades publicadas) se muestra **"Sin sílabo para comparar"**, sin barras ni
-   porcentajes, y deciden los docentes con el plan analítico del estudiante; no cuenta como que falló el 80 %.
+   Si el agente no tiene el sílabo de alguna de las dos materias (movilidad externa sin sílabo adjunto,
+   materia que no está en la malla o que no tiene unidades publicadas) se muestra **"Sin sílabo para
+   comparar"**, sin barras ni porcentajes, y deciden los docentes con el plan analítico del estudiante;
+   no cuenta como que falló el 80 %.
 3. **Los dos docentes revisores** que vienen en el PDF ven la solicitud con el análisis ya hecho y deciden
    cada materia (Sí, homologar / No homologar). Queda **homologada** si los dos la aprueban.
+
+## Movilidad externa: sílabos de la otra universidad
+
+En un trámite de **movilidad externa** (ruta CAU-P-122) el agente no conoce los sílabos de la institución
+de origen. Por eso, en la pantalla de registro, después de leer el certificado aparece la sección
+**"Sílabos de la otra universidad (opcional)"** con una fila por cada materia aprobada que el certificado
+pide homologar:
+
+- El operador puede **adjuntar un PDF por materia** (el sílabo o plan analítico que entrega el estudiante).
+  Al elegirlo se vuelve a validar y se muestra cuántas unidades y horas se leyeron.
+- El lector (`Siha.Certificados/LectorSilaboExterno.cs`) es tolerante con el formato: busca unidades como
+  `Unidad 1: Nombre (24 horas)` (también Capítulo, Módulo, Tema o Bloque, con números arábigos o romanos)
+  y toma como temas las líneas que siguen a cada unidad. Si las unidades no traen horas, las reparte desde
+  las `Horas totales` / `Carga horaria` declaradas. También lee `Asignatura:`/`Materia:` y `Créditos:`.
+- Un sílabo **se rechaza con un mensaje claro** (y no se registra nada) cuando: no es un PDF con texto,
+  no tiene unidades, no indica horas por unidad ni totales, alguna unidad no tiene temas, es en realidad
+  un certificado SIHA, corresponde a una materia que el certificado no pide homologar, o se adjuntan dos
+  para la misma materia. Los sílabos solo se aceptan en movilidad externa.
+- **Adjuntarlos es opcional**: una materia sin sílabo mantiene el comportamiento de siempre
+  ("Sin sílabo para comparar", deciden los docentes, no cuenta como que falló el 80 %).
+
+Con el sílabo adjunto, el agente lo usa como malla de origen de esa materia y la compara con el **mismo
+método** del trámite interno (embeddings por unidad, cobertura, profundidad y carga horaria), explicando
+que las unidades y horas "se tomaron del sílabo de *(institución)* adjuntado al registrar la solicitud".
+
+Los sílabos viajan como documentos del expediente (columna `Tipo` = `SILABO_EXTERNO` y `MateriaOrigen` en
+`EXPEDIENTE_DOC`, DB B), llegan a MS C en el evento (`DocumentoReferencia.Tipo`/`MateriaOrigen`, contrato
+v1.2) y quedan leídos en `ANALISIS_EXPEDIENTE.SilabosExternosJson` (DB C).
+
+PDFs de ejemplo en `documentos-prueba/silabos-externos` (acompañan a
+`certificados-pruebas/V06-movilidad-externa-TI-SW.pdf`): cuatro sílabos válidos de la ESPOCH
+(Fundamentos de Programación, Álgebra Lineal, Física y Estructura de Datos) y dos inválidos
+(`silabo-sin-horas.pdf`, `silabo-sin-unidades.pdf`). Para regenerarlos:
+`python tools/certificados-siha/generar_silabos.py`.
 
 ## Conocimiento del agente: sílabos oficiales
 
