@@ -24,6 +24,13 @@ public interface IVerificadorDocentes
 
     /// <summary>Carrera por nombre ("Software" = "Ingeniería de Software"); null si no existe.</summary>
     Task<CarreraCatalogo?> ResolverCarreraAsync(string nombre, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Nombres de las materias de la malla vigente de una carrera (para sugerir el nombre oficial de la
+    /// materia de destino). Lista vacía si no se puede consultar: nunca impide registrar.
+    /// </summary>
+    Task<IReadOnlyList<string>> ObtenerMateriasAsync(string carreraCodigo, CancellationToken cancellationToken = default)
+        => Task.FromResult<IReadOnlyList<string>>(Array.Empty<string>());
 }
 
 public sealed class VerificadorDocentesGrpc : IVerificadorDocentes
@@ -64,6 +71,21 @@ public sealed class VerificadorDocentesGrpc : IVerificadorDocentes
         {
             throw new VerificacionDocentesNoDisponibleException(
                 "No se pudo consultar el catálogo de carreras (MS A). Intente nuevamente.", ex);
+        }
+    }
+
+    public async Task<IReadOnlyList<string>> ObtenerMateriasAsync(string carreraCodigo, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            var malla = await _cliente.ObtenerMallaVigenteAsync(
+                new SolicitudMalla { CarreraCodigo = carreraCodigo }, deadline: DateTime.UtcNow.AddSeconds(10), cancellationToken: cancellationToken);
+            return malla.Encontrada ? malla.Asignaturas.Select(a => a.Nombre).ToList() : Array.Empty<string>();
+        }
+        catch (RpcException)
+        {
+            // Solo sirve para sugerir nombres: si MS A no responde, no se sugiere nada.
+            return Array.Empty<string>();
         }
     }
 }

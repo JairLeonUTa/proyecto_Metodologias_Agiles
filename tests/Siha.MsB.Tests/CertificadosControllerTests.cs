@@ -37,8 +37,16 @@ public class CertificadosControllerTests : IDisposable
         ["jcastro@uta.edu.ec"] = (true, true)
     };
 
-    private sealed class VerificadorFalso(Dictionary<string, (bool Docente, bool Activo)> usuarios) : IVerificadorDocentes
+    /// <summary>Materias de la malla vigente por carrera, para la sugerencia del nombre oficial.</summary>
+    private readonly Dictionary<string, string[]> _mallas = new();
+
+    private sealed class VerificadorFalso(
+        Dictionary<string, (bool Docente, bool Activo)> usuarios,
+        Dictionary<string, string[]>? mallas = null) : IVerificadorDocentes
     {
+        public Task<IReadOnlyList<string>> ObtenerMateriasAsync(string carreraCodigo, CancellationToken cancellationToken = default)
+            => Task.FromResult<IReadOnlyList<string>>(mallas is not null && mallas.TryGetValue(carreraCodigo, out var m) ? m : Array.Empty<string>());
+
         public Task<IReadOnlyList<DocenteRevisorVerificado>> VerificarAsync(IEnumerable<string> correos, CancellationToken cancellationToken = default)
             => Task.FromResult<IReadOnlyList<DocenteRevisorVerificado>>(correos.Select(c => usuarios.TryGetValue(c, out var u)
                 ? new DocenteRevisorVerificado(c, true, u.Docente, u.Activo, $"Docente {c.Split('@')[0]}")
@@ -73,7 +81,7 @@ public class CertificadosControllerTests : IDisposable
         var envio = new ExpedienteEnvioService(_db, almacenamiento, _publicador.Object,
             Options.Create(Pruebas.OpcionesArchivos(_directorio)), Options.Create(new RepublicacionOptions()),
             NullLogger<ExpedienteEnvioService>.Instance);
-        return new CertificadosController(_db, almacenamiento, envio, new VerificadorFalso(_usuarios), NullLogger<CertificadosController>.Instance)
+        return new CertificadosController(_db, almacenamiento, envio, new VerificadorFalso(_usuarios, _mallas), NullLogger<CertificadosController>.Instance)
         {
             ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() }
         };
@@ -329,6 +337,34 @@ public class CertificadosControllerTests : IDisposable
         var revisores = rechazo.Secciones.Single(s => s.Seccion == "Revisores");
         revisores.Ok.Should().BeFalse();
         revisores.Problemas.Should().ContainSingle(p => p.Contains("mvaca@uta.edu.ec") && p.Contains("no está registrado"));
+    }
+
+    [Fact]
+    public async Task La_vista_previa_sugiere_el_nombre_oficial_de_la_materia_de_destino()
+    {
+        // La malla de Software no tiene "Estructura de Datos" con ese nombre, sino "ESTRUCTURAS DE DATOS".
+        _mallas["SW"] = new[]
+        {
+            "ALGORITMOS Y LOGICA DE PROGRAMACION", "FISICA", "ALGEBRA LINEAL", "ESTRUCTURAS DE DATOS",
+            "PROGRAMACION ORIENTADA A OBJETOS"
+        };
+
+        var leido = (CertificadoLeidoResponse)((OkObjectResult)(await Controlador()
+            .Validar(Certificado("SIHA-TI-SW-cambio-de-carrera.pdf"), CancellationToken.None)).Result!).Value!;
+
+        var aviso = leido.Avisos.Should().ContainSingle().Subject;
+        aviso.MateriaDestino.Should().Be("Estructura de Datos");
+        aviso.Sugerencia.Should().Be("Estructuras de Datos");
+        aviso.Mensaje.Should().Contain("¿Quiso decir «Estructuras de Datos»?");
+    }
+
+    [Fact]
+    public async Task Si_el_catalogo_no_responde_no_hay_avisos_y_se_puede_registrar()
+    {
+        var leido = (CertificadoLeidoResponse)((OkObjectResult)(await Controlador()
+            .Validar(Certificado("SIHA-TI-SW-cambio-de-carrera.pdf"), CancellationToken.None)).Result!).Value!;
+
+        leido.Avisos.Should().BeEmpty();
     }
 
     [Fact]

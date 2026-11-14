@@ -66,7 +66,8 @@ public class CertificadosController : ControllerBase
         var silabosLeidos = await LeerSilabosAsync(lectura.Certificado!, silabos, silabosMaterias, cancellationToken);
         if (silabosLeidos.Error is not null) return silabosLeidos.Error;
 
-        return Ok(ADto(lectura.Certificado!) with { Silabos = silabosLeidos.Resumen });
+        var avisos = await AvisosMateriasDestinoAsync(lectura.Certificado!, lectura.Destino!, cancellationToken);
+        return Ok(ADto(lectura.Certificado!) with { Silabos = silabosLeidos.Resumen, Avisos = avisos });
     }
 
     /// <summary>
@@ -187,6 +188,30 @@ public class CertificadosController : ControllerBase
     private sealed record Lectura(CertificadoSiha? Certificado, CarreraCatalogo? Origen, CarreraCatalogo? Destino, ActionResult? Error)
     {
         public static Lectura Fallo(ActionResult error) => new(null, null, null, error);
+    }
+
+    /// <summary>
+    /// Avisa de las materias de destino que no aparecen en la malla vigente de la carrera de destino y
+    /// sugiere el nombre oficial más parecido. Usa la misma regla que el agente para decidir si coinciden.
+    /// </summary>
+    private async Task<IReadOnlyList<AvisoMateriaDestinoResponse>> AvisosMateriasDestinoAsync(
+        CertificadoSiha c, CarreraCatalogo destino, CancellationToken cancellationToken)
+    {
+        var malla = await _docentes.ObtenerMateriasAsync(destino.Codigo, cancellationToken);
+        if (malla.Count == 0) return Array.Empty<AvisoMateriaDestinoResponse>();
+
+        return c.Solicitudes
+            .Where(s => !NombresMaterias.Existe(s.MateriaDestino, malla))
+            .Select(s =>
+            {
+                var sugerida = NombresMaterias.MasParecida(s.MateriaDestino, malla);
+                var sugerencia = sugerida is null ? null : NombresMaterias.Titulo(sugerida);
+                var mensaje = sugerencia is null
+                    ? $"«{s.MateriaDestino}» no aparece en la malla vigente de {c.CarreraDestino}. Revise que sea el nombre oficial: si se registra así, el agente no podrá compararla."
+                    : $"«{s.MateriaDestino}» no aparece en la malla vigente de {c.CarreraDestino}. ¿Quiso decir «{sugerencia}»? Si es así, pida a Secretaría que corrija el certificado: si se registra así, el agente no podrá compararla.";
+                return new AvisoMateriaDestinoResponse(s.Numero, s.MateriaDestino, sugerencia, mensaje);
+            })
+            .ToList();
     }
 
     private sealed record SilaboAdjunto(string Materia, IFormFile Archivo, SilaboExterno Silabo);

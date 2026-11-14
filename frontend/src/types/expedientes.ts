@@ -137,6 +137,16 @@ export interface CertificadoLeido {
   revisores: Array<{ nombre: string; correo: string }>;
   /** Sílabos de la otra universidad adjuntados y leídos (solo movilidad externa). */
   silabos?: SilaboLeido[] | null;
+  /** Materias de destino que no aparecen en la malla vigente, con el nombre oficial sugerido. */
+  avisos?: AvisoMateriaDestino[] | null;
+}
+
+/** Aviso: la materia de destino no está en la malla vigente (no impide registrar). */
+export interface AvisoMateriaDestino {
+  solicitud: number;
+  materiaDestino: string;
+  sugerencia?: string | null;
+  mensaje: string;
 }
 
 /** Tipo de rechazo del certificado, para resumirlo en lenguaje sencillo. */

@@ -88,6 +88,28 @@ describe('Registro con un único certificado SIHA', () => {
     expect(api.registrarCertificado).toHaveBeenCalledTimes(1);
   });
 
+  it('avisa cuando la materia de destino no tiene el nombre oficial, sin impedir registrar', async () => {
+    const user = userEvent.setup();
+    api.validarCertificado.mockResolvedValue({
+      ...CERTIFICADO,
+      avisos: [
+        {
+          solicitud: 1,
+          materiaDestino: 'Algoritmos y Logica',
+          sugerencia: 'Algoritmos y Logica de Programacion',
+          mensaje: '«Algoritmos y Logica» no aparece en la malla vigente de Software. ¿Quiso decir «Algoritmos y Logica de Programacion»?',
+        },
+      ],
+    });
+    render(<MemoryRouter><SolicitudNuevaPage /></MemoryRouter>);
+
+    await user.upload(screen.getByTestId('certificado-pdf'), pdf());
+
+    expect(await screen.findByText('Revise el nombre de la materia de destino')).toBeInTheDocument();
+    expect(screen.getByText(/¿Quiso decir «Algoritmos y Logica de Programacion»\?/)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Registrar y enviar solicitud' })).toBeEnabled();
+  });
+
   it('en un cambio de carrera no ofrece adjuntar sílabos', async () => {
     const user = userEvent.setup();
     api.validarCertificado.mockResolvedValue(CERTIFICADO);

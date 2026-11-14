@@ -16,7 +16,15 @@ public record CertificadoLeidoResponse(
     IReadOnlyCollection<SolicitudHomologacionResponse> Solicitudes,
     IReadOnlyCollection<RevisorResponse> Revisores,
     /// <summary>Sílabos de la otra universidad adjuntados y leídos (solo movilidad externa).</summary>
-    IReadOnlyCollection<SilaboLeidoResponse>? Silabos = null);
+    IReadOnlyCollection<SilaboLeidoResponse>? Silabos = null,
+    /// <summary>Materias de destino que no aparecen en la malla vigente, con el nombre oficial sugerido.</summary>
+    IReadOnlyCollection<AvisoMateriaDestinoResponse>? Avisos = null);
+
+/// <summary>
+/// La materia de destino pedida no aparece en la malla vigente. No impide registrar (la malla puede estar
+/// incompleta), pero el agente no podrá compararla: conviene corregir el nombre en el certificado.
+/// </summary>
+public record AvisoMateriaDestinoResponse(int Solicitud, string MateriaDestino, string? Sugerencia, string Mensaje);
 
 /// <summary>
 /// Respuesta 422 cuando el certificado no se puede registrar. <c>Tipo</c>: NO_ES_CERTIFICADO,

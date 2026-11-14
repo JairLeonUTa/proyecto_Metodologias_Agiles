@@ -463,6 +463,16 @@ export function SolicitudNuevaPage(): JSX.Element {
           descripcion="Revise que corresponden al documento. Nada de esto se edita aquí: si algo está mal, el certificado debe corregirse en Secretaría."
         >
           <div className="space-y-4">
+            {certificado.avisos && certificado.avisos.length > 0 ? (
+              <Alerta
+                tono="advertencia"
+                titulo="Revise el nombre de la materia de destino"
+                detalles={certificado.avisos.map((a) => a.mensaje)}
+              >
+                Puede registrar la solicitud, pero el agente no podrá comparar estas materias hasta que el certificado use el
+                nombre oficial de la malla.
+              </Alerta>
+            ) : null}
             <ResumenCertificado certificado={certificado} />
             <div className="flex flex-wrap gap-2">
               <Boton onClick={() => void registrar()} cargando={registrando} textoCargando="Registrando…">
