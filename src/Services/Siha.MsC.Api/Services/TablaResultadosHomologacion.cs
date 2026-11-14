@@ -86,7 +86,7 @@ public static class TablaResultadosHomologacion
         fila.PorcentajeContenidos = e.Contenidos;
         fila.PorcentajeProfundidad = e.Profundidad;
         fila.PorcentajeCargaHoraria = e.CargaHoraria;
-        fila.MinimoExigido = (decimal)(resultado.Minimo ?? 80d);
+        fila.MinimoExigido = Math.Round((decimal)(resultado.Minimo ?? 80d), 2);
         fila.SinSilabo = e.SinSilabo;
         fila.EstimacionAgente = Recortar(e.Estimacion, 30);
 

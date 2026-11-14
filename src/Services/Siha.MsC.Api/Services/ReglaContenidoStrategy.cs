@@ -98,7 +98,8 @@ public sealed class ReglaContenidoStrategy : IReglaContenidoStrategy
         var violacionRN19 = p.ValidarRN19 && unidadesDuplicadas.Count > 0;
 
         var pcont = sumaHorasTotales > 0
-            ? (decimal)Math.Round(sumaHorasPesoCubiertas / sumaHorasTotales * 100, 2)
+            // Redondeo en decimal: (decimal)Math.Round(double) deja 85,7099999… en .NET 9+.
+            ? Math.Round((decimal)(sumaHorasPesoCubiertas / sumaHorasTotales * 100), 2)
             : 0m;
 
         var detalle = $"Pcont = Σ(h_j * covered_j) / Σ(h_j) * 100 = {sumaHorasPesoCubiertas:F0} / {sumaHorasTotales:F0} * 100 = {pcont.ToString("0.##", CultureInfo.InvariantCulture)}%; " +

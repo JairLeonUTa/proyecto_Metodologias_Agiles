@@ -82,10 +82,9 @@ export function Modal({
 
     // Usar requestAnimationFrame doble para asegurar que el DOM esté completamente pintado
     // (primero: next frame, segundo: después del paint)
-    let rafId1: number;
     let rafId2: number;
 
-    rafId1 = requestAnimationFrame(() => {
+    const rafId1 = requestAnimationFrame(() => {
       rafId2 = requestAnimationFrame(() => {
         if (!contenedor.current || enfocadoInicialmente.current) return;
 

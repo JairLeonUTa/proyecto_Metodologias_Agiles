@@ -494,7 +494,8 @@ public sealed class AnalisisAutomaticoService : IAnalisisAutomaticoService
     }
 
     private static decimal Porcentaje(double parte, double total)
-        => total <= 0 ? 0 : (decimal)Math.Round(parte / total * 100, 2);
+        // Se redondea ya en decimal: (decimal)Math.Round(double) deja decimales como 85,7099999… en .NET 9+.
+        => total <= 0 ? 0 : Math.Round((decimal)(parte / total * 100), 2);
 
     private static string Num(double n) => n.ToString("0.##", CultureInfo.InvariantCulture).Replace('.', ',');
 
