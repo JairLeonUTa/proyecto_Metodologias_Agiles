@@ -141,9 +141,146 @@ public class LectorCertificadoSihaTests
         var repetido = LectorCertificadoSiha.LeerTexto(Base().Select(l =>
             l.StartsWith("Docente revisor 2") ? "Docente revisor 2: Otra - aruiz@uta.edu.ec" : l));
 
-        sinSegundo.Errores.Should().Contain("Falta el dato 'Docente revisor 2'.");
+        sinSegundo.Errores.Should().Contain(e => e.StartsWith("Falta el docente revisor 2"));
         repetido.Errores.Should().Contain(e => e.Contains("personas distintas"));
     }
+
+    // ---------- clasificación de problemas: no es el certificado, campos sin llenar, reglas ----------
+
+    [Fact]
+    public void Un_plan_analitico_se_clasifica_como_no_es_el_certificado()
+    {
+        var resultado = LectorCertificadoSiha.Leer(Pdf("plan-analitico-no-valido.pdf"));
+
+        resultado.Problemas.Should().ContainSingle()
+            .Which.Should().Match<ProblemaCertificado>(p => p.Tipo == TiposProblema.NoEsCertificado && p.Seccion == SeccionesCertificado.Documento);
+    }
+
+    [Fact]
+    public void Un_archivo_que_no_es_pdf_se_clasifica_como_no_es_el_certificado()
+    {
+        LectorCertificadoSiha.Leer("hola"u8.ToArray()).Problemas.Single().Tipo.Should().Be(TiposProblema.NoEsCertificado);
+    }
+
+    [Fact]
+    public void Etiqueta_sin_valor_se_reporta_como_campo_sin_llenar_en_su_seccion()
+    {
+        var lineas = Base().Select(l => l == "Cédula: 1804567890" ? "Cédula:" : l).ToList();
+
+        var problema = LectorCertificadoSiha.LeerTexto(lineas).Problemas.Should().ContainSingle().Subject;
+        problema.Tipo.Should().Be(TiposProblema.CampoVacio);
+        problema.Seccion.Should().Be(SeccionesCertificado.Estudiante);
+        problema.Mensaje.Should().Be("Falta la cédula del estudiante: 'Cédula:' está en el certificado pero sin llenar.");
+    }
+
+    [Fact]
+    public void Etiqueta_que_no_aparece_se_reporta_como_campo_sin_llenar()
+    {
+        var problema = LectorCertificadoSiha.LeerTexto(Base().Where(l => l != "Cédula: 1804567890")).Problemas.Single();
+
+        problema.Tipo.Should().Be(TiposProblema.CampoVacio);
+        problema.Mensaje.Should().StartWith("Falta la cédula del estudiante");
+    }
+
+    [Fact]
+    public void Periodo_academico_vacio_de_una_materia_dice_de_cual_materia_es()
+    {
+        var lineas = Base().Select(l => l.Replace("Nivel: 2 Período académico: Oct 2025-Mar 2026 Nota: 8 Estado: Aprobada",
+            "Nivel: 2 Período académico: Nota: 8 Estado: Aprobada")).ToList();
+
+        var problema = LectorCertificadoSiha.LeerTexto(lineas).Problemas.Single();
+        problema.Tipo.Should().Be(TiposProblema.CampoVacio);
+        problema.Seccion.Should().Be(SeccionesCertificado.Historial);
+        problema.Mensaje.Should().Contain("Falta el período académico de «Física II»");
+    }
+
+    [Theory]
+    [InlineData("Estudiante: Ana", "Estudiante: Apellidos y nombres del estudiante", SeccionesCertificado.Estudiante)]
+    [InlineData("Cédula: 1804567890", "Cédula: __________", SeccionesCertificado.Estudiante)]
+    [InlineData("Carrera de destino: Software", "Carrera de destino: [Nombre completo de la carrera]", SeccionesCertificado.Tramite)]
+    [InlineData("Docente revisor 1: Ing. Ana Ruiz - aruiz@uta.edu.ec", "Docente revisor 1: Nombre - correo@uta.edu.ec", SeccionesCertificado.Revisores)]
+    public void Texto_de_ejemplo_de_la_plantilla_sin_reemplazar_se_detecta(string original, string ejemplo, string seccion)
+    {
+        var lineas = Base().Select(l => l == original ? ejemplo : l).ToList();
+
+        var problema = LectorCertificadoSiha.LeerTexto(lineas).Problemas.Should().ContainSingle().Subject;
+        problema.Tipo.Should().Be(TiposProblema.CampoVacio);
+        problema.Seccion.Should().Be(seccion);
+        problema.Mensaje.Should().Contain("texto de ejemplo de la plantilla");
+    }
+
+    [Fact]
+    public void Datos_incoherentes_se_clasifican_como_reglas()
+    {
+        var lineas = Base().Select(l => l.Replace("Nota: 5.5 Estado: Reprobada", "Nota: 5.5 Estado: Aprobada")
+            .Replace("Carrera de origen: Ingeniería Industrial", "Carrera de origen: IND")).ToList();
+
+        var problemas = LectorCertificadoSiha.LeerTexto(lineas).Problemas;
+        problemas.Should().OnlyContain(p => p.Tipo == TiposProblema.Regla);
+        problemas.Should().Contain(p => p.Seccion == SeccionesCertificado.Historial && p.Mensaje.Contains("Química"));
+        problemas.Should().Contain(p => p.Seccion == SeccionesCertificado.Tramite && p.Mensaje.Contains("sin siglas"));
+    }
+
+    private static byte[] PdfDePrueba(string nombre)
+    {
+        var dir = new DirectoryInfo(AppContext.BaseDirectory);
+        while (!Directory.Exists(Path.Combine(dir!.FullName, "documentos-prueba"))) dir = dir.Parent;
+        return File.ReadAllBytes(Path.Combine(dir.FullName, "documentos-prueba", "certificados-pruebas", nombre));
+    }
+
+    [Theory]
+    [InlineData("E01-cedula-9-digitos.pdf", TiposProblema.Regla)]
+    [InlineData("E08-nota-incoherente.pdf", TiposProblema.Regla)]
+    [InlineData("E09-carrera-con-siglas.pdf", TiposProblema.Regla)]
+    [InlineData("E18-pdf-escaneado.pdf", TiposProblema.NoEsCertificado)]
+    [InlineData("E19-plan-analitico-suelto.pdf", TiposProblema.NoEsCertificado)]
+    [InlineData("E20-campos-sin-llenar.pdf", TiposProblema.CampoVacio)]
+    [InlineData("E21-texto-de-ejemplo.pdf", TiposProblema.CampoVacio)]
+    public void Cada_pdf_de_prueba_se_rechaza_con_el_tipo_de_problema_correcto(string archivo, string tipo)
+    {
+        var resultado = LectorCertificadoSiha.Leer(PdfDePrueba(archivo));
+
+        resultado.EsValido.Should().BeFalse();
+        resultado.Problemas.Should().NotBeEmpty().And.OnlyContain(p => p.Tipo == tipo);
+    }
+
+    [Fact]
+    public void El_pdf_con_campos_sin_llenar_dice_cuales_faltan()
+    {
+        var mensajes = LectorCertificadoSiha.Leer(PdfDePrueba("E20-campos-sin-llenar.pdf")).Errores;
+
+        mensajes.Should().Contain(m => m.StartsWith("Falta la cédula del estudiante"));
+        mensajes.Should().Contain(m => m.Contains("Falta el período académico de «Física»"));
+    }
+
+    [Fact]
+    public void Todos_los_pdf_que_deben_rechazarse_se_rechazan_y_los_validos_se_leen()
+    {
+        var dir = new DirectoryInfo(AppContext.BaseDirectory);
+        while (!Directory.Exists(Path.Combine(dir!.FullName, "documentos-prueba"))) dir = dir.Parent;
+        var carpeta = Path.Combine(dir.FullName, "documentos-prueba", "certificados-pruebas");
+
+        foreach (var ruta in Directory.GetFiles(carpeta, "*.pdf"))
+        {
+            var nombre = Path.GetFileName(ruta);
+            var resultado = LectorCertificadoSiha.Leer(File.ReadAllBytes(ruta));
+            // E04 (revisor que no existe) y E16 (carrera fuera del catálogo) se rechazan al registrar, no al leer.
+            var seRechazaAlLeer = nombre.StartsWith('E') && nombre is not ("E04-revisor-no-existe.pdf" or "E16-carrera-no-existe.pdf");
+            resultado.EsValido.Should().Be(!seRechazaAlLeer, $"{nombre}: {string.Join(" | ", resultado.Errores)}");
+        }
+    }
+
+    [Theory]
+    [InlineData("Ana Pérez", false)]
+    [InlineData("1804567890", false)]
+    [InlineData("Física I", false)]
+    [InlineData("____", true)]
+    [InlineData("XXXXXXXXXX", true)]
+    [InlineData("<nombre>", true)]
+    [InlineData("AAAA-MM-DD", true)]
+    [InlineData("Escriba aquí", true)]
+    public void Reconoce_el_texto_de_ejemplo(string valor, bool esEjemplo)
+        => LectorCertificadoSiha.EsTextoDeEjemplo(valor).Should().Be(esEjemplo);
 
     [Fact]
     public void Una_materia_aprobada_no_se_usa_en_dos_solicitudes()

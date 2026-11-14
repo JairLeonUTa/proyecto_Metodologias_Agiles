@@ -30,3 +30,10 @@ Generados con `python tools/certificados-siha/generar_pruebas.py`.
 | `E17-sin-solicitudes.pdf` | Debe rechazarse | No pide ninguna homologación |
 | `E18-pdf-escaneado.pdf` | Debe rechazarse | PDF escaneado (imagen, sin texto seleccionable) |
 | `E19-plan-analitico-suelto.pdf` | Debe rechazarse | No es la plantilla SIHA-CH-01 (plan analítico suelto) |
+| `E20-campos-sin-llenar.pdf` | Debe rechazarse | Campos sin llenar: cédula vacía y Física sin período académico |
+| `E21-texto-de-ejemplo.pdf` | Debe rechazarse | Texto de ejemplo sin reemplazar en el estudiante y en el revisor 2 |
+
+Al rechazar, la pantalla agrupa los problemas en tres tipos: **"Este PDF no es el certificado SIHA"**
+(E18, E19), **"El certificado tiene campos sin llenar"** (E20, E21) y **"Datos que no cumplen las reglas"**
+(el resto), con una lista ✔/✘ por sección del certificado. E04 y E16 pasan la lectura del PDF y se
+rechazan al registrar, porque el revisor y la carrera se verifican contra el catálogo de MS A.

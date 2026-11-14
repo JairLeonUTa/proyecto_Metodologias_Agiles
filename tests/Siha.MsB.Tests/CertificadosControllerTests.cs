@@ -5,6 +5,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using System.Security.Claims;
 using Moq;
+using Siha.Certificados;
 using Siha.Contracts;
 using Siha.Contracts.Events;
 using Siha.MsB.Api.Contracts.Dtos;
@@ -93,7 +94,8 @@ public class CertificadosControllerTests : IDisposable
         nombreArchivo: nombre);
 
     private static IEnumerable<string> Detalles(object cuerpo)
-        => (IEnumerable<string>)cuerpo.GetType().GetProperty("detalles")!.GetValue(cuerpo)!;
+        => (IEnumerable<string>)cuerpo.GetType().GetProperty("detalles",
+            System.Reflection.BindingFlags.IgnoreCase | System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance)!.GetValue(cuerpo)!;
 
     [Fact]
     public async Task Un_solo_pdf_crea_el_expediente_completo_y_lo_envia()
@@ -149,7 +151,7 @@ public class CertificadosControllerTests : IDisposable
         var resultado = await Controlador().Validar(Certificado("SIHA-con-errores.pdf"), CancellationToken.None);
 
         var cuerpo = resultado.Result.Should().BeOfType<UnprocessableEntityObjectResult>().Subject.Value!;
-        var detalles = (IEnumerable<string>)cuerpo.GetType().GetProperty("detalles")!.GetValue(cuerpo)!;
+        var detalles = Detalles(cuerpo);
         detalles.Should().Contain(d => d.Contains("primer período académico"));
     }
 
@@ -197,7 +199,7 @@ public class CertificadosControllerTests : IDisposable
         var resultado = await Controlador().Registrar(Certificado("SIHA-TI-SW-cambio-de-carrera.pdf"), CancellationToken.None);
 
         var cuerpo = resultado.Result.Should().BeOfType<UnprocessableEntityObjectResult>().Subject.Value!;
-        var detalles = (IEnumerable<string>)cuerpo.GetType().GetProperty("detalles")!.GetValue(cuerpo)!;
+        var detalles = Detalles(cuerpo);
         detalles.Should().Contain(d => d.Contains("hnaranjo@uta.edu.ec") && d.Contains("no está registrado"));
         detalles.Should().Contain(d => d.Contains("mvaca@uta.edu.ec") && d.Contains("DOCENTE"));
         _db.Expedientes.Should().BeEmpty();
@@ -274,6 +276,59 @@ public class CertificadosControllerTests : IDisposable
         leido.Silabos.Should().ContainSingle().Which.Materia.Should().Be("Álgebra Lineal");
         _db.Expedientes.Should().BeEmpty();
         Directory.GetFiles(_directorio, "*", SearchOption.AllDirectories).Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task El_rechazo_trae_la_lista_de_verificacion_por_seccion()
+    {
+        var resultado = await Controlador().Validar(Certificado("SIHA-con-errores.pdf"), CancellationToken.None);
+
+        var rechazo = resultado.Result.Should().BeOfType<UnprocessableEntityObjectResult>().Subject.Value
+            .Should().BeOfType<RechazoCertificadoResponse>().Subject;
+        rechazo.Tipo.Should().Be(TiposProblema.Regla);
+        rechazo.Mensaje.Should().StartWith("El certificado tiene datos que no cumplen las reglas.");
+        rechazo.Secciones.Select(s => s.Seccion).Should().Equal(
+            "Certificado", "Estudiante", "Trámite", "Revisores", "Historial", "Solicitudes");
+        rechazo.Secciones.Single(s => s.Seccion == "Estudiante").Ok.Should().BeFalse("la cédula está mal");
+        rechazo.Secciones.Single(s => s.Seccion == "Certificado").Ok.Should().BeTrue();
+        rechazo.Problemas.Should().OnlyContain(p => p.Tipo == TiposProblema.Regla);
+    }
+
+    [Fact]
+    public async Task Un_pdf_que_no_es_el_certificado_no_muestra_secciones()
+    {
+        var resultado = await Controlador().Validar(Certificado("plan-analitico-no-valido.pdf"), CancellationToken.None);
+
+        var rechazo = (RechazoCertificadoResponse)((UnprocessableEntityObjectResult)resultado.Result!).Value!;
+        rechazo.Tipo.Should().Be(TiposProblema.NoEsCertificado);
+        rechazo.Mensaje.Should().StartWith("Este PDF no es el certificado SIHA.");
+        rechazo.Secciones.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task Campos_sin_llenar_se_resumen_en_un_mensaje_sencillo()
+    {
+        var pdf = Pruebas.Archivo(File.ReadAllBytes(Path.Combine(Pruebas.RaizRepositorio(), "documentos-prueba",
+            "certificados-pruebas", "E20-campos-sin-llenar.pdf")), nombreArchivo: "E20.pdf");
+
+        var rechazo = (RechazoCertificadoResponse)((UnprocessableEntityObjectResult)(await Controlador().Validar(pdf, CancellationToken.None)).Result!).Value!;
+
+        rechazo.Tipo.Should().Be(TiposProblema.CampoVacio);
+        rechazo.Mensaje.Should().StartWith("El certificado tiene campos sin llenar.");
+        rechazo.Secciones.Where(s => !s.Ok).Select(s => s.Seccion).Should().BeEquivalentTo("Estudiante", "Historial");
+    }
+
+    [Fact]
+    public async Task Revisor_que_no_existe_aparece_en_la_seccion_revisores()
+    {
+        _usuarios.Remove("mvaca@uta.edu.ec");
+
+        var rechazo = (RechazoCertificadoResponse)((UnprocessableEntityObjectResult)(await Controlador()
+            .Validar(Certificado("SIHA-TI-SW-cambio-de-carrera.pdf"), CancellationToken.None)).Result!).Value!;
+
+        var revisores = rechazo.Secciones.Single(s => s.Seccion == "Revisores");
+        revisores.Ok.Should().BeFalse();
+        revisores.Problemas.Should().ContainSingle(p => p.Contains("mvaca@uta.edu.ec") && p.Contains("no está registrado"));
     }
 
     [Fact]

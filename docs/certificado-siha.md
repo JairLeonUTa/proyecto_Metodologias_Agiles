@@ -79,6 +79,50 @@ sola solicitud), materias vigentes (**10 años**), nota coherente con el estado 
 correo institucional que existan en el sistema como **DOCENTE activos**, y carreras que existan en el
 catálogo. Reprobar materias después del primer período no impide el cambio.
 
+## Revisión del PDF antes de registrarlo
+
+Al elegir el PDF, la pantalla lo valida (`POST .../certificado/validar`). Si tiene problemas, **no se puede
+registrar**: el botón "Registrar y enviar solicitud" queda deshabilitado y se explica qué corregir en tres
+tipos, en lenguaje sencillo:
+
+| Tipo | Cuándo | Ejemplos |
+|---|---|---|
+| **Este PDF no es el certificado SIHA** | Otra plantilla, PDF escaneado o imagen, archivo que no es PDF | E18, E19, `plan-analitico-no-valido.pdf` |
+| **El certificado tiene campos sin llenar** | Falta la etiqueta, la etiqueta está pero vacía, o quedó el **texto de ejemplo** de la plantilla (`____`, `XXXX`, `[Nombre completo]`, `AAAA-MM-DD`, `correo@...`, "Escriba aquí"…) | "Falta la cédula del estudiante", "Falta el período académico de «Física»" (E20, E21) |
+| **Datos que no cumplen las reglas** | Nota incoherente con el estado, siglas en la carrera, revisor que no existe como docente, materia reprobada pedida, etc. | E01–E17 |
+
+Salvo cuando el archivo no es el certificado, se muestra una **lista de verificación ✔/✘ por sección**
+(Certificado, Estudiante, Trámite, Revisores, Historial y Solicitudes) con el motivo de cada problema.
+El 422 trae `mensaje`, `tipo` (`NO_ES_CERTIFICADO`, `CAMPO_VACIO`, `REGLA` o `CAMPOS_Y_REGLAS`),
+`detalles` (lista simple, como antes), `problemas` (cada uno con su sección y tipo) y `secciones`.
+
+## Tabla RESULTADO_HOMOLOGACION (DB C)
+
+Además del análisis completo guardado como JSON, el agente deja **una fila por cada materia pedida** en la
+tabla `RESULTADO_HOMOLOGACION`, para consultarla y reportarla con SQL:
+
+- Expediente, certificado, estudiante, tipo de trámite, ruta, institución y carreras.
+- Materia(s) de origen → materia de destino.
+- Créditos de origen y de destino y **% de créditos** (informativo), horas de origen y de destino.
+- **% contenidos, % profundidad y % carga horaria**, el mínimo exigido y si no hubo sílabo para comparar.
+- Estimación del agente (`CUMPLE` / `CRITERIO_DOCENTE`), aprobaciones y rechazos de los docentes y el
+  **resultado final** (`PENDIENTE`, `HOMOLOGADA`, `NO_HOMOLOGADA`, `SIN_ACUERDO`).
+
+Se llena cuando el agente termina y se actualiza con cada respuesta de los docentes (sin duplicar filas).
+Consulta por API: `GET /api/extracciones/resultados-homologacion?tipoTramite=EXTERNO&resultado=HOMOLOGADA`
+(roles operador y administrador). Ejemplo en SQL:
+
+```sql
+SELECT MateriasOrigen, MateriaDestino, PorcentajeContenidos, PorcentajeCreditos, EstimacionAgente, ResultadoFinal
+FROM RESULTADO_HOMOLOGACION WHERE TipoTramite = 'EXTERNO' ORDER BY AnalizadoUtc DESC;
+```
+
+## Contenido mínimo (80 %)
+
+El administrador ve el contenido mínimo en **Reglas de homologación**, pero **no puede bajarlo del 80 %**
+que fija el reglamento de la UTA (puede exigir más). Ese único valor se aplica a los tres criterios del
+agente: contenidos, profundidad y carga horaria.
+
 ## API
 
 | Servicio | Endpoint | Uso |
@@ -89,6 +133,7 @@ catálogo. Reprobar materias después del primer período no impide el cambio.
 | MS C | `GET /api/extracciones/expedientes/{id}/analisis` | Historial, reglas, análisis explicado, revisores y resultado final |
 | MS C | `POST /api/extracciones/expedientes/{id}/analisis-automatico` | Reintentar si la IA no estaba disponible |
 | MS C | `POST /api/extracciones/expedientes/{id}/dictamen` | Decisión del docente revisor (rol DOCENTE) |
+| MS C | `GET /api/extracciones/resultados-homologacion` | Tabla `RESULTADO_HOMOLOGACION`: una fila por materia (operador y administrador) |
 | MS A (gRPC) | `CatalogoGrpc.ObtenerMallaVigente` / `ResolverCarrera` / `VerificarDocentes` | Sílabos para el agente / carreras por nombre / revisores válidos |
 
 ## Ejemplos (`documentos-prueba/certificados`, también descargables en la pantalla de registro)

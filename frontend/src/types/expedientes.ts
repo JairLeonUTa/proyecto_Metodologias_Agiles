@@ -139,6 +139,25 @@ export interface CertificadoLeido {
   silabos?: SilaboLeido[] | null;
 }
 
+/** Tipo de rechazo del certificado, para resumirlo en lenguaje sencillo. */
+export type TipoRechazoCertificado = 'NO_ES_CERTIFICADO' | 'CAMPO_VACIO' | 'REGLA' | 'CAMPOS_Y_REGLAS';
+
+/** Fila de la lista de verificación: la sección del certificado está bien o tiene problemas. */
+export interface SeccionVerificada {
+  seccion: string;
+  ok: boolean;
+  problemas: string[];
+}
+
+/** Cuerpo del 422 cuando el certificado no se puede registrar. */
+export interface RechazoCertificado {
+  mensaje: string;
+  tipo: TipoRechazoCertificado;
+  detalles: string[];
+  problemas: Array<{ seccion: string; tipo: string; mensaje: string }>;
+  secciones: SeccionVerificada[];
+}
+
 /** Sílabo externo que el operador adjunta para una materia aprobada (movilidad externa). */
 export interface SilaboAdjunto {
   materia: string;

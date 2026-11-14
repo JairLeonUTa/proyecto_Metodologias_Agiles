@@ -34,12 +34,15 @@ export interface OpcionesPeticion {
 export class ErrorApi extends Error {
   public readonly estado: number;
   public readonly detalles: string[];
+  /** Cuerpo completo de la respuesta de error (por ejemplo, la lista de verificación del certificado). */
+  public readonly datos: unknown;
 
-  constructor(mensaje: string, estado: number, detalles: string[] = []) {
+  constructor(mensaje: string, estado: number, detalles: string[] = [], datos: unknown = null) {
     super(mensaje);
     this.name = 'ErrorApi';
     this.estado = estado;
     this.detalles = detalles;
+    this.datos = datos;
   }
 
   /** `true` cuando el backend rechazó la petición por datos inválidos. */
@@ -211,7 +214,7 @@ export async function peticion<T>(ruta: string, opciones: OpcionesPeticion = {})
 
   if (!respuesta.ok) {
     const { mensaje, detalles } = extraerMensaje(payload, respuesta.status);
-    throw new ErrorApi(mensaje, respuesta.status, detalles);
+    throw new ErrorApi(mensaje, respuesta.status, detalles, payload);
   }
 
   return payload as T;

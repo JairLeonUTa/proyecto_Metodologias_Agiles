@@ -2,6 +2,7 @@ import { useRef, useState } from 'react';
 import type { ChangeEvent, DragEvent } from 'react';
 import { Link } from 'react-router-dom';
 import { detallesDeError, expedientesApi, mensajeDeError } from '../api';
+import { ErrorApi } from '../api/httpClient';
 import { EncabezadoPagina } from '../components/EncabezadoPagina';
 import { Alerta, Boton, Etiqueta, Tabla, Tarjeta } from '../components/ui';
 import type { ColumnaTabla } from '../components/ui';
@@ -9,7 +10,15 @@ import { useAuth } from '../hooks/useAuth';
 import { useTituloPagina } from '../hooks/useTituloPagina';
 import { RUTAS } from '../layouts/navegacion';
 import { ETIQUETA_TIPO_TRAMITE } from '../types/comunes';
-import type { CertificadoLeido, MateriaCursada, SilaboAdjunto, SolicitudCertificado } from '../types/expedientes';
+import type {
+  CertificadoLeido,
+  MateriaCursada,
+  RechazoCertificado,
+  SeccionVerificada,
+  SilaboAdjunto,
+  SolicitudCertificado,
+  TipoRechazoCertificado,
+} from '../types/expedientes';
 import { formatearBytes } from '../utils/formato';
 
 const TAMANO_MAXIMO = 10 * 1024 * 1024;
@@ -69,6 +78,53 @@ function ResumenCertificado({ certificado }: { certificado: CertificadoLeido }):
         <Tabla columnas={COLUMNAS} filas={certificado.materias} claveFila={(m) => m.nombre} />
       </div>
     </div>
+  );
+}
+
+const TITULO_RECHAZO: Record<TipoRechazoCertificado, string> = {
+  NO_ES_CERTIFICADO: 'Este PDF no es el certificado SIHA',
+  CAMPO_VACIO: 'El certificado tiene campos sin llenar',
+  REGLA: 'Datos que no cumplen las reglas',
+  CAMPOS_Y_REGLAS: 'Campos sin llenar y datos que no cumplen las reglas',
+};
+
+/** Lee del error del servidor el rechazo con su lista de verificación, si la trae. */
+function rechazoDe(fallo: unknown): RechazoCertificado | null {
+  if (!(fallo instanceof ErrorApi) || fallo.estado !== 422) return null;
+  const datos = fallo.datos as Partial<RechazoCertificado> | null;
+  return datos && typeof datos.tipo === 'string' && Array.isArray(datos.secciones) ? (datos as RechazoCertificado) : null;
+}
+
+/** Lista de verificación por sección del certificado: ✔ si está bien, ✘ con el motivo si no. */
+function ListaVerificacion({ secciones }: { secciones: SeccionVerificada[] }): JSX.Element {
+  return (
+    <ul className="divide-y divide-slate-200 rounded-md border border-slate-200" aria-label="Revisión del certificado por sección">
+      {secciones.map((s) => (
+        <li key={s.seccion} className="flex gap-3 px-3 py-2">
+          <span
+            aria-hidden="true"
+            className={`mt-0.5 font-bold ${s.ok ? 'text-emerald-600' : 'text-red-600'}`}
+          >
+            {s.ok ? '✔' : '✘'}
+          </span>
+          <div className="min-w-0">
+            <p className="text-sm font-semibold text-ink">
+              {s.seccion}
+              <span className="sr-only">{s.ok ? ': correcto' : ': con problemas'}</span>
+            </p>
+            {s.ok ? (
+              <p className="text-xs text-faint">Sin problemas.</p>
+            ) : (
+              <ul className="mt-1 list-disc space-y-0.5 pl-4 text-sm text-slate-700">
+                {s.problemas.map((p) => (
+                  <li key={p}>{p}</li>
+                ))}
+              </ul>
+            )}
+          </div>
+        </li>
+      ))}
+    </ul>
   );
 }
 
@@ -176,11 +232,14 @@ export function SolicitudNuevaPage(): JSX.Element {
   const [resultado, setResultado] = useState<SolicitudCertificado | null>(null);
   const [arrastrando, setArrastrando] = useState(false);
   const [silabos, setSilabos] = useState<SilaboAdjunto[]>([]);
+  /** Rechazo del certificado con su lista de verificación (mientras exista, no se puede registrar). */
+  const [rechazo, setRechazo] = useState<RechazoCertificado | null>(null);
 
   const reiniciar = (): void => {
     setArchivo(null);
     setCertificado(null);
     setError(null);
+    setRechazo(null);
     setResultado(null);
     setSilabos([]);
     if (entrada.current) entrada.current.value = '';
@@ -188,6 +247,7 @@ export function SolicitudNuevaPage(): JSX.Element {
 
   const elegir = async (seleccionado: File | undefined): Promise<void> => {
     setError(null);
+    setRechazo(null);
     setCertificado(null);
     setResultado(null);
     if (!seleccionado) return;
@@ -207,7 +267,12 @@ export function SolicitudNuevaPage(): JSX.Element {
     try {
       setCertificado(await expedientesApi.validarCertificado(seleccionado));
     } catch (fallo) {
-      setError({ texto: mensajeDeError(fallo), detalles: detallesDeError(fallo) });
+      const conLista = rechazoDe(fallo);
+      if (conLista) {
+        setRechazo(conLista);
+      } else {
+        setError({ texto: mensajeDeError(fallo), detalles: detallesDeError(fallo) });
+      }
     } finally {
       setLeyendo(false);
     }
@@ -240,7 +305,15 @@ export function SolicitudNuevaPage(): JSX.Element {
     try {
       setResultado(await expedientesApi.registrarCertificado(archivo, silabos));
     } catch (fallo) {
-      setError({ texto: mensajeDeError(fallo), detalles: detallesDeError(fallo) });
+      // Si al registrar el servidor encuentra problemas en el certificado (por ejemplo, un revisor que
+      // se desactivó), se muestra la lista de verificación y ya no se ofrece registrar.
+      const conLista = rechazoDe(fallo);
+      if (conLista) {
+        setRechazo(conLista);
+        setCertificado(null);
+      } else {
+        setError({ texto: mensajeDeError(fallo), detalles: detallesDeError(fallo) });
+      }
     } finally {
       setRegistrando(false);
     }
@@ -351,6 +424,25 @@ export function SolicitudNuevaPage(): JSX.Element {
               <Alerta tono="error" titulo="El documento no se puede registrar" detalles={error.detalles}>
                 {error.texto}
               </Alerta>
+            ) : null}
+
+            {rechazo ? (
+              <div className="space-y-3" data-testid="rechazo-certificado">
+                <Alerta
+                  tono="error"
+                  titulo={TITULO_RECHAZO[rechazo.tipo] ?? 'El documento no se puede registrar'}
+                  detalles={rechazo.secciones.length === 0 ? rechazo.detalles : undefined}
+                >
+                  {rechazo.mensaje}
+                </Alerta>
+                {rechazo.secciones.length > 0 ? <ListaVerificacion secciones={rechazo.secciones} /> : null}
+                <div className="flex flex-wrap items-center gap-3">
+                  <Boton disabled>Registrar y enviar solicitud</Boton>
+                  <span className="text-xs text-muted">
+                    Solo se puede registrar un certificado sin problemas. Corríjalo en Secretaría y vuelva a cargarlo.
+                  </span>
+                </div>
+              </div>
             ) : null}
           </div>
         </Tarjeta>

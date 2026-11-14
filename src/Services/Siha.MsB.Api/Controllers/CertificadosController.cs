@@ -312,11 +312,7 @@ public class CertificadosController : ControllerBase
         {
             _logger.LogWarning("Certificado SIHA rechazado. Archivo={Archivo} Errores={Errores}",
                 archivo.FileName, string.Join(" | ", lectura.Errores));
-            return Lectura.Fallo(UnprocessableEntity(new
-            {
-                mensaje = "El PDF no cumple la plantilla oficial del certificado SIHA (SIHA-CH-01). Corrija el documento en Secretaría y vuelva a cargarlo.",
-                detalles = lectura.Errores
-            }));
+            return Lectura.Fallo(UnprocessableEntity(Rechazo(lectura.Problemas)));
         }
 
         // Los dos revisores deben existir en la base de usuarios (MS A) con rol DOCENTE y activos.
@@ -331,16 +327,17 @@ public class CertificadosController : ControllerBase
             return Lectura.Fallo(StatusCode(StatusCodes.Status503ServiceUnavailable, new { mensaje = ex.Message }));
         }
 
-        var problemas = new List<string>();
+        var problemas = new List<ProblemaCertificado>();
+        void Revisor(string mensaje) => problemas.Add(new(SeccionesCertificado.Revisores, TiposProblema.Regla, mensaje));
         foreach (var revisor in lectura.Certificado.Revisores)
         {
             var v = verificados.FirstOrDefault(d => string.Equals(d.Correo, revisor.Correo, StringComparison.OrdinalIgnoreCase));
             if (v is null || !v.Existe)
-                problemas.Add($"El docente revisor {revisor.Nombre} ({revisor.Correo}) no está registrado en el sistema.");
+                Revisor($"El docente revisor {revisor.Nombre} ({revisor.Correo}) no está registrado en el sistema.");
             else if (!v.EsDocente)
-                problemas.Add($"El usuario {revisor.Correo} no tiene el rol DOCENTE; no puede ser revisor.");
+                Revisor($"El usuario {revisor.Correo} no tiene el rol DOCENTE; no puede ser revisor.");
             else if (!v.Activo)
-                problemas.Add($"El docente {revisor.Correo} está inactivo; no puede ser revisor.");
+                Revisor($"El docente {revisor.Correo} está inactivo; no puede ser revisor.");
         }
 
         // Las carreras se escriben con su nombre completo; deben existir en el catálogo de MS A.
@@ -356,17 +353,15 @@ public class CertificadosController : ControllerBase
         }
 
         if (origen is null && lectura.Certificado.TipoTramite == TiposTramite.Interno)
-            problemas.Add($"La carrera de origen '{lectura.Certificado.CarreraOrigen}' no existe en el catálogo de la UTA.");
+            problemas.Add(new(SeccionesCertificado.Tramite, TiposProblema.Regla,
+                $"La carrera de origen '{lectura.Certificado.CarreraOrigen}' no existe en el catálogo de la UTA."));
         if (destino is null)
-            problemas.Add($"La carrera de destino '{lectura.Certificado.CarreraDestino}' no existe en el catálogo de la UTA.");
+            problemas.Add(new(SeccionesCertificado.Tramite, TiposProblema.Regla,
+                $"La carrera de destino '{lectura.Certificado.CarreraDestino}' no existe en el catálogo de la UTA."));
 
         if (problemas.Count > 0)
         {
-            return Lectura.Fallo(UnprocessableEntity(new
-            {
-                mensaje = "El certificado no se puede registrar: revise los docentes revisores y las carreras.",
-                detalles = problemas
-            }));
+            return Lectura.Fallo(UnprocessableEntity(Rechazo(problemas)));
         }
 
         // Se usa el nombre registrado en el sistema para el docente.
@@ -444,4 +439,44 @@ public class CertificadosController : ControllerBase
         c.Revisores.Select(r => new RevisorResponse(r.Nombre, r.Correo)).ToList());
 
     private static string Recortar(string texto, int maximo) => texto.Length <= maximo ? texto : texto[..maximo];
+
+    /// <summary>
+    /// Cuerpo del 422 cuando el certificado no se puede registrar. Además de <c>mensaje</c> y
+    /// <c>detalles</c> (como siempre), trae el <c>tipo</c> de rechazo en lenguaje sencillo, cada problema
+    /// con su sección y la lista de verificación ✔/✘ por sección del certificado.
+    /// </summary>
+    internal static RechazoCertificadoResponse Rechazo(IReadOnlyList<ProblemaCertificado> problemas)
+    {
+        var noEsCertificado = problemas.Any(p => p.Tipo == TiposProblema.NoEsCertificado);
+        var vacios = problemas.Any(p => p.Tipo == TiposProblema.CampoVacio);
+        var reglas = problemas.Any(p => p.Tipo == TiposProblema.Regla);
+
+        var (tipo, titulo) = noEsCertificado
+            ? (TiposProblema.NoEsCertificado, "Este PDF no es el certificado SIHA.")
+            : vacios && reglas
+                ? ("CAMPOS_Y_REGLAS", "El certificado tiene campos sin llenar y datos que no cumplen las reglas.")
+                : vacios
+                    ? (TiposProblema.CampoVacio, "El certificado tiene campos sin llenar.")
+                    : (TiposProblema.Regla, "El certificado tiene datos que no cumplen las reglas.");
+
+        var mensaje = noEsCertificado
+            ? $"{titulo} Solo se acepta el certificado de homologación generado con la plantilla oficial ({LectorCertificadoSiha.CodigoFormato}): no un plan analítico, un PDF escaneado ni una imagen."
+            : $"{titulo} Corrija el documento en Secretaría y vuelva a cargarlo.";
+
+        // Si el archivo no es el certificado no tiene sentido revisar sus secciones.
+        var secciones = noEsCertificado
+            ? new List<SeccionVerificadaResponse>()
+            : SeccionesCertificado.Verificables
+                .Select(s => new SeccionVerificadaResponse(s,
+                    problemas.All(p => p.Seccion != s),
+                    problemas.Where(p => p.Seccion == s).Select(p => p.Mensaje).ToList()))
+                .ToList();
+
+        return new RechazoCertificadoResponse(
+            mensaje,
+            tipo,
+            problemas.Select(p => p.Mensaje).ToList(),
+            problemas.Select(p => new ProblemaCertificadoResponse(p.Seccion, p.Tipo, p.Mensaje)).ToList(),
+            secciones);
+    }
 }

@@ -150,7 +150,18 @@ CASOS = [
         solicitudes=TI_SOL + [(["Sistemas Digitales"], "Sistemas Operativos")])),
     ("Debe rechazarse", "Carrera de destino que no existe en el catálogo (Ingeniería Civil)", base_error("E16-carrera-no-existe.pdf", "SIHA-2026-0316", "Error Carrera Catálogo", destino="Ingeniería Civil")),
     ("Debe rechazarse", "No pide ninguna homologación", base_error("E17-sin-solicitudes.pdf", "SIHA-2026-0317", "Error Sin Solicitudes", solicitudes=[])),
+    # Campos de la plantilla sin llenar: la etiqueta está, pero sin valor.
+    ("Debe rechazarse", "Campos sin llenar: cédula vacía y Física sin período académico", base_error(
+        "E20-campos-sin-llenar.pdf", "SIHA-2026-0320", "Error Campos Vacios", cedula="",
+        materias=[m if m.nombre != "Física" else Materia("Física", 1, "", "8.10", "Aprobada") for m in TI_BASE])),
+    # Texto de ejemplo de la plantilla sin reemplazar.
+    ("Debe rechazarse", "Texto de ejemplo sin reemplazar en el estudiante y en el revisor 2", base_error(
+        "E21-texto-de-ejemplo.pdf", "SIHA-2026-0321", "Apellidos y nombres del estudiante",
+        revisores=(HN, ("Nombre", "correo@uta.edu.ec")))),
 ]
+
+# Casos que solo se generan con: python generar_pruebas.py --solo E20 E21
+NUEVOS_PUNTO_3 = ("E20-campos-sin-llenar.pdf", "E21-texto-de-ejemplo.pdf")
 
 
 def pdf_escaneado(origen: str, destino: str):
@@ -182,6 +193,16 @@ def pdf_escaneado(origen: str, destino: str):
 def main():
     os.makedirs(SALIDA, exist_ok=True)
     g.SALIDA = SALIDA  # generar() escribe en g.SALIDA
+
+    # --solo E20 E21: genera solo esos casos, sin reescribir los demás PDF ni el LEEME.
+    if "--solo" in sys.argv:
+        prefijos = sys.argv[sys.argv.index("--solo") + 1:]
+        for esperado, descripcion, c in CASOS:
+            if any(c.archivo.startswith(p) for p in prefijos):
+                g.generar(c)
+                print(f"{c.archivo:45s} {esperado:18s} {descripcion}")
+        return
+
     filas = []
     for esperado, descripcion, c in CASOS:
         g.generar(c)

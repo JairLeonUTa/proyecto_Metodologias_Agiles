@@ -141,6 +141,60 @@ describe('Registro con un único certificado SIHA', () => {
     ]);
   });
 
+  it('con campos sin llenar muestra la lista por sección y deja el botón deshabilitado', async () => {
+    const user = userEvent.setup();
+    const { ErrorApi } = await import('../api/httpClient');
+    api.validarCertificado.mockRejectedValue(
+      new ErrorApi('El certificado tiene campos sin llenar. Corrija el documento en Secretaría y vuelva a cargarlo.', 422, [], {
+        mensaje: 'El certificado tiene campos sin llenar. Corrija el documento en Secretaría y vuelva a cargarlo.',
+        tipo: 'CAMPO_VACIO',
+        detalles: ['Falta la cédula del estudiante.', 'Falta el período académico de «Física».'],
+        problemas: [],
+        secciones: [
+          { seccion: 'Certificado', ok: true, problemas: [] },
+          { seccion: 'Estudiante', ok: false, problemas: ['Falta la cédula del estudiante.'] },
+          { seccion: 'Trámite', ok: true, problemas: [] },
+          { seccion: 'Revisores', ok: true, problemas: [] },
+          { seccion: 'Historial', ok: false, problemas: ['Falta el período académico de «Física».'] },
+          { seccion: 'Solicitudes', ok: true, problemas: [] },
+        ],
+      }),
+    );
+    render(<MemoryRouter><SolicitudNuevaPage /></MemoryRouter>);
+
+    await user.upload(screen.getByTestId('certificado-pdf'), pdf());
+
+    expect(await screen.findByText('El certificado tiene campos sin llenar')).toBeInTheDocument();
+    const lista = screen.getByRole('list', { name: 'Revisión del certificado por sección' });
+    expect(lista).toHaveTextContent('Estudiante');
+    expect(lista).toHaveTextContent('Falta la cédula del estudiante.');
+    expect(lista).toHaveTextContent('Falta el período académico de «Física».');
+    expect(screen.getAllByText('Sin problemas.')).toHaveLength(4);
+    expect(screen.getByRole('button', { name: 'Registrar y enviar solicitud' })).toBeDisabled();
+  });
+
+  it('si el PDF no es el certificado lo dice así, sin lista de secciones', async () => {
+    const user = userEvent.setup();
+    const { ErrorApi } = await import('../api/httpClient');
+    api.validarCertificado.mockRejectedValue(
+      new ErrorApi('Este PDF no es el certificado SIHA.', 422, ['El PDF no tiene texto seleccionable.'], {
+        mensaje: 'Este PDF no es el certificado SIHA. Solo se acepta la plantilla oficial.',
+        tipo: 'NO_ES_CERTIFICADO',
+        detalles: ['El PDF no tiene texto seleccionable.'],
+        problemas: [],
+        secciones: [],
+      }),
+    );
+    render(<MemoryRouter><SolicitudNuevaPage /></MemoryRouter>);
+
+    await user.upload(screen.getByTestId('certificado-pdf'), pdf());
+
+    expect(await screen.findByText('Este PDF no es el certificado SIHA')).toBeInTheDocument();
+    expect(screen.getByText('El PDF no tiene texto seleccionable.')).toBeInTheDocument();
+    expect(screen.queryByRole('list', { name: 'Revisión del certificado por sección' })).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Registrar y enviar solicitud' })).toBeDisabled();
+  });
+
   it('muestra los errores cuando el PDF no cumple la plantilla y no permite registrar', async () => {
     const user = userEvent.setup();
     const { ErrorApi } = await import('../api/httpClient');
