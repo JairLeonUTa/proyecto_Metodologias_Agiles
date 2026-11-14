@@ -78,6 +78,9 @@ namespace Siha.MsC.Api.Migrations
                         .HasMaxLength(150)
                         .HasColumnType("nvarchar(150)");
 
+                    b.Property<int>("Intentos")
+                        .HasColumnType("int");
+
                     b.Property<string>("Mensaje")
                         .HasMaxLength(1000)
                         .HasColumnType("nvarchar(1000)");
@@ -86,6 +89,9 @@ namespace Siha.MsC.Api.Migrations
                         .IsRequired()
                         .HasMaxLength(40)
                         .HasColumnType("nvarchar(40)");
+
+                    b.Property<DateTimeOffset?>("ProximoIntentoUtc")
+                        .HasColumnType("datetimeoffset");
 
                     b.Property<string>("ResultadoJson")
                         .HasColumnType("NVARCHAR(MAX)");
@@ -124,6 +130,8 @@ namespace Siha.MsC.Api.Migrations
                         .HasColumnType("nvarchar(20)");
 
                     b.HasKey("ExpedienteId");
+
+                    b.HasIndex("Estado", "ProximoIntentoUtc");
 
                     b.ToTable("ANALISIS_EXPEDIENTE", (string)null);
                 });

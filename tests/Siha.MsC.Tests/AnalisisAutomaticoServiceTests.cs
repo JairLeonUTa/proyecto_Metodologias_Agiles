@@ -2,6 +2,7 @@
 using System.Text.Json;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Moq;
@@ -324,6 +325,128 @@ public class AnalisisAutomaticoServiceTests
         sinSilabo.Explicacion.Should().Contain(x => x.Contains("no se adjuntó su sílabo"));
         r.Requisitos.Single(q => q.Regla.StartsWith("Equivalencia mínima")).Cumple.Should().BeTrue(
             "la materia sin sílabo no cuenta como que falló el mínimo");
+    }
+
+    // ---------- agente preparándose: reintento automático ----------
+
+    private static AnalisisAutomaticoService AgenteSinIa(SihaDbContextC db)
+    {
+        var ollama = new Mock<IOllamaEmbeddingService>();
+        ollama.Setup(o => o.GenerarEmbeddingAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((float[]?)null); // Ollama todavía descargando el modelo
+        var precedentes = new Mock<IPrecedenteService>();
+        return new AnalisisAutomaticoService(db, Reglas(), precedentes.Object, ollama.Object,
+            NullLogger<AnalisisAutomaticoService>.Instance, null, new CatalogoFalso(MallaSw, MallaTi));
+    }
+
+    [Fact]
+    public async Task Si_la_IA_no_esta_lista_queda_preparandose_y_no_en_error()
+    {
+        await using var db = CrearDb();
+        var expediente = await Sembrar(db, Certificado((new[] { "Física" }, "Física")));
+
+        await AgenteSinIa(db).AnalizarYGuardarAsync(expediente);
+
+        var c = await db.AnalisisExpedientes.SingleAsync();
+        c.Estado.Should().Be(EstadosAnalisis.Preparando);
+        c.Mensaje.Should().Contain("El agente se está preparando").And.Contain("no hace falta hacer nada");
+        c.Intentos.Should().Be(1);
+        c.ProximoIntentoUtc.Should().BeCloseTo(DateTimeOffset.UtcNow.AddSeconds(30), TimeSpan.FromSeconds(5));
+    }
+
+    [Fact]
+    public async Task Cuando_la_IA_ya_esta_lista_el_reintento_completa_el_analisis()
+    {
+        await using var db = CrearDb();
+        var expediente = await Sembrar(db, Certificado((new[] { "Física" }, "Física")));
+        await AgenteSinIa(db).AnalizarYGuardarAsync(expediente);
+
+        await Agente(db).AnalizarYGuardarAsync(expediente);
+
+        var c = await db.AnalisisExpedientes.SingleAsync();
+        c.Estado.Should().Be(EstadosAnalisis.Analizado);
+        c.Mensaje.Should().BeNull();
+        c.Intentos.Should().Be(0);
+        c.ProximoIntentoUtc.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task Tras_el_maximo_de_intentos_queda_en_error_con_un_mensaje_claro()
+    {
+        await using var db = CrearDb();
+        var expediente = await Sembrar(db, Certificado((new[] { "Física" }, "Física")));
+        var contexto = await db.AnalisisExpedientes.SingleAsync();
+        contexto.Estado = EstadosAnalisis.Preparando;
+        contexto.Intentos = AnalisisAutomaticoService.MaximoIntentos - 1;
+        await db.SaveChangesAsync();
+
+        await AgenteSinIa(db).AnalizarYGuardarAsync(expediente);
+
+        contexto = await db.AnalisisExpedientes.SingleAsync();
+        contexto.Estado.Should().Be(EstadosAnalisis.Error);
+        contexto.Mensaje.Should().Contain("Reintentar el análisis");
+        contexto.ProximoIntentoUtc.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task Reintentar_a_mano_vuelve_a_contar_desde_cero()
+    {
+        await using var db = CrearDb();
+        var expediente = await Sembrar(db, Certificado((new[] { "Física" }, "Física")));
+        var contexto = await db.AnalisisExpedientes.SingleAsync();
+        contexto.Estado = EstadosAnalisis.Error;
+        contexto.Intentos = AnalisisAutomaticoService.MaximoIntentos;
+        await db.SaveChangesAsync();
+
+        await AgenteSinIa(db).AnalizarYGuardarAsync(expediente, manual: true);
+
+        contexto = await db.AnalisisExpedientes.SingleAsync();
+        contexto.Estado.Should().Be(EstadosAnalisis.Preparando);
+        contexto.Intentos.Should().Be(1);
+    }
+
+    [Theory]
+    [InlineData(1, 30)]
+    [InlineData(2, 60)]
+    [InlineData(3, 120)]
+    [InlineData(5, 480)]
+    [InlineData(6, 600)]
+    [InlineData(14, 600)]
+    public void La_espera_entre_reintentos_crece_hasta_diez_minutos(int intento, int segundos)
+        => AnalisisAutomaticoService.EsperaReintento(intento).Should().Be(TimeSpan.FromSeconds(segundos));
+
+    [Fact]
+    public async Task El_servicio_de_fondo_solo_reintenta_las_que_ya_cumplieron_su_espera()
+    {
+        var nombre = $"siha-reintento-{Guid.NewGuid():N}";
+        var servicios = new ServiceCollection();
+        servicios.AddDbContext<SihaDbContextC>(o => o.UseInMemoryDatabase(nombre));
+        servicios.AddScoped<IAnalisisAutomaticoService>(sp => Agente(sp.GetRequiredService<SihaDbContextC>()));
+        await using var proveedor = servicios.BuildServiceProvider();
+
+        Guid listo, esperando;
+        using (var scope = proveedor.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<SihaDbContextC>();
+            listo = await Sembrar(db, Certificado((new[] { "Física" }, "Física")));
+            esperando = await Sembrar(db, Certificado((new[] { "Física" }, "Física")));
+            foreach (var c in db.AnalisisExpedientes)
+            {
+                c.Estado = EstadosAnalisis.Preparando;
+                c.Intentos = 1;
+                c.ProximoIntentoUtc = c.ExpedienteId == listo ? DateTimeOffset.UtcNow.AddSeconds(-1) : DateTimeOffset.UtcNow.AddMinutes(5);
+            }
+            await db.SaveChangesAsync();
+        }
+
+        var reintentadas = await ReintentoAnalisisService.ReintentarPendientesAsync(
+            proveedor.GetRequiredService<IServiceScopeFactory>(), CancellationToken.None);
+
+        reintentadas.Should().Be(1);
+        using var verificacion = proveedor.CreateScope();
+        var dbV = verificacion.ServiceProvider.GetRequiredService<SihaDbContextC>();
+        (await dbV.AnalisisExpedientes.SingleAsync(a => a.ExpedienteId == listo)).Estado.Should().Be(EstadosAnalisis.Analizado);
+        (await dbV.AnalisisExpedientes.SingleAsync(a => a.ExpedienteId == esperando)).Estado.Should().Be(EstadosAnalisis.Preparando);
     }
 
     [Fact]

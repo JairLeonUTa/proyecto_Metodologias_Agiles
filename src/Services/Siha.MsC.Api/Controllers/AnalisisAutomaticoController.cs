@@ -49,7 +49,7 @@ public class AnalisisAutomaticoController : ControllerBase
             return NotFound(new { mensaje = "La solicitud no existe o no está asignada a este docente." });
         }
 
-        await _agente.AnalizarYGuardarAsync(expedienteId, cancellationToken);
+        await _agente.AnalizarYGuardarAsync(expedienteId, cancellationToken, manual: true);
         return Ok(await _solicitudes.ObtenerAsync(expedienteId, Correo(), EsDocente(), cancellationToken));
     }
 

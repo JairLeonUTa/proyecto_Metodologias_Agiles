@@ -31,6 +31,7 @@ async function cargar(): Promise<Fila[]> {
 
 export function estadoSolicitud(analisis: SolicitudAnalisis | null): { texto: string; tono: TonoEtiqueta } {
   if (!analisis || analisis.estado === 'PENDIENTE') return { texto: 'Analizando…', tono: 'marca' };
+  if (analisis.estado === 'PREPARANDO') return { texto: 'El agente se está preparando', tono: 'marca' };
   if (analisis.estado === 'ERROR') return { texto: 'Análisis con error', tono: 'error' };
   if (analisis.estadoRevision === 'RESUELTA') return { texto: 'Resuelta', tono: 'exito' };
   const respondieron = analisis.revisores.filter((r) => r.respondio).length;

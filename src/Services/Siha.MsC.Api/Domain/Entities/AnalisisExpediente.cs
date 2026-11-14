@@ -44,6 +44,12 @@ public class AnalisisExpediente
     /// <summary>Motivo del error cuando el análisis no pudo completarse.</summary>
     public string? Mensaje { get; set; }
 
+    /// <summary>Reintentos automáticos hechos porque el agente (IA o reglas) no estaba disponible.</summary>
+    public int Intentos { get; set; }
+
+    /// <summary>Cuándo toca el próximo reintento automático (solo en estado PREPARANDO).</summary>
+    public DateTimeOffset? ProximoIntentoUtc { get; set; }
+
     public DateTimeOffset CreadoUtc { get; set; } = DateTimeOffset.UtcNow;
     public DateTimeOffset? AnalizadoUtc { get; set; }
 
@@ -58,4 +64,10 @@ public static class EstadosAnalisis
     public const string Pendiente = "PENDIENTE";
     public const string Analizado = "ANALIZADO";
     public const string Error = "ERROR";
+
+    /// <summary>
+    /// El agente todavía no está listo (la primera vez descarga el modelo de IA) o el servicio de reglas
+    /// no responde: la solicitud se reintenta sola, sin que nadie tenga que pulsar "Reintentar".
+    /// </summary>
+    public const string Preparando = "PREPARANDO";
 }

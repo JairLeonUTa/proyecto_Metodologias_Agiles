@@ -68,6 +68,7 @@ public class SihaDbContextC : DbContext
             e.Property(x => x.CarreraOrigenNombre).HasMaxLength(150);
             e.Property(x => x.CarreraDestinoNombre).HasMaxLength(150);
             e.Property(x => x.Mensaje).HasMaxLength(1000);
+            e.HasIndex(x => new { x.Estado, x.ProximoIntentoUtc });
         });
 
         modelBuilder.Entity<ResultadoHomologacion>(e =>

@@ -246,8 +246,10 @@ export function SolicitudDetallePage(): JSX.Element {
       if (!activo) return;
       setSolicitud(analisis);
       setCargando(false);
-      // Mientras el agente trabaja, se vuelve a consultar cada 3 segundos.
+      // Mientras el agente trabaja, se vuelve a consultar cada 3 segundos; si se está preparando
+      // (reintenta solo cada cierto tiempo), cada 15 segundos.
       if (!analisis || analisis.estado === 'PENDIENTE') temporizador = setTimeout(() => void cargar(), 3000);
+      else if (analisis.estado === 'PREPARANDO') temporizador = setTimeout(() => void cargar(), 15000);
     };
     void cargar();
     return () => {
@@ -305,6 +307,13 @@ export function SolicitudDetallePage(): JSX.Element {
 
       {solicitud.estado === 'PENDIENTE' ? (
         <Alerta tono="informacion">El agente está comparando las materias con los sílabos… esta pantalla se actualiza sola.</Alerta>
+      ) : null}
+      {solicitud.estado === 'PREPARANDO' ? (
+        <Alerta tono="informacion" titulo="El agente se está preparando">
+          {solicitud.mensaje ??
+            'La solicitud se analizará sola en cuanto el agente esté listo; no hace falta hacer nada.'}{' '}
+          Esta pantalla se actualiza sola.
+        </Alerta>
       ) : null}
       {solicitud.estado === 'ERROR' ? (
         <Alerta tono="error" titulo="El análisis no se pudo completar">

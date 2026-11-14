@@ -75,6 +75,10 @@ builder.Services.AddGrpcClient<CatalogoGrpc.CatalogoGrpcClient>((sp, options) =>
 builder.Services.AddScoped<ICatalogoGrpcCliente, CatalogoGrpcCliente>();
 builder.Services.AddScoped<SolicitudesAnalisisService>();
 
+// Reintento automático de las solicitudes que esperan al agente (Ollama preparándose o reglas caídas).
+if (builder.Configuration.GetValue("Agente:ReintentoAutomatico", true))
+    builder.Services.AddHostedService<ReintentoAnalisisService>();
+
 // --- Seguridad: los endpoints de confirmación validan los JWT emitidos por el Microservicio A ---
 var jwtSection = builder.Configuration.GetSection(JwtSettings.SectionName);
 builder.Services.Configure<JwtSettings>(jwtSection);

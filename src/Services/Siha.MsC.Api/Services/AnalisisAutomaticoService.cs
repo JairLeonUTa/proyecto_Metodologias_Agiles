@@ -17,10 +17,11 @@ public interface IAnalisisAutomaticoService
     /// <summary>
     /// Análisis de una solicitud con certificado SIHA: el agente toma el certificado guardado, trae de
     /// MS A (gRPC) las mallas y sílabos de la carrera de origen y de destino, compara cada materia que se
-    /// pide homologar y guarda la estimación explicada. No lanza excepciones: si falla, deja la solicitud
-    /// en ERROR con el motivo.
+    /// pide homologar y guarda la estimación explicada. No lanza excepciones: si la IA o las reglas no
+    /// responden deja la solicitud en PREPARANDO (se reintenta sola); con cualquier otro fallo, en ERROR.
     /// </summary>
-    Task AnalizarYGuardarAsync(Guid expedienteId, CancellationToken cancellationToken = default);
+    /// <param name="manual">True cuando una persona pulsa "Reintentar": se vuelve a contar desde cero.</param>
+    Task AnalizarYGuardarAsync(Guid expedienteId, CancellationToken cancellationToken = default, bool manual = false);
 }
 
 /// <summary>Motivo por el que el análisis no puede ejecutarse.</summary>
@@ -76,13 +77,29 @@ public sealed class AnalisisAutomaticoService : IAnalisisAutomaticoService
         _catalogo = catalogo;
     }
 
-    public async Task AnalizarYGuardarAsync(Guid expedienteId, CancellationToken cancellationToken = default)
+    /// <summary>Reintentos automáticos antes de dejar la solicitud en ERROR (unas dos horas en total).</summary>
+    public const int MaximoIntentos = 15;
+
+    /// <summary>Espera antes del reintento n: 30 s, 1 min, 2 min, 4 min, 8 min y luego cada 10 min.</summary>
+    public static TimeSpan EsperaReintento(int intento)
+        => TimeSpan.FromSeconds(Math.Min(600, 30 * Math.Pow(2, Math.Max(0, intento - 1))));
+
+    public const string MensajePreparando =
+        "El agente se está preparando (la primera vez descarga el modelo de inteligencia artificial y puede tardar unos minutos). " +
+        "La solicitud se analizará sola en cuanto esté listo; no hace falta hacer nada.";
+
+    public async Task AnalizarYGuardarAsync(Guid expedienteId, CancellationToken cancellationToken = default, bool manual = false)
     {
         var contexto = await _db.AnalisisExpedientes.FirstOrDefaultAsync(a => a.ExpedienteId == expedienteId, cancellationToken);
         if (contexto is null) return; // no llegó con certificado SIHA
 
-        contexto.Estado = EstadosAnalisis.Pendiente;
-        contexto.Mensaje = null;
+        if (manual) contexto.Intentos = 0;
+        var estabaPreparando = contexto.Estado == EstadosAnalisis.Preparando;
+        if (!estabaPreparando)
+        {
+            contexto.Estado = EstadosAnalisis.Pendiente;
+            contexto.Mensaje = null;
+        }
         await _db.SaveChangesAsync(cancellationToken);
 
         try
@@ -94,14 +111,41 @@ public sealed class AnalisisAutomaticoService : IAnalisisAutomaticoService
             var resultado = await AnalizarAsync(contexto, certificado, cancellationToken);
             contexto.ResultadoJson = JsonSerializer.Serialize(resultado, Json);
             contexto.Estado = EstadosAnalisis.Analizado;
+            contexto.Mensaje = null;
             contexto.AnalizadoUtc = DateTimeOffset.UtcNow;
+            contexto.Intentos = 0;
+            contexto.ProximoIntentoUtc = null;
             // Una fila por materia en RESULTADO_HOMOLOGACION, con los porcentajes y la decisión de los docentes.
             await TablaResultadosHomologacion.GuardarAsync(_db, contexto, resultado, cancellationToken);
+        }
+        catch (AnalisisAutomaticoException ex) when (ex.CodigoHttp == StatusCodes.Status503ServiceUnavailable)
+        {
+            // La IA (Ollama) o el servicio de reglas no responden: suele ser temporal (la primera vez Ollama
+            // descarga el modelo). Se reintenta solo, con espera creciente, antes de darlo por fallido.
+            contexto.Intentos++;
+            if (contexto.Intentos < MaximoIntentos)
+            {
+                _logger.LogWarning("El agente no está listo para el expediente {ExpedienteId} (intento {Intento}): {Motivo}",
+                    expedienteId, contexto.Intentos, ex.Message);
+                contexto.Estado = EstadosAnalisis.Preparando;
+                contexto.Mensaje = MensajePreparando;
+                contexto.ProximoIntentoUtc = DateTimeOffset.UtcNow.Add(EsperaReintento(contexto.Intentos));
+            }
+            else
+            {
+                _logger.LogError(ex, "El agente no estuvo disponible para el expediente {ExpedienteId} tras {Intentos} intentos.",
+                    expedienteId, contexto.Intentos);
+                contexto.Estado = EstadosAnalisis.Error;
+                contexto.Mensaje = "El agente no estuvo disponible durante cerca de dos horas. Avise al administrador para que revise " +
+                                   "el servicio de inteligencia artificial y luego pulse «Reintentar el análisis».";
+                contexto.ProximoIntentoUtc = null;
+            }
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
         {
             _logger.LogError(ex, "El análisis automático del expediente {ExpedienteId} falló.", expedienteId);
             contexto.Estado = EstadosAnalisis.Error;
+            contexto.ProximoIntentoUtc = null;
             contexto.Mensaje = ex is AnalisisAutomaticoException
                 ? ex.Message
                 : "El agente no pudo completar el análisis. Intente nuevamente.";

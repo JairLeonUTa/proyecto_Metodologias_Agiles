@@ -103,6 +103,22 @@ describe('Solicitud: análisis explicado y decisión del docente', () => {
     expect(screen.queryByText(/θ|δ|τ|0,65/)).not.toBeInTheDocument();
   });
 
+  it('si el agente se está preparando lo explica y no pide reintentar a mano', async () => {
+    api.obtenerSolicitud.mockResolvedValue({
+      ...SOLICITUD,
+      estado: 'PREPARANDO',
+      mensaje: 'El agente se está preparando (la primera vez descarga el modelo). La solicitud se analizará sola; no hace falta hacer nada.',
+      resultado: null,
+      resultadoFinal: [],
+      puedeResponder: false,
+    });
+    abrir();
+
+    expect(await screen.findAllByText('El agente se está preparando')).not.toHaveLength(0);
+    expect(screen.getByText(/no hace falta hacer nada/)).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Volver a analizar' })).not.toBeInTheDocument();
+  });
+
   it('sin sílabo para comparar no muestra barras ni porcentajes', async () => {
     const sinSilabo = {
       ...evaluacion(1, 'Física', 'Física General', 0),

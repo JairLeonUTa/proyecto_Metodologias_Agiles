@@ -250,7 +250,10 @@ export interface SolicitudAnalisis {
   carreraDestino: string;
   historial: Array<{ nombre: string; nivel: number; periodoAcademico: string; nota: number; aprobada: boolean }>;
   revisores: Array<{ nombre: string; correo: string; respondio: boolean }>;
-  /** PENDIENTE (el agente está analizando), ANALIZADO o ERROR. */
+  /**
+   * PENDIENTE (el agente está analizando), PREPARANDO (la IA aún no está lista; se reintenta sola),
+   * ANALIZADO o ERROR.
+   */
   estado: string;
   mensaje: string | null;
   analizadoUtc: string | null;
