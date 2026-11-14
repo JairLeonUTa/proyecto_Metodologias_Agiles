@@ -372,6 +372,141 @@ namespace Siha.MsC.Api.Migrations
                     b.ToTable("PRECEDENTE", (string)null);
                 });
 
+            modelBuilder.Entity("Siha.MsC.Api.Domain.Entities.ResultadoHomologacion", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("ActualizadoUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<DateTimeOffset>("AnalizadoUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<int>("Aprobaciones")
+                        .HasColumnType("int");
+
+                    b.Property<string>("CarreraDestino")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.Property<string>("CarreraOrigen")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.Property<string>("CodigoDestino")
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
+
+                    b.Property<string>("CodigoExpediente")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
+
+                    b.Property<int?>("CreditosDestino")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("CreditosOrigen")
+                        .HasColumnType("int");
+
+                    b.Property<string>("EstimacionAgente")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
+
+                    b.Property<string>("EstudianteNombre")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<Guid>("ExpedienteId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("HorasDestino")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("HorasOrigen")
+                        .HasColumnType("int");
+
+                    b.Property<string>("InstitucionOrigen")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.Property<string>("MateriaDestino")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("MateriasOrigen")
+                        .IsRequired()
+                        .HasMaxLength(600)
+                        .HasColumnType("nvarchar(600)");
+
+                    b.Property<decimal>("MinimoExigido")
+                        .HasPrecision(5, 2)
+                        .HasColumnType("decimal(5,2)");
+
+                    b.Property<string>("NumeroCertificado")
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("nvarchar(40)");
+
+                    b.Property<int>("NumeroSolicitud")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("PorcentajeCargaHoraria")
+                        .HasPrecision(5, 2)
+                        .HasColumnType("decimal(5,2)");
+
+                    b.Property<decimal>("PorcentajeContenidos")
+                        .HasPrecision(5, 2)
+                        .HasColumnType("decimal(5,2)");
+
+                    b.Property<decimal?>("PorcentajeCreditos")
+                        .HasPrecision(5, 2)
+                        .HasColumnType("decimal(5,2)");
+
+                    b.Property<decimal>("PorcentajeProfundidad")
+                        .HasPrecision(5, 2)
+                        .HasColumnType("decimal(5,2)");
+
+                    b.Property<int>("Rechazos")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ResultadoFinal")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
+
+                    b.Property<string>("RutaNormativa")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<bool>("SinSilabo")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("TipoTramite")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ResultadoFinal");
+
+                    b.HasIndex("TipoTramite");
+
+                    b.HasIndex("ExpedienteId", "NumeroSolicitud")
+                        .IsUnique();
+
+                    b.ToTable("RESULTADO_HOMOLOGACION", (string)null);
+                });
+
             modelBuilder.Entity("Siha.MsC.Api.Domain.Entities.ExtraccionUnidad", b =>
                 {
                     b.HasOne("Siha.MsC.Api.Domain.Entities.Extraccion", "Extraccion")

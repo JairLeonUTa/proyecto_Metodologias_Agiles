@@ -17,6 +17,7 @@ public class SihaDbContextC : DbContext
     public DbSet<EmbeddingUnidad> EmbeddingsUnidad => Set<EmbeddingUnidad>();
     public DbSet<AnalisisExpediente> AnalisisExpedientes => Set<AnalisisExpediente>();
     public DbSet<DictamenDocente> DictamenesDocentes => Set<DictamenDocente>();
+    public DbSet<ResultadoHomologacion> ResultadosHomologacion => Set<ResultadoHomologacion>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -67,6 +68,33 @@ public class SihaDbContextC : DbContext
             e.Property(x => x.CarreraOrigenNombre).HasMaxLength(150);
             e.Property(x => x.CarreraDestinoNombre).HasMaxLength(150);
             e.Property(x => x.Mensaje).HasMaxLength(1000);
+        });
+
+        modelBuilder.Entity<ResultadoHomologacion>(e =>
+        {
+            e.ToTable("RESULTADO_HOMOLOGACION");
+            e.HasKey(x => x.Id);
+            e.Property(x => x.CodigoExpediente).HasMaxLength(30).IsRequired();
+            e.Property(x => x.NumeroCertificado).HasMaxLength(40).IsRequired();
+            e.Property(x => x.EstudianteNombre).HasMaxLength(200).IsRequired();
+            e.Property(x => x.TipoTramite).HasMaxLength(20).IsRequired();
+            e.Property(x => x.RutaNormativa).HasMaxLength(20).IsRequired();
+            e.Property(x => x.InstitucionOrigen).HasMaxLength(150).IsRequired();
+            e.Property(x => x.CarreraOrigen).HasMaxLength(150).IsRequired();
+            e.Property(x => x.CarreraDestino).HasMaxLength(150).IsRequired();
+            e.Property(x => x.MateriasOrigen).HasMaxLength(600).IsRequired();
+            e.Property(x => x.MateriaDestino).HasMaxLength(200).IsRequired();
+            e.Property(x => x.CodigoDestino).HasMaxLength(30);
+            e.Property(x => x.PorcentajeCreditos).HasPrecision(5, 2);
+            e.Property(x => x.PorcentajeContenidos).HasPrecision(5, 2);
+            e.Property(x => x.PorcentajeProfundidad).HasPrecision(5, 2);
+            e.Property(x => x.PorcentajeCargaHoraria).HasPrecision(5, 2);
+            e.Property(x => x.MinimoExigido).HasPrecision(5, 2);
+            e.Property(x => x.EstimacionAgente).HasMaxLength(30).IsRequired();
+            e.Property(x => x.ResultadoFinal).HasMaxLength(30).IsRequired();
+            e.HasIndex(x => new { x.ExpedienteId, x.NumeroSolicitud }).IsUnique();
+            e.HasIndex(x => x.TipoTramite);
+            e.HasIndex(x => x.ResultadoFinal);
         });
 
         modelBuilder.Entity<DictamenDocente>(e =>

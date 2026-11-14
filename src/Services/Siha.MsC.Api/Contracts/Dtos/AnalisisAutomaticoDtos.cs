@@ -22,7 +22,9 @@ public record AnalisisAutomaticoResponse(
     IReadOnlyCollection<string> Alertas,
     string Resumen,
     /// <summary>Trazabilidad técnica (reglas y versión aplicadas). No se muestra en pantalla.</summary>
-    string DetalleTrazabilidad);
+    string DetalleTrazabilidad,
+    /// <summary>Mínimo exigido (%) con el que se evaluó; nulo en resultados guardados antes de este dato.</summary>
+    double? Minimo = null);
 
 /// <summary>Regla del instructivo de homologación y si la solicitud la cumple, con la razón.</summary>
 public record RequisitoResponse(string Regla, bool Cumple, string Explicacion);
@@ -62,7 +64,9 @@ public record MateriaOrigenEvaluadaResponse(
     decimal Nota,
     int? Horas,
     string? CodigoCatalogo,
-    bool EncontradaEnMalla);
+    bool EncontradaEnMalla,
+    /// <summary>Créditos de la materia aprobada según su malla o su sílabo; nulo si no se conocen.</summary>
+    int? Creditos = null);
 
 /// <summary>Cobertura de una unidad de destino y la unidad aprobada que mejor la cubre.</summary>
 public record CoberturaUnidadPropuestaResponse(

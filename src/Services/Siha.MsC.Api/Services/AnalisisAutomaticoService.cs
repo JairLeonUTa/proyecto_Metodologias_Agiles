@@ -95,6 +95,8 @@ public sealed class AnalisisAutomaticoService : IAnalisisAutomaticoService
             contexto.ResultadoJson = JsonSerializer.Serialize(resultado, Json);
             contexto.Estado = EstadosAnalisis.Analizado;
             contexto.AnalizadoUtc = DateTimeOffset.UtcNow;
+            // Una fila por materia en RESULTADO_HOMOLOGACION, con los porcentajes y la decisión de los docentes.
+            await TablaResultadosHomologacion.GuardarAsync(_db, contexto, resultado, cancellationToken);
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
         {
@@ -174,7 +176,7 @@ public sealed class AnalisisAutomaticoService : IAnalisisAutomaticoService
         if (sinSilabo > 0) partes.Add($"{sinSilabo} no tiene(n) sílabo para comparar y la(s) deciden los docentes");
         var resumen = $"Se analizaron {evaluaciones.Count} materia(s) pedida(s): {Unir(partes)}.";
 
-        return new AnalisisAutomaticoResponse(contexto.ExpedienteId, requisitos, evaluaciones, Array.Empty<string>(), resumen, string.Join(" | ", traza));
+        return new AnalisisAutomaticoResponse(contexto.ExpedienteId, requisitos, evaluaciones, Array.Empty<string>(), resumen, string.Join(" | ", traza), theta);
     }
 
     private async Task<EvaluacionMateriaResponse> EvaluarAsync(
@@ -205,7 +207,8 @@ public sealed class AnalisisAutomaticoService : IAnalisisAutomaticoService
 
         var origenDto = origenes.Select(o => new MateriaOrigenEvaluadaResponse(
             o.Cursada.Nombre, o.Cursada.Nivel, o.Cursada.PeriodoAcademico, o.Cursada.Nota,
-            o.Malla?.Unidades.Sum(u => u.Horas), o.Malla?.Codigo, o.Malla is not null)).ToList();
+            o.Malla?.Unidades.Sum(u => u.Horas), o.Malla?.Codigo, o.Malla is not null,
+            o.Malla is { Creditos: > 0 } ? o.Malla.Creditos : null)).ToList();
 
         var nombresOrigen = Unir(origenes.Select(o => $"«{o.Cursada.Nombre}»"));
         var explicacion = new List<string>();

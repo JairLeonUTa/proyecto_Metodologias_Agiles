@@ -27,7 +27,7 @@ import {
   TIPOS_TRAMITE_TODOS,
 } from '../types/comunes';
 import { formatearFechaCorta, formatearFechaHora } from '../utils/formato';
-import { aNumero, validarParametros } from '../utils/validaciones';
+import { aNumero, CONTENIDO_MINIMO_REGLAMENTO, validarParametros } from '../utils/validaciones';
 
 interface FormularioUmbrales {
   theta: string;
@@ -242,13 +242,13 @@ export function ReglasPage(): JSX.Element {
                     htmlFor="theta"
                     etiqueta="Contenido mínimo para homologar (%)"
                     obligatorio
-                    ayuda="Si el agente estima este porcentaje o más, la materia cumple; si sale menos, queda a criterio de los docentes revisores."
+                    ayuda={`Si el agente estima este porcentaje o más en contenidos, profundidad y carga horaria, la materia cumple; si sale menos, queda a criterio de los docentes revisores. El reglamento de la UTA fija un mínimo de ${CONTENIDO_MINIMO_REGLAMENTO} %: se puede exigir más, pero no menos.`}
                     error={errores.theta}
                   >
                     <EntradaTexto
                       id="theta"
                       type="number"
-                      min={0}
+                      min={CONTENIDO_MINIMO_REGLAMENTO}
                       max={100}
                       step="0.01"
                       value={formulario.theta}

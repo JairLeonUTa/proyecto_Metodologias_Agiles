@@ -399,6 +399,92 @@ public class AnalisisAutomaticoServiceTests
         dos.Respuesta.ResultadoFinal.Single(m => m.CodigoDestino == poo).Resultado.Should().Be("SIN_ACUERDO");
     }
 
+    // ---------- tabla RESULTADO_HOMOLOGACION ----------
+
+    [Fact]
+    public async Task El_analisis_deja_una_fila_por_materia_con_sus_porcentajes_y_creditos()
+    {
+        await using var db = CrearDb();
+        await SolicitudAnalizada(db);
+
+        var filas = await db.ResultadosHomologacion.OrderBy(f => f.NumeroSolicitud).ToListAsync();
+        filas.Should().HaveCount(2);
+
+        var alg = filas[0];
+        alg.MateriasOrigen.Should().Be("Fundamentos de Programación");
+        alg.MateriaDestino.Should().Be("Algoritmos y Lógica de Programación");
+        alg.CodigoDestino.Should().Be("SW-ALG");
+        alg.TipoTramite.Should().Be("INTERNO");
+        alg.PorcentajeContenidos.Should().Be(100m);
+        alg.CreditosOrigen.Should().Be(4);
+        alg.CreditosDestino.Should().Be(4);
+        alg.PorcentajeCreditos.Should().Be(100m);
+        alg.MinimoExigido.Should().Be(80m);
+        alg.EstimacionAgente.Should().Be(AnalisisAutomaticoService.Cumple);
+        alg.ResultadoFinal.Should().Be("PENDIENTE");
+
+        var poo = filas[1];
+        poo.CreditosOrigen.Should().Be(3);
+        poo.CreditosDestino.Should().Be(4);
+        poo.PorcentajeCreditos.Should().Be(75m, "3 créditos aprobados frente a 4");
+        poo.HorasOrigen.Should().Be(144);
+        poo.HorasDestino.Should().Be(192);
+        poo.EstimacionAgente.Should().Be(AnalisisAutomaticoService.CriterioDocente);
+    }
+
+    [Fact]
+    public async Task La_decision_de_los_docentes_se_refleja_en_la_tabla()
+    {
+        await using var db = CrearDb();
+        var expediente = await SolicitudAnalizada(db);
+        var solicitudes = new SolicitudesAnalisisService(db);
+        const string alg = "Algoritmos y Lógica de Programación", poo = "Programación Orientada a Objetos";
+
+        await solicitudes.ResponderAsync(expediente, "hnaranjo@uta.edu.ec", "Naranjo", Decidir((alg, true), (poo, false)));
+        (await db.ResultadosHomologacion.SingleAsync(f => f.MateriaDestino == alg)).Aprobaciones.Should().Be(1);
+
+        await solicitudes.ResponderAsync(expediente, "mvaca@uta.edu.ec", "Vaca", Decidir((alg, true), (poo, false)));
+
+        var filaAlg = await db.ResultadosHomologacion.SingleAsync(f => f.MateriaDestino == alg);
+        filaAlg.Aprobaciones.Should().Be(2);
+        filaAlg.ResultadoFinal.Should().Be("HOMOLOGADA");
+        var filaPoo = await db.ResultadosHomologacion.SingleAsync(f => f.MateriaDestino == poo);
+        filaPoo.Rechazos.Should().Be(2);
+        filaPoo.ResultadoFinal.Should().Be("NO_HOMOLOGADA");
+        (await db.ResultadosHomologacion.CountAsync()).Should().Be(2, "las filas se actualizan, no se duplican");
+    }
+
+    [Fact]
+    public async Task Volver_a_analizar_no_duplica_las_filas()
+    {
+        await using var db = CrearDb();
+        var expediente = await SolicitudAnalizada(db);
+
+        await Agente(db).AnalizarYGuardarAsync(expediente);
+
+        (await db.ResultadosHomologacion.CountAsync()).Should().Be(2);
+    }
+
+    [Fact]
+    public async Task Movilidad_externa_guarda_los_creditos_del_silabo_adjunto()
+    {
+        await using var db = CrearDb();
+        await Analizar(db, CertificadoExterno((new[] { "Física" }, "Física"), (new[] { "Fundamentos de Programación" }, "Algoritmos y Lógica de Programación")),
+            silabos: new[] { Silabo("Física", ("Estatica", 36), ("Dinamica", 36), ("Energia", 36), ("Electricidad", 36)) });
+
+        var fisica = await db.ResultadosHomologacion.SingleAsync(f => f.MateriaDestino == "Física");
+        fisica.TipoTramite.Should().Be("EXTERNO");
+        fisica.InstitucionOrigen.Should().Be("Escuela Politécnica Nacional");
+        fisica.SinSilabo.Should().BeFalse();
+        fisica.CreditosOrigen.Should().Be(3);
+        fisica.PorcentajeCreditos.Should().Be(100m);
+
+        var sinSilabo = await db.ResultadosHomologacion.SingleAsync(f => f.MateriaDestino == "Algoritmos y Lógica de Programación");
+        sinSilabo.SinSilabo.Should().BeTrue();
+        sinSilabo.CreditosOrigen.Should().BeNull("sin sílabo no se conocen los créditos de la otra universidad");
+        sinSilabo.PorcentajeCreditos.Should().BeNull();
+    }
+
     [Fact]
     public async Task El_docente_debe_decidir_todas_las_materias()
     {

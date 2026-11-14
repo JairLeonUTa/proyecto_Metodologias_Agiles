@@ -79,6 +79,10 @@ public sealed class SolicitudesAnalisisService
         existente.FechaUtc = DateTimeOffset.UtcNow;
         await _db.SaveChangesAsync(cancellationToken);
 
+        // La decisión de los docentes también se refleja en la tabla RESULTADO_HOMOLOGACION.
+        await TablaResultadosHomologacion.GuardarAsync(_db, contexto, Leer(contexto.ResultadoJson), cancellationToken);
+        await _db.SaveChangesAsync(cancellationToken);
+
         return (await ObtenerAsync(expedienteId, correo, esDocente: true, cancellationToken), null, StatusCodes.Status200OK);
     }
 
@@ -94,26 +98,10 @@ public sealed class SolicitudesAnalisisService
         {
             // Resultado del formato anterior: se debe volver a analizar.
         }
-        var respuestas = dictamenes.Select(d => new DictamenResponse(
-            d.CorreoDocente,
-            d.NombreDocente,
-            JsonSerializer.Deserialize<List<DecisionMateriaRequest>>(d.DecisionesJson, AnalisisAutomaticoService.Json) ?? new(),
-            d.Comentario,
-            d.FechaUtc)).ToList();
-
+        var respuestas = ARespuestas(dictamenes);
         var final = resultado is null
             ? new List<ResultadoFinalMateriaResponse>()
-            : Materias(resultado).Select(m =>
-            {
-                var votos = respuestas
-                    .Select(r => r.Decisiones.FirstOrDefault(x => string.Equals(x.CodigoDestino, m.Codigo, StringComparison.OrdinalIgnoreCase)))
-                    .Where(x => x is not null)
-                    .ToList();
-                var si = votos.Count(v => v!.Aprobada);
-                var no = votos.Count - si;
-                var estado = votos.Count < 2 ? "PENDIENTE" : si == 2 ? "HOMOLOGADA" : no == 2 ? "NO_HOMOLOGADA" : "SIN_ACUERDO";
-                return new ResultadoFinalMateriaResponse(m.Codigo, m.Nombre, m.Estimacion, si, no, estado);
-            }).ToList();
+            : CalcularResultadoFinal(resultado, respuestas);
 
         var revisores = new[] { (c.Revisor1Nombre, c.Revisor1Correo), (c.Revisor2Nombre, c.Revisor2Correo) }
             .Where(r => !string.IsNullOrWhiteSpace(r.Item2))
@@ -143,6 +131,32 @@ public sealed class SolicitudesAnalisisService
             c.InstitucionOrigen, c.CarreraOrigenNombre, c.CarreraDestinoNombre, historial, revisores, c.Estado, c.Mensaje, c.AnalizadoUtc,
             resultado, respuestas, final, estadoRevision, puedeResponder && c.Estado == EstadosAnalisis.Analizado);
     }
+
+    internal static List<DictamenResponse> ARespuestas(IEnumerable<DictamenDocente> dictamenes)
+        => dictamenes.Select(d => new DictamenResponse(
+            d.CorreoDocente,
+            d.NombreDocente,
+            JsonSerializer.Deserialize<List<DecisionMateriaRequest>>(d.DecisionesJson, AnalisisAutomaticoService.Json) ?? new(),
+            d.Comentario,
+            d.FechaUtc)).ToList();
+
+    /// <summary>
+    /// Resultado final por materia: HOMOLOGADA si los dos docentes aprueban, NO_HOMOLOGADA si los dos
+    /// rechazan, SIN_ACUERDO si discrepan y PENDIENTE mientras falte alguna respuesta.
+    /// </summary>
+    internal static List<ResultadoFinalMateriaResponse> CalcularResultadoFinal(
+        AnalisisAutomaticoResponse resultado, IReadOnlyCollection<DictamenResponse> respuestas)
+        => Materias(resultado).Select(m =>
+        {
+            var votos = respuestas
+                .Select(r => r.Decisiones.FirstOrDefault(x => string.Equals(x.CodigoDestino, m.Codigo, StringComparison.OrdinalIgnoreCase)))
+                .Where(x => x is not null)
+                .ToList();
+            var si = votos.Count(v => v!.Aprobada);
+            var no = votos.Count - si;
+            var estado = votos.Count < 2 ? "PENDIENTE" : si == 2 ? "HOMOLOGADA" : no == 2 ? "NO_HOMOLOGADA" : "SIN_ACUERDO";
+            return new ResultadoFinalMateriaResponse(m.Codigo, m.Nombre, m.Estimacion, si, no, estado);
+        }).ToList();
 
     /// <summary>Materias que los docentes deben decidir: las que cumplen y las que quedan a su criterio.</summary>
     private static IEnumerable<(string Codigo, string Nombre, string Estimacion)> Materias(AnalisisAutomaticoResponse r)
