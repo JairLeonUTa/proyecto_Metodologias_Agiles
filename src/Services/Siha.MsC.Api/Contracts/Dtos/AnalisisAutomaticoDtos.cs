@@ -38,13 +38,16 @@ public record EvaluacionMateriaResponse(
     int? CreditosDestino,
     int HorasDestino,
     IReadOnlyCollection<MateriaOrigenEvaluadaResponse> MateriasOrigen,
-    /// <summary>% de horas de la materia de destino cuyos temas están cubiertos.</summary>
+    /// <summary>% de horas de la materia de destino cuyos temas están cubiertos. Decide (mínimo 80 %).</summary>
     decimal Contenidos,
-    /// <summary>% de horas dedicadas a esos temas en lo aprobado frente a lo que exige el destino.</summary>
+    /// <summary>% de horas dedicadas a esos temas en lo aprobado frente a lo que exige el destino. Solo informativo.</summary>
     decimal Profundidad,
-    /// <summary>% de horas aprobadas frente a las horas de la materia de destino (máximo 100).</summary>
+    /// <summary>% de horas aprobadas frente a las horas de la materia de destino (máximo 100). Solo informativo.</summary>
     decimal CargaHoraria,
-    /// <summary>CUMPLE (los tres criterios llegan al mínimo) o CRITERIO_DOCENTE.</summary>
+    /// <summary>
+    /// CUMPLE (contenidos y créditos llegan al 80 %), NO_CUMPLE (alguno no llega: no se puede homologar)
+    /// o CRITERIO_DOCENTE (sin sílabo para comparar: deciden los docentes).
+    /// </summary>
     string Estimacion,
     IReadOnlyCollection<CoberturaUnidadPropuestaResponse> Unidades,
     /// <summary>Explicación paso a paso de cómo se llegó al resultado.</summary>
@@ -55,7 +58,13 @@ public record EvaluacionMateriaResponse(
     /// True cuando el agente no tiene el sílabo de origen o de destino (otra institución, materia que no
     /// está en la malla o sin unidades): no hay porcentajes y deciden los docentes.
     /// </summary>
-    bool SinSilabo = false);
+    bool SinSilabo = false,
+    /// <summary>% de créditos aprobados frente a los de la materia de destino (máximo 100). Decide (mínimo 80 %).</summary>
+    decimal PorcentajeCreditos = 0,
+    /// <summary>Créditos de lo aprobado (suma si son varias materias); nulo si no se conocen.</summary>
+    int? CreditosOrigen = null,
+    /// <summary>True si no se conocían los créditos y el porcentaje se calculó con las horas (equivalente).</summary>
+    bool CreditosPorHoras = false);
 
 public record MateriaOrigenEvaluadaResponse(
     string Nombre,

@@ -6,15 +6,24 @@ Flujo completo, en pocas pantallas:
    **movilidad externa** puede adjuntar además el sílabo (plan analítico) de cada materia aprobada en la
    otra universidad.
 2. **Agente (MS C)**: en cuanto llega, trae de MS A por gRPC las mallas y sílabos oficiales de la carrera
-   de origen y de destino y compara cada materia que se pide homologar en tres criterios (mínimo 80 % cada
-   uno): **contenidos**, **profundidad** y **carga horaria**. Si los tres llegan, la materia *cumple*; si no,
-   queda **a criterio del docente**. Todo se explica unidad por unidad.
-   Si el agente no tiene el sílabo de alguna de las dos materias (movilidad externa sin sílabo adjunto,
-   materia que no está en la malla o que no tiene unidades publicadas) se muestra **"Sin sílabo para
-   comparar"**, sin barras ni porcentajes, y deciden los docentes con el plan analítico del estudiante;
-   no cuenta como que falló el 80 %.
+   de origen y de destino y compara cada materia que se pide homologar con la **regla RN-01 (versión 2.0)**:
+   al menos **80 % en contenidos y 80 % en créditos, las dos sí o sí**. Todo se explica unidad por unidad.
+   - Si las dos llegan → **Cumple**: los docentes lo confirman.
+   - Si cualquiera no llega → **No se puede homologar**, aunque la otra esté completa. Ejemplo del docente:
+     Física con 2 créditos frente a 3 = 66,67 % → no se homologa, aunque cubra todos los temas.
+   - Si el agente no tiene el sílabo de alguna de las dos materias (movilidad externa sin sílabo adjunto,
+     materia que no está en la malla o que no tiene unidades publicadas) se muestra **"Sin sílabo para
+     comparar"**, sin barras ni porcentajes, y deciden los docentes con el plan analítico del estudiante.
+
+   **Créditos**: créditos aprobados (suma si son varias materias) frente a los de la materia de destino, con
+   máximo 100 %. Si no se conocen (por ejemplo, un sílabo externo que no los indica) se comparan las horas,
+   que es equivalente, y la explicación lo dice. **Profundidad** (horas dedicadas a cada tema) y **carga
+   horaria** se muestran solo como datos informativos: no deciden el resultado.
 3. **Los dos docentes revisores** que vienen en el PDF ven la solicitud con el análisis ya hecho y deciden
-   cada materia (Sí, homologar / No homologar). Queda **homologada** si los dos la aprueban.
+   las materias que **cumplen** y las que **no tienen sílabo** (Sí, homologar / No homologar). Queda
+   **homologada** si los dos la aprueban. Las que **no llegan al 80 %** quedan **NO_HOMOLOGADA** directamente,
+   sin votación (el servidor rechaza un voto sobre ellas). Si ninguna materia necesita decisión, la solicitud
+   queda resuelta sin respuestas de los docentes.
 
 ## Movilidad externa: sílabos de la otra universidad
 
@@ -37,7 +46,7 @@ pide homologar:
   ("Sin sílabo para comparar", deciden los docentes, no cuenta como que falló el 80 %).
 
 Con el sílabo adjunto, el agente lo usa como malla de origen de esa materia y la compara con el **mismo
-método** del trámite interno (embeddings por unidad, cobertura, profundidad y carga horaria), explicando
+método** del trámite interno (embeddings por unidad, contenidos y créditos), explicando
 que las unidades y horas "se tomaron del sílabo de *(institución)* adjuntado al registrar la solicitud".
 
 Los sílabos viajan como documentos del expediente (columna `Tipo` = `SILABO_EXTERNO` y `MateriaOrigen` en
@@ -103,10 +112,12 @@ tabla `RESULTADO_HOMOLOGACION`, para consultarla y reportarla con SQL:
 
 - Expediente, certificado, estudiante, tipo de trámite, ruta, institución y carreras.
 - Materia(s) de origen → materia de destino.
-- Créditos de origen y de destino y **% de créditos** (informativo), horas de origen y de destino.
-- **% contenidos, % profundidad y % carga horaria**, el mínimo exigido y si no hubo sílabo para comparar.
-- Estimación del agente (`CUMPLE` / `CRITERIO_DOCENTE`), aprobaciones y rechazos de los docentes y el
-  **resultado final** (`PENDIENTE`, `HOMOLOGADA`, `NO_HOMOLOGADA`, `SIN_ACUERDO`).
+- Créditos de origen y de destino, horas de origen y de destino.
+- **% contenidos y % créditos** (los que deciden), % profundidad y % carga horaria (informativos), el
+  mínimo exigido y si no hubo sílabo para comparar.
+- Estimación del agente (`CUMPLE` / `NO_CUMPLE` / `CRITERIO_DOCENTE` sin sílabo), aprobaciones y rechazos de
+  los docentes y el **resultado final** (`PENDIENTE`, `HOMOLOGADA`, `NO_HOMOLOGADA`, `SIN_ACUERDO`). Una
+  materia `NO_CUMPLE` queda `NO_HOMOLOGADA` desde el análisis, con 0 votos.
 
 Se llena cuando el agente termina y se actualiza con cada respuesta de los docentes (sin duplicar filas).
 Consulta por API: `GET /api/extracciones/resultados-homologacion?tipoTramite=EXTERNO&resultado=HOMOLOGADA`
@@ -120,8 +131,12 @@ FROM RESULTADO_HOMOLOGACION WHERE TipoTramite = 'EXTERNO' ORDER BY AnalizadoUtc 
 ## Contenido mínimo (80 %)
 
 El administrador ve el contenido mínimo en **Reglas de homologación**, pero **no puede bajarlo del 80 %**
-que fija el reglamento de la UTA (puede exigir más). Ese único valor se aplica a los tres criterios del
-agente: contenidos, profundidad y carga horaria.
+que fija el reglamento de la UTA (puede exigir más). Ese único valor se aplica a los dos criterios que
+deciden: contenidos y créditos.
+
+Las reglas del catálogo **RN-01** y **RN-13** se versionan solas a la **2.0** al arrancar MS A (también en
+bases que ya existían): RN-01 exige `contenido>=80 && creditos>=80` y RN-13 exige `Pcred>=80`. La versión
+1.0 (contenido, profundidad y carga horaria; créditos solo como apoyo) queda en el historial, cerrada.
 
 ## API
 
@@ -143,8 +158,8 @@ Los revisores de ejemplo (`hnaranjo`, `mvaca`, `jcastro` @uta.edu.ec) se crean c
 
 | PDF | Resultado con los sílabos reales |
 |---|---|
-| `SIHA-TI-SW-cambio-de-carrera.pdf` | TI → Software. Reprobó 2 materias del segundo nivel. Cumplen: Algoritmos y Lógica de Programación, Física, Álgebra Lineal y Estructura de Datos. Programación Orientada a Objetos queda a criterio del docente (144 h frente a 192 h) |
-| `SIHA-IND-SW-cambio-de-carrera.pdf` | Industrial → Software: las cuatro materias quedan a criterio del docente (temas o horas por debajo del 80 %) |
+| `SIHA-TI-SW-cambio-de-carrera.pdf` | TI → Software. Reprobó 2 materias del segundo nivel. El agente compara cada materia con la regla de 80 % en contenidos y créditos; las que no llegan (por ejemplo, Programación Orientada a Objetos: 3 créditos frente a 4) no se pueden homologar |
+| `SIHA-IND-SW-cambio-de-carrera.pdf` | Industrial → Software: materias con temas o créditos por debajo del 80 %, que no se pueden homologar |
 | `SIHA-con-errores.pdf` | Rechazado: siglas en la carrera, primer nivel no aprobado, pide una reprobada, materia de hace más de 10 años, cédula y revisor con Gmail |
 | `plan-analitico-no-valido.pdf` | Rechazado: no es la plantilla SIHA-CH-01 |
 

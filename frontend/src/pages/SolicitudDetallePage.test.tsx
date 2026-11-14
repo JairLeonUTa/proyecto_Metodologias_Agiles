@@ -139,6 +139,40 @@ describe('Solicitud: análisis explicado y decisión del docente', () => {
     expect(screen.queryByText('0 %')).not.toBeInTheDocument();
   });
 
+  it('la que no llega al 80 % en créditos no se vota y muestra contenidos y créditos', async () => {
+    const user = userEvent.setup();
+    const noCumple = {
+      ...evaluacion(2, 'Física', 'Física Básica', 100),
+      estimacion: 'NO_CUMPLE' as const,
+      creditosDestino: 3,
+      porcentajeCreditos: 66.67,
+      creditosOrigen: 2,
+      unidades: [{ numero: 1, nombre: 'Estática', horas: 36, similitud: 95, cubierta: true, materiaOrigen: 'Física Básica', numeroUnidadOrigen: 1, nombreUnidadOrigen: 'Estática', horasUnidadOrigen: 36 }],
+      conclusion: 'No se puede homologar: no llega al 80 % en créditos (66,67 %).',
+    };
+    api.obtenerSolicitud.mockResolvedValue({
+      ...SOLICITUD,
+      resultado: { ...SOLICITUD.resultado, evaluaciones: [SOLICITUD.resultado.evaluaciones[0], noCumple] },
+      resultadoFinal: [
+        SOLICITUD.resultadoFinal[0],
+        { codigoDestino: 'Física', nombreDestino: 'Física', estimacion: 'NO_CUMPLE', aprobaciones: 0, rechazos: 0, resultado: 'NO_HOMOLOGADA' },
+      ],
+    });
+    abrir();
+
+    expect((await screen.findAllByText('✘ No se puede homologar')).length).toBeGreaterThan(0);
+    expect(screen.getByRole('img', { name: 'Créditos: 66.67 %' })).toBeInTheDocument();
+    expect(screen.getByText('2 crédito(s) aprobado(s) frente a 3.')).toBeInTheDocument();
+    expect(screen.getByText(/No se vota: no llega al 80 %/)).toBeInTheDocument();
+    expect(screen.queryByRole('group', { name: 'Decisión para Física' })).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Enviar mi decisión' }));
+    expect(api.responder).toHaveBeenLastCalledWith('e1', {
+      decisiones: [{ codigoDestino: 'Algoritmos y Lógica de Programación', aprobada: true, observacion: null }],
+      comentario: null,
+    });
+  });
+
   it('el docente decide con botones y debe decidir lo que queda a su criterio', async () => {
     const user = userEvent.setup();
     abrir();

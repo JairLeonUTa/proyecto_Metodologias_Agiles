@@ -181,7 +181,13 @@ export interface CoberturaUnidad {
   horasUnidadOrigen: number | null;
 }
 
-/** Evaluación del agente de una materia pedida: contenidos, profundidad y carga horaria. */
+/**
+ * Estimación del agente: CUMPLE (80 % en contenidos y en créditos), NO_CUMPLE (no se puede homologar)
+ * o CRITERIO_DOCENTE (sin sílabo para comparar: deciden los docentes).
+ */
+export type EstimacionAgente = 'CUMPLE' | 'NO_CUMPLE' | 'CRITERIO_DOCENTE';
+
+/** Evaluación del agente de una materia pedida: deciden contenidos y créditos; el resto es informativo. */
 export interface EvaluacionMateria {
   numero: number;
   materiaDestino: string;
@@ -190,17 +196,24 @@ export interface EvaluacionMateria {
   creditosDestino: number | null;
   horasDestino: number;
   materiasOrigen: MateriaOrigenEvaluada[];
+  /** Decide: mínimo 80 %. */
   contenidos: number;
+  /** Solo informativo. */
   profundidad: number;
+  /** Solo informativo. */
   cargaHoraria: number;
-  /** CUMPLE o CRITERIO_DOCENTE. */
-  estimacion: 'CUMPLE' | 'CRITERIO_DOCENTE';
+  estimacion: EstimacionAgente;
   unidades: CoberturaUnidad[];
   explicacion: string[];
   conclusion: string;
   precedentes: Precedente[];
   /** True si el agente no tiene sílabo para comparar (otra institución o materia sin unidades): sin porcentajes. */
   sinSilabo?: boolean;
+  /** Decide: % de créditos aprobados frente a los de destino (mínimo 80 %). */
+  porcentajeCreditos?: number;
+  creditosOrigen?: number | null;
+  /** True si no se conocían los créditos y se usaron las horas. */
+  creditosPorHoras?: boolean;
 }
 
 export interface AnalisisAutomatico {
@@ -229,8 +242,8 @@ export interface DictamenDocente {
 export interface ResultadoFinalMateria {
   codigoDestino: string;
   nombreDestino: string;
-  /** CUMPLE (≥ contenido mínimo) o CRITERIO_DOCENTE. */
-  estimacion: 'CUMPLE' | 'CRITERIO_DOCENTE';
+  /** NO_CUMPLE queda NO_HOMOLOGADA sin votos de los docentes. */
+  estimacion: EstimacionAgente;
   aprobaciones: number;
   rechazos: number;
   /** PENDIENTE, HOMOLOGADA, NO_HOMOLOGADA o SIN_ACUERDO. */

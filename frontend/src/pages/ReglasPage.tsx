@@ -242,7 +242,7 @@ export function ReglasPage(): JSX.Element {
                     htmlFor="theta"
                     etiqueta="Contenido mínimo para homologar (%)"
                     obligatorio
-                    ayuda={`Si el agente estima este porcentaje o más en contenidos, profundidad y carga horaria, la materia cumple; si sale menos, queda a criterio de los docentes revisores. El reglamento de la UTA fija un mínimo de ${CONTENIDO_MINIMO_REGLAMENTO} %: se puede exigir más, pero no menos.`}
+                    ayuda={`Una materia se puede homologar solo si llega a este porcentaje en contenidos y también en créditos; si cualquiera de los dos queda por debajo, no se homologa. El reglamento de la UTA fija un mínimo de ${CONTENIDO_MINIMO_REGLAMENTO} %: se puede exigir más, pero no menos.`}
                     error={errores.theta}
                   >
                     <EntradaTexto

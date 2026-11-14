@@ -40,13 +40,12 @@ function Paso({ id, numero, titulo, ayuda, children }: { id?: string; numero: nu
   );
 }
 
-function Veredicto({ cumple, sinSilabo = false }: { cumple: boolean; sinSilabo?: boolean }): JSX.Element {
+/** CUMPLE (80 % en contenidos y créditos), NO_CUMPLE (no se puede homologar) o sin sílabo (decide el docente). */
+function Veredicto({ estimacion, sinSilabo = false }: { estimacion: string; sinSilabo?: boolean }): JSX.Element {
   if (sinSilabo) return <Etiqueta tono="neutro">Sin sílabo para comparar · decide el docente</Etiqueta>;
-  return cumple ? (
-    <Etiqueta tono="exito">✔ Cumple el {MINIMO} %</Etiqueta>
-  ) : (
-    <Etiqueta tono="advertencia">? A criterio del docente</Etiqueta>
-  );
+  if (estimacion === 'CUMPLE') return <Etiqueta tono="exito">✔ Cumple el {MINIMO} %</Etiqueta>;
+  if (estimacion === 'NO_CUMPLE') return <Etiqueta tono="error">✘ No se puede homologar</Etiqueta>;
+  return <Etiqueta tono="advertencia">? A criterio del docente</Etiqueta>;
 }
 
 /** Barra de 0 a 100 % con la marca del mínimo exigido (80 %). */
@@ -85,6 +84,12 @@ const COLUMNAS_UNIDADES: Array<ColumnaTabla<CoberturaUnidad>> = [
 /** Análisis de una materia pedida, con su explicación completa. */
 function AnalisisMateria({ e, carreraOrigen }: { e: EvaluacionMateria; carreraOrigen: string }): JSX.Element {
   const cumple = e.estimacion === 'CUMPLE';
+  const creditosOrigen = e.creditosOrigen ?? null;
+  const ayudaCreditos = e.creditosPorHoras
+    ? 'No se conocían los créditos: se compararon las horas, que es lo mismo.'
+    : creditosOrigen !== null && e.creditosDestino
+      ? `${creditosOrigen} crédito(s) aprobado(s) frente a ${e.creditosDestino}.`
+      : 'Créditos aprobados frente a los de la materia de destino.';
   return (
     <article className="space-y-4 rounded-lg border border-slate-200 p-4">
       <header className="flex flex-wrap items-center gap-3">
@@ -93,19 +98,29 @@ function AnalisisMateria({ e, carreraOrigen }: { e: EvaluacionMateria; carreraOr
           ← {e.materiasOrigen.map((o) => o.nombre).join(' + ')} ({carreraOrigen})
         </span>
         <span className="ml-auto">
-          <Veredicto cumple={cumple} sinSilabo={e.sinSilabo} />
+          <Veredicto estimacion={e.estimacion} sinSilabo={e.sinSilabo} />
         </span>
       </header>
 
       {e.unidades.length > 0 && !e.sinSilabo ? (
-        <div className="grid gap-4 md:grid-cols-3">
-          <Medidor etiqueta="Contenidos" valor={e.contenidos} ayuda="Temas de la materia de destino que ya estudió." />
-          <Medidor etiqueta="Profundidad" valor={e.profundidad} ayuda="Horas dedicadas a esos temas." />
-          <Medidor etiqueta="Carga horaria" valor={e.cargaHoraria} ayuda="Horas totales aprobadas." />
+        <div className="space-y-3">
+          {/* Lo que decide: 80 % en contenidos y 80 % en créditos, sí o sí. */}
+          <div className="grid gap-4 md:grid-cols-2">
+            <Medidor etiqueta="Contenidos" valor={e.contenidos} ayuda="Temas de la materia de destino que ya estudió." />
+            <Medidor etiqueta="Créditos" valor={e.porcentajeCreditos ?? e.cargaHoraria} ayuda={ayudaCreditos} />
+          </div>
+          <p className="text-xs text-faint">
+            Solo como dato: profundidad {formatearPorcentaje(e.profundidad)} (horas dedicadas a esos temas) · carga horaria{' '}
+            {formatearPorcentaje(e.cargaHoraria)} (horas totales aprobadas). No deciden el resultado.
+          </p>
         </div>
       ) : null}
 
-      <p className={`rounded-md px-3 py-2 text-sm font-medium ${e.sinSilabo ? 'bg-slate-100 text-slate-800' : cumple ? 'bg-emerald-50 text-emerald-900' : 'bg-amber-50 text-amber-900'}`}>
+      <p
+        className={`rounded-md px-3 py-2 text-sm font-medium ${
+          e.sinSilabo ? 'bg-slate-100 text-slate-800' : cumple ? 'bg-emerald-50 text-emerald-900' : 'bg-red-50 text-red-900'
+        }`}
+      >
         {e.conclusion}
       </p>
 
@@ -134,9 +149,12 @@ function AnalisisMateria({ e, carreraOrigen }: { e: EvaluacionMateria; carreraOr
 function SuDecision({ solicitud, alGuardar }: { solicitud: SolicitudAnalisis; alGuardar: (s: SolicitudAnalisis) => void }): JSX.Element {
   const { usuario } = useAuth();
   const previa = solicitud.dictamenes.find((d) => d.correoDocente === usuario?.correoInstitucional?.toLowerCase());
+  // Las que no llegan al 80 % en contenidos o créditos no se votan: el reglamento no permite homologarlas.
+  const aDecidir = solicitud.resultadoFinal.filter((m) => m.estimacion !== 'NO_CUMPLE');
+  const noHomologables = solicitud.resultadoFinal.filter((m) => m.estimacion === 'NO_CUMPLE');
   const [decisiones, setDecisiones] = useState<Record<string, boolean | undefined>>(() =>
     Object.fromEntries(
-      solicitud.resultadoFinal.map((m) => [
+      aDecidir.map((m) => [
         m.codigoDestino,
         previa?.decisiones.find((d) => d.codigoDestino === m.codigoDestino)?.aprobada ?? (m.estimacion === 'CUMPLE' ? true : undefined),
       ]),
@@ -145,7 +163,7 @@ function SuDecision({ solicitud, alGuardar }: { solicitud: SolicitudAnalisis; al
   const [comentario, setComentario] = useState(previa?.comentario ?? '');
   const [enviando, setEnviando] = useState(false);
   const [error, setError] = useState<{ texto: string; detalles: string[] } | null>(null);
-  const faltan = solicitud.resultadoFinal.filter((m) => decisiones[m.codigoDestino] === undefined).length;
+  const faltan = aDecidir.filter((m) => decisiones[m.codigoDestino] === undefined).length;
 
   const enviar = async (): Promise<void> => {
     setEnviando(true);
@@ -153,7 +171,7 @@ function SuDecision({ solicitud, alGuardar }: { solicitud: SolicitudAnalisis; al
     try {
       alGuardar(
         await extraccionesApi.responder(solicitud.expedienteId, {
-          decisiones: solicitud.resultadoFinal.map((m) => ({
+          decisiones: aDecidir.map((m) => ({
             codigoDestino: m.codigoDestino,
             aprobada: decisiones[m.codigoDestino] === true,
             observacion: null,
@@ -176,11 +194,11 @@ function SuDecision({ solicitud, alGuardar }: { solicitud: SolicitudAnalisis; al
       <p className="text-sm font-semibold text-ink">
         {previa ? 'Usted ya respondió. Puede cambiar su decisión:' : 'Indique su decisión para cada materia:'}
       </p>
-      {solicitud.resultadoFinal.map((m) => (
+      {aDecidir.map((m) => (
         <div key={m.codigoDestino} className="flex flex-wrap items-center gap-3 rounded-md bg-white px-3 py-2">
           <span className="min-w-64 flex-1 font-medium text-ink">{m.nombreDestino}</span>
           <Veredicto
-            cumple={m.estimacion === 'CUMPLE'}
+            estimacion={m.estimacion}
             sinSilabo={solicitud.resultado?.evaluaciones.find((e) => e.materiaDestino === m.codigoDestino)?.sinSilabo}
           />
           <div className="flex gap-2" role="group" aria-label={`Decisión para ${m.nombreDestino}`}>
@@ -201,6 +219,13 @@ function SuDecision({ solicitud, alGuardar }: { solicitud: SolicitudAnalisis; al
               No homologar
             </button>
           </div>
+        </div>
+      ))}
+      {noHomologables.map((m) => (
+        <div key={m.codigoDestino} className="flex flex-wrap items-center gap-3 rounded-md bg-white px-3 py-2">
+          <span className="min-w-64 flex-1 font-medium text-ink">{m.nombreDestino}</span>
+          <Veredicto estimacion={m.estimacion} />
+          <span className="text-sm text-muted">No se vota: no llega al {MINIMO} % en contenidos o en créditos.</span>
         </div>
       ))}
       <AreaTexto
@@ -334,7 +359,7 @@ export function SolicitudDetallePage(): JSX.Element {
                 <span aria-hidden="true">→</span>
                 <span className="font-semibold text-ink">{e.materiaDestino}</span>
                 <span className="ml-auto flex gap-2">
-                  <Veredicto cumple={e.estimacion === 'CUMPLE'} sinSilabo={e.sinSilabo} />
+                  <Veredicto estimacion={e.estimacion} sinSilabo={e.sinSilabo} />
                   {final && final.resultado !== 'PENDIENTE' ? (
                     <Etiqueta tono={RESULTADO[final.resultado]?.tono ?? 'neutro'}>{RESULTADO[final.resultado]?.texto}</Etiqueta>
                   ) : null}
@@ -388,7 +413,7 @@ export function SolicitudDetallePage(): JSX.Element {
         <Paso
           numero={4}
           titulo="Análisis del agente, materia por materia"
-          ayuda={`El agente compara los sílabos oficiales. Una materia cumple si llega al ${MINIMO} % en contenidos, profundidad y carga horaria; si no, deciden los docentes.`}
+          ayuda={`El agente compara los sílabos oficiales. Una materia se puede homologar solo si llega al ${MINIMO} % en contenidos y al ${MINIMO} % en créditos; si no llega, no se homologa. Sin sílabo para comparar, deciden los docentes.`}
         >
           <div className="space-y-4">
             {resultado.evaluaciones.map((e) => (

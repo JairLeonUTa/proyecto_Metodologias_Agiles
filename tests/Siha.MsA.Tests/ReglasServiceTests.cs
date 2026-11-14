@@ -152,7 +152,7 @@ public class ReglasServiceTests
         using var db = NuevaDb();
         await Sembrar(db);
         Assert.Equal(new[] { "RN-01", "RN-02", "RN-09", "RN-10", "RN-13", "RN-14" },
-            await db.Reglas.OrderBy(r => r.Codigo).Select(r => r.Codigo).ToArrayAsync());
+            await db.Reglas.Select(r => r.Codigo).Distinct().OrderBy(c => c).ToArrayAsync());
         Assert.Equal(new[] { "CAU-P-011", "CAU-P-122" }, await db.ParametrosEvaluacion
             .OrderBy(p => p.RutaNormativa).Select(p => p.RutaNormativa).ToArrayAsync());
         Assert.All(db.ParametrosEvaluacion, p =>
@@ -168,14 +168,19 @@ public class ReglasServiceTests
         Assert.Equal("ra>=80", ra.Expresion);
         Assert.All(db.Reglas.Where(r => r.Codigo == "RN-13" || r.Codigo == "RN-14"),
             r => Assert.False(r.EsNormativa));
-        Assert.All(db.Reglas, r =>
+        // Todas nacen en la 1.0; RN-01 y RN-13 se versionan a 2.0 (regla de créditos) y su 1.0 queda cerrada.
+        Assert.All(db.Reglas.Where(r => r.Version == "1.0"), r =>
         {
             Assert.False(string.IsNullOrWhiteSpace(r.Fuente));
-            Assert.Equal("1.0", r.Version);
             Assert.Equal(new DateOnly(2026, 1, 1), r.VigenteDesde);
-            Assert.Null(r.VigenteHasta);
             Assert.True(r.Activa);
+            if (r.Codigo is "RN-01" or "RN-13")
+                Assert.Equal(DbSeederA.VigenciaReglaCreditos.AddDays(-1), r.VigenteHasta);
+            else
+                Assert.Null(r.VigenteHasta);
         });
+        Assert.Equal(new[] { "RN-01", "RN-13" },
+            await db.Reglas.Where(r => r.Version == "2.0").Select(r => r.Codigo).OrderBy(c => c).ToArrayAsync());
     }
 
     [Fact]
@@ -183,11 +188,41 @@ public class ReglasServiceTests
     {
         using var db = NuevaDb();
         await Sembrar(db);
-        var regla = await db.Reglas.SingleAsync(r => r.Codigo == "RN-01");
-        Assert.True(regla.EsNormativa);
-        Assert.Equal("CAU-P-011", regla.RutaNormativa);
-        Assert.Equal("contenido>=80 && profundidad>=80 && cargaHoraria>=80", regla.Expresion);
-        Assert.Contains("cambio de carrera o universidad", regla.Descripcion);
+        // La 1.0 (contenido, profundidad y carga horaria) queda en el historial, cerrada.
+        var original = await db.Reglas.SingleAsync(r => r.Codigo == "RN-01" && r.Version == "1.0");
+        Assert.True(original.EsNormativa);
+        Assert.Equal("CAU-P-011", original.RutaNormativa);
+        Assert.Equal("contenido>=80 && profundidad>=80 && cargaHoraria>=80", original.Expresion);
+        Assert.Contains("cambio de carrera o universidad", original.Descripcion);
+        Assert.Equal(DbSeederA.VigenciaReglaCreditos.AddDays(-1), original.VigenteHasta);
+    }
+
+    [Fact]
+    public async Task Rn01_version_2_exige_80_en_contenidos_y_80_en_creditos()
+    {
+        using var db = NuevaDb();
+        await Sembrar(db);
+
+        var rn01 = await db.Reglas.SingleAsync(r => r.Codigo == "RN-01" && r.Version == "2.0");
+        Assert.True(rn01.EsNormativa);
+        Assert.Equal("contenido>=80 && creditos>=80", rn01.Expresion);
+        Assert.Contains("sí o sí", rn01.Descripcion);
+        Assert.Contains("66,67 %", rn01.Descripcion);
+        Assert.Equal(DbSeederA.VigenciaReglaCreditos, rn01.VigenteDesde);
+
+        var rn13 = await db.Reglas.SingleAsync(r => r.Codigo == "RN-13" && r.Version == "2.0");
+        Assert.Contains("Pcred>=80", rn13.Expresion);
+    }
+
+    [Fact]
+    public async Task La_actualizacion_de_la_regla_de_creditos_se_aplica_una_sola_vez()
+    {
+        using var db = NuevaDb();
+        await Sembrar(db);
+        await Sembrar(db);
+
+        Assert.Equal(2, await db.Reglas.CountAsync(r => r.Codigo == "RN-01"));
+        Assert.Equal(2, await db.Reglas.CountAsync(r => r.Codigo == "RN-13"));
     }
 
     [Theory]
@@ -203,14 +238,19 @@ public class ReglasServiceTests
     }
 
     [Fact]
-    public async Task SemillaModeloUsaCreditosSoloComoApoyoYCoberturaPonderadaPorHorasDocumentadas()
+    public async Task SemillaModeloDefineCreditosYCoberturaPonderadaPorHorasDocumentadas()
     {
         using var db = NuevaDb();
         await Sembrar(db);
-        var creditos = await db.Reglas.SingleAsync(r => r.Codigo == "RN-13");
+        // La 1.0 trataba los créditos solo como apoyo; queda en el historial.
+        var anterior = await db.Reglas.SingleAsync(r => r.Codigo == "RN-13" && r.Version == "1.0");
+        Assert.Equal("Pcred=min(100,sumCredOrigen/CredDestino*100)", anterior.Expresion);
+        Assert.Contains("sin umbral", anterior.Descripcion);
+        // La 2.0 exige el 80 % en créditos (forma parte de RN-01).
+        var creditos = await db.Reglas.SingleAsync(r => r.Codigo == "RN-13" && r.Version == "2.0");
         Assert.False(creditos.EsNormativa);
-        Assert.Equal("Pcred=min(100,sumCredOrigen/CredDestino*100)", creditos.Expresion);
-        Assert.Contains("sin umbral", creditos.Descripcion);
+        Assert.Equal("Pcred=min(100,sumCredOrigen/CredDestino*100) && Pcred>=80", creditos.Expresion);
+        Assert.Contains("80 %", creditos.Descripcion);
         var contenido = await db.Reglas.SingleAsync(r => r.Codigo == "RN-14");
         Assert.False(contenido.EsNormativa);
         Assert.Equal("Pcont=sum(hj*cj)/sum(hj)*100; cj=1 si similitudCoseno>=tau/100, 0 en otro caso", contenido.Expresion);
@@ -245,7 +285,7 @@ public class ReglasServiceTests
         await db.SaveChangesAsync();
         await Sembrar(db);
         Assert.Equal(2, await db.ParametrosEvaluacion.CountAsync());
-        Assert.Equal(6, await db.Reglas.CountAsync());
+        Assert.Equal(8, await db.Reglas.CountAsync()); // 6 reglas 1.0 + RN-01 y RN-13 en 2.0
         Assert.Equal(42, parametro.Tau);
         Assert.Equal("Configuración local", regla.Descripcion);
     }

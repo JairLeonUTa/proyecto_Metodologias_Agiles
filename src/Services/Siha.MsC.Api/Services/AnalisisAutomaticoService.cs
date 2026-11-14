@@ -34,16 +34,21 @@ public sealed class AnalisisAutomaticoException : Exception
 
 /// <summary>
 /// Agente de homologación. Conoce las mallas y sílabos oficiales de la UTA (MS A) y, por cada materia
-/// que el estudiante pide homologar, mide tres criterios del instructivo (mínimo 80 % cada uno):
+/// que el estudiante pide homologar, aplica la regla del reglamento: mínimo 80 % en las DOS, sí o sí:
 ///  - Contenidos: horas de la materia de destino cuyos temas aparecen en lo aprobado.
-///  - Profundidad: horas que lo aprobado dedica a esos temas frente a las que exige el destino.
-///  - Carga horaria: horas totales aprobadas frente a las horas de la materia de destino.
-/// Si los tres llegan al mínimo, la materia CUMPLE; si no, queda a CRITERIO del docente. Todo se
-/// explica en lenguaje sencillo, unidad por unidad.
+///  - Créditos: créditos aprobados frente a los de la materia de destino (con las horas si no se conocen).
+/// Si las dos llegan, la materia CUMPLE; si alguna no llega, NO_CUMPLE: no se puede homologar. Sin sílabo
+/// para comparar no se puede medir y queda a CRITERIO de los docentes. Profundidad y carga horaria se
+/// muestran solo como datos informativos. Todo se explica en lenguaje sencillo, unidad por unidad.
 /// </summary>
 public sealed class AnalisisAutomaticoService : IAnalisisAutomaticoService
 {
     public const string Cumple = "CUMPLE";
+
+    /// <summary>No llega al 80 % en contenidos o en créditos: el reglamento no permite homologarla.</summary>
+    public const string NoCumple = "NO_CUMPLE";
+
+    /// <summary>Solo para materias sin sílabo para comparar: no se puede medir y deciden los docentes.</summary>
     public const string CriterioDocente = "CRITERIO_DOCENTE";
     private const double ThetaPorDefecto = 80.0;
     private const double TauPorDefecto = 75.0;
@@ -213,10 +218,10 @@ public sealed class AnalisisAutomaticoService : IAnalisisAutomaticoService
         var requisitos = Requisitos(certificado, mallaOrigen, evaluaciones, theta, contexto);
         var cumplen = evaluaciones.Count(e => e.Estimacion == Cumple);
         var sinSilabo = evaluaciones.Count(e => e.SinSilabo);
-        var criterio = evaluaciones.Count - cumplen - sinSilabo;
+        var noCumplen = evaluaciones.Count(e => e.Estimacion == NoCumple);
         var partes = new List<string>();
-        if (sinSilabo < evaluaciones.Count) partes.Add($"{cumplen} cumple(n) el {Num(theta)} % en contenidos, profundidad y carga horaria");
-        if (criterio > 0) partes.Add($"{criterio} queda(n) a criterio de los docentes revisores");
+        if (sinSilabo < evaluaciones.Count) partes.Add($"{cumplen} cumple(n) el {Num(theta)} % en contenidos y créditos");
+        if (noCumplen > 0) partes.Add($"{noCumplen} no se puede(n) homologar por no llegar al {Num(theta)} %");
         if (sinSilabo > 0) partes.Add($"{sinSilabo} no tiene(n) sílabo para comparar y la(s) deciden los docentes");
         var resumen = $"Se analizaron {evaluaciones.Count} materia(s) pedida(s): {Unir(partes)}.";
 
@@ -326,20 +331,30 @@ public sealed class AnalisisAutomaticoService : IAnalisisAutomaticoService
         var profundidad = Porcentaje(horasEnTemasCubiertos, horasExigidasCubiertas);
         var carga = Math.Min(100m, Porcentaje(horasOrigen, horasDestino));
 
-        explicacion.Add($"Contenidos: se cubren {Num(cubiertas)} de {horasDestino} horas de la materia de destino = {Num((double)contenidos)} %.");
-        explicacion.Add(horasExigidasCubiertas > 0
-            ? $"Profundidad: en los temas que coinciden, lo aprobado dedica {Num(horasEnTemasCubiertos)} horas de las {Num(horasExigidasCubiertas)} que exige {contexto.CarreraDestinoNombre} = {Num((double)profundidad)} %."
-            : "Profundidad: no hay temas que coincidan, así que no se puede medir.");
-        explicacion.Add($"Carga horaria: {horasOrigen} horas aprobadas frente a {horasDestino} horas de la materia de destino = {Num((double)carga)} %.");
+        // Créditos: lo aprobado (suma si son varias materias) frente a los créditos de la materia de destino.
+        // Si no se conocen (por ejemplo, un sílabo externo que no los indica) se usan las horas, que es lo mismo.
+        int? creditosOrigen = origenes.All(o => o.Malla!.Creditos > 0) ? origenes.Sum(o => o.Malla!.Creditos) : null;
+        var creditosPorHoras = creditosOrigen is null || destino.Creditos <= 0;
+        var creditos = creditosPorHoras ? carga : Math.Min(100m, Porcentaje(creditosOrigen!.Value, destino.Creditos));
 
+        explicacion.Add($"Contenidos: se cubren {Num(cubiertas)} de {horasDestino} horas de la materia de destino = {Num((double)contenidos)} %.");
+        explicacion.Add(creditosPorHoras
+            ? $"Créditos: no se conocen los créditos de {(creditosOrigen is null ? nombresOrigen : $"«{solicitud.MateriaDestino}»")}; se comparan las horas, que es lo mismo: {horasOrigen} horas aprobadas frente a {horasDestino} = {Num((double)creditos)} %."
+            : $"Créditos: {creditosOrigen} crédito(s) aprobado(s) frente a {destino.Creditos} de la materia de destino = {Num((double)creditos)} %.");
+        explicacion.Add(horasExigidasCubiertas > 0
+            ? $"Profundidad (dato informativo, no decide): en los temas que coinciden, lo aprobado dedica {Num(horasEnTemasCubiertos)} horas de las {Num(horasExigidasCubiertas)} que exige {contexto.CarreraDestinoNombre} = {Num((double)profundidad)} %."
+            : "Profundidad (dato informativo): no hay temas que coincidan, así que no se puede medir.");
+        if (!creditosPorHoras)
+            explicacion.Add($"Carga horaria (dato informativo, no decide): {horasOrigen} horas aprobadas frente a {horasDestino} horas de la materia de destino = {Num((double)carga)} %.");
+
+        // Regla del reglamento: al menos 80 % en contenidos y 80 % en créditos, las dos sí o sí.
         var bajos = new List<string>();
         if ((double)contenidos < theta) bajos.Add($"contenidos ({Num((double)contenidos)} %)");
-        if ((double)profundidad < theta) bajos.Add($"profundidad ({Num((double)profundidad)} %)");
-        if ((double)carga < theta) bajos.Add($"carga horaria ({Num((double)carga)} %)");
-        var estimacion = bajos.Count == 0 ? Cumple : CriterioDocente;
+        if ((double)creditos < theta) bajos.Add($"créditos ({Num((double)creditos)} %)");
+        var estimacion = bajos.Count == 0 ? Cumple : NoCumple;
         var conclusion = estimacion == Cumple
-            ? $"Cumple el {Num(theta)} % en contenidos, profundidad y carga horaria: el agente recomienda homologar «{solicitud.MateriaDestino}»."
-            : $"No llega al {Num(theta)} % en {Unir(bajos)}: queda a criterio de los docentes revisores.";
+            ? $"Cumple el {Num(theta)} % en contenidos y en créditos: se puede homologar «{solicitud.MateriaDestino}». Los docentes revisores lo confirman."
+            : $"No se puede homologar: no llega al {Num(theta)} % en {Unir(bajos)}. El reglamento exige al menos el {Num(theta)} % en contenidos y en créditos.";
 
         var precedentes = await _precedentes.BuscarAsync(new BuscarPrecedenteRequest(
             origenes.Select(o => o.Malla!.Codigo).ToList(), destino.Codigo, contexto.InstitucionOrigen), cancellationToken);
@@ -347,7 +362,8 @@ public sealed class AnalisisAutomaticoService : IAnalisisAutomaticoService
             explicacion.Add($"Hay {precedentes.Count} caso(s) anterior(es) idéntico(s): {string.Join(", ", precedentes.Select(p => p.Resolucion))}.");
 
         return new EvaluacionMateriaResponse(solicitud.Numero, solicitud.MateriaDestino, destino.Codigo, destino.Semestre, destino.Creditos,
-            horasDestino, origenDto, contenidos, profundidad, carga, estimacion, unidades, explicacion, conclusion, precedentes);
+            horasDestino, origenDto, contenidos, profundidad, carga, estimacion, unidades, explicacion, conclusion, precedentes,
+            SinSilabo: false, PorcentajeCreditos: creditos, CreditosOrigen: creditosOrigen, CreditosPorHoras: creditosPorHoras);
     }
 
     /// <summary>Reglas del instructivo de cambio de carrera, verificadas con el certificado y la malla de origen.</summary>
@@ -386,7 +402,9 @@ public sealed class AnalisisAutomaticoService : IAnalisisAutomaticoService
                 ? $"{cumplen} de {evaluaciones.Count} materia(s) pedida(s) llegan al {Num(theta)} %."
                 : comparables.Count == 0
                     ? "El agente no tiene sílabos para comparar estas materias; los docentes deciden con el plan analítico del estudiante."
-                    : $"Ninguna materia pedida llega al {Num(theta)} %; los docentes deciden si alguna procede."));
+                    : comparables.Count == evaluaciones.Count
+                        ? $"Ninguna materia pedida llega al {Num(theta)} % en contenidos y créditos: no se puede homologar ninguna."
+                        : $"Ninguna materia comparada llega al {Num(theta)} % en contenidos y créditos; solo quedan las que no tienen sílabo, que deciden los docentes."));
 
         requisitos.Add(new RequisitoResponse("Materias vigentes y sin tercera matrícula", true,
             "El certificado de Secretaría solo incluye materias de los últimos 10 años y sin tercera matrícula."));
@@ -395,13 +413,18 @@ public sealed class AnalisisAutomaticoService : IAnalisisAutomaticoService
         var detalle = evaluaciones.Select(e => e.SinSilabo
             ? $"«{e.MateriaDestino}»: sin sílabo para comparar (deciden los docentes)."
             : $"«{e.MateriaDestino}»: {Estado(e.Estimacion)} (contenidos {Num((double)e.Contenidos)} %, " +
-              $"profundidad {Num((double)e.Profundidad)} %, carga horaria {Num((double)e.CargaHoraria)} %).");
-        requisitos.Add(new RequisitoResponse($"Equivalencia mínima del {Num(theta)} % en contenidos, profundidad y carga horaria",
+              $"créditos {Num((double)e.PorcentajeCreditos)} %).");
+        requisitos.Add(new RequisitoResponse($"Equivalencia mínima del {Num(theta)} % en contenidos y en créditos",
             comparables.All(e => e.Estimacion == Cumple), string.Join(" ", detalle)));
         return requisitos;
     }
 
-    private static string Estado(string estimacion) => estimacion == Cumple ? "cumple" : "a criterio del docente";
+    private static string Estado(string estimacion) => estimacion switch
+    {
+        Cumple => "cumple",
+        NoCumple => "no se puede homologar",
+        _ => "a criterio del docente"
+    };
 
     /// <summary>Prefijo de los códigos sintéticos de las materias que vienen de un sílabo externo adjuntado.</summary>
     internal const string PrefijoSilaboExterno = "EXT-";

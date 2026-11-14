@@ -70,13 +70,20 @@ public static class TablaResultadosHomologacion
         fila.CodigoDestino = e.CodigoDestino is null ? null : Recortar(e.CodigoDestino, 30);
 
         // Créditos: solo si se conocen los de todas las materias presentadas.
-        fila.CreditosOrigen = origenes.Count > 0 && origenes.All(o => o.Creditos is > 0)
+        fila.CreditosOrigen = e.CreditosOrigen ?? (origenes.Count > 0 && origenes.All(o => o.Creditos is > 0)
             ? origenes.Sum(o => o.Creditos!.Value)
-            : null;
+            : null);
         fila.CreditosDestino = e.CreditosDestino is > 0 ? e.CreditosDestino : null;
-        fila.PorcentajeCreditos = fila.CreditosOrigen is { } co && fila.CreditosDestino is { } cd
-            ? Math.Min(100m, Math.Round((decimal)co / cd * 100m, 2))
-            : null;
+        // El mismo porcentaje con el que decidió el agente (con las horas si no se conocían los créditos).
+        // Sin sílabo no se pudo medir.
+        // (Los análisis guardados antes de la regla de créditos no traen el porcentaje: se calcula aquí.)
+        fila.PorcentajeCreditos = e.SinSilabo
+            ? null
+            : e.PorcentajeCreditos > 0
+                ? e.PorcentajeCreditos
+                : fila.CreditosOrigen is { } co && fila.CreditosDestino is { } cd
+                    ? Math.Min(100m, Math.Round((decimal)co / cd * 100m, 2))
+                    : e.PorcentajeCreditos;
 
         fila.HorasOrigen = origenes.Count > 0 && origenes.All(o => o.Horas is > 0)
             ? origenes.Sum(o => o.Horas!.Value)

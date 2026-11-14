@@ -22,6 +22,7 @@ public static class DbSeederA
         await SembrarRolesAsync(db, hasher, adminCorreo, adminPassword, logger);
         await SembrarParametrosAsync(db, logger);
         await SembrarReglasAsync(db, logger);
+        await ActualizarReglaCreditosAsync(db, logger);
         await SembrarCatalogoAsync(db, logger);
         await SembrarCatalogoUtaAsync(db, logger);
         if (!string.IsNullOrWhiteSpace(docentesDemoPassword))
@@ -128,6 +129,63 @@ public static class DbSeederA
 
         await db.SaveChangesAsync();
         logger.LogInformation("Semilla de umbrales θ, δ, τ aplicada para CAU-P-011 y CAU-P-122.");
+    }
+
+    /// <summary>Inicio de la versión 2.0 de RN-01 y RN-13: 80 % en contenidos y 80 % en créditos, sí o sí.</summary>
+    public static readonly DateOnly VigenciaReglaCreditos = new(2026, 11, 14);
+
+    /// <summary>
+    /// Regla definida por el equipo con el docente: para homologar hay que llegar, sí o sí, al 80 % en
+    /// contenidos y al 80 % en créditos (2 créditos frente a 3 = 66,67 %: no se homologa). Versiona RN-01 y
+    /// RN-13 a 2.0 cerrando la 1.0 (queda en el historial). Incremental e idempotente: se aplica una sola
+    /// vez, también en las bases que ya existían.
+    /// </summary>
+    private static async Task ActualizarReglaCreditosAsync(SihaDbContextA db, ILogger logger)
+    {
+        var nuevas = new[]
+        {
+            (Codigo: "RN-01", Descripcion:
+                "Para homologar una materia (CAU-P-011) se exige, sí o sí, al menos 80 % en contenidos y al menos 80 % en créditos. " +
+                "Si cualquiera de los dos no llega (por ejemplo, 2 créditos frente a 3 = 66,67 %), la materia no se puede homologar. " +
+                "Profundidad y carga horaria se muestran solo como datos informativos.",
+                Expresion: "contenido>=80 && creditos>=80"),
+            (Codigo: "RN-13", Descripcion:
+                "Pcred mide los créditos aprobados frente a los de la materia de destino y forma parte de la regla RN-01: debe llegar al 80 %. " +
+                "Requiere créditos de origen y destino documentados; si no se conocen, se calcula con las horas, que es equivalente.",
+                Expresion: "Pcred=min(100,sumCredOrigen/CredDestino*100) && Pcred>=80")
+        };
+
+        var cambios = 0;
+        foreach (var (codigo, descripcion, expresion) in nuevas)
+        {
+            var versiones = await db.Reglas
+                .Where(r => r.Codigo == codigo && r.RutaNormativa == RutasNormativas.CambioCarreraOu)
+                .OrderByDescending(r => r.VigenteDesde).ThenByDescending(r => r.Id)
+                .ToListAsync();
+            if (versiones.Count == 0 || versiones.Any(r => r.Version == "2.0")) continue;
+
+            var anterior = versiones[0];
+            var fin = VigenciaReglaCreditos.AddDays(-1);
+            if (anterior.VigenteHasta is null || anterior.VigenteHasta > fin) anterior.VigenteHasta = fin;
+            db.Reglas.Add(new Regla
+            {
+                Codigo = codigo,
+                RutaNormativa = anterior.RutaNormativa,
+                TipoTramite = anterior.TipoTramite,
+                EsNormativa = anterior.EsNormativa,
+                Descripcion = descripcion,
+                Expresion = expresion,
+                Version = "2.0",
+                Fuente = "Definición del equipo SIHA-IA con el docente (noviembre 2026): 80 % en contenidos y 80 % en créditos",
+                VigenteDesde = VigenciaReglaCreditos,
+                Activa = true
+            });
+            cambios++;
+        }
+
+        if (cambios == 0) return;
+        await db.SaveChangesAsync();
+        logger.LogInformation("Reglas RN-01 y RN-13 versionadas a 2.0: 80 % en contenidos y 80 % en créditos.");
     }
 
     private static async Task SembrarReglasAsync(SihaDbContextA db, ILogger logger)

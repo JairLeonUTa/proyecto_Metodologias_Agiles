@@ -61,26 +61,30 @@ export function ReglasHomologacionPage(): JSX.Element {
       <section className="rounded-xl border border-slate-200 bg-white p-5">
         <h2 className="text-lg font-semibold text-ink">2. Cuándo una materia se puede homologar</h2>
         <p className="mt-2 text-sm text-slate-700">
-          La materia aprobada debe equivaler al menos al <strong>{minimo} %</strong> de la materia de la carrera de destino en tres
-          aspectos. El agente los mide con los sílabos oficiales de la UTA:
+          La materia aprobada debe llegar, <strong>sí o sí</strong>, al <strong>{minimo} %</strong> en las dos cosas siguientes. El
+          agente las mide con los sílabos oficiales de la UTA:
         </p>
-        <dl className="mt-3 grid gap-3 sm:grid-cols-3">
+        <dl className="mt-3 grid gap-3 sm:grid-cols-2">
           <div className="rounded-lg bg-slate-50 p-3">
             <dt className="font-semibold text-ink">Contenidos</dt>
             <dd className="text-sm text-muted">Qué parte de los temas de la materia de destino ya estudió.</dd>
           </div>
           <div className="rounded-lg bg-slate-50 p-3">
-            <dt className="font-semibold text-ink">Profundidad</dt>
-            <dd className="text-sm text-muted">Cuántas horas dedicó a esos temas, frente a las que exige la carrera de destino.</dd>
-          </div>
-          <div className="rounded-lg bg-slate-50 p-3">
-            <dt className="font-semibold text-ink">Carga horaria</dt>
-            <dd className="text-sm text-muted">Horas totales de la materia aprobada frente a las de la materia de destino.</dd>
+            <dt className="font-semibold text-ink">Créditos</dt>
+            <dd className="text-sm text-muted">
+              Créditos de la materia aprobada frente a los de la materia de destino. Por ejemplo, 2 créditos frente a 3 es 66,67 %: no
+              llega.
+            </dd>
           </div>
         </dl>
         <p className="mt-3 text-sm text-slate-700">
-          Si los tres llegan al {minimo} %, el agente indica <strong>“Cumple”</strong>. Si alguno no llega, la materia queda{' '}
-          <strong>“a criterio del docente”</strong>: no se rechaza sola, la deciden los docentes.
+          Si las dos llegan al {minimo} %, el agente indica <strong>“Cumple”</strong> y los docentes lo confirman. Si cualquiera de las
+          dos no llega, <strong>no se puede homologar</strong>, aunque la otra esté completa. Si no hay sílabo para comparar, deciden
+          los docentes con la documentación del estudiante.
+        </p>
+        <p className="mt-2 text-xs text-faint">
+          La profundidad (horas dedicadas a cada tema) y la carga horaria se muestran solo como datos informativos: no deciden el
+          resultado.
         </p>
       </section>
 
@@ -89,7 +93,10 @@ export function ReglasHomologacionPage(): JSX.Element {
         <ol className="mt-3 list-decimal space-y-2 pl-5 text-sm text-slate-700">
           <li>El operador sube el certificado de homologación (PDF) que entrega Secretaría.</li>
           <li>El agente analiza cada materia pedida y explica por qué cumple o no.</li>
-          <li>Los dos docentes revisores que indica el certificado revisan el análisis y deciden cada materia.</li>
+          <li>
+            Los dos docentes revisores que indica el certificado revisan el análisis y deciden las materias que cumplen y las que no
+            tienen sílabo. Las que no llegan al {minimo} % quedan <strong>no homologadas</strong> directamente.
+          </li>
           <li>
             Una materia queda <strong>homologada</strong> cuando los dos docentes la aprueban. Si no coinciden, la carrera receptora
             resuelve.
