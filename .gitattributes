@@ -1,0 +1,15 @@
+# Archivos binarios: git no debe tocar sus saltos de línea (en Windows con core.autocrlf=true
+# convertía LF a CRLF dentro de los PDF y desplazaba sus índices internos).
+*.pdf binary
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.pyc binary
+*.docx binary
+*.xlsx binary
+*.pptx binary
+
+# Scripts de shell: siempre LF (se ejecutan dentro de contenedores Linux).
+*.sh text eol=lf
