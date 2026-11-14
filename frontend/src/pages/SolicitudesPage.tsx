@@ -1,7 +1,8 @@
+import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { expedientesApi, extraccionesApi } from '../api';
 import { EncabezadoPagina } from '../components/EncabezadoPagina';
-import { Alerta, Etiqueta, Tabla } from '../components/ui';
+import { Alerta, Boton, Etiqueta, Tabla } from '../components/ui';
 import type { ColumnaTabla, TonoEtiqueta } from '../components/ui';
 import { useAuth } from '../hooks/useAuth';
 import { usePeticion } from '../hooks/usePeticion';
@@ -11,7 +12,10 @@ import type { SolicitudAnalisis } from '../types/analisis';
 import { ROLES } from '../types/comunes';
 import type { Expediente } from '../types/expedientes';
 import { formatearFechaHora } from '../utils/formato';
-import { esFormatoActual } from '../utils/solicitudes';
+import { esFormatoActual, guardarVistas, leerVistas, solicitudesNuevas } from '../utils/solicitudes';
+
+/** Cada cuánto se vuelve a consultar la lista del docente para mostrar las asignaciones nuevas. */
+const REFRESCO_DOCENTE_MS = 60000;
 
 interface Fila {
   expediente: Expediente;
@@ -47,6 +51,54 @@ export function SolicitudesPage(): JSX.Element {
   const { usuario } = useAuth();
   const datos = usePeticion(cargar, []);
   const esDocente = usuario?.rol === ROLES.DOCENTE;
+  const correo = usuario?.correoInstitucional?.toLowerCase() ?? '';
+
+  // El docente ve la lista actualizarse sola: si le asignan una solicitud mientras la tiene abierta, aparece.
+  const { actualizarDatos } = datos;
+  useEffect(() => {
+    if (!esDocente) return undefined;
+    const reloj = setInterval(() => {
+      cargar().then(actualizarDatos).catch(() => undefined);
+    }, REFRESCO_DOCENTE_MS);
+    return () => clearInterval(reloj);
+  }, [esDocente, actualizarDatos]);
+
+  const filas = datos.datos ?? [];
+  const meToca = (analisis: SolicitudAnalisis | null): boolean =>
+    esDocente &&
+    analisis?.estado === 'ANALIZADO' &&
+    analisis.revisores.some((rv) => rv.correo === correo && !rv.respondio);
+  const pendientes = filas.filter((f) => meToca(f.analisis));
+
+  // Solicitudes nuevas desde la última visita del docente (se recuerdan en este navegador).
+  const [vistas, setVistas] = useState<Set<string> | null>(() => (correo ? leerVistas(correo) : null));
+  const nuevas = useMemo(
+    () =>
+      esDocente && !datos.cargando
+        ? solicitudesNuevas(
+            filas.map((f) => f.expediente.id),
+            vistas,
+            new Set(pendientes.map((f) => f.expediente.id)),
+          )
+        : new Set<string>(),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [esDocente, datos.cargando, datos.datos, vistas],
+  );
+  // Primera visita en este navegador: lo que no espera su decisión queda como visto, para que la
+  // próxima vez solo se avise de lo realmente nuevo.
+  useEffect(() => {
+    if (!esDocente || !correo || datos.cargando || datos.datos === null || vistas !== null) return;
+    const base = new Set(datos.datos.filter((f) => !meToca(f.analisis)).map((f) => f.expediente.id));
+    guardarVistas(correo, base);
+    setVistas(base);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [esDocente, correo, datos.cargando, datos.datos, vistas]);
+
+  const marcarVistas = (ids: Iterable<string>): void => {
+    const todas = new Set([...(vistas ?? []), ...ids, ...filas.filter((f) => !nuevas.has(f.expediente.id)).map((f) => f.expediente.id)]);
+    guardarVistas(correo, todas);
+    setVistas(todas);
+  };
 
   const columnas: Array<ColumnaTabla<Fila>> = [
     {
@@ -54,7 +106,10 @@ export function SolicitudesPage(): JSX.Element {
       encabezado: 'Solicitud',
       render: ({ expediente }) => (
         <div>
-          <p className="text-sm font-medium text-ink">{expediente.estudianteNombre}</p>
+          <p className="flex items-center gap-2 text-sm font-medium text-ink">
+            {expediente.estudianteNombre}
+            {nuevas.has(expediente.id) ? <Etiqueta tono="exito">Nueva</Etiqueta> : null}
+          </p>
           <p className="font-mono text-xs text-faint">
             {expediente.codigo} · {expediente.numeroCertificado}
           </p>
@@ -93,14 +148,10 @@ export function SolicitudesPage(): JSX.Element {
       encabezado: 'Estado',
       render: ({ analisis }) => {
         const estado = estadoSolicitud(analisis);
-        const meToca =
-          esDocente &&
-          analisis?.estado === 'ANALIZADO' &&
-          analisis.revisores.some((rv) => rv.correo === usuario?.correoInstitucional?.toLowerCase() && !rv.respondio);
         return (
           <div className="flex flex-col items-start gap-1">
             <Etiqueta tono={estado.tono}>{estado.texto}</Etiqueta>
-            {meToca ? <Etiqueta tono="marca">Falta su decisión</Etiqueta> : null}
+            {meToca(analisis) ? <Etiqueta tono="marca">Falta su decisión</Etiqueta> : null}
           </div>
         );
       },
@@ -112,6 +163,7 @@ export function SolicitudesPage(): JSX.Element {
       render: ({ expediente }) => (
         <Link
           to={`/solicitudes/${expediente.id}`}
+          onClick={() => (esDocente ? marcarVistas([expediente.id]) : undefined)}
           className="rounded-md bg-institucional-700 px-3 py-1.5 text-sm font-semibold text-white hover:bg-institucional-800"
         >
           Abrir
@@ -141,9 +193,30 @@ export function SolicitudesPage(): JSX.Element {
         }
       />
       {datos.error ? <Alerta tono="error">{datos.error}</Alerta> : null}
+      {esDocente && nuevas.size > 0 ? (
+        <Alerta tono="exito" titulo={nuevas.size === 1 ? 'Se le asignó una solicitud nueva' : `Se le asignaron ${nuevas.size} solicitudes nuevas`}>
+          <p>
+            {filas
+              .filter((f) => nuevas.has(f.expediente.id))
+              .map((f) => f.expediente.estudianteNombre)
+              .join(', ')}
+            . Ya traen el análisis del agente; ábralas para dar su decisión.
+          </p>
+          <Boton className="mt-2" variante="secundario" tamano="sm" onClick={() => marcarVistas(nuevas)}>
+            Entendido
+          </Boton>
+        </Alerta>
+      ) : null}
+      {esDocente && pendientes.length > 0 && nuevas.size === 0 ? (
+        <Alerta tono="informacion">
+          {pendientes.length === 1
+            ? 'Tiene 1 solicitud esperando su decisión.'
+            : `Tiene ${pendientes.length} solicitudes esperando su decisión.`}
+        </Alerta>
+      ) : null}
       <Tabla
         columnas={columnas}
-        filas={datos.datos ?? []}
+        filas={filas}
         claveFila={(f) => f.expediente.id}
         cargando={datos.cargando}
         mensajeVacio={esDocente ? 'No tiene solicitudes asignadas.' : 'Todavía no hay solicitudes registradas.'}

@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { NavLink, Outlet, useLocation } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
+import { AvisoSesion } from '../components/AvisoSesion';
 import { Icono } from '../components/ui/Icono';
 import { ETIQUETA_ROL } from '../types/comunes';
 import { menuParaRol, RUTAS } from './navegacion';
@@ -262,6 +263,8 @@ export function LayoutPrincipal(): JSX.Element {
           </nav>
         </div>
       </header>
+
+      <AvisoSesion />
 
       {/* Hoja blanca: inset 8px del marco, 16px de radio, borde de 1px */}
       <main

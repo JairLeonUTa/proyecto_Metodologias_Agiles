@@ -19,6 +19,14 @@
       "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer", "AllowedScopes": [] }
     },
     {
+      "DownstreamPathTemplate": "/api/auth/renovar",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [ { "Host": "localhost", "Port": 5081 } ],
+      "UpstreamPathTemplate": "/api/auth/renovar",
+      "UpstreamHttpMethod": [ "POST" ],
+      "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer", "AllowedScopes": [] }
+    },
+    {
       "DownstreamPathTemplate": "/api/usuarios",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [ { "Host": "localhost", "Port": 5081 } ],

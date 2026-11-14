@@ -30,6 +30,8 @@ function renderConRol(rol: string): void {
     cerrarSesion: () => undefined,
     limpiarMotivoCierre: () => undefined,
     tieneRol: (...roles: string[]) => roles.includes(rol),
+    expiraUtc: null,
+    renovarSesion: async () => undefined,
   };
 
   render(
