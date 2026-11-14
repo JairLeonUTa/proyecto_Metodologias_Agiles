@@ -142,7 +142,7 @@ public class FlujoDocumentosRealTests
         mensaje.CorrelationId.Should().Be(borrador.CorrelationId, "la cabecera CorrelationId debe conservarse");
         mensaje.Evento.CorrelationId.Should().Be(borrador.CorrelationId);
         mensaje.MessageId.Should().Be(borrador.Id, "MessageId determinista = ExpedienteId para deduplicar");
-        mensaje.Evento.Version.Should().Be("1.1");
+        mensaje.Evento.Version.Should().Be("1.2", "v1.2 agrega el tipo y la materia de cada documento (sílabos externos)");
         mensaje.Evento.DocumentoIds.Should().Equal(documento.Id);
         mensaje.Evento.Documentos.Should().ContainSingle(d =>
             d.DocumentoId == documento.Id && d.RutaAlmacenamiento == documento.RutaAlmacenamiento &&
