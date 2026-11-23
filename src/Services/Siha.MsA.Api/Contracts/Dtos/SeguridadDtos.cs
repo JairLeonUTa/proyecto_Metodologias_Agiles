@@ -36,3 +36,5 @@ public record ActualizarUsuarioRequest(
     bool Activo = true);
 
 public record CambiarEstadoUsuarioRequest(bool Activo);
+
+public record RestablecerPasswordRequest(string? Password);

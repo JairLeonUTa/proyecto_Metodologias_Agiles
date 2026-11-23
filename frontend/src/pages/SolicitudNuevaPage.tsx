@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { ChangeEvent, DragEvent } from 'react';
 import { Link } from 'react-router-dom';
 import { detallesDeError, expedientesApi, mensajeDeError } from '../api';
@@ -88,6 +88,11 @@ const TITULO_RECHAZO: Record<TipoRechazoCertificado, string> = {
   CAMPOS_Y_REGLAS: 'Campos sin llenar y datos que no cumplen las reglas',
 };
 
+function sinTituloRepetido(mensaje: string, titulo: string): string {
+  if (!mensaje.toLocaleLowerCase().startsWith(titulo.toLocaleLowerCase())) return mensaje;
+  return mensaje.slice(titulo.length).replace(/^[.\s]+/, '');
+}
+
 /** Lee del error del servidor el rechazo con su lista de verificación, si la trae. */
 function rechazoDe(fallo: unknown): RechazoCertificado | null {
   if (!(fallo instanceof ErrorApi) || fallo.estado !== 422) return null;
@@ -96,21 +101,21 @@ function rechazoDe(fallo: unknown): RechazoCertificado | null {
 }
 
 /** Lista de verificación por sección del certificado: ✔ si está bien, ✘ con el motivo si no. */
-function ListaVerificacion({ secciones }: { secciones: SeccionVerificada[] }): JSX.Element {
+export function ListaVerificacion({ secciones }: { secciones: SeccionVerificada[] }): JSX.Element {
   return (
     <ul className="divide-y divide-slate-200 rounded-md border border-slate-200" aria-label="Revisión del certificado por sección">
       {secciones.map((s) => (
         <li key={s.seccion} className="flex gap-3 px-3 py-2">
           <span
             aria-hidden="true"
-            className={`mt-0.5 font-bold ${s.ok ? 'text-emerald-600' : 'text-red-600'}`}
+            className={`mt-0.5 font-bold ${s.ok ? 'text-positive' : 'text-negative'}`}
           >
             {s.ok ? '✔' : '✘'}
           </span>
           <div className="min-w-0">
             <p className="text-sm font-semibold text-ink">
-              {s.seccion}
-              <span className="sr-only">{s.ok ? ': correcto' : ': con problemas'}</span>
+              {s.seccion}{' '}
+              <span className="sr-only">{s.ok ? 'Sección correcta' : 'Sección con problemas'}</span>
             </p>
             {s.ok ? (
               <p className="text-xs text-faint">Sin problemas.</p>
@@ -227,7 +232,9 @@ export function SolicitudNuevaPage(): JSX.Element {
   const [archivo, setArchivo] = useState<File | null>(null);
   const [leyendo, setLeyendo] = useState(false);
   const [certificado, setCertificado] = useState<CertificadoLeido | null>(null);
-  const [error, setError] = useState<{ texto: string; detalles: string[] } | null>(null);
+  const [error, setError] = useState<{ texto: string; detalles: string[]; expedienteId?: string; es409?: boolean } | null>(null);
+  const [errorAlEnviar, setErrorAlEnviar] = useState(false);
+  const avisoEnvio = useRef<HTMLDivElement>(null);
   const [registrando, setRegistrando] = useState(false);
   const [resultado, setResultado] = useState<SolicitudCertificado | null>(null);
   const [arrastrando, setArrastrando] = useState(false);
@@ -235,10 +242,21 @@ export function SolicitudNuevaPage(): JSX.Element {
   /** Rechazo del certificado con su lista de verificación (mientras exista, no se puede registrar). */
   const [rechazo, setRechazo] = useState<RechazoCertificado | null>(null);
 
+  useEffect(() => {
+    if (!error || !errorAlEnviar) return;
+    const aviso = avisoEnvio.current;
+    aviso?.focus();
+    if (typeof aviso?.scrollIntoView === 'function') {
+      const reducido = typeof window.matchMedia === 'function' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      aviso.scrollIntoView({ block: 'center', behavior: reducido ? 'auto' : 'smooth' });
+    }
+  }, [error, errorAlEnviar]);
+
   const reiniciar = (): void => {
     setArchivo(null);
     setCertificado(null);
     setError(null);
+    setErrorAlEnviar(false);
     setRechazo(null);
     setResultado(null);
     setSilabos([]);
@@ -247,6 +265,7 @@ export function SolicitudNuevaPage(): JSX.Element {
 
   const elegir = async (seleccionado: File | undefined): Promise<void> => {
     setError(null);
+    setErrorAlEnviar(false);
     setRechazo(null);
     setCertificado(null);
     setResultado(null);
@@ -302,6 +321,7 @@ export function SolicitudNuevaPage(): JSX.Element {
     if (!archivo || !certificado) return;
     setRegistrando(true);
     setError(null);
+    setErrorAlEnviar(true);
     try {
       setResultado(await expedientesApi.registrarCertificado(archivo, silabos));
     } catch (fallo) {
@@ -312,7 +332,17 @@ export function SolicitudNuevaPage(): JSX.Element {
         setRechazo(conLista);
         setCertificado(null);
       } else {
-        setError({ texto: mensajeDeError(fallo), detalles: detallesDeError(fallo) });
+        const datos = fallo instanceof ErrorApi && fallo.datos && typeof fallo.datos === 'object'
+          ? fallo.datos as { expedienteId?: unknown }
+          : null;
+        setError({
+          texto: mensajeDeError(fallo),
+          detalles: detallesDeError(fallo),
+          expedienteId: fallo instanceof ErrorApi && fallo.estado === 409 && typeof datos?.expedienteId === 'string'
+            ? datos.expedienteId
+            : undefined,
+          es409: fallo instanceof ErrorApi && fallo.estado === 409,
+        });
       }
     } finally {
       setRegistrando(false);
@@ -324,6 +354,11 @@ export function SolicitudNuevaPage(): JSX.Element {
     setArrastrando(false);
     void elegir(evento.dataTransfer.files[0]);
   };
+
+  const tituloRechazo = rechazo
+    ? TITULO_RECHAZO[rechazo.tipo] ?? 'El documento no se puede registrar'
+    : '';
+  const mensajeRechazo = rechazo ? sinTituloRepetido(rechazo.mensaje, tituloRechazo) : '';
 
   return (
     <div className="space-y-6">
@@ -420,7 +455,7 @@ export function SolicitudNuevaPage(): JSX.Element {
 
             {leyendo ? <Alerta tono="informacion">Leyendo y validando el certificado…</Alerta> : null}
 
-            {error ? (
+            {error && !errorAlEnviar ? (
               <Alerta tono="error" titulo="El documento no se puede registrar" detalles={error.detalles}>
                 {error.texto}
               </Alerta>
@@ -430,10 +465,10 @@ export function SolicitudNuevaPage(): JSX.Element {
               <div className="space-y-3" data-testid="rechazo-certificado">
                 <Alerta
                   tono="error"
-                  titulo={TITULO_RECHAZO[rechazo.tipo] ?? 'El documento no se puede registrar'}
+                  titulo={tituloRechazo}
                   detalles={rechazo.secciones.length === 0 ? rechazo.detalles : undefined}
                 >
-                  {rechazo.mensaje}
+                  {mensajeRechazo || null}
                 </Alerta>
                 {rechazo.secciones.length > 0 ? <ListaVerificacion secciones={rechazo.secciones} /> : null}
                 <div className="flex flex-wrap items-center gap-3">
@@ -474,6 +509,20 @@ export function SolicitudNuevaPage(): JSX.Element {
               </Alerta>
             ) : null}
             <ResumenCertificado certificado={certificado} />
+            {error && errorAlEnviar ? (
+              <div ref={avisoEnvio} tabIndex={-1}>
+                <Alerta tono="error" titulo="El documento no se puede registrar" detalles={error.detalles}>
+                  {error.texto}
+                  {errorAlEnviar && error.es409 ? (
+                    <p className="mt-2">
+                      <Link className="text-institucional-700 underline" to={error.expedienteId ? RUTAS.detalleSolicitud.replace(':id', error.expedienteId) : RUTAS.solicitudes}>
+                        {error.expedienteId ? 'Ver la solicitud registrada' : 'Ver la lista de solicitudes'}
+                      </Link>
+                    </p>
+                  ) : null}
+                </Alerta>
+              </div>
+            ) : null}
             <div className="flex flex-wrap gap-2">
               <Boton onClick={() => void registrar()} cargando={registrando} textoCargando="Registrando…">
                 Registrar y enviar solicitud

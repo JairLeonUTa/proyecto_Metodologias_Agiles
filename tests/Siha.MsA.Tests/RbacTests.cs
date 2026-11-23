@@ -99,6 +99,14 @@ public class RbacTests
             $"{controlador.Name} solo debe ser accesible por ADMINISTRADOR (US-01, CA3)");
     }
 
+    [Fact]
+    public void Restablecer_password_exige_rol_administrador()
+    {
+        var accion = typeof(UsuariosController).GetMethod(nameof(UsuariosController.RestablecerPassword));
+        accion.Should().NotBeNull();
+        RolesEfectivos(typeof(UsuariosController), accion!).Should().Contain(RolesSistema.Administrador);
+    }
+
     [Theory]
     [InlineData(typeof(CarrerasController), nameof(CarrerasController.Crear))]
     [InlineData(typeof(CarrerasController), nameof(CarrerasController.Actualizar))]

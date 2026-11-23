@@ -4,7 +4,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { mensajeDeError } from '../api';
 import { Alerta, Boton, Campo, EntradaTexto } from '../components/ui';
 import { LayoutAutenticacion } from '../layouts/LayoutAutenticacion';
-import { RUTAS } from '../layouts/navegacion';
+import { puedeVerRuta, RUTAS } from '../layouts/navegacion';
 import { useAuth } from '../hooks/useAuth';
 import { useTituloPagina } from '../hooks/useTituloPagina';
 import { esCorreoInstitucional } from '../utils/validaciones';
@@ -59,8 +59,9 @@ export function LoginPage(): JSX.Element {
     setEnviando(true);
     try {
       limpiarMotivoCierre();
-      await iniciarSesion(correo, password);
-      navegar(estado?.desde ?? RUTAS.inicio, { replace: true });
+      const usuarioAutenticado = await iniciarSesion(correo, password);
+      const destino = estado?.desde;
+      navegar(destino && puedeVerRuta(destino, usuarioAutenticado.rol) ? destino : RUTAS.inicio, { replace: true });
     } catch (fallo) {
       setErrorServidor(mensajeDeError(fallo));
     } finally {

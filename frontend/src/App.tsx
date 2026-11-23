@@ -1,7 +1,7 @@
 import { Navigate, Route, Routes } from 'react-router-dom';
 import { RutaProtegida, RutaPublica } from './components/RutaProtegida';
 import { LayoutPrincipal } from './layouts/LayoutPrincipal';
-import { ROLES_EVALUACION, ROLES_EXPEDIENTES, RUTAS, TODOS_LOS_ROLES } from './layouts/navegacion';
+import { rolesParaRuta, RUTAS } from './layouts/navegacion';
 import { AccesoDenegadoPage, NoEncontradoPage } from './pages/AccesoDenegadoPage';
 import { AnalisisExpedientePage } from './pages/AnalisisExpedientePage';
 import { BandejaAnalisisPage } from './pages/BandejaAnalisisPage';
@@ -23,7 +23,6 @@ import { ReglasHomologacionPage } from './pages/ReglasHomologacionPage';
 import { ReglasPage } from './pages/ReglasPage';
 import { SolicitudNuevaPage } from './pages/SolicitudNuevaPage';
 import { UsuariosPage } from './pages/UsuariosPage';
-import { ROLES } from './types/comunes';
 
 /**
  * Tabla de ruteo de la SPA (S1-A02).
@@ -68,7 +67,7 @@ export default function App(): JSX.Element {
         <Route
           path="solicitudes"
           element={
-            <RutaProtegida rolesPermitidos={TODOS_LOS_ROLES}>
+            <RutaProtegida rolesPermitidos={rolesParaRuta(RUTAS.solicitudes)}>
               <SolicitudesPage />
             </RutaProtegida>
           }
@@ -76,7 +75,7 @@ export default function App(): JSX.Element {
         <Route
           path="reglas-homologacion"
           element={
-            <RutaProtegida rolesPermitidos={TODOS_LOS_ROLES}>
+            <RutaProtegida rolesPermitidos={rolesParaRuta(RUTAS.reglasHomologacion)}>
               <ReglasHomologacionPage />
             </RutaProtegida>
           }
@@ -84,7 +83,7 @@ export default function App(): JSX.Element {
         <Route
           path="solicitudes/:id"
           element={
-            <RutaProtegida rolesPermitidos={TODOS_LOS_ROLES}>
+            <RutaProtegida rolesPermitidos={rolesParaRuta(RUTAS.detalleSolicitud)}>
               <SolicitudDetallePage />
             </RutaProtegida>
           }
@@ -93,7 +92,7 @@ export default function App(): JSX.Element {
         <Route
           path="reglas"
           element={
-            <RutaProtegida rolesPermitidos={TODOS_LOS_ROLES}>
+            <RutaProtegida rolesPermitidos={rolesParaRuta(RUTAS.reglas)}>
               <ReglasPage />
             </RutaProtegida>
           }
@@ -104,7 +103,7 @@ export default function App(): JSX.Element {
         <Route
           path="catalogos/carreras"
           element={
-            <RutaProtegida rolesPermitidos={TODOS_LOS_ROLES}>
+            <RutaProtegida rolesPermitidos={rolesParaRuta(RUTAS.carreras)}>
               <CarrerasPage />
             </RutaProtegida>
           }
@@ -112,7 +111,7 @@ export default function App(): JSX.Element {
         <Route
           path="catalogos/mallas"
           element={
-            <RutaProtegida rolesPermitidos={TODOS_LOS_ROLES}>
+            <RutaProtegida rolesPermitidos={rolesParaRuta(RUTAS.mallas)}>
               <MallasPage />
             </RutaProtegida>
           }
@@ -120,7 +119,7 @@ export default function App(): JSX.Element {
         <Route
           path="catalogos/asignaturas"
           element={
-            <RutaProtegida rolesPermitidos={TODOS_LOS_ROLES}>
+            <RutaProtegida rolesPermitidos={rolesParaRuta(RUTAS.asignaturas)}>
               <AsignaturasPage />
             </RutaProtegida>
           }
@@ -128,7 +127,7 @@ export default function App(): JSX.Element {
         <Route
           path="catalogos/importar"
           element={
-            <RutaProtegida rolesPermitidos={[ROLES.ADMINISTRADOR]}>
+            <RutaProtegida rolesPermitidos={rolesParaRuta(RUTAS.importarCatalogo)}>
               <ImportarCatalogoPage />
             </RutaProtegida>
           }
@@ -138,7 +137,7 @@ export default function App(): JSX.Element {
         <Route
           path="solicitudes/nueva"
           element={
-            <RutaProtegida rolesPermitidos={ROLES_EXPEDIENTES}>
+            <RutaProtegida rolesPermitidos={rolesParaRuta(RUTAS.nuevaSolicitud)}>
               <SolicitudNuevaPage />
             </RutaProtegida>
           }
@@ -146,7 +145,7 @@ export default function App(): JSX.Element {
         <Route
           path="expedientes"
           element={
-            <RutaProtegida rolesPermitidos={ROLES_EXPEDIENTES}>
+            <RutaProtegida rolesPermitidos={rolesParaRuta(RUTAS.expedientes)}>
               <ExpedientesPage />
             </RutaProtegida>
           }
@@ -154,7 +153,7 @@ export default function App(): JSX.Element {
         <Route
           path="expedientes/consulta"
           element={
-            <RutaProtegida rolesPermitidos={ROLES_EXPEDIENTES}>
+            <RutaProtegida rolesPermitidos={rolesParaRuta(RUTAS.consultaExpediente)}>
               <ConsultaExpedientePage />
             </RutaProtegida>
           }
@@ -162,7 +161,7 @@ export default function App(): JSX.Element {
         <Route
           path="expedientes/:id"
           element={
-            <RutaProtegida rolesPermitidos={ROLES_EXPEDIENTES}>
+            <RutaProtegida rolesPermitidos={rolesParaRuta(RUTAS.detalleExpediente)}>
               <ExpedienteDetallePage />
             </RutaProtegida>
           }
@@ -172,7 +171,7 @@ export default function App(): JSX.Element {
         <Route
           path="procesamiento"
           element={
-            <RutaProtegida rolesPermitidos={ROLES_EXPEDIENTES}>
+            <RutaProtegida rolesPermitidos={rolesParaRuta(RUTAS.bandejaProcesamiento)}>
               <BandejaProcesamientoPage />
             </RutaProtegida>
           }
@@ -180,7 +179,7 @@ export default function App(): JSX.Element {
         <Route
           path="procesamiento/:id/confirmar"
           element={
-            <RutaProtegida rolesPermitidos={ROLES_EXPEDIENTES}>
+            <RutaProtegida rolesPermitidos={rolesParaRuta(RUTAS.confirmarExtraccion)}>
               <ConfirmarExtraccionPage />
             </RutaProtegida>
           }
@@ -188,7 +187,7 @@ export default function App(): JSX.Element {
         <Route
           path="procesamiento/:id/estado"
           element={
-            <RutaProtegida rolesPermitidos={TODOS_LOS_ROLES}>
+            <RutaProtegida rolesPermitidos={rolesParaRuta(RUTAS.estadoExtraccion)}>
               <EstadoExtraccionPage />
             </RutaProtegida>
           }
@@ -196,7 +195,7 @@ export default function App(): JSX.Element {
         <Route
           path="evaluacion"
           element={
-            <RutaProtegida rolesPermitidos={ROLES_EVALUACION}>
+            <RutaProtegida rolesPermitidos={rolesParaRuta(RUTAS.bandejaAnalisis)}>
               <BandejaAnalisisPage />
             </RutaProtegida>
           }
@@ -204,7 +203,7 @@ export default function App(): JSX.Element {
         <Route
           path="evaluacion/:id"
           element={
-            <RutaProtegida rolesPermitidos={ROLES_EVALUACION}>
+            <RutaProtegida rolesPermitidos={rolesParaRuta(RUTAS.analisisExpediente)}>
               <AnalisisExpedientePage />
             </RutaProtegida>
           }
@@ -214,7 +213,7 @@ export default function App(): JSX.Element {
         <Route
           path="administracion/usuarios"
           element={
-            <RutaProtegida rolesPermitidos={[ROLES.ADMINISTRADOR]}>
+            <RutaProtegida rolesPermitidos={rolesParaRuta(RUTAS.usuarios)}>
               <UsuariosPage />
             </RutaProtegida>
           }

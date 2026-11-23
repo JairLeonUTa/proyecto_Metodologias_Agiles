@@ -11,6 +11,7 @@ interface PropsIcono {
 export type NombreIcono =
   | 'inicio'
   | 'reglas'
+  | 'instructivo'
   | 'nueva-solicitud'
   | 'bandeja'
   | 'consulta'
@@ -44,6 +45,12 @@ const TRAZOS: Record<NombreIcono, JSX.Element> = {
       <circle cx="8" cy="6" r="2" fill="currentColor" stroke="none" />
       <circle cx="16" cy="12" r="2" fill="currentColor" stroke="none" />
       <circle cx="10" cy="18" r="2" fill="currentColor" stroke="none" />
+    </>
+  ),
+  instructivo: (
+    <>
+      <path d="M12 7v14" />
+      <path d="M3 18V5a2 2 0 012-2h3a4 4 0 014 4 4 4 0 014-4h3a2 2 0 012 2v13a2 2 0 01-2 2h-3a4 4 0 00-4 2 4 4 0 00-4-2H5a2 2 0 01-2-2z" />
     </>
   ),
   'nueva-solicitud': (

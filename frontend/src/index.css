@@ -18,6 +18,11 @@
     @apply outline-none ring-2 ring-institucional-500 ring-offset-2 ring-offset-frame;
   }
 
+  /* Títulos que reciben el foco por código al cambiar de pantalla (accesibilidad): sin anillo. */
+  [tabindex='-1']:focus-visible {
+    @apply ring-0 ring-offset-0;
+  }
+
   h1,
   h2,
   h3 {
@@ -83,6 +88,11 @@
   .altura-completa {
     min-height: 100vh;
     min-height: 100dvh;
+  }
+
+  .altura-barra-lateral {
+    height: calc(100vh - 3.5rem);
+    height: calc(100dvh - 3.5rem);
   }
 }
 

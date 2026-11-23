@@ -1,5 +1,6 @@
 import { ROLES } from '../types/comunes';
 import type { NombreIcono } from '../components/ui/Icono';
+import { matchPath } from 'react-router-dom';
 
 /** Rutas de la aplicación, centralizadas para evitar literales dispersos. */
 export const RUTAS = {
@@ -35,6 +36,44 @@ export const ROLES_EXPEDIENTES: string[] = [ROLES.OPERADOR, ROLES.ADMINISTRADOR]
 
 /** Roles que evalúan expedientes con el agente analizador (Sprint 2, US-09 a US-11). */
 export const ROLES_EVALUACION: string[] = [ROLES.DOCENTE, ROLES.ADMINISTRADOR];
+
+/** Permisos de cada ruta protegida. App y las redirecciones post-login comparten esta tabla. */
+export const RUTAS_PROTEGIDAS: { patron: string; roles: string[] }[] = [
+  { patron: RUTAS.solicitudes, roles: TODOS_LOS_ROLES },
+  { patron: RUTAS.reglasHomologacion, roles: TODOS_LOS_ROLES },
+  { patron: RUTAS.detalleSolicitud, roles: TODOS_LOS_ROLES },
+  { patron: RUTAS.reglas, roles: TODOS_LOS_ROLES },
+  { patron: RUTAS.carreras, roles: TODOS_LOS_ROLES },
+  { patron: RUTAS.mallas, roles: TODOS_LOS_ROLES },
+  { patron: RUTAS.asignaturas, roles: TODOS_LOS_ROLES },
+  { patron: RUTAS.importarCatalogo, roles: [ROLES.ADMINISTRADOR] },
+  { patron: RUTAS.nuevaSolicitud, roles: ROLES_EXPEDIENTES },
+  { patron: RUTAS.expedientes, roles: ROLES_EXPEDIENTES },
+  { patron: RUTAS.consultaExpediente, roles: ROLES_EXPEDIENTES },
+  { patron: RUTAS.detalleExpediente, roles: ROLES_EXPEDIENTES },
+  { patron: RUTAS.bandejaProcesamiento, roles: ROLES_EXPEDIENTES },
+  { patron: RUTAS.confirmarExtraccion, roles: ROLES_EXPEDIENTES },
+  { patron: RUTAS.estadoExtraccion, roles: TODOS_LOS_ROLES },
+  { patron: RUTAS.bandejaAnalisis, roles: ROLES_EVALUACION },
+  { patron: RUTAS.analisisExpediente, roles: ROLES_EVALUACION },
+  { patron: RUTAS.usuarios, roles: [ROLES.ADMINISTRADOR] },
+  { patron: '/inicio', roles: TODOS_LOS_ROLES },
+];
+
+/** Rutas públicas/desconocidas no se bloquean; las rutas especiales nunca son destinos de login. */
+export function puedeVerRuta(ruta: string, rol: string | undefined): boolean {
+  if (ruta === '/' || ruta === RUTAS.login || ruta === RUTAS.accesoDenegado) return ruta === '/';
+  // Primero las rutas fijas (/solicitudes/nueva) y luego las de parámetro (/solicitudes/:id),
+  // para que una ruta fija no se confunda con un id.
+  const coincidencias = RUTAS_PROTEGIDAS.filter(({ patron }) => matchPath({ path: patron, end: true }, ruta));
+  const protegida = coincidencias.find(({ patron }) => !patron.includes(':')) ?? coincidencias[0];
+  return !protegida || Boolean(rol && protegida.roles.includes(rol));
+}
+
+/** Roles de una ruta de la tabla. Si la ruta no está registrada, nadie entra (más seguro que dejar pasar a todos). */
+export function rolesParaRuta(patron: string): string[] {
+  return RUTAS_PROTEGIDAS.find((ruta) => ruta.patron === patron)?.roles ?? [];
+}
 
 export interface ElementoNavegacion {
   etiqueta: string;
@@ -75,7 +114,7 @@ export const MENU: GrupoNavegacion[] = [
         etiqueta: 'Reglas de homologación',
         descripcion: 'Qué se necesita y cómo se decide, explicado de forma sencilla',
         ruta: RUTAS.reglasHomologacion,
-        icono: 'reglas',
+        icono: 'instructivo',
         rolesPermitidos: TODOS_LOS_ROLES,
       },
     ],

@@ -2,7 +2,23 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { SolicitudNuevaPage } from './SolicitudNuevaPage';
+import { ListaVerificacion, SolicitudNuevaPage } from './SolicitudNuevaPage';
+
+describe('Lista de verificación del certificado', () => {
+  it('muestra los problemas y el estado accesible de una sección con problemas', () => {
+    render(<ListaVerificacion secciones={[{ seccion: 'Historial académico', ok: false, problemas: ['Falta una nota'] }]} />);
+
+    expect(screen.getByText('Falta una nota')).toBeInTheDocument();
+    expect(screen.getByText('Sección con problemas')).toHaveClass('sr-only');
+  });
+
+  it('muestra Sin problemas. y el estado accesible de una sección correcta', () => {
+    render(<ListaVerificacion secciones={[{ seccion: 'Datos del estudiante', ok: true, problemas: [] }]} />);
+
+    expect(screen.getByText('Sin problemas.')).toBeInTheDocument();
+    expect(screen.getByText('Sección correcta')).toHaveClass('sr-only');
+  });
+});
 
 const api = vi.hoisted(() => ({
   validarCertificado: vi.fn(),
@@ -88,6 +104,35 @@ describe('Registro con un único certificado SIHA', () => {
     expect(api.registrarCertificado).toHaveBeenCalledTimes(1);
   });
 
+  it('muestra el error 409 junto a las acciones y enlaza al expediente existente', async () => {
+    const user = userEvent.setup();
+    const { ErrorApi } = await import('../api/httpClient');
+    api.validarCertificado.mockResolvedValue(CERTIFICADO);
+    api.registrarCertificado.mockRejectedValue(new ErrorApi('El certificado ya fue registrado.', 409, [], { mensaje: 'El certificado ya fue registrado.', expedienteId: 'e1', codigo: 'EXP-1' }));
+    render(<MemoryRouter><SolicitudNuevaPage /></MemoryRouter>);
+    await user.upload(screen.getByTestId('certificado-pdf'), pdf());
+    await screen.findByText(/1804567890/);
+    await user.click(screen.getByRole('button', { name: 'Registrar y enviar solicitud' }));
+    const alerta = await screen.findByRole('alert');
+    const boton = screen.getByRole('button', { name: 'Registrar y enviar solicitud' });
+    const contenido = screen.getByText(/1804567890/);
+    expect(contenido.compareDocumentPosition(alerta) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(alerta.compareDocumentPosition(boton) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(document.activeElement).toBe(alerta.parentElement);
+    expect(screen.getByRole('link', { name: 'Ver la solicitud registrada' })).toHaveAttribute('href', '/solicitudes/e1');
+  });
+
+  it('si el error 409 no incluye expedienteId enlaza a la lista de solicitudes', async () => {
+    const user = userEvent.setup();
+    const { ErrorApi } = await import('../api/httpClient');
+    api.validarCertificado.mockResolvedValue(CERTIFICADO);
+    api.registrarCertificado.mockRejectedValue(new ErrorApi('El certificado ya fue registrado.', 409, [], { mensaje: 'El certificado ya fue registrado.' }));
+    render(<MemoryRouter><SolicitudNuevaPage /></MemoryRouter>);
+    await user.upload(screen.getByTestId('certificado-pdf'), pdf());
+    await screen.findByText(/1804567890/);
+    await user.click(screen.getByRole('button', { name: 'Registrar y enviar solicitud' }));
+    expect(await screen.findByRole('link', { name: 'Ver la lista de solicitudes' })).toHaveAttribute('href', '/solicitudes');
+  });
   it('avisa cuando la materia de destino no tiene el nombre oficial, sin impedir registrar', async () => {
     const user = userEvent.setup();
     api.validarCertificado.mockResolvedValue({
@@ -212,6 +257,9 @@ describe('Registro con un único certificado SIHA', () => {
     await user.upload(screen.getByTestId('certificado-pdf'), pdf());
 
     expect(await screen.findByText('Este PDF no es el certificado SIHA')).toBeInTheDocument();
+    const rechazo = screen.getByTestId('rechazo-certificado');
+    expect(rechazo.textContent?.match(/Este PDF no es el certificado SIHA/g)).toHaveLength(1);
+    expect(screen.getByText('Solo se acepta la plantilla oficial.')).toBeInTheDocument();
     expect(screen.getByText('El PDF no tiene texto seleccionable.')).toBeInTheDocument();
     expect(screen.queryByRole('list', { name: 'Revisión del certificado por sección' })).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Registrar y enviar solicitud' })).toBeDisabled();

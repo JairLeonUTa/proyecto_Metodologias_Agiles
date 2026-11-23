@@ -136,6 +136,42 @@ public class UsuariosAuthTests
         jwt.VerifyNoOtherCalls();
     }
 
+    [Fact]
+    public async Task Restablecer_password_permite_login_con_nueva_y_rechaza_anterior()
+    {
+        using var db = await CrearDb();
+        var usuario = await AgregarUsuario(db);
+        const string nueva = "NuevaClave123!";
+        var resultado = await new UsuariosController(db, Hasher).RestablecerPassword(usuario.Id, new RestablecerPasswordRequest(nueva));
+        resultado.Should().BeOfType<NoContentResult>();
+        var jwt = new Mock<IJwtTokenService>();
+        jwt.Setup(s => s.CrearToken(It.IsAny<Usuario>(), It.IsAny<string>(), It.IsAny<string>())).Returns("jwt");
+        jwt.Setup(s => s.ObtenerExpiracion()).Returns(DateTimeOffset.UtcNow.AddHours(1));
+        var auth = new AuthController(db, Hasher, jwt.Object);
+        (await auth.Login(new LoginRequest("docente@uta.edu.ec", nueva))).Result.Should().BeOfType<OkObjectResult>();
+        (await auth.Login(new LoginRequest("docente@uta.edu.ec", Password))).Result.Should().BeOfType<UnauthorizedObjectResult>();
+    }
+
+    [Fact]
+    public async Task Restablecer_password_inexistente_devuelve_404()
+    {
+        using var db = await CrearDb();
+        (await new UsuariosController(db, Hasher).RestablecerPassword(999, new RestablecerPasswordRequest("NuevaClave123!")))
+            .Should().BeOfType<NotFoundResult>();
+    }
+
+    [Fact]
+    public async Task Restablecer_password_corto_devuelve_400_y_no_cambia_hash()
+    {
+        using var db = await CrearDb();
+        var usuario = await AgregarUsuario(db);
+        var hash = usuario.PasswordHash;
+        var resultado = await new UsuariosController(db, Hasher).RestablecerPassword(usuario.Id, new RestablecerPasswordRequest("1234567"));
+        resultado.Should().BeOfType<BadRequestObjectResult>().Which.Value.Should().BeOfType<ProblemDetails>()
+            .Which.Detail.Should().Contain("al menos 8 caracteres");
+        usuario.PasswordHash.Should().Be(hash);
+    }
+
     [Theory]
     [InlineData(RolesSistema.Administrador, true)]
     [InlineData(RolesSistema.Docente, false)]

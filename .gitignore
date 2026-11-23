@@ -23,3 +23,6 @@
 tools/catalogo-uta/descargas-*/
 **/__pycache__/
 *.pyc
+
+# Capturas y registros del plugin de Playwright
+.playwright-mcp/
