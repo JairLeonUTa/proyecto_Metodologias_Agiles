@@ -16,13 +16,13 @@ from generar_certificados import Certificado, Materia, REVISORES  # noqa: E402
 
 SALIDA = os.path.join(g.RAIZ, "documentos-prueba", "certificados-pruebas")
 P1, P2, P3 = "Abr-Sep 2024", "Oct 2024-Mar 2025", "Abr-Sep 2025"
-HN, MV, JC = REVISORES["hnaranjo"], REVISORES["mvaca"], REVISORES["jcastro"]
+CP, MV = REVISORES["cparedes"], REVISORES["mvaca"]
 UTA = "Universidad Técnica de Ambato"
 CC, MOV = ("Cambio de carrera", "CAU-P-011"), ("Movilidad externa", "CAU-P-122")
 
 
 def cert(archivo, numero, estudiante, cedula, tramite, origen, destino, materias, solicitudes,
-         revisores=(HN, MV), institucion=UTA, fecha="2026-11-03"):
+         revisores=(CP, MV), institucion=UTA, fecha="2026-11-03"):
     return Certificado(archivo, numero, fecha, estudiante, cedula, tramite[0], tramite[1], institucion,
                        origen, destino, materias=list(materias), solicitudes=list(solicitudes),
                        revisores=list(revisores))
@@ -54,7 +54,7 @@ def base_error(archivo, numero, estudiante, **cambios):
 
 CASOS = [
     # ---------------- VÁLIDOS ----------------
-    ("Debe registrarse", "TEL → SW, 4 materias, revisores Naranjo y Castro", cert(
+    ("Debe registrarse", "TEL → SW, 4 materias, revisores Paredes y Vaca", cert(
         "V01-TEL-SW-cambio-de-carrera.pdf", "SIHA-2026-0201", "Andrade Ruiz Mateo Sebastián", "1804222333",
         CC, "Telecomunicaciones", "Software",
         [M("Cálculo de una Variable", 1, "8.10"), M("Metodología de la Investigación", 1, "8.70"),
@@ -64,7 +64,7 @@ CASOS = [
          M("Base de Datos", 2, "8.50"), M("Física Aplicada", 2, "7.20")],
         [(["Fundamentos de Programación"], "Algoritmos y Lógica de Programación"),
          (["Álgebra Lineal"], "Álgebra Lineal"), (["Física Básica"], "Física"),
-         (["Cálculo de una Variable"], "Cálculo Diferencial")], revisores=(HN, JC))),
+         (["Cálculo de una Variable"], "Cálculo Diferencial")], revisores=(CP, MV))),
     ("Debe registrarse", "Automatización y Robótica → SW, 5 materias (incluye una reprobada en nivel 2, permitido)", cert(
         "V02-ROB-SW-cambio-de-carrera.pdf", "SIHA-2026-0202", "Benítez Lara Camila Fernanda", "1804333444",
         CC, "Automatización y Robótica", "Software",
@@ -77,7 +77,7 @@ CASOS = [
         [(["Fundamentos de Programación"], "Algoritmos y Lógica de Programación"),
          (["Programación Avanzada"], "Programación Orientada a Objetos"),
          (["Álgebra Lineal"], "Álgebra Lineal"), (["Cálculo I"], "Cálculo Diferencial"),
-         (["Metodología de la Investigación"], "Metodología de la Investigación")], revisores=(MV, JC))),
+         (["Metodología de la Investigación"], "Metodología de la Investigación")], revisores=(MV, CP))),
     ("Debe registrarse", "SW → TI (dirección inversa), 3 niveles", cert(
         "V03-SW-TI-cambio-de-carrera.pdf", "SIHA-2026-0203", "Castillo Núñez Diego Alejandro", "1804444555",
         CC, "Software", "Tecnologías de la Información",
@@ -106,7 +106,7 @@ CASOS = [
          M("Cálculo Integral", 3, "7.50")],
         [(["Cálculo Diferencial", "Cálculo Integral"], "Cálculo Integral"),
          (["Programación"], "Algoritmos y Lógica de Programación"), (["Álgebra Lineal"], "Álgebra Lineal")],
-        revisores=(JC, HN))),
+        revisores=(MV, CP))),
     ("A verificar", "Movilidad externa (CAU-P-122) desde otra institución, TI → SW", cert(
         "V06-movilidad-externa-TI-SW.pdf", "SIHA-2026-0206", "Fiallos Mejía Sara Daniela", "1804777888",
         MOV, "Tecnologías de la Información", "Software", TI_BASE,
@@ -123,13 +123,13 @@ CASOS = [
                   (["Programación Orientada a Objetos"], "Programación Orientada a Objetos"),
                   (["Lógica Matemática"], "Lógica Matemática"), (["Cálculo Diferencial"], "Cálculo Diferencial"),
                   (["Cálculo Integral"], "Cálculo Integral"), (["Sistemas Operativos"], "Sistemas Operativos"),
-                  (["Probabilidad y Estadística"], "Probabilidad y Estadística")], revisores=(MV, HN))),
+                  (["Probabilidad y Estadística"], "Probabilidad y Estadística")], revisores=(MV, CP))),
 
     # ---------------- INVÁLIDOS (un solo error cada uno) ----------------
     ("Debe rechazarse", "Cédula con 9 dígitos", base_error("E01-cedula-9-digitos.pdf", "SIHA-2026-0301", "Error Cédula Uno", cedula="180411122")),
-    ("Debe rechazarse", "Revisor 2 con correo Gmail", base_error("E02-revisor-gmail.pdf", "SIHA-2026-0302", "Error Revisor Gmail", revisores=(HN, ("Ing. Pedro Ruiz", "pruiz@gmail.com")))),
-    ("Debe rechazarse", "Los dos revisores son la misma persona", base_error("E03-revisores-repetidos.pdf", "SIHA-2026-0303", "Error Revisor Repetido", revisores=(HN, HN))),
-    ("Debe rechazarse", "Revisor con correo UTA que no es docente del sistema", base_error("E04-revisor-no-existe.pdf", "SIHA-2026-0304", "Error Revisor Inexistente", revisores=(HN, ("Ing. Laura García", "lgarcia@uta.edu.ec")))),
+    ("Debe rechazarse", "Revisor 2 con correo Gmail", base_error("E02-revisor-gmail.pdf", "SIHA-2026-0302", "Error Revisor Gmail", revisores=(CP, ("Ing. Pedro Ruiz", "pruiz@gmail.com")))),
+    ("Debe rechazarse", "Los dos revisores son la misma persona", base_error("E03-revisores-repetidos.pdf", "SIHA-2026-0303", "Error Revisor Repetido", revisores=(CP, CP))),
+    ("Debe rechazarse", "Revisor con correo UTA que no es docente del sistema", base_error("E04-revisor-no-existe.pdf", "SIHA-2026-0304", "Error Revisor Inexistente", revisores=(CP, ("Ing. Laura García", "lgarcia@uta.edu.ec")))),
     ("Debe rechazarse", "Pide homologar una materia reprobada", base_error("E05-pide-materia-reprobada.pdf", "SIHA-2026-0305", "Error Materia Reprobada",
         materias=TI_BASE + [M("Medidas Eléctricas", 2, "5.90", "Reprobada")], solicitudes=TI_SOL + [(["Medidas Eléctricas"], "Cálculo Integral")])),
     ("Debe rechazarse", "Materia aprobada hace más de 10 años (2014)", base_error("E06-materia-mas-de-10-anios.pdf", "SIHA-2026-0306", "Error Vigencia",
@@ -157,7 +157,7 @@ CASOS = [
     # Texto de ejemplo de la plantilla sin reemplazar.
     ("Debe rechazarse", "Texto de ejemplo sin reemplazar en el estudiante y en el revisor 2", base_error(
         "E21-texto-de-ejemplo.pdf", "SIHA-2026-0321", "Apellidos y nombres del estudiante",
-        revisores=(HN, ("Nombre", "correo@uta.edu.ec")))),
+        revisores=(CP, ("Nombre", "correo@uta.edu.ec")))),
 ]
 
 # Casos que solo se generan con: python generar_pruebas.py --solo E20 E21

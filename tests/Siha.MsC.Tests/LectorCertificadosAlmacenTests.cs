@@ -26,7 +26,7 @@ public sealed class LectorCertificadosAlmacenTests : IDisposable
             "INTERNO", "CAU-P-011", "Universidad Técnica de Ambato", "Tecnologías de la Información", "Software",
             new[] { new MateriaCursada("Física", 1, "Abr-Sep 2025", 8.1m, true) },
             new[] { new SolicitudHomologacion(1, new[] { "Física" }, "Física") },
-            new[] { new RevisorCertificado("Ing. Naranjo", "hnaranjo@uta.edu.ec"), new RevisorCertificado("Ing. Vaca", "mvaca@uta.edu.ec") });
+            new[] { new RevisorCertificado("Ing. Paredes", "cparedes@uta.edu.ec"), new RevisorCertificado("Ing. Vaca", "mvaca@uta.edu.ec") });
         await File.WriteAllBytesAsync(Path.Combine(_raiz, "manual.pdf"), JsonSerializer.SerializeToUtf8Bytes(certificado));
 
         var leido = await Lector().LeerAsync("manual.pdf");
@@ -34,7 +34,7 @@ public sealed class LectorCertificadosAlmacenTests : IDisposable
         leido.Should().NotBeNull();
         leido!.NumeroCertificado.Should().Be("MANUAL-20261124-ABC123");
         leido.Solicitudes.Single().MateriaDestino.Should().Be("Física");
-        leido.Revisores.Select(r => r.Correo).Should().Equal("hnaranjo@uta.edu.ec", "mvaca@uta.edu.ec");
+        leido.Revisores.Select(r => r.Correo).Should().Equal("cparedes@uta.edu.ec", "mvaca@uta.edu.ec");
     }
 
     [Theory]

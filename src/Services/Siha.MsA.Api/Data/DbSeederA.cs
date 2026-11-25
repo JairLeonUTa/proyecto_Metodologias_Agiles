@@ -38,9 +38,8 @@ public static class DbSeederA
     /// </summary>
     public static readonly (string Correo, string Nombre)[] DocentesDemo =
     {
-        ("hnaranjo@uta.edu.ec", "Ing. Hernán Naranjo"),
-        ("mvaca@uta.edu.ec", "Ing. María Vaca"),
-        ("jcastro@uta.edu.ec", "Ing. Javier Castro")
+        ("cparedes@uta.edu.ec", "Ing. Carlos Paredes"),
+        ("mvaca@uta.edu.ec", "Ing. María Vaca")
     };
 
     private static async Task SembrarDocentesDemoAsync(SihaDbContextA db, IPasswordHasher hasher, string password, ILogger logger)

@@ -12,8 +12,8 @@ describe('Solicitudes nuevas para el docente', () => {
   });
 
   it('recuerda las vistas por docente en este navegador', () => {
-    guardarVistas('HNaranjo@uta.edu.ec', ['x', 'y', 'x']);
-    expect([...(leerVistas('hnaranjo@uta.edu.ec') ?? [])]).toEqual(['x', 'y']);
+    guardarVistas('CParedes@uta.edu.ec', ['x', 'y', 'x']);
+    expect([...(leerVistas('cparedes@uta.edu.ec') ?? [])]).toEqual(['x', 'y']);
     expect(leerVistas('otro@uta.edu.ec')).toBeNull();
   });
 });

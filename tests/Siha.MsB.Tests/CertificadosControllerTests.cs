@@ -33,7 +33,7 @@ public class CertificadosControllerTests : IDisposable
     /// <summary>Usuarios de MS A simulados: correo → (rol DOCENTE, activo).</summary>
     private readonly Dictionary<string, (bool Docente, bool Activo)> _usuarios = new()
     {
-        ["hnaranjo@uta.edu.ec"] = (true, true),
+        ["cparedes@uta.edu.ec"] = (true, true),
         ["mvaca@uta.edu.ec"] = (true, true),
         ["jcastro@uta.edu.ec"] = (true, true)
     };
@@ -139,8 +139,8 @@ public class CertificadosControllerTests : IDisposable
         fundamentos.Aprobada.Should().BeTrue();
         fundamentos.AsignaturaDestinoNombre.Should().Be("Algoritmos y Lógica de Programación");
         e.Asignaturas.Single(a => a.NombreOrigen == "Medidas Eléctricas").Aprobada.Should().BeFalse();
-        e.Revisores!.Select(r => r.Correo).Should().Equal("hnaranjo@uta.edu.ec", "mvaca@uta.edu.ec");
-        e.Revisores!.First().Nombre.Should().Be("Docente hnaranjo", "se usa el nombre registrado en MS A");
+        e.Revisores!.Select(r => r.Correo).Should().Equal("cparedes@uta.edu.ec", "mvaca@uta.edu.ec");
+        e.Revisores!.First().Nombre.Should().Be("Docente cparedes", "se usa el nombre registrado en MS A");
 
         var evento = _publicados.Should().ContainSingle().Subject;
         evento.AsignaturasOrigen.Should().HaveCount(11);
@@ -207,7 +207,7 @@ public class CertificadosControllerTests : IDisposable
 
     private static RegistroManualRequest Manual() => new(
         "Torres Vega Martín Andrés", "1805123456", "Cambio de carrera", "Universidad Técnica de Ambato",
-        "Tecnologías de la Información", "Software", "hnaranjo@uta.edu.ec", "mvaca@uta.edu.ec",
+        "Tecnologías de la Información", "Software", "cparedes@uta.edu.ec", "mvaca@uta.edu.ec",
         new[]
         {
             new MateriaManualRequest("Fundamentos de Programación", 1, "Abr-Sep 2025", 8.9m, true),
@@ -236,7 +236,7 @@ public class CertificadosControllerTests : IDisposable
         e.CarreraDestinoCodigo.Should().Be("SW");
         e.Asignaturas.Should().HaveCount(3);
         e.Asignaturas.Single(a => a.NombreOrigen == "Física").PeriodoAcademico.Should().Be("Abr-Sep 2025");
-        e.Revisores!.Select(r => r.Nombre).Should().Equal("Docente hnaranjo", "Docente mvaca");
+        e.Revisores!.Select(r => r.Nombre).Should().Equal("Docente cparedes", "Docente mvaca");
 
         // El documento guardado son los datos validados en JSON: MS C los lee como un certificado.
         var documento = _db.ExpedienteDocumentos.Single();
@@ -330,7 +330,7 @@ public class CertificadosControllerTests : IDisposable
 
         var opciones = resultado.Result.Should().BeOfType<OkObjectResult>().Subject.Value
             .Should().BeOfType<OpcionesRegistroManualResponse>().Subject;
-        opciones.Docentes.Select(d => d.Correo).Should().BeEquivalentTo("hnaranjo@uta.edu.ec", "mvaca@uta.edu.ec", "jcastro@uta.edu.ec");
+        opciones.Docentes.Select(d => d.Correo).Should().BeEquivalentTo("cparedes@uta.edu.ec", "mvaca@uta.edu.ec", "jcastro@uta.edu.ec");
         opciones.MateriasDestino.Should().Equal("ALGORITMOS Y LOGICA DE PROGRAMACION", "FISICA");
     }
 
@@ -340,11 +340,11 @@ public class CertificadosControllerTests : IDisposable
         var r = Manual() with { EstudianteNombre = "Ana\nLucía", TipoTramite = "Movilidad externa" };
 
         var lineas = CertificadosController.LineasRegistroManual(r, "MANUAL-1", new DateOnly(2026, 11, 24), "Operador",
-            new Dictionary<string, string> { ["hnaranjo@uta.edu.ec"] = "Ing. Hernán Naranjo" });
+            new Dictionary<string, string> { ["cparedes@uta.edu.ec"] = "Ing. Carlos Paredes" });
 
         lineas.Should().Contain("Estudiante: Ana Lucía");
         lineas.Should().Contain("Ruta normativa: CAU-P-122");
-        lineas.Should().Contain("Docente revisor 1: Ing. Hernán Naranjo - hnaranjo@uta.edu.ec");
+        lineas.Should().Contain("Docente revisor 1: Ing. Carlos Paredes - cparedes@uta.edu.ec");
         lineas.Should().Contain("Nivel: 1 Período académico: Abr-Sep 2025 Nota: 8.9 Estado: Aprobada");
         lineas.Last().Should().Be("FIN DEL CERTIFICADO");
     }
@@ -377,13 +377,13 @@ public class CertificadosControllerTests : IDisposable
     public async Task Revisor_que_no_es_docente_o_no_existe_impide_registrar()
     {
         _usuarios["mvaca@uta.edu.ec"] = (false, true);
-        _usuarios.Remove("hnaranjo@uta.edu.ec");
+        _usuarios.Remove("cparedes@uta.edu.ec");
 
         var resultado = await Controlador().Registrar(Certificado("SIHA-TI-SW-cambio-de-carrera.pdf"), CancellationToken.None);
 
         var cuerpo = resultado.Result.Should().BeOfType<UnprocessableEntityObjectResult>().Subject.Value!;
         var detalles = Detalles(cuerpo);
-        detalles.Should().Contain(d => d.Contains("hnaranjo@uta.edu.ec") && d.Contains("no está registrado"));
+        detalles.Should().Contain(d => d.Contains("cparedes@uta.edu.ec") && d.Contains("no está registrado"));
         detalles.Should().Contain(d => d.Contains("mvaca@uta.edu.ec") && d.Contains("DOCENTE"));
         _db.Expedientes.Should().BeEmpty();
     }
@@ -545,8 +545,8 @@ public class CertificadosControllerTests : IDisposable
     [Fact]
     public async Task Cada_docente_ve_solo_las_solicitudes_que_le_asignaron()
     {
-        await Controlador().Registrar(Certificado("SIHA-TI-SW-cambio-de-carrera.pdf"), CancellationToken.None);      // hnaranjo + mvaca
-        await Controlador().Registrar(Certificado("SIHA-IND-SW-cambio-de-carrera.pdf"), CancellationToken.None);  // mvaca + jcastro
+        await Controlador().Registrar(Certificado("SIHA-TI-SW-cambio-de-carrera.pdf"), CancellationToken.None);      // cparedes + mvaca
+        await Controlador().Registrar(Certificado("SIHA-IND-SW-cambio-de-carrera.pdf"), CancellationToken.None);  // mvaca + cparedes
         var envio = new ExpedienteEnvioService(_db, Pruebas.CrearAlmacenamiento(Pruebas.OpcionesArchivos(_directorio)), _publicador.Object,
             Options.Create(Pruebas.OpcionesArchivos(_directorio)), Options.Create(new RepublicacionOptions()), NullLogger<ExpedienteEnvioService>.Instance);
 
@@ -564,14 +564,18 @@ public class CertificadosControllerTests : IDisposable
             }
         };
 
-        var deNaranjo = (await Como("hnaranjo@uta.edu.ec").Listar(null, CancellationToken.None)).Result
+        var deParedes = (await Como("cparedes@uta.edu.ec").Listar(null, CancellationToken.None)).Result
             .Should().BeOfType<OkObjectResult>().Subject.Value.Should().BeAssignableTo<IEnumerable<ExpedienteResponse>>().Subject.ToList();
         var deVaca = (await Como("mvaca@uta.edu.ec").Listar(null, CancellationToken.None)).Result
             .Should().BeOfType<OkObjectResult>().Subject.Value.Should().BeAssignableTo<IEnumerable<ExpedienteResponse>>().Subject.ToList();
 
-        deNaranjo.Should().ContainSingle().Which.NumeroCertificado.Should().Be("SIHA-2026-0147");
+        var deCastro = (await Como("jcastro@uta.edu.ec").Listar(null, CancellationToken.None)).Result
+            .Should().BeOfType<OkObjectResult>().Subject.Value.Should().BeAssignableTo<IEnumerable<ExpedienteResponse>>().Subject.ToList();
+
+        deParedes.Should().HaveCount(2);
         deVaca.Should().HaveCount(2);
+        deCastro.Should().BeEmpty("no es revisor de ninguna");
         var ajeno = _db.Expedientes.Single(x => x.NumeroCertificado == "SIHA-2026-0148").Id;
-        (await Como("hnaranjo@uta.edu.ec").Obtener(ajeno, CancellationToken.None)).Result.Should().BeOfType<NotFoundResult>();
+        (await Como("jcastro@uta.edu.ec").Obtener(ajeno, CancellationToken.None)).Result.Should().BeOfType<NotFoundResult>();
     }
 }

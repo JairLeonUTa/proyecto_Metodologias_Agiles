@@ -42,7 +42,7 @@ const CERTIFICADO = {
   carreraOrigen: 'Tecnologías de la Información',
   carreraDestino: 'Software',
   revisores: [
-    { nombre: 'Ing. Hernán Naranjo', correo: 'hnaranjo@uta.edu.ec' },
+    { nombre: 'Ing. Carlos Paredes', correo: 'cparedes@uta.edu.ec' },
     { nombre: 'Ing. María Vaca', correo: 'mvaca@uta.edu.ec' },
   ],
   materias: [{ nombre: 'Física', nivel: 1, periodoAcademico: 'Abr-Sep 2025', nota: 8.5, aprobada: true }],
@@ -58,7 +58,7 @@ describe('Registro manual de una solicitud (sin PDF)', () => {
     ]);
     api.opcionesManual.mockResolvedValue({
       docentes: [
-        { nombre: 'Ing. Hernán Naranjo', correo: 'hnaranjo@uta.edu.ec' },
+        { nombre: 'Ing. Carlos Paredes', correo: 'cparedes@uta.edu.ec' },
         { nombre: 'Ing. María Vaca', correo: 'mvaca@uta.edu.ec' },
       ],
       materiasOrigen: [],
@@ -79,8 +79,8 @@ describe('Registro manual de una solicitud (sin PDF)', () => {
     await screen.findAllByRole('option', { name: 'Software' });
     await user.selectOptions(screen.getByLabelText(/Carrera de origen/), 'Tecnologías de la Información');
     await user.selectOptions(screen.getByLabelText(/Carrera a la que quiere pasar/), 'Software');
-    await screen.findAllByRole('option', { name: /Hernán Naranjo/ });
-    await user.selectOptions(screen.getByLabelText(/Docente revisor 1/), 'hnaranjo@uta.edu.ec');
+    await screen.findAllByRole('option', { name: /Carlos Paredes/ });
+    await user.selectOptions(screen.getByLabelText(/Docente revisor 1/), 'cparedes@uta.edu.ec');
     await user.selectOptions(screen.getByLabelText(/Docente revisor 2/), 'mvaca@uta.edu.ec');
     await user.type(screen.getByLabelText('Materia'), 'Física');
     await user.type(screen.getByLabelText('Período académico'), 'Abr-Sep 2025');

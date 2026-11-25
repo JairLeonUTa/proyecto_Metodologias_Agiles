@@ -135,7 +135,7 @@ services:
       Jwt__Audience: "SIHA-IA-Clients"
       Seed__AdminCorreo: "admin@uta.edu.ec"
       Seed__AdminPassword: "${SIHA_ADMIN_PASSWORD:?Configura SIHA_ADMIN_PASSWORD en .env}"
-      # Docentes revisores de los certificados de ejemplo (hnaranjo, mvaca, jcastro @uta.edu.ec).
+      # Docentes revisores de los certificados de ejemplo (cparedes y mvaca @uta.edu.ec).
       # Sin SIHA_DOCENTE_PASSWORD usan la misma contraseña del administrador.
       Seed__DocentePassword: "${SIHA_DOCENTE_PASSWORD:-${SIHA_ADMIN_PASSWORD}}"
       # Kestrel atiende REST (HTTP/1.1) en 8080 y gRPC (HTTP/2, h2c) en el listener dedicado 8081.

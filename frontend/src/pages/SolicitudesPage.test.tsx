@@ -16,7 +16,7 @@ vi.mock('../api', async (importOriginal) => {
 });
 
 vi.mock('../hooks/useAuth', () => ({
-  useAuth: () => ({ usuario: { rol: 'DOCENTE', correoInstitucional: 'hnaranjo@uta.edu.ec', nombreCompleto: 'Ing. Naranjo' } }),
+  useAuth: () => ({ usuario: { rol: 'DOCENTE', correoInstitucional: 'cparedes@uta.edu.ec', nombreCompleto: 'Ing. Paredes' } }),
 }));
 
 const expediente = (id: string, estudiante: string) => ({
@@ -27,7 +27,7 @@ const expediente = (id: string, estudiante: string) => ({
   carreraOrigenNombre: 'Tecnologías de la Información',
   carreraDestinoNombre: 'Software',
   fechaCreacionUtc: '2026-11-13T10:00:00Z',
-  revisores: [{ nombre: 'Ing. Naranjo', correo: 'hnaranjo@uta.edu.ec' }],
+  revisores: [{ nombre: 'Ing. Paredes', correo: 'cparedes@uta.edu.ec' }],
   asignaturas: [{ periodoAcademico: 'Abr-Sep 2025', solicitudNumero: 1 }],
 });
 
@@ -35,7 +35,7 @@ const analisis = (respondio: boolean) => ({
   estado: 'ANALIZADO',
   estadoRevision: respondio ? 'EN_REVISION' : 'PENDIENTE',
   revisores: [
-    { nombre: 'Ing. Naranjo', correo: 'hnaranjo@uta.edu.ec', respondio },
+    { nombre: 'Ing. Paredes', correo: 'cparedes@uta.edu.ec', respondio },
     { nombre: 'Ing. Vaca', correo: 'mvaca@uta.edu.ec', respondio: false },
   ],
   resultado: { evaluaciones: [] },
@@ -70,7 +70,7 @@ describe('Solicitudes del docente revisor', () => {
   });
 
   it('en la siguiente visita solo avisa de las asignadas después', async () => {
-    window.localStorage.setItem('siha.solicitudes-vistas.hnaranjo@uta.edu.ec', JSON.stringify(['1', '2']));
+    window.localStorage.setItem('siha.solicitudes-vistas.cparedes@uta.edu.ec', JSON.stringify(['1', '2']));
     api.listar.mockResolvedValue([expediente('1', 'Ana Pérez'), expediente('2', 'Luis Mora'), expediente('3', 'Sara Fiallos')]);
     abrir();
 

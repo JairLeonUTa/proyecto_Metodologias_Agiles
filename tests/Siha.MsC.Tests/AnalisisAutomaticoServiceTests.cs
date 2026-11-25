@@ -64,7 +64,7 @@ public class AnalisisAutomaticoServiceTests
             M("Programación Orientada a Objetos", 2), M("Física II", 2), M("Física Básica", 2), M("Cálculo Integral", 2, 6.2m, false)
         },
         pedidas.Select((p, i) => new SolicitudHomologacion(i + 1, p.Origen, p.Destino)).ToList(),
-        new[] { new RevisorCertificado("Ing. Naranjo", "hnaranjo@uta.edu.ec"), new RevisorCertificado("Ing. Vaca", "mvaca@uta.edu.ec") });
+        new[] { new RevisorCertificado("Ing. Paredes", "cparedes@uta.edu.ec"), new RevisorCertificado("Ing. Vaca", "mvaca@uta.edu.ec") });
 
     private static async Task<Guid> Sembrar(SihaDbContextC db, CertificadoSiha c, IReadOnlyList<SilaboExterno>? silabos = null)
     {
@@ -76,7 +76,7 @@ public class AnalisisAutomaticoServiceTests
             CarreraOrigenNombre = c.CarreraOrigen, CarreraDestinoNombre = "Software",
             CertificadoJson = JsonSerializer.Serialize(c),
             SilabosExternosJson = silabos is null ? null : JsonSerializer.Serialize(silabos),
-            Revisor1Nombre = "Ing. Naranjo", Revisor1Correo = "hnaranjo@uta.edu.ec",
+            Revisor1Nombre = "Ing. Paredes", Revisor1Correo = "cparedes@uta.edu.ec",
             Revisor2Nombre = "Ing. Vaca", Revisor2Correo = "mvaca@uta.edu.ec"
         });
         await db.SaveChangesAsync();
@@ -557,7 +557,7 @@ public class AnalisisAutomaticoServiceTests
             foreach (var c in db.AnalisisExpedientes.Where(a => a.ExpedienteId != vigente)) VolverloAntiguo(c);
             db.DictamenesDocentes.Add(new DictamenDocente
             {
-                ExpedienteId = conDecision, CorreoDocente = "hnaranjo@uta.edu.ec", NombreDocente = "Ing. Naranjo",
+                ExpedienteId = conDecision, CorreoDocente = "cparedes@uta.edu.ec", NombreDocente = "Ing. Paredes",
                 DecisionesJson = "[]", FechaUtc = DateTimeOffset.UtcNow
             });
             await db.SaveChangesAsync();
@@ -650,7 +650,7 @@ public class AnalisisAutomaticoServiceTests
         const string alg = "Algoritmos y Lógica de Programación", poo = "Programación Orientada a Objetos";
 
         // POO no llega al 80 % en créditos: el agente recomienda no homologarla, pero los docentes la votan.
-        var uno = await solicitudes.ResponderAsync(expediente, "hnaranjo@uta.edu.ec", "Naranjo", Decidir((alg, true), (poo, false)));
+        var uno = await solicitudes.ResponderAsync(expediente, "cparedes@uta.edu.ec", "Paredes", Decidir((alg, true), (poo, false)));
         uno.Error.Should().BeNull();
         uno.Respuesta!.EstadoRevision.Should().Be("EN_REVISION");
         var dos = await solicitudes.ResponderAsync(expediente, "mvaca@uta.edu.ec", "Vaca", Decidir((alg, true), (poo, false)));
@@ -671,7 +671,7 @@ public class AnalisisAutomaticoServiceTests
         const string alg = "Algoritmos y Lógica de Programación";
 
         const string poo = "Programación Orientada a Objetos";
-        await solicitudes.ResponderAsync(expediente, "hnaranjo@uta.edu.ec", "Naranjo", Decidir((alg, true), (poo, false)));
+        await solicitudes.ResponderAsync(expediente, "cparedes@uta.edu.ec", "Paredes", Decidir((alg, true), (poo, false)));
         var dos = await solicitudes.ResponderAsync(expediente, "mvaca@uta.edu.ec", "Vaca", Decidir((alg, false), (poo, false)));
 
         dos.Respuesta!.ResultadoFinal.Single(m => m.CodigoDestino == alg).Resultado.Should().Be("SIN_ACUERDO");
@@ -682,7 +682,7 @@ public class AnalisisAutomaticoServiceTests
         var expediente = await SolicitudAnalizada(db);
         var solicitudes = new SolicitudesAnalisisService(db);
         const string alg = "Algoritmos y Lógica de Programación", poo = "Programación Orientada a Objetos";
-        await solicitudes.ResponderAsync(expediente, "hnaranjo@uta.edu.ec", "Naranjo", Decidir((alg, true), (poo, false)));
+        await solicitudes.ResponderAsync(expediente, "cparedes@uta.edu.ec", "Paredes", Decidir((alg, true), (poo, false)));
         await solicitudes.ResponderAsync(expediente, "mvaca@uta.edu.ec", "Vaca", Decidir((alg, false), (poo, false)));
         return (solicitudes, expediente);
     }
@@ -730,7 +730,7 @@ public class AnalisisAutomaticoServiceTests
         const string alg = "Algoritmos y Lógica de Programación", poo = "Programación Orientada a Objetos";
         await solicitudes.DecidirComoAdministradorAsync(expediente, "admin@uta.edu.ec", "Admin", new DecisionFinalRequest(alg, true, "Procede."));
 
-        var cambio = await solicitudes.ResponderAsync(expediente, "hnaranjo@uta.edu.ec", "Naranjo", Decidir((alg, false), (poo, false)));
+        var cambio = await solicitudes.ResponderAsync(expediente, "cparedes@uta.edu.ec", "Paredes", Decidir((alg, false), (poo, false)));
 
         var fila = cambio.Respuesta!.ResultadoFinal.Single(m => m.CodigoDestino == alg);
         fila.Resultado.Should().Be("NO_HOMOLOGADA");
@@ -746,7 +746,7 @@ public class AnalisisAutomaticoServiceTests
         const string alg = "Algoritmos y Lógica de Programación", poo = "Programación Orientada a Objetos";
 
         // El agente recomienda no homologar POO, pero los docentes consideran que sí vio los temas.
-        await solicitudes.ResponderAsync(expediente, "hnaranjo@uta.edu.ec", "Naranjo", Decidir((alg, true), (poo, true)));
+        await solicitudes.ResponderAsync(expediente, "cparedes@uta.edu.ec", "Paredes", Decidir((alg, true), (poo, true)));
         var dos = await solicitudes.ResponderAsync(expediente, "mvaca@uta.edu.ec", "Vaca", Decidir((alg, true), (poo, true)));
 
         dos.Error.Should().BeNull();
@@ -761,7 +761,7 @@ public class AnalisisAutomaticoServiceTests
         await using var db = CrearDb();
         var expediente = await SolicitudAnalizada(db);
 
-        var (respuesta, error, codigo) = await new SolicitudesAnalisisService(db).ResponderAsync(expediente, "hnaranjo@uta.edu.ec", "Naranjo",
+        var (respuesta, error, codigo) = await new SolicitudesAnalisisService(db).ResponderAsync(expediente, "cparedes@uta.edu.ec", "Paredes",
             Decidir(("Algoritmos y Lógica de Programación", true)));
 
         respuesta.Should().BeNull();
@@ -776,7 +776,7 @@ public class AnalisisAutomaticoServiceTests
         var expediente = await Sembrar(db, Certificado((new[] { "Física Básica" }, "Física")));
         await Agente(db).AnalizarYGuardarAsync(expediente);
 
-        var vista = (await new SolicitudesAnalisisService(db).ObtenerAsync(expediente, "hnaranjo@uta.edu.ec", esDocente: true))!;
+        var vista = (await new SolicitudesAnalisisService(db).ObtenerAsync(expediente, "cparedes@uta.edu.ec", esDocente: true))!;
 
         vista.EstadoRevision.Should().Be("PENDIENTE");
         vista.PuedeResponder.Should().BeTrue("el agente solo recomienda; el docente decide");
@@ -825,7 +825,7 @@ public class AnalisisAutomaticoServiceTests
         var solicitudes = new SolicitudesAnalisisService(db);
         const string alg = "Algoritmos y Lógica de Programación", poo = "Programación Orientada a Objetos";
 
-        await solicitudes.ResponderAsync(expediente, "hnaranjo@uta.edu.ec", "Naranjo", Decidir((alg, true), (poo, false)));
+        await solicitudes.ResponderAsync(expediente, "cparedes@uta.edu.ec", "Paredes", Decidir((alg, true), (poo, false)));
         (await db.ResultadosHomologacion.SingleAsync(f => f.MateriaDestino == alg)).Aprobaciones.Should().Be(1);
 
         await solicitudes.ResponderAsync(expediente, "mvaca@uta.edu.ec", "Vaca", Decidir((alg, true), (poo, false)));
@@ -881,7 +881,7 @@ public class AnalisisAutomaticoServiceTests
         await Agente(db).AnalizarYGuardarAsync(expediente);
 
         var (_, error, codigo) = await new SolicitudesAnalisisService(db)
-            .ResponderAsync(expediente, "hnaranjo@uta.edu.ec", "Naranjo", Decidir(("Algoritmos y Lógica de Programación", true)));
+            .ResponderAsync(expediente, "cparedes@uta.edu.ec", "Paredes", Decidir(("Algoritmos y Lógica de Programación", true)));
 
         codigo.Should().Be(400);
         error.Should().Contain("Física");
@@ -920,7 +920,7 @@ public class AnalisisAutomaticoServiceTests
         var contexto = await db.AnalisisExpedientes.SingleAsync();
         contexto.CarreraOrigenCodigo.Should().Be("TI");
         contexto.CarreraDestinoNombre.Should().Be("Software");
-        contexto.Revisor1Correo.Should().Be("hnaranjo@uta.edu.ec");
+        contexto.Revisor1Correo.Should().Be("cparedes@uta.edu.ec");
         contexto.SilabosExternosJson.Should().BeNull();
         var certificado = JsonSerializer.Deserialize<CertificadoSiha>(contexto.CertificadoJson)!;
         certificado.Solicitudes.Should().HaveCount(5);

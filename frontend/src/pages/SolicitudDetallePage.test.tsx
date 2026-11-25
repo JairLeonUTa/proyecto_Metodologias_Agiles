@@ -12,7 +12,7 @@ const api = vi.hoisted(() => ({
   decidirComoAdministrador: vi.fn(),
   reenviarAgente: vi.fn(),
 }));
-const DOCENTE = { rol: 'DOCENTE', correoInstitucional: 'hnaranjo@uta.edu.ec', nombreCompleto: 'Ing. Hernán Naranjo' };
+const DOCENTE = { rol: 'DOCENTE', correoInstitucional: 'cparedes@uta.edu.ec', nombreCompleto: 'Ing. Carlos Paredes' };
 const sesion = vi.hoisted(() => ({ usuario: null as unknown }));
 
 vi.mock('../api', async (importOriginal) => {
@@ -67,7 +67,7 @@ const SOLICITUD = {
     { nombre: 'Medidas Eléctricas', nivel: 2, periodoAcademico: 'Oct 2025-Mar 2026', nota: 5.9, aprobada: false },
   ],
   revisores: [
-    { nombre: 'Ing. Hernán Naranjo', correo: 'hnaranjo@uta.edu.ec', respondio: false },
+    { nombre: 'Ing. Carlos Paredes', correo: 'cparedes@uta.edu.ec', respondio: false },
     { nombre: 'Ing. María Vaca', correo: 'mvaca@uta.edu.ec', respondio: false },
   ],
   estado: 'ANALIZADO',

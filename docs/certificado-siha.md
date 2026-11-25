@@ -182,7 +182,7 @@ Desde el 24-11-2026 **RN-01 2.1**: el 80 % es la recomendación del agente y la 
 
 ## Ejemplos (`documentos-prueba/certificados`, también descargables en la pantalla de registro)
 
-Los revisores de ejemplo (`hnaranjo`, `mvaca`, `jcastro` @uta.edu.ec) se crean como docentes con
+Los revisores de ejemplo (`cparedes` y `mvaca` @uta.edu.ec) se crean como docentes con
 `Seed__DocentePassword` (en Docker: `SIHA_DOCENTE_PASSWORD`, o la del administrador).
 
 | PDF | Resultado con los sílabos reales |

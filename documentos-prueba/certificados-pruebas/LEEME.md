@@ -4,7 +4,7 @@ Generados con `python tools/certificados-siha/generar_pruebas.py`.
 
 | Archivo | Resultado esperado | Qué prueba |
 |---|---|---|
-| `V01-TEL-SW-cambio-de-carrera.pdf` | Debe registrarse | TEL → SW, 4 materias, revisores Naranjo y Castro |
+| `V01-TEL-SW-cambio-de-carrera.pdf` | Debe registrarse | TEL → SW, 4 materias, revisores Paredes y Vaca |
 | `V02-ROB-SW-cambio-de-carrera.pdf` | Debe registrarse | Automatización y Robótica → SW, 5 materias (incluye una reprobada en nivel 2, permitido) |
 | `V03-SW-TI-cambio-de-carrera.pdf` | Debe registrarse | SW → TI (dirección inversa), 3 niveles |
 | `V04-IND-TI-una-materia.pdf` | Debe registrarse | Industrial → TI con una sola materia (caso mínimo) |
