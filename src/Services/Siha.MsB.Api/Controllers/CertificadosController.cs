@@ -186,7 +186,7 @@ public class CertificadosController : ControllerBase
             .Where(d => !string.IsNullOrWhiteSpace(d.NombreCompleto))
             .ToDictionary(d => d.Correo.ToLowerInvariant(), d => d.NombreCompleto);
         var operador = User.FindFirst(System.Security.Claims.ClaimTypes.Name)?.Value ?? "operador";
-        var numero = $"MANUAL-{DateTime.UtcNow:yyyyMMdd}-{Guid.NewGuid().ToString("N")[..6].ToUpperInvariant()}";
+        var numero = NumeroManual(solicitud.NumeroCertificado);
         var lineas = LineasRegistroManual(solicitud, numero, DateOnly.FromDateTime(DateTime.Today), operador, nombres);
         return await ValidarLecturaAsync(LectorCertificadoSiha.LeerTexto(lineas), "registro manual", cancellationToken);
     }
@@ -238,6 +238,15 @@ public class CertificadosController : ControllerBase
     }
 
     private static string Normalizar(string texto) => LectorCertificadoSiha.Normalizar(texto);
+
+    /// <summary>
+    /// Número del registro manual: el que se mostró al revisar (si tiene el formato MANUAL-AAAAMMDD-XXXXXX) o
+    /// uno nuevo. Si ese número ya se registró, el registro responde 409 como cualquier certificado repetido.
+    /// </summary>
+    public static string NumeroManual(string? revisado)
+        => revisado is not null && System.Text.RegularExpressions.Regex.IsMatch(revisado, "^MANUAL-[0-9]{8}-[0-9A-F]{6}$")
+            ? revisado
+            : $"MANUAL-{DateTime.UtcNow:yyyyMMdd}-{Guid.NewGuid().ToString("N")[..6].ToUpperInvariant()}";
 
     /// <summary>Parte común del registro (certificado PDF o registro manual): crea el expediente y lo envía.</summary>
     private async Task<ActionResult<SolicitudCertificadoResponse>> RegistrarLecturaAsync(

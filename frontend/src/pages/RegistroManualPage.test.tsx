@@ -118,6 +118,7 @@ describe('Registro manual de una solicitud (sin PDF)', () => {
     );
 
     await user.click(screen.getByRole('button', { name: 'Registrar y enviar solicitud' }));
+    expect(api.registrarManual).toHaveBeenCalledWith(expect.objectContaining({ numeroCertificado: 'MANUAL-20261124-ABC123' }));
     expect(await screen.findByText('Expediente EXP-20261124-ABC123')).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Ver la solicitud y su análisis' })).toHaveAttribute('href', '/solicitudes/e9');
   });

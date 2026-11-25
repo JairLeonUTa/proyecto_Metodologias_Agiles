@@ -218,6 +218,8 @@ export interface RegistroManual {
   revisor2Correo: string;
   materias: MateriaManual[];
   solicitudes: SolicitudManual[];
+  /** Número mostrado al revisar los datos; se reutiliza al registrar. */
+  numeroCertificado?: string | null;
 }
 
 export interface OpcionesRegistroManual {

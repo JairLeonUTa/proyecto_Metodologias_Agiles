@@ -250,6 +250,31 @@ public class CertificadosControllerTests : IDisposable
     }
 
     [Fact]
+    public async Task El_numero_que_se_muestra_al_revisar_es_el_mismo_que_queda_registrado()
+    {
+        var revision = await Controlador().ValidarManual(Manual(), CancellationToken.None);
+        var numero = revision.Result.Should().BeOfType<OkObjectResult>().Subject.Value
+            .Should().BeOfType<CertificadoLeidoResponse>().Subject.NumeroCertificado;
+
+        var registro = await Controlador().RegistrarManual(Manual() with { NumeroCertificado = numero }, CancellationToken.None);
+
+        registro.Result.Should().BeOfType<AcceptedResult>().Subject.Value
+            .Should().BeOfType<SolicitudCertificadoResponse>().Subject.Expediente.NumeroCertificado.Should().Be(numero);
+
+        // Registrar dos veces con el mismo número revisado no duplica la solicitud.
+        var repetido = await Controlador().RegistrarManual(Manual() with { NumeroCertificado = numero }, CancellationToken.None);
+        repetido.Result.Should().BeOfType<ConflictObjectResult>();
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("SIHA-2026-0147")]
+    [InlineData("MANUAL-2026112-ABC123")]
+    [InlineData("MANUAL-20261124-abc123")]
+    public void Un_numero_que_no_es_manual_se_reemplaza_por_uno_nuevo(string? numero)
+        => CertificadosController.NumeroManual(numero).Should().MatchRegex("^MANUAL-[0-9]{8}-[0-9A-F]{6}$").And.NotBe(numero);
+
+    [Fact]
     public async Task El_registro_manual_con_datos_faltantes_se_rechaza_con_la_lista_de_verificacion()
     {
         var incompleto = Manual() with { Cedula = "", Revisor2Correo = null, CarreraDestino = "SW" };

@@ -139,7 +139,10 @@ export function RegistroManualPage(): JSX.Element {
     setRegistrando(true);
     setError(null);
     try {
-      setResultado(await expedientesApi.registrarManual(aEnviar(registro)));
+      // Se registra con el mismo número que se mostró al revisar los datos.
+      setResultado(
+        await expedientesApi.registrarManual({ ...aEnviar(registro), numeroCertificado: revisado?.certificado.numeroCertificado ?? null }),
+      );
     } catch (fallo) {
       const conLista = rechazoDe(fallo);
       if (conLista) setRechazo(conLista);

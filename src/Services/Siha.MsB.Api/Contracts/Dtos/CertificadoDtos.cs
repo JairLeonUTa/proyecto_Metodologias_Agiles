@@ -85,7 +85,12 @@ public record RegistroManualRequest(
     string? Revisor1Correo,
     string? Revisor2Correo,
     IReadOnlyList<MateriaManualRequest>? Materias,
-    IReadOnlyList<SolicitudManualRequest>? Solicitudes);
+    IReadOnlyList<SolicitudManualRequest>? Solicitudes,
+    /// <summary>
+    /// Número que se mostró al revisar los datos (MANUAL-AAAAMMDD-XXXXXX). Al registrar se reutiliza para que
+    /// el número revisado y el registrado sean el mismo; si no viene o no tiene ese formato se genera uno nuevo.
+    /// </summary>
+    string? NumeroCertificado = null);
 
 public record DocenteOpcionResponse(string Nombre, string Correo);
 
