@@ -33,7 +33,7 @@ public class ExpedientesControllerTests : IDisposable
     private readonly List<SolicitudCreadaEvent> _publicados = new();
 
     [Fact]
-    public void Docentes_solo_pueden_consultar_un_expediente_por_id()
+    public void Docentes_consultan_y_listan_solo_sus_solicitudes_asignadas()
     {
         var obtener = typeof(ExpedientesController).GetMethod(nameof(ExpedientesController.Obtener))!;
         var listar = typeof(ExpedientesController).GetMethod(nameof(ExpedientesController.Listar))!;
@@ -41,8 +41,9 @@ public class ExpedientesControllerTests : IDisposable
 
         obtener.GetCustomAttributes(typeof(AuthorizeAttribute), true)
             .Cast<AuthorizeAttribute>().Single().Roles.Should().Contain(RolesSistema.Docente);
+        // Desde el certificado SIHA el docente lista solo las solicitudes donde es revisor asignado.
         listar.GetCustomAttributes(typeof(AuthorizeAttribute), true)
-            .Cast<AuthorizeAttribute>().Single().Roles.Should().NotContain(RolesSistema.Docente);
+            .Cast<AuthorizeAttribute>().Single().Roles.Should().Contain(RolesSistema.Docente);
         registrar.GetCustomAttributes(typeof(AuthorizeAttribute), true)
             .Cast<AuthorizeAttribute>().Single().Roles.Should().NotContain(RolesSistema.Docente);
     }
@@ -181,7 +182,7 @@ public class ExpedientesControllerTests : IDisposable
         evento.CorrelationId.Should().Be(borrador.CorrelationId);
         evento.RutaNormativa.Should().Be(RutasNormativas.Movilidad);
         evento.AsignaturasOrigen.Should().BeEquivalentTo(new[] { "SW101", "SW201" });
-        evento.Version.Should().Be("1.1");
+        evento.Version.Should().Be("1.2");
         evento.DocumentoIds.Should().Equal(documento.Id);
 
         var referencia = evento.Documentos.Should().ContainSingle().Subject;

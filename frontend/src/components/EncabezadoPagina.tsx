@@ -20,7 +20,7 @@ export function EncabezadoPagina({ titulo, descripcion, acciones }: PropsEncabez
         <h1
           ref={referencia}
           tabIndex={-1}
-          className="text-[22px] font-semibold leading-tight tracking-tight text-ink focus-visible:ring-2 focus-visible:ring-institucional-500"
+          className="text-[22px] font-semibold leading-tight tracking-tight text-ink focus:outline-none"
         >
           {titulo}
         </h1>

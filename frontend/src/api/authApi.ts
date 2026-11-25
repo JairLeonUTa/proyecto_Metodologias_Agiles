@@ -13,4 +13,7 @@ export const authApi = {
 
   /** `GET /api/auth/yo` — valida el token vigente y devuelve la identidad. */
   identidad: () => peticion<IdentidadToken>('/api/auth/yo'),
+
+  /** `POST /api/auth/renovar` — con el token aún vigente entrega uno nuevo (otra hora). */
+  renovar: () => peticion<RespuestaLogin>('/api/auth/renovar', { metodo: 'POST' }),
 };

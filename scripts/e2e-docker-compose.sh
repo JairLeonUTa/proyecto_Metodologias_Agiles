@@ -125,7 +125,9 @@ MIG_A="$(sql siha-sqlserver-a SihaDbA 'SELECT COUNT(*) FROM __EFMigrationsHistor
 MIG_B="$(sql siha-sqlserver-b SihaDbB 'SELECT COUNT(*) FROM __EFMigrationsHistory')"
 ULT_B="$(sql siha-sqlserver-b SihaDbB 'SELECT TOP 1 MigrationId FROM __EFMigrationsHistory ORDER BY MigrationId DESC')"
 [[ "${MIG_A:-0}" =~ ^[0-9]+$ && "$MIG_A" -ge 1 ]] && registrar OK "DB A migrada en SQL Server real" "$MIG_A migración(es)" || registrar FALLO "DB A migrada" "$MIG_A"
-comprobar "DB B migrada en SQL Server real (3 migraciones)" "3" "$MIG_B" "última: $ULT_B"
+# Se esperan tantas migraciones como archivos *.cs en Migrations (sin Designer ni Snapshot).
+ESP_B="$(ls "$RAIZ/src/Services/Siha.MsB.Api/Migrations/"*.cs | grep -v -e '\.Designer\.cs$' -e 'ModelSnapshot\.cs$' | wc -l | tr -d ' ')"
+comprobar "DB B migrada en SQL Server real ($ESP_B migraciones)" "$ESP_B" "$MIG_B" "última: $ULT_B"
 comprobar "Índice único filtrado de documentos en DB B" "1" "$(sql siha-sqlserver-b SihaDbB "SELECT COUNT(*) FROM sys.indexes WHERE name='IX_EXPEDIENTE_DOC_Unico_Validado' AND has_filter=1")"
 
 log "== 3. Autenticación a través del Gateway =="

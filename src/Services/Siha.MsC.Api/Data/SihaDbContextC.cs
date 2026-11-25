@@ -15,6 +15,10 @@ public class SihaDbContextC : DbContext
     public DbSet<ExtraccionUnidad> ExtraccionUnidades => Set<ExtraccionUnidad>();
     public DbSet<Precedente> Precedentes => Set<Precedente>();
     public DbSet<EmbeddingUnidad> EmbeddingsUnidad => Set<EmbeddingUnidad>();
+    public DbSet<AnalisisExpediente> AnalisisExpedientes => Set<AnalisisExpediente>();
+    public DbSet<DictamenDocente> DictamenesDocentes => Set<DictamenDocente>();
+    public DbSet<DecisionFinalAdministrador> DecisionesFinales => Set<DecisionFinalAdministrador>();
+    public DbSet<ResultadoHomologacion> ResultadosHomologacion => Set<ResultadoHomologacion>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -40,6 +44,81 @@ public class SihaDbContextC : DbContext
             e.Property(x => x.Observacion).HasMaxLength(1000);
             e.HasIndex(x => x.ExpedienteId);
             e.HasIndex(x => x.DocumentoId);
+        });
+
+        modelBuilder.Entity<AnalisisExpediente>(e =>
+        {
+            e.ToTable("ANALISIS_EXPEDIENTE");
+            e.HasKey(x => x.ExpedienteId);
+            e.Property(x => x.CodigoExpediente).HasMaxLength(30);
+            e.Property(x => x.NumeroCertificado).HasMaxLength(40);
+            e.Property(x => x.EstudianteNombre).HasMaxLength(200);
+            e.Property(x => x.TipoTramite).HasMaxLength(20);
+            e.Property(x => x.RutaNormativa).HasMaxLength(20);
+            e.Property(x => x.InstitucionOrigen).HasMaxLength(150);
+            e.Property(x => x.CarreraOrigenCodigo).HasMaxLength(20);
+            e.Property(x => x.CarreraDestinoCodigo).HasMaxLength(20);
+            e.Property(x => x.Revisor1Nombre).HasMaxLength(200);
+            e.Property(x => x.Revisor1Correo).HasMaxLength(150);
+            e.Property(x => x.Revisor2Nombre).HasMaxLength(200);
+            e.Property(x => x.Revisor2Correo).HasMaxLength(150);
+            e.Property(x => x.Estado).HasMaxLength(20).IsRequired();
+            e.Property(x => x.ResultadoJson).HasColumnType("NVARCHAR(MAX)");
+            e.Property(x => x.CertificadoJson).HasColumnType("NVARCHAR(MAX)").IsRequired();
+            e.Property(x => x.SilabosExternosJson).HasColumnType("NVARCHAR(MAX)");
+            e.Property(x => x.CarreraOrigenNombre).HasMaxLength(150);
+            e.Property(x => x.CarreraDestinoNombre).HasMaxLength(150);
+            e.Property(x => x.Mensaje).HasMaxLength(1000);
+            e.HasIndex(x => new { x.Estado, x.ProximoIntentoUtc });
+        });
+
+        modelBuilder.Entity<ResultadoHomologacion>(e =>
+        {
+            e.ToTable("RESULTADO_HOMOLOGACION");
+            e.HasKey(x => x.Id);
+            e.Property(x => x.CodigoExpediente).HasMaxLength(30).IsRequired();
+            e.Property(x => x.NumeroCertificado).HasMaxLength(40).IsRequired();
+            e.Property(x => x.EstudianteNombre).HasMaxLength(200).IsRequired();
+            e.Property(x => x.TipoTramite).HasMaxLength(20).IsRequired();
+            e.Property(x => x.RutaNormativa).HasMaxLength(20).IsRequired();
+            e.Property(x => x.InstitucionOrigen).HasMaxLength(150).IsRequired();
+            e.Property(x => x.CarreraOrigen).HasMaxLength(150).IsRequired();
+            e.Property(x => x.CarreraDestino).HasMaxLength(150).IsRequired();
+            e.Property(x => x.MateriasOrigen).HasMaxLength(600).IsRequired();
+            e.Property(x => x.MateriaDestino).HasMaxLength(200).IsRequired();
+            e.Property(x => x.CodigoDestino).HasMaxLength(30);
+            e.Property(x => x.PorcentajeCreditos).HasPrecision(5, 2);
+            e.Property(x => x.PorcentajeContenidos).HasPrecision(5, 2);
+            e.Property(x => x.PorcentajeProfundidad).HasPrecision(5, 2);
+            e.Property(x => x.PorcentajeCargaHoraria).HasPrecision(5, 2);
+            e.Property(x => x.MinimoExigido).HasPrecision(5, 2);
+            e.Property(x => x.EstimacionAgente).HasMaxLength(30).IsRequired();
+            e.Property(x => x.ResultadoFinal).HasMaxLength(30).IsRequired();
+            e.HasIndex(x => new { x.ExpedienteId, x.NumeroSolicitud }).IsUnique();
+            e.HasIndex(x => x.TipoTramite);
+            e.HasIndex(x => x.ResultadoFinal);
+        });
+
+        modelBuilder.Entity<DictamenDocente>(e =>
+        {
+            e.ToTable("DICTAMEN_DOCENTE");
+            e.HasKey(x => x.Id);
+            e.Property(x => x.CorreoDocente).HasMaxLength(150).IsRequired();
+            e.Property(x => x.NombreDocente).HasMaxLength(200);
+            e.Property(x => x.DecisionesJson).HasColumnType("NVARCHAR(MAX)").IsRequired();
+            e.Property(x => x.Comentario).HasMaxLength(2000);
+            e.HasIndex(x => new { x.ExpedienteId, x.CorreoDocente }).IsUnique();
+        });
+
+        modelBuilder.Entity<DecisionFinalAdministrador>(e =>
+        {
+            e.ToTable("DECISION_FINAL");
+            e.HasKey(x => x.Id);
+            e.Property(x => x.Materia).HasMaxLength(200).IsRequired();
+            e.Property(x => x.Comentario).HasMaxLength(2000).IsRequired();
+            e.Property(x => x.CorreoAdministrador).HasMaxLength(150).IsRequired();
+            e.Property(x => x.NombreAdministrador).HasMaxLength(200);
+            e.HasIndex(x => new { x.ExpedienteId, x.Materia }).IsUnique();
         });
 
         modelBuilder.Entity<ExtraccionUnidad>(e =>

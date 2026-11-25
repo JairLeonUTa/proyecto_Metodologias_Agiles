@@ -141,6 +141,33 @@ public class UsuariosController : ControllerBase
         return Ok(Mapeos.AUsuarioDto(usuario));
     }
 
+    [HttpPut("{id:int}/password")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> RestablecerPassword(int id, [FromBody] RestablecerPasswordRequest request)
+    {
+        var usuario = await _db.Usuarios.FirstOrDefaultAsync(u => u.Id == id);
+        if (usuario is null)
+        {
+            return NotFound();
+        }
+
+        if (string.IsNullOrEmpty(request.Password) || request.Password.Length < 8)
+        {
+            return BadRequest(new ProblemDetails
+            {
+                Title = "Contraseña inválida.",
+                Detail = "La contraseña debe tener al menos 8 caracteres.",
+                Status = StatusCodes.Status400BadRequest
+            });
+        }
+
+        usuario.PasswordHash = _hasher.Hash(request.Password);
+        await _db.SaveChangesAsync();
+        return NoContent();
+    }
+
     /// <summary>Baja lógica de la cuenta (se conserva la trazabilidad de los expedientes asociados).</summary>
     [HttpDelete("{id:int}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]

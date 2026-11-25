@@ -6,6 +6,8 @@ import 'react';
  * mientras se reproduce la animación de salida.
  */
 declare module 'react' {
+  // <T> tiene que estar para ampliar la interfaz original de React, aunque aquí no se use.
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   interface HTMLAttributes<T> {
     inert?: string;
   }

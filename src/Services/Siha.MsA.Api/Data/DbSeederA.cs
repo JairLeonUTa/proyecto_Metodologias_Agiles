@@ -16,12 +16,54 @@ public static class DbSeederA
         IPasswordHasher hasher,
         string adminCorreo,
         string adminPassword,
-        ILogger logger)
+        ILogger logger,
+        string? docentesDemoPassword = null)
     {
         await SembrarRolesAsync(db, hasher, adminCorreo, adminPassword, logger);
         await SembrarParametrosAsync(db, logger);
         await SembrarReglasAsync(db, logger);
+        await ActualizarReglaCreditosAsync(db, logger);
+        await ActualizarReglaRecomendacionAsync(db, logger);
         await SembrarCatalogoAsync(db, logger);
+        await SembrarCatalogoUtaAsync(db, logger);
+        if (!string.IsNullOrWhiteSpace(docentesDemoPassword))
+        {
+            await SembrarDocentesDemoAsync(db, hasher, docentesDemoPassword, logger);
+        }
+    }
+
+    /// <summary>
+    /// Docentes revisores que aparecen en los certificados SIHA de ejemplo. Solo se crean si se
+    /// configura <c>Seed:DocentePassword</c>; en producción el administrador los registra en Usuarios.
+    /// </summary>
+    public static readonly (string Correo, string Nombre)[] DocentesDemo =
+    {
+        ("cparedes@uta.edu.ec", "Ing. Carlos Paredes"),
+        ("mvaca@uta.edu.ec", "Ing. María Vaca")
+    };
+
+    private static async Task SembrarDocentesDemoAsync(SihaDbContextA db, IPasswordHasher hasher, string password, ILogger logger)
+    {
+        var rolDocente = await db.Roles.FirstOrDefaultAsync(r => r.Nombre == RolesSistema.Docente);
+        if (rolDocente is null) return;
+
+        var existentes = await db.Usuarios.Select(u => u.CorreoInstitucional).ToListAsync();
+        var nuevos = DocentesDemo.Where(d => !existentes.Contains(d.Correo)).ToList();
+        foreach (var (correo, nombre) in nuevos)
+        {
+            db.Usuarios.Add(new Usuario
+            {
+                CorreoInstitucional = correo,
+                NombreCompleto = nombre,
+                PasswordHash = hasher.Hash(password),
+                RolId = rolDocente.Id,
+                Activo = true
+            });
+        }
+
+        if (nuevos.Count == 0) return;
+        await db.SaveChangesAsync();
+        logger.LogInformation("Docentes revisores de ejemplo creados: {Correos}.", string.Join(", ", nuevos.Select(d => d.Correo)));
     }
 
     private static async Task SembrarRolesAsync(
@@ -87,6 +129,106 @@ public static class DbSeederA
 
         await db.SaveChangesAsync();
         logger.LogInformation("Semilla de umbrales θ, δ, τ aplicada para CAU-P-011 y CAU-P-122.");
+    }
+
+    /// <summary>Inicio de la versión 2.0 de RN-01 y RN-13: 80 % en contenidos y 80 % en créditos, sí o sí.</summary>
+    public static readonly DateOnly VigenciaReglaCreditos = new(2026, 11, 14);
+
+    /// <summary>
+    /// Regla definida por el equipo con el docente: para homologar hay que llegar, sí o sí, al 80 % en
+    /// contenidos y al 80 % en créditos (2 créditos frente a 3 = 66,67 %: no se homologa). Versiona RN-01 y
+    /// RN-13 a 2.0 cerrando la 1.0 (queda en el historial). Incremental e idempotente: se aplica una sola
+    /// vez, también en las bases que ya existían.
+    /// </summary>
+    private static async Task ActualizarReglaCreditosAsync(SihaDbContextA db, ILogger logger)
+    {
+        var nuevas = new[]
+        {
+            (Codigo: "RN-01", Descripcion:
+                "Para homologar una materia (CAU-P-011) se exige, sí o sí, al menos 80 % en contenidos y al menos 80 % en créditos. " +
+                "Si cualquiera de los dos no llega (por ejemplo, 2 créditos frente a 3 = 66,67 %), la materia no se puede homologar. " +
+                "Profundidad y carga horaria se muestran solo como datos informativos.",
+                Expresion: "contenido>=80 && creditos>=80"),
+            (Codigo: "RN-13", Descripcion:
+                "Pcred mide los créditos aprobados frente a los de la materia de destino y forma parte de la regla RN-01: debe llegar al 80 %. " +
+                "Requiere créditos de origen y destino documentados; si no se conocen, se calcula con las horas, que es equivalente.",
+                Expresion: "Pcred=min(100,sumCredOrigen/CredDestino*100) && Pcred>=80")
+        };
+
+        var cambios = 0;
+        foreach (var (codigo, descripcion, expresion) in nuevas)
+        {
+            var versiones = await db.Reglas
+                .Where(r => r.Codigo == codigo && r.RutaNormativa == RutasNormativas.CambioCarreraOu)
+                .OrderByDescending(r => r.VigenteDesde).ThenByDescending(r => r.Id)
+                .ToListAsync();
+            if (versiones.Count == 0 || versiones.Any(r => r.Version == "2.0")) continue;
+
+            var anterior = versiones[0];
+            var fin = VigenciaReglaCreditos.AddDays(-1);
+            if (anterior.VigenteHasta is null || anterior.VigenteHasta > fin) anterior.VigenteHasta = fin;
+            db.Reglas.Add(new Regla
+            {
+                Codigo = codigo,
+                RutaNormativa = anterior.RutaNormativa,
+                TipoTramite = anterior.TipoTramite,
+                EsNormativa = anterior.EsNormativa,
+                Descripcion = descripcion,
+                Expresion = expresion,
+                Version = "2.0",
+                Fuente = "Definición del equipo SIHA-IA con el docente (noviembre 2026): 80 % en contenidos y 80 % en créditos",
+                VigenteDesde = VigenciaReglaCreditos,
+                Activa = true
+            });
+            cambios++;
+        }
+
+        if (cambios == 0) return;
+        await db.SaveChangesAsync();
+        logger.LogInformation("Reglas RN-01 y RN-13 versionadas a 2.0: 80 % en contenidos y 80 % en créditos.");
+    }
+
+    /// <summary>Texto de RN-01 2.1 (cabe en REGLA.Descripcion, 400 caracteres).</summary>
+    public const string DescripcionRn01Recomendacion =
+        "El agente recomienda homologar (CAU-P-011) si llega al 80 % en contenidos y al 80 % en créditos; si no llega, " +
+        "recomienda no homologar y explica por qué. La decisión final es siempre de los dos docentes revisores, que pueden " +
+        "homologarla aunque no llegue (por ejemplo, si el tema está en el sílabo de origen con otro nombre).";
+
+    /// <summary>Inicio de la versión 2.1 de RN-01: el agente recomienda y los docentes deciden.</summary>
+    public static readonly DateOnly VigenciaReglaRecomendacion = new(2026, 11, 24);
+
+    /// <summary>
+    /// RN-01 2.1: el 80 % en contenidos y en créditos es la recomendación del agente, no un rechazo
+    /// automático. Aunque una materia no llegue, la deciden los dos docentes revisores (el agente puede no
+    /// reconocer un tema que en el sílabo de origen se nombra distinto). Incremental e idempotente.
+    /// </summary>
+    private static async Task ActualizarReglaRecomendacionAsync(SihaDbContextA db, ILogger logger)
+    {
+        var versiones = await db.Reglas
+            .Where(r => r.Codigo == "RN-01" && r.RutaNormativa == RutasNormativas.CambioCarreraOu)
+            .OrderByDescending(r => r.VigenteDesde).ThenByDescending(r => r.Id)
+            .ToListAsync();
+        if (versiones.Count == 0 || versiones.Any(r => r.Version == "2.1")) return;
+
+        var anterior = versiones[0];
+        var fin = VigenciaReglaRecomendacion.AddDays(-1);
+        if (anterior.VigenteHasta is null || anterior.VigenteHasta > fin) anterior.VigenteHasta = fin;
+        db.Reglas.Add(new Regla
+        {
+            Codigo = "RN-01",
+            RutaNormativa = anterior.RutaNormativa,
+            TipoTramite = anterior.TipoTramite,
+            EsNormativa = anterior.EsNormativa,
+            // Máximo 400 caracteres (columna REGLA.Descripcion).
+            Descripcion = DescripcionRn01Recomendacion,
+            Expresion = "recomendacion: contenido>=80 && creditos>=80; decision: docentes",
+            Version = "2.1",
+            Fuente = "Definición del equipo SIHA-IA (noviembre 2026): el agente recomienda y los docentes deciden",
+            VigenteDesde = VigenciaReglaRecomendacion,
+            Activa = true
+        });
+        await db.SaveChangesAsync();
+        logger.LogInformation("Regla RN-01 versionada a 2.1: el agente recomienda y los docentes deciden.");
     }
 
     private static async Task SembrarReglasAsync(SihaDbContextA db, ILogger logger)
@@ -233,6 +375,103 @@ public static class DbSeederA
         await db.SaveChangesAsync();
         logger.LogInformation("Semilla de catálogo académico aplicada (5 carreras y malla SW 2024-A).");
     }
+
+    /// <summary>Versión de malla que se crea con los sílabos oficiales publicados por la UTA.</summary>
+    public const string VersionMallaUta = "UTA-2022";
+
+    /// <summary>
+    /// Conocimiento del agente: mallas y sílabos oficiales de las carreras de la FISEI (Software,
+    /// Tecnologías de la Información, Industrial, Telecomunicaciones y Robótica), extraídos de los PDF
+    /// publicados en uta.edu.ec (tools/catalogo-uta). Cada asignatura trae nivel, créditos, horas y sus
+    /// unidades con temas y horas. Se carga una sola vez por carrera y queda como malla vigente.
+    /// </summary>
+    private static async Task SembrarCatalogoUtaAsync(SihaDbContextA db, ILogger logger)
+    {
+        var ensamblado = typeof(DbSeederA).Assembly;
+        foreach (var recurso in ensamblado.GetManifestResourceNames().Where(r => r.Contains(".CatalogoUta.") && r.EndsWith(".json")))
+        {
+            await using var flujo = ensamblado.GetManifestResourceStream(recurso)!;
+            var catalogo = await System.Text.Json.JsonSerializer.DeserializeAsync<CatalogoUtaJson>(flujo,
+                new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+            if (catalogo is null || catalogo.Asignaturas.Count == 0) continue;
+
+            var carrera = await db.Carreras.FirstOrDefaultAsync(c => c.Codigo == catalogo.Carrera);
+            if (carrera is null)
+            {
+                carrera = new Carrera { Codigo = catalogo.Carrera, Nombre = catalogo.Nombre };
+                db.Carreras.Add(carrera);
+                await db.SaveChangesAsync();
+            }
+
+            // Si la malla UTA-2022 ya existe (una base cargada con una versión anterior del catálogo) no se
+            // salta la carrera: se le agregan las materias nuevas que falten, sin tocar las que ya están.
+            var malla = await db.Mallas.FirstOrDefaultAsync(m => m.CarreraId == carrera.Id && m.Version == VersionMallaUta);
+            var mallaNueva = malla is null;
+            if (malla is null)
+            {
+                foreach (var anterior in await db.Mallas.Where(m => m.CarreraId == carrera.Id && m.Vigente).ToListAsync())
+                    anterior.Vigente = false;
+
+                malla = new MallaCurricular
+                {
+                    CarreraId = carrera.Id,
+                    Version = VersionMallaUta,
+                    Anio = 2022,
+                    Fuente = catalogo.Fuente,
+                    RutaNormativa = RutasNormativas.CambioCarreraOu,
+                    Vigente = true
+                };
+                db.Mallas.Add(malla);
+                await db.SaveChangesAsync();
+            }
+
+            var existentes = (await db.Asignaturas.Select(a => a.Codigo).ToListAsync()).ToHashSet();
+            var faltantes = catalogo.Asignaturas.Where(a => !existentes.Contains(a.Codigo)).ToList();
+            if (faltantes.Count == 0) continue;
+
+            foreach (var a in faltantes)
+            {
+                var asignatura = new Asignatura
+                {
+                    MallaId = malla.Id,
+                    Codigo = a.Codigo,
+                    Nombre = a.Nombre,
+                    Creditos = Math.Clamp(a.Creditos ?? 1, 1, 30),
+                    Horas = a.Horas ?? a.Unidades.Sum(u => u.Horas),
+                    Semestre = Math.Clamp(a.Nivel ?? 1, 1, 20)
+                };
+                foreach (var u in a.Unidades)
+                {
+                    asignatura.Unidades.Add(new UnidadTematica
+                    {
+                        Numero = u.Numero,
+                        Nombre = u.Nombre.Length > 200 ? u.Nombre[..200] : u.Nombre,
+                        Horas = Math.Max(1, u.Horas),
+                        Contenidos = u.Contenidos
+                    });
+                }
+
+                var (error, advertencias) = Services.ValidacionCatalogo.Evaluar(asignatura);
+                asignatura.PlanCompleto = error is null && advertencias.Count == 0;
+                db.Asignaturas.Add(asignatura);
+            }
+
+            await db.SaveChangesAsync();
+            if (mallaNueva)
+                logger.LogInformation("Malla oficial de {Carrera} cargada: {Asignaturas} asignaturas con sus sílabos.",
+                    catalogo.Nombre, faltantes.Count);
+            else
+                logger.LogInformation("Malla oficial de {Carrera}: se agregaron {Asignaturas} asignatura(s) que faltaban.",
+                    catalogo.Nombre, faltantes.Count);
+        }
+    }
+
+    private sealed record CatalogoUtaJson(string Carrera, string Nombre, string Fuente, List<AsignaturaUtaJson> Asignaturas);
+
+    private sealed record AsignaturaUtaJson(
+        string Codigo, string Nombre, int? Nivel, int? Creditos, int? Horas, string? Descripcion, List<UnidadUtaJson> Unidades);
+
+    private sealed record UnidadUtaJson(int Numero, string Nombre, int Horas, string Contenidos);
 
     private static Asignatura NuevaAsignatura(
         int mallaId, string codigo, string nombre, int creditos, int semestre,

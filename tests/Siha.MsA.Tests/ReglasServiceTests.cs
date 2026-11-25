@@ -1,3 +1,4 @@
+﻿using FluentAssertions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -151,7 +152,7 @@ public class ReglasServiceTests
         using var db = NuevaDb();
         await Sembrar(db);
         Assert.Equal(new[] { "RN-01", "RN-02", "RN-09", "RN-10", "RN-13", "RN-14" },
-            await db.Reglas.OrderBy(r => r.Codigo).Select(r => r.Codigo).ToArrayAsync());
+            await db.Reglas.Select(r => r.Codigo).Distinct().OrderBy(c => c).ToArrayAsync());
         Assert.Equal(new[] { "CAU-P-011", "CAU-P-122" }, await db.ParametrosEvaluacion
             .OrderBy(p => p.RutaNormativa).Select(p => p.RutaNormativa).ToArrayAsync());
         Assert.All(db.ParametrosEvaluacion, p =>
@@ -167,14 +168,19 @@ public class ReglasServiceTests
         Assert.Equal("ra>=80", ra.Expresion);
         Assert.All(db.Reglas.Where(r => r.Codigo == "RN-13" || r.Codigo == "RN-14"),
             r => Assert.False(r.EsNormativa));
-        Assert.All(db.Reglas, r =>
+        // Todas nacen en la 1.0; RN-01 y RN-13 se versionan a 2.0 (regla de créditos) y su 1.0 queda cerrada.
+        Assert.All(db.Reglas.Where(r => r.Version == "1.0"), r =>
         {
             Assert.False(string.IsNullOrWhiteSpace(r.Fuente));
-            Assert.Equal("1.0", r.Version);
             Assert.Equal(new DateOnly(2026, 1, 1), r.VigenteDesde);
-            Assert.Null(r.VigenteHasta);
             Assert.True(r.Activa);
+            if (r.Codigo is "RN-01" or "RN-13")
+                Assert.Equal(DbSeederA.VigenciaReglaCreditos.AddDays(-1), r.VigenteHasta);
+            else
+                Assert.Null(r.VigenteHasta);
         });
+        Assert.Equal(new[] { "RN-01", "RN-13" },
+            await db.Reglas.Where(r => r.Version == "2.0").Select(r => r.Codigo).OrderBy(c => c).ToArrayAsync());
     }
 
     [Fact]
@@ -182,11 +188,63 @@ public class ReglasServiceTests
     {
         using var db = NuevaDb();
         await Sembrar(db);
-        var regla = await db.Reglas.SingleAsync(r => r.Codigo == "RN-01");
-        Assert.True(regla.EsNormativa);
-        Assert.Equal("CAU-P-011", regla.RutaNormativa);
-        Assert.Equal("contenido>=80 && profundidad>=80 && cargaHoraria>=80", regla.Expresion);
-        Assert.Contains("cambio de carrera o universidad", regla.Descripcion);
+        // La 1.0 (contenido, profundidad y carga horaria) queda en el historial, cerrada.
+        var original = await db.Reglas.SingleAsync(r => r.Codigo == "RN-01" && r.Version == "1.0");
+        Assert.True(original.EsNormativa);
+        Assert.Equal("CAU-P-011", original.RutaNormativa);
+        Assert.Equal("contenido>=80 && profundidad>=80 && cargaHoraria>=80", original.Expresion);
+        Assert.Contains("cambio de carrera o universidad", original.Descripcion);
+        Assert.Equal(DbSeederA.VigenciaReglaCreditos.AddDays(-1), original.VigenteHasta);
+    }
+
+    [Fact]
+    public async Task Rn01_version_2_exige_80_en_contenidos_y_80_en_creditos()
+    {
+        using var db = NuevaDb();
+        await Sembrar(db);
+
+        var rn01 = await db.Reglas.SingleAsync(r => r.Codigo == "RN-01" && r.Version == "2.0");
+        Assert.True(rn01.EsNormativa);
+        Assert.Equal("contenido>=80 && creditos>=80", rn01.Expresion);
+        Assert.Contains("sí o sí", rn01.Descripcion);
+        Assert.Contains("66,67 %", rn01.Descripcion);
+        Assert.Equal(DbSeederA.VigenciaReglaCreditos, rn01.VigenteDesde);
+
+        var rn13 = await db.Reglas.SingleAsync(r => r.Codigo == "RN-13" && r.Version == "2.0");
+        Assert.Contains("Pcred>=80", rn13.Expresion);
+    }
+
+    [Fact]
+    public async Task Rn01_version_2_1_el_agente_recomienda_y_los_docentes_deciden()
+    {
+        using var db = NuevaDb();
+        await Sembrar(db);
+        await Sembrar(db); // idempotente: una sola 2.1
+
+        var rn01 = await db.Reglas.SingleAsync(r => r.Codigo == "RN-01" && r.Version == "2.1");
+        Assert.Contains("decisión final es siempre de los dos docentes", rn01.Descripcion);
+        Assert.Equal(DbSeederA.VigenciaReglaRecomendacion, rn01.VigenteDesde);
+        Assert.Null(rn01.VigenteHasta);
+        // InMemory no aplica el largo de las columnas: se comprueba contra el modelo (SQL Server lo exige).
+        foreach (var regla in db.Reglas)
+        {
+            Assert.True(regla.Descripcion is null || regla.Descripcion.Length <= MaximoDe(db, nameof(regla.Descripcion)), regla.Codigo + " " + regla.Version);
+            Assert.True(regla.Expresion is null || regla.Expresion.Length <= MaximoDe(db, nameof(regla.Expresion)), regla.Codigo + " " + regla.Version);
+            Assert.True(regla.Fuente is null || regla.Fuente.Length <= MaximoDe(db, nameof(regla.Fuente)), regla.Codigo + " " + regla.Version);
+        }
+        var v2 = await db.Reglas.SingleAsync(r => r.Codigo == "RN-01" && r.Version == "2.0");
+        Assert.Equal(DbSeederA.VigenciaReglaRecomendacion.AddDays(-1), v2.VigenteHasta);
+    }
+
+    [Fact]
+    public async Task La_actualizacion_de_la_regla_de_creditos_se_aplica_una_sola_vez()
+    {
+        using var db = NuevaDb();
+        await Sembrar(db);
+        await Sembrar(db);
+
+        Assert.Equal(3, await db.Reglas.CountAsync(r => r.Codigo == "RN-01")); // 1.0, 2.0 y 2.1
+        Assert.Equal(2, await db.Reglas.CountAsync(r => r.Codigo == "RN-13"));
     }
 
     [Theory]
@@ -202,14 +260,19 @@ public class ReglasServiceTests
     }
 
     [Fact]
-    public async Task SemillaModeloUsaCreditosSoloComoApoyoYCoberturaPonderadaPorHorasDocumentadas()
+    public async Task SemillaModeloDefineCreditosYCoberturaPonderadaPorHorasDocumentadas()
     {
         using var db = NuevaDb();
         await Sembrar(db);
-        var creditos = await db.Reglas.SingleAsync(r => r.Codigo == "RN-13");
+        // La 1.0 trataba los créditos solo como apoyo; queda en el historial.
+        var anterior = await db.Reglas.SingleAsync(r => r.Codigo == "RN-13" && r.Version == "1.0");
+        Assert.Equal("Pcred=min(100,sumCredOrigen/CredDestino*100)", anterior.Expresion);
+        Assert.Contains("sin umbral", anterior.Descripcion);
+        // La 2.0 exige el 80 % en créditos (forma parte de RN-01).
+        var creditos = await db.Reglas.SingleAsync(r => r.Codigo == "RN-13" && r.Version == "2.0");
         Assert.False(creditos.EsNormativa);
-        Assert.Equal("Pcred=min(100,sumCredOrigen/CredDestino*100)", creditos.Expresion);
-        Assert.Contains("sin umbral", creditos.Descripcion);
+        Assert.Equal("Pcred=min(100,sumCredOrigen/CredDestino*100) && Pcred>=80", creditos.Expresion);
+        Assert.Contains("80 %", creditos.Descripcion);
         var contenido = await db.Reglas.SingleAsync(r => r.Codigo == "RN-14");
         Assert.False(contenido.EsNormativa);
         Assert.Equal("Pcont=sum(hj*cj)/sum(hj)*100; cj=1 si similitudCoseno>=tau/100, 0 en otro caso", contenido.Expresion);
@@ -244,7 +307,7 @@ public class ReglasServiceTests
         await db.SaveChangesAsync();
         await Sembrar(db);
         Assert.Equal(2, await db.ParametrosEvaluacion.CountAsync());
-        Assert.Equal(6, await db.Reglas.CountAsync());
+        Assert.Equal(9, await db.Reglas.CountAsync()); // 6 reglas 1.0 + RN-01 y RN-13 en 2.0 + RN-01 2.1
         Assert.Equal(42, parametro.Tau);
         Assert.Equal("Configuración local", regla.Descripcion);
     }
@@ -254,14 +317,61 @@ public class ReglasServiceTests
     {
         using var db = NuevaDb();
         await Sembrar(db);
-        var asignaturas = await db.Asignaturas.Include(a => a.Unidades).ToListAsync();
-        Assert.NotEmpty(asignaturas);
+        // Solo la muestra base (SW101/SW201/SW301) tiene horas de unidades faltantes.
+        var asignaturas = await db.Asignaturas.Include(a => a.Unidades)
+            .Where(a => a.Codigo == "SW101" || a.Codigo == "SW201" || a.Codigo == "SW301").ToListAsync();
+        Assert.Equal(3, asignaturas.Count);
         Assert.All(asignaturas, a =>
         {
             Assert.True(a.Unidades.Sum(u => u.Horas) < a.Horas);
             Assert.False(a.PlanCompleto);
         });
     }
+
+    [Fact]
+    public async Task SemillaCargaLasMallasOficialesConSusSilabosComoMallaVigente()
+    {
+        using var db = NuevaDb();
+        await Sembrar(db);
+        await Sembrar(db); // idempotente: no duplica
+
+        var vigentes = await db.Mallas.Include(m => m.Carrera).Where(m => m.Vigente).ToListAsync();
+        Assert.Contains(vigentes, m => m.Carrera!.Codigo == "SW" && m.Version == DbSeederA.VersionMallaUta);
+        Assert.Contains(vigentes, m => m.Carrera!.Codigo == "TI" && m.Version == DbSeederA.VersionMallaUta);
+        Assert.Single(vigentes, m => m.Carrera!.Codigo == "SW");
+
+        var algoritmos = await db.Asignaturas.Include(a => a.Unidades)
+            .SingleAsync(a => a.Nombre == "ALGORITMOS Y LOGICA DE PROGRAMACION");
+        Assert.Equal(1, algoritmos.Semestre);
+        Assert.Equal(4, algoritmos.Creditos);
+        Assert.Equal(192, algoritmos.Horas);
+        Assert.Equal(4, algoritmos.Unidades.Count);
+        Assert.Contains("Programación con condicionales", algoritmos.Unidades.Single(u => u.Numero == 2).Contenidos);
+        Assert.Equal(192, algoritmos.Unidades.Sum(u => u.Horas));
+    }
+
+    [Fact]
+    public async Task Semilla_agrega_a_la_malla_existente_las_materias_que_faltan()
+    {
+        using var db = NuevaDb();
+        await Sembrar(db);
+
+        // Simula una base cargada con una versión anterior del catálogo: le faltan dos materias de Software.
+        var malla = await db.Mallas.Include(m => m.Carrera).SingleAsync(m => m.Carrera!.Codigo == "SW" && m.Version == DbSeederA.VersionMallaUta);
+        var total = await db.Asignaturas.CountAsync(a => a.MallaId == malla.Id);
+        var quitadas = await db.Asignaturas.Where(a => a.MallaId == malla.Id).OrderBy(a => a.Codigo).Take(2).ToListAsync();
+        db.Asignaturas.RemoveRange(quitadas);
+        await db.SaveChangesAsync();
+
+        await Sembrar(db);
+
+        (await db.Asignaturas.CountAsync(a => a.MallaId == malla.Id)).Should().Be(total);
+        (await db.Mallas.CountAsync(m => m.CarreraId == malla.CarreraId && m.Version == DbSeederA.VersionMallaUta)).Should().Be(1);
+        (await db.Asignaturas.Include(a => a.Unidades).SingleAsync(a => a.Codigo == quitadas[0].Codigo)).Unidades.Should().NotBeEmpty();
+    }
+
+    private static int MaximoDe(SihaDbContextA db, string propiedad)
+        => db.Model.FindEntityType(typeof(Siha.MsA.Api.Domain.Entities.Regla))!.FindProperty(propiedad)!.GetMaxLength() ?? int.MaxValue;
 
     private static Task Sembrar(SihaDbContextA db) => DbSeederA.SembrarAsync(db,
         new BCryptPasswordHasher(), "admin@uta.edu.ec", "no-usada", NullLogger.Instance);

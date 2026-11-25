@@ -27,6 +27,8 @@ public static class StrategyRegistry
         services.AddScoped<IPrecedenteService, PrecedenteService>();
         services.AddScoped<IEmbeddingCacheService, EmbeddingCacheService>();
         services.AddScoped<IAgenteAnalizadorService, AgenteAnalizadorService>();
+        services.AddScoped<IAnalisisAutomaticoService, AnalisisAutomaticoService>();
+        services.AddSingleton<ILectorCertificadosAlmacen, LectorCertificadosAlmacen>();
         services.AddScoped<IExtractorPdfService, ExtractorPdfService>();
         services.AddHttpClient<IOcrLlmExtractorService, OcrLlmExtractorService>();
         return services;

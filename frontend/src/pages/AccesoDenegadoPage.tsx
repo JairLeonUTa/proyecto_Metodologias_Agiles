@@ -1,5 +1,5 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Boton, Etiqueta } from '../components/ui';
+import { Boton } from '../components/ui';
 import { LayoutAutenticacion } from '../layouts/LayoutAutenticacion';
 import { RUTAS } from '../layouts/navegacion';
 import { useAuth } from '../hooks/useAuth';
@@ -26,59 +26,42 @@ export function AccesoDenegadoPage(): JSX.Element {
 
   return (
     <LayoutAutenticacion
-      titulo="Acceso denegado"
-      subtitulo="Su rol no tiene permisos para acceder a esta sección del sistema."
+      titulo="No tiene acceso a esta sección"
+      subtitulo="Cada cuenta ve solo las secciones de su rol."
     >
-      <div className="space-y-4 text-sm text-muted">
-        <div className="rounded-md border border-amber-200 bg-[#fffbeb] p-3">
-          <p className="font-semibold text-[#92400e]">Control de acceso basado en roles (RBAC)</p>
-          <p className="mt-1 text-xs text-amber-800">
-            La navegación y las rutas del sistema se habilitan según el rol asignado a su cuenta institucional.
-          </p>
-        </div>
-
-        <dl className="space-y-2">
-          <div className="flex items-center justify-between gap-3">
-            <dt className="text-faint">Ruta solicitada</dt>
-            <dd className="font-mono text-xs text-ink">{estado.rutaIntentada ?? 'No especificada'}</dd>
-          </div>
-          <div className="flex items-center justify-between gap-3">
-            <dt className="text-faint">Rol autenticado</dt>
-            <dd>
-              <Etiqueta tono="informacion">
-                {usuario ? (ETIQUETA_ROL[usuario.rol] ?? usuario.rol) : (estado.rol ?? 'Sin rol')}
-              </Etiqueta>
-            </dd>
-          </div>
-          {estado.rolesRequeridos && estado.rolesRequeridos.length > 0 ? (
-            <div className="flex items-center justify-between gap-3">
-              <dt className="text-faint">Roles autorizados</dt>
-              <dd className="flex flex-wrap gap-1">
-                {estado.rolesRequeridos.map((rol) => (
-                  <Etiqueta key={rol} tono="neutro">
-                    {ETIQUETA_ROL[rol] ?? rol}
-                  </Etiqueta>
-                ))}
-              </dd>
-            </div>
-          ) : null}
-        </dl>
-
+      <div className="space-y-5 text-sm text-muted">
+        <p>
+          {estado.rolesRequeridos?.length
+            ? `Esta sección es solo para ${unirConY(estado.rolesRequeridos.map(nombrePluralRol))}. `
+            : 'Su cuenta no tiene permiso para ver esta sección.'}
+          {estado.rolesRequeridos?.length
+            ? `Usted entró como ${nombreRol(usuario?.rol ?? estado.rol)}.`
+            : ''}
+        </p>
         <div className="flex flex-wrap gap-2">
-          <Boton onClick={() => navegar(RUTAS.inicio)}>Volver al inicio</Boton>
-          <Boton variante="secundario" onClick={() => cerrarSesion()}>
-            Cerrar sesión
+          <Boton onClick={() => navegar(RUTAS.inicio)}>Ir al inicio</Boton>
+          <Boton variante="secundario" onClick={() => { cerrarSesion(); navegar(RUTAS.login); }}>
+            Cambiar de cuenta
           </Boton>
-          <Link
-            to={RUTAS.login}
-            className="inline-flex items-center rounded-md px-3 py-2 text-sm font-medium text-muted hover:bg-stone-100 hover:text-ink"
-          >
-            Ir al inicio de sesión
-          </Link>
         </div>
       </div>
     </LayoutAutenticacion>
   );
+}
+
+function nombreRol(rol: string | undefined): string {
+  return rol ? ETIQUETA_ROL[rol] ?? rol : 'Sin rol';
+}
+
+/** Plural en español: Administradores, Operadores, Docentes. */
+export function nombrePluralRol(rol: string): string {
+  const etiqueta = nombreRol(rol);
+  return /[aeiou]$/i.test(etiqueta) ? `${etiqueta}s` : `${etiqueta}es`;
+}
+
+/** «A», «A y B», «A, B y C». */
+function unirConY(partes: string[]): string {
+  return partes.length <= 1 ? partes.join('') : `${partes.slice(0, -1).join(', ')} y ${partes[partes.length - 1]}`;
 }
 
 /** Vista mostrada cuando la ruta solicitada no existe. */

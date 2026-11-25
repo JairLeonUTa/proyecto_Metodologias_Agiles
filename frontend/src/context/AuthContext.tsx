@@ -24,6 +24,10 @@ export interface ContextoAutenticacion {
   limpiarMotivoCierre: () => void;
   /** `true` cuando el usuario autenticado tiene alguno de los roles indicados. */
   tieneRol: (...roles: string[]) => boolean;
+  /** Fecha (ISO, UTC) en que vence el token actual, si se conoce. */
+  expiraUtc: string | null;
+  /** Pide un token nuevo con el actual todavía vigente ("Seguir conectado"). */
+  renovarSesion: () => Promise<void>;
 }
 
 export const ContextoAuth = createContext<ContextoAutenticacion | null>(null);
@@ -125,6 +129,13 @@ export function ProveedorAutenticacion({ children }: PropsProveedor): JSX.Elemen
 
   const limpiarMotivoCierre = useCallback(() => setMotivoCierre(null), []);
 
+  const renovarSesion = useCallback(async () => {
+    const respuesta = await authApi.renovar();
+    const renovada: Sesion = { token: respuesta.token, expiraUtc: respuesta.expiraUtc, usuario: respuesta.usuario };
+    guardarSesion(renovada);
+    setSesion(renovada);
+  }, []);
+
   const valor = useMemo<ContextoAutenticacion>(() => {
     const usuario = sesion?.usuario ?? null;
 
@@ -138,8 +149,10 @@ export function ProveedorAutenticacion({ children }: PropsProveedor): JSX.Elemen
       cerrarSesion,
       limpiarMotivoCierre,
       tieneRol: (...roles: string[]) => (usuario ? roles.includes(usuario.rol) : false),
+      expiraUtc: sesion?.expiraUtc ?? null,
+      renovarSesion,
     };
-  }, [sesion, restaurando, motivoCierre, iniciarSesion, cerrarSesion, limpiarMotivoCierre]);
+  }, [sesion, restaurando, motivoCierre, iniciarSesion, cerrarSesion, limpiarMotivoCierre, renovarSesion]);
 
   return <ContextoAuth.Provider value={valor}>{children}</ContextoAuth.Provider>;
 }

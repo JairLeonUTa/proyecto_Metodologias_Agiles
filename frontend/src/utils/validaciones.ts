@@ -6,6 +6,9 @@ export function esCorreoInstitucional(valor: string): boolean {
   return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(valor.trim());
 }
 
+/** Contenido mínimo que fija el reglamento de homologación de la UTA: se puede exigir más, nunca menos. */
+export const CONTENIDO_MINIMO_REGLAMENTO = 80;
+
 /** Valida los umbrales heurísticos θ, δ, τ (S1-A03). Devuelve el mensaje de error o `null`. */
 export function validarParametros(theta: number, delta: number, tau: number): string | null {
   for (const [nombre, valor] of [
@@ -19,6 +22,10 @@ export function validarParametros(theta: number, delta: number, tau: number): st
     if (valor < 0 || valor > 100) {
       return `El valor de ${nombre} debe estar entre 0 y 100.`;
     }
+  }
+
+  if (theta < CONTENIDO_MINIMO_REGLAMENTO) {
+    return `El contenido mínimo no puede ser menor que ${CONTENIDO_MINIMO_REGLAMENTO} %: lo fija el reglamento de homologación de la UTA. Puede exigir más, pero no menos.`;
   }
 
   if (delta > theta) {

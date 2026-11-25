@@ -1,4 +1,3 @@
-using System.Collections.Concurrent;
 using FluentAssertions;
 using MassTransit;
 using MassTransit.Testing;
@@ -21,16 +20,14 @@ namespace Siha.MsB.Tests;
 /// </summary>
 public class BusConectividadTests
 {
-    /// <summary>Consumidor espía que conserva los mensajes recibidos para inspeccionarlos.</summary>
+    /// <summary>
+    /// Consumidor espía. No guarda nada por su cuenta: el arnés registra lo que consumió y la prueba lo
+    /// lee de ahí. (Antes usaba una cola estática compartida y sondeo con esperas, y fallaba a veces al
+    /// correr la suite completa.)
+    /// </summary>
     private sealed class ConsumidorEspia : IConsumer<SolicitudCreadaEvent>
     {
-        public static readonly ConcurrentQueue<SolicitudCreadaEvent> Recibidos = new();
-
-        public Task Consume(ConsumeContext<SolicitudCreadaEvent> context)
-        {
-            Recibidos.Enqueue(context.Message);
-            return Task.CompletedTask;
-        }
+        public Task Consume(ConsumeContext<SolicitudCreadaEvent> context) => Task.CompletedTask;
     }
 
     [Fact]
@@ -46,7 +43,8 @@ public class BusConectividadTests
 
         await using var proveedor = servicios.BuildServiceProvider();
         var arnes = proveedor.GetRequiredService<ITestHarness>();
-        arnes.TestTimeout = TimeSpan.FromSeconds(15);
+        // Holgado para cuando la suite completa corre en paralelo y la máquina está cargada.
+        arnes.TestTimeout = TimeSpan.FromSeconds(30);
 
         await arnes.Start();
 
@@ -74,14 +72,19 @@ public class BusConectividadTests
             ok.Should().BeTrue();
             error.Should().BeNull();
 
-            // 1) El suscriptor real del Microservicio B (y el espía) reciben el mensaje.
-            (await arnes.Consumed.Any<SolicitudCreadaEvent>()).Should().BeTrue();
-            (await arnes.Published.Any<SolicitudCreadaEvent>()).Should().BeTrue();
+            bool EsEste(IReceivedMessage<SolicitudCreadaEvent> m) => m.Context.Message.ExpedienteId == evento.ExpedienteId;
+
+            // 1) Se publica y lo reciben el suscriptor real del Microservicio B y el espía.
+            (await arnes.Published.Any<SolicitudCreadaEvent>(m => m.Context.Message.ExpedienteId == evento.ExpedienteId))
+                .Should().BeTrue();
+            (await arnes.GetConsumerHarness<VerificacionSolicitudConsumer>().Consumed.Any<SolicitudCreadaEvent>(EsEste))
+                .Should().BeTrue();
+            var espia = arnes.GetConsumerHarness<ConsumidorEspia>();
+            (await espia.Consumed.Any<SolicitudCreadaEvent>(EsEste)).Should().BeTrue();
 
             // 2) El contenido llega intacto, conservando el CorrelationId.
-            var recibido = await EsperarMensajeAsync();
-            recibido.Should().NotBeNull();
-            recibido!.CorrelationId.Should().Be(evento.CorrelationId);
+            var recibido = espia.Consumed.Select<SolicitudCreadaEvent>(EsEste).Single().Context.Message;
+            recibido.CorrelationId.Should().Be(evento.CorrelationId);
             recibido.ExpedienteId.Should().Be(evento.ExpedienteId);
             recibido.CodigoExpediente.Should().Be(evento.CodigoExpediente);
             recibido.RutaNormativa.Should().Be(RutasNormativas.CambioCarreraOu);
@@ -92,22 +95,5 @@ public class BusConectividadTests
         {
             await arnes.Stop();
         }
-    }
-
-    private static async Task<SolicitudCreadaEvent?> EsperarMensajeAsync()
-    {
-        var limite = DateTime.UtcNow.AddSeconds(10);
-
-        while (DateTime.UtcNow < limite)
-        {
-            if (ConsumidorEspia.Recibidos.TryDequeue(out var mensaje))
-            {
-                return mensaje;
-            }
-
-            await Task.Delay(50);
-        }
-
-        return null;
     }
 }

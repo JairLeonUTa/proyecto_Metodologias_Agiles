@@ -37,9 +37,9 @@ export function TablaCobertura({ contenido, unidadesOrigen, versionReglas }: Pro
           detalle={`${cubiertas.length} de ${filas.length} unidades cubiertas`}
         />
         <TarjetaMetrica
-          etiqueta="Umbral de similitud aplicado"
-          valor={`τ = ${porcentajeACoseno(contenido.tauUsado)}`}
-          detalle={versionReglas ? `Reglas versión ${versionReglas} (vía gRPC)` : 'Consultado vía gRPC al Microservicio A'}
+          etiqueta="Reglas aplicadas"
+          valor={versionReglas ? `Versión ${versionReglas}` : 'Vigentes'}
+          detalle="Consultadas vía gRPC al Microservicio A"
         />
         <TarjetaMetrica
           etiqueta="Unidades faltantes"

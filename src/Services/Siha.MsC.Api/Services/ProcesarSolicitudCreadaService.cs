@@ -28,17 +28,20 @@ public class ProcesarSolicitudCreadaService
     private readonly IAlmacenDocumentos _almacen;
     private readonly IExtractorPdfService _extractor;
     private readonly ILogger<ProcesarSolicitudCreadaService> _logger;
+    private readonly ILectorCertificadosAlmacen? _certificados;
 
     public ProcesarSolicitudCreadaService(
         SihaDbContextC db,
         IAlmacenDocumentos almacen,
         IExtractorPdfService extractor,
-        ILogger<ProcesarSolicitudCreadaService> logger)
+        ILogger<ProcesarSolicitudCreadaService> logger,
+        ILectorCertificadosAlmacen? certificados = null)
     {
         _db = db;
         _almacen = almacen;
         _extractor = extractor;
         _logger = logger;
+        _certificados = certificados;
     }
 
     public async Task<ResultadoProcesamiento> ProcesarAsync(
@@ -86,10 +89,57 @@ public class ProcesarSolicitudCreadaService
                 $"No se pudo verificar los documentos del expediente {evento.ExpedienteId}: {string.Join(" | ", problemas)}");
         }
 
-        foreach (var documento in evento.Documentos)
+        // Sílabos de la otra universidad (movilidad externa): no pasan por el extractor; se leen y se
+        // guardan junto al certificado para que el agente los compare contra los sílabos de la UTA.
+        var silabosDocumentos = evento.Documentos
+            .Where(d => d.Tipo == Siha.Contracts.TiposDocumentoExpediente.SilaboExterno)
+            .ToList();
+
+        foreach (var documento in evento.Documentos.Except(silabosDocumentos))
         {
             if (await _db.Extracciones.AnyAsync(x => x.DocumentoId == documento.DocumentoId, cancellationToken))
                 continue;
+
+            // Certificado SIHA (SIHA-CH-01): documento preaprobado con el historial, las materias que pide
+            // homologar y los dos revisores. No trae contenidos: el agente los toma de las mallas oficiales.
+            // Se guarda el contexto y el análisis corre en cuanto se confirma este procesamiento.
+            var certificado = _certificados is null
+                ? null
+                : await _certificados.LeerAsync(documento.RutaAlmacenamiento, cancellationToken);
+            if (certificado is not null)
+            {
+                if (!await _db.AnalisisExpedientes.AnyAsync(a => a.ExpedienteId == evento.ExpedienteId, cancellationToken))
+                {
+                    var r1 = certificado.Revisores.ElementAtOrDefault(0);
+                    var r2 = certificado.Revisores.ElementAtOrDefault(1);
+                    var silabos = await LeerSilabosExternosAsync(silabosDocumentos, evento.ExpedienteId, cancellationToken);
+                    _db.AnalisisExpedientes.Add(new AnalisisExpediente
+                    {
+                        ExpedienteId = evento.ExpedienteId,
+                        CodigoExpediente = evento.CodigoExpediente,
+                        NumeroCertificado = certificado.NumeroCertificado,
+                        EstudianteNombre = certificado.EstudianteNombre,
+                        TipoTramite = certificado.TipoTramite,
+                        RutaNormativa = certificado.RutaNormativa,
+                        InstitucionOrigen = certificado.InstitucionOrigen,
+                        CarreraOrigenCodigo = evento.CarreraOrigenCodigo,
+                        CarreraDestinoCodigo = evento.CarreraDestinoCodigo,
+                        CarreraOrigenNombre = certificado.CarreraOrigen,
+                        CarreraDestinoNombre = certificado.CarreraDestino,
+                        CertificadoJson = System.Text.Json.JsonSerializer.Serialize(certificado),
+                        Revisor1Nombre = r1?.Nombre ?? string.Empty,
+                        Revisor1Correo = r1?.Correo ?? string.Empty,
+                        Revisor2Nombre = r2?.Nombre ?? string.Empty,
+                        Revisor2Correo = r2?.Correo ?? string.Empty,
+                        SilabosExternosJson = silabos
+                    });
+                }
+
+                _logger.LogInformation(
+                    "Certificado SIHA {Certificado} recibido: {Solicitudes} solicitud(es) de homologación. ExpedienteId={ExpedienteId}",
+                    certificado.NumeroCertificado, certificado.Solicitudes.Count, evento.ExpedienteId);
+                continue;
+            }
 
             var codigo = evento.AsignaturasOrigen.Count == 1 ? evento.AsignaturasOrigen.First() : null;
             var resultado = await _extractor.ExtraerDeArchivoAsync(
@@ -158,6 +208,38 @@ public class ProcesarSolicitudCreadaService
             evento.ExpedienteId, messageId, evento.Documentos.Count);
 
         return ResultadoProcesamiento.Procesado;
+    }
+
+    /// <summary>
+    /// Lee cada sílabo externo del volumen compartido y los serializa para el agente. MS B ya los
+    /// validó al registrar; si aquí alguno no se puede leer, solo se registra la advertencia y esa
+    /// materia quedará "Sin sílabo para comparar".
+    /// </summary>
+    private async Task<string?> LeerSilabosExternosAsync(
+        IReadOnlyList<Siha.Contracts.Events.DocumentoReferencia> documentos,
+        Guid expedienteId,
+        CancellationToken cancellationToken)
+    {
+        if (documentos.Count == 0 || _certificados is null) return null;
+
+        var silabos = new List<Siha.Certificados.SilaboExterno>();
+        foreach (var documento in documentos)
+        {
+            var materia = documento.MateriaOrigen ?? string.Empty;
+            var silabo = await _certificados.LeerSilaboAsync(documento.RutaAlmacenamiento, materia, cancellationToken);
+            if (silabo is not null)
+            {
+                silabos.Add(silabo);
+            }
+            else
+            {
+                _logger.LogWarning(
+                    "No se pudo leer el sílabo externo de «{Materia}» ({DocumentoId}); la materia quedará sin sílabo para comparar. ExpedienteId={ExpedienteId}",
+                    materia, documento.DocumentoId, expedienteId);
+            }
+        }
+
+        return silabos.Count > 0 ? System.Text.Json.JsonSerializer.Serialize(silabos) : null;
     }
 
     private static bool EsDuplicado(DbUpdateException ex)

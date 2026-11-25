@@ -1,7 +1,7 @@
 import { Alerta, Etiqueta, Tarjeta } from '../ui';
 import type { EvaluacionCreditos } from '../../types/analisis';
 import type { ParametroEvaluacion } from '../../types/reglas';
-import { formatearDecimal, formatearPorcentaje, presentarCategoriaCreditos } from '../../utils/analisis';
+import { formatearPorcentaje, presentarCategoriaCreditos } from '../../utils/analisis';
 import { TarjetaMetrica } from './TarjetaMetrica';
 
 export interface DatosControlPrevio {
@@ -17,13 +17,8 @@ export interface DatosControlPrevio {
 interface PropsPanelCreditos {
   creditos: EvaluacionCreditos;
   datos: DatosControlPrevio;
-  /** Parámetros vigentes de MS A (θ, δ, τ, versión). `null` si no se pudieron consultar. */
+  /** Parámetros vigentes de MS A (solo se muestra la versión). `null` si no se pudieron consultar. */
   parametros: ParametroEvaluacion | null;
-}
-
-/** θ y δ se configuran en porcentaje (80, 15): se muestran sin decimales sobrantes. */
-function formatearUmbral(valor: number): string {
-  return Number.isInteger(valor) ? String(valor) : formatearDecimal(valor);
 }
 
 const ORDINALES =['Primera', 'Segunda', 'Tercera', 'Cuarta', 'Quinta'];
@@ -66,19 +61,17 @@ export function PanelCreditos({ creditos, datos, parametros }: PropsPanelCredito
           detalle={creditos.bloqueoDuro ? 'Bloqueo duro: no continúa el cálculo' : 'Sin bloqueo duro'}
           tono={creditos.bloqueoDuro ? 'error' : 'neutro'}
         />
+        {/* Los umbrales θ, δ y τ deciden en el servidor, pero no se muestran en pantalla. */}
         <TarjetaMetrica
-          etiqueta="Parámetros aplicados (MS A)"
+          etiqueta="Reglas aplicadas (MS A)"
           valor={
             parametros ? (
-              <span className="text-lg">
-                θ {formatearUmbral(parametros.theta)} · δ {formatearUmbral(parametros.delta)} · τ{' '}
-                {formatearDecimal(parametros.tau > 1 ? parametros.tau / 100 : parametros.tau)}
-              </span>
+              <span className="text-lg">Versión {parametros.version}</span>
             ) : (
               <span className="text-base text-faint">No disponibles</span>
             )
           }
-          detalle={parametros ? `Reglas versión ${parametros.version}` : 'No se pudo consultar el Microservicio A'}
+          detalle={parametros ? 'Reglas vigentes de la ruta normativa' : 'No se pudo consultar el Microservicio A'}
         />
       </div>
 

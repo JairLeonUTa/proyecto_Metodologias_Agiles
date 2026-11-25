@@ -15,6 +15,9 @@ export const usuariosApi = {
   cambiarEstado: (id: number, activo: boolean) =>
     peticion<Usuario>(`/api/usuarios/${id}/estado`, { metodo: 'PATCH', cuerpo: { activo } }),
 
+  restablecerPassword: (id: number, password: string) =>
+    peticion<void>(`/api/usuarios/${id}/password`, { metodo: 'PUT', cuerpo: { password } }),
+
   /** Baja lógica de la cuenta. */
   desactivar: (id: number) => peticion<void>(`/api/usuarios/${id}`, { metodo: 'DELETE' }),
 };

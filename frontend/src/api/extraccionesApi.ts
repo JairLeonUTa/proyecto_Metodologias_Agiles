@@ -6,6 +6,8 @@ import type {
   ConfirmarExtraccion,
   Extraccion,
   Precedente,
+  DecisionMateria,
+  SolicitudAnalisis,
 } from '../types/analisis';
 
 /**
@@ -26,6 +28,22 @@ export const extraccionesApi = {
   /** Orquestación completa: reglas gRPC → Pcred → Pcont → precedentes (S2-A08). */
   analizar: (id: string, datos: AnalizarExtraccion) =>
     peticion<AnalisisCompleto>(`/api/extracciones/${id}/analizar`, { metodo: 'POST', cuerpo: datos }),
+
+  /** Solicitud con certificado SIHA: estimación del agente, revisores y respuestas. 404 si aún no se procesa. */
+  obtenerSolicitud: (expedienteId: string) =>
+    peticion<SolicitudAnalisis>(`/api/extracciones/expedientes/${expedienteId}/analisis`),
+
+  /** Vuelve a ejecutar el agente (por ejemplo, si la IA no estaba disponible). */
+  reanalizar: (expedienteId: string) =>
+    peticion<SolicitudAnalisis>(`/api/extracciones/expedientes/${expedienteId}/analisis-automatico`, { metodo: 'POST' }),
+
+  /** Respuesta final del docente revisor que inicia sesión. */
+  responder: (expedienteId: string, dictamen: { decisiones: DecisionMateria[]; comentario: string | null }) =>
+    peticion<SolicitudAnalisis>(`/api/extracciones/expedientes/${expedienteId}/dictamen`, { metodo: 'POST', cuerpo: dictamen }),
+
+  /** Decisión final del administrador en una materia en la que los dos docentes no coinciden. */
+  decidirComoAdministrador: (expedienteId: string, decision: { codigoDestino: string; aprobada: boolean; comentario: string }) =>
+    peticion<SolicitudAnalisis>(`/api/extracciones/expedientes/${expedienteId}/decision-final`, { metodo: 'POST', cuerpo: decision }),
 
   /** Coincidencia exacta; sin coincidencia devuelve `[]` (S2-A07). */
   buscarPrecedentes: (datos: BuscarPrecedente) =>

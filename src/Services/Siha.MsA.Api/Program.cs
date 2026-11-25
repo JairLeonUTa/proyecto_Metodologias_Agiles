@@ -173,6 +173,7 @@ app.MapControllers();
 // Servicio gRPC (paquete siha.reglas.v1). Se publica en el listener HTTP/2 dedicado (Grpc:Puerto),
 // separado del endpoint REST porque gRPC sobre h2c exige un puerto exclusivo sin TLS.
 app.MapGrpcService<ReglasGrpcService>();
+app.MapGrpcService<CatalogoGrpcService>();
 
 app.MapGet("/health", () => Results.Ok(new
 {
@@ -217,6 +218,6 @@ static async Task MigrarYSembrarAsync(WebApplication app)
     if (string.IsNullOrWhiteSpace(password))
         throw new InvalidOperationException("Configura Seed__AdminPassword para inicializar la cuenta administradora.");
 
-    await DbSeederA.SembrarAsync(db, hasher, correo, password, logger);
+    await DbSeederA.SembrarAsync(db, hasher, correo, password, logger, configuration["Seed:DocentePassword"]);
     logger.LogInformation("Microservicio A listo. Swagger en /swagger, salud en /health.");
 }

@@ -60,6 +60,59 @@ public class UsuariosAuthTests
         SinPassword(respuesta);
     }
 
+    private static AuthController ConUsuario(SihaDbContextA db, IJwtTokenService jwt, int? usuarioId)
+        => new(db, Hasher, jwt)
+        {
+            ControllerContext = new ControllerContext
+            {
+                HttpContext = new Microsoft.AspNetCore.Http.DefaultHttpContext
+                {
+                    User = new ClaimsPrincipal(new ClaimsIdentity(
+                        usuarioId is null ? Array.Empty<Claim>() : new[] { new Claim(ClaimTypes.NameIdentifier, usuarioId.Value.ToString()) },
+                        "prueba"))
+                }
+            }
+        };
+
+    [Fact]
+    public async Task Renovar_entrega_un_token_nuevo_sin_pedir_la_contrasena()
+    {
+        using var db = await CrearDb();
+        var usuario = await AgregarUsuario(db);
+        var jwt = new JwtTokenService(Options.Create(new JwtSettings { Key = "clave-de-pruebas-para-firma-JWT-con-256-bits-minimo-ok" }));
+
+        var resultado = await ConUsuario(db, jwt, usuario.Id).Renovar();
+
+        var respuesta = Assert.IsType<LoginResponse>(Assert.IsType<OkObjectResult>(resultado.Result).Value);
+        respuesta.Token.Should().NotBeNullOrWhiteSpace();
+        respuesta.ExpiraUtc.Should().BeAfter(DateTimeOffset.UtcNow.AddMinutes(30));
+        new JwtSecurityTokenHandler().ReadJwtToken(respuesta.Token).Claims
+            .Should().Contain(c => c.Type == ClaimTypes.Role && c.Value == RolesSistema.Docente);
+        SinPassword(respuesta);
+    }
+
+    [Fact]
+    public async Task Renovar_con_la_cuenta_desactivada_devuelve_401()
+    {
+        using var db = await CrearDb();
+        var usuario = await AgregarUsuario(db, activo: false);
+        var jwt = new Mock<IJwtTokenService>(MockBehavior.Strict);
+
+        var resultado = await ConUsuario(db, jwt.Object, usuario.Id).Renovar();
+
+        Assert.IsType<UnauthorizedObjectResult>(resultado.Result);
+        jwt.VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task Renovar_sin_identificador_en_el_token_devuelve_401()
+    {
+        using var db = await CrearDb();
+        var resultado = await ConUsuario(db, new Mock<IJwtTokenService>(MockBehavior.Strict).Object, null).Renovar();
+
+        Assert.IsType<UnauthorizedObjectResult>(resultado.Result);
+    }
+
     [Theory]
     [InlineData("x", true, true)]
     [InlineData("incorrecta123", true, true)]
@@ -81,6 +134,42 @@ public class UsuariosAuthTests
             Assert.Null(usuario!.UltimoAccesoUtc);
         }
         jwt.VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task Restablecer_password_permite_login_con_nueva_y_rechaza_anterior()
+    {
+        using var db = await CrearDb();
+        var usuario = await AgregarUsuario(db);
+        const string nueva = "NuevaClave123!";
+        var resultado = await new UsuariosController(db, Hasher).RestablecerPassword(usuario.Id, new RestablecerPasswordRequest(nueva));
+        resultado.Should().BeOfType<NoContentResult>();
+        var jwt = new Mock<IJwtTokenService>();
+        jwt.Setup(s => s.CrearToken(It.IsAny<Usuario>(), It.IsAny<string>(), It.IsAny<string>())).Returns("jwt");
+        jwt.Setup(s => s.ObtenerExpiracion()).Returns(DateTimeOffset.UtcNow.AddHours(1));
+        var auth = new AuthController(db, Hasher, jwt.Object);
+        (await auth.Login(new LoginRequest("docente@uta.edu.ec", nueva))).Result.Should().BeOfType<OkObjectResult>();
+        (await auth.Login(new LoginRequest("docente@uta.edu.ec", Password))).Result.Should().BeOfType<UnauthorizedObjectResult>();
+    }
+
+    [Fact]
+    public async Task Restablecer_password_inexistente_devuelve_404()
+    {
+        using var db = await CrearDb();
+        (await new UsuariosController(db, Hasher).RestablecerPassword(999, new RestablecerPasswordRequest("NuevaClave123!")))
+            .Should().BeOfType<NotFoundResult>();
+    }
+
+    [Fact]
+    public async Task Restablecer_password_corto_devuelve_400_y_no_cambia_hash()
+    {
+        using var db = await CrearDb();
+        var usuario = await AgregarUsuario(db);
+        var hash = usuario.PasswordHash;
+        var resultado = await new UsuariosController(db, Hasher).RestablecerPassword(usuario.Id, new RestablecerPasswordRequest("1234567"));
+        resultado.Should().BeOfType<BadRequestObjectResult>().Which.Value.Should().BeOfType<ProblemDetails>()
+            .Which.Detail.Should().Contain("al menos 8 caracteres");
+        usuario.PasswordHash.Should().Be(hash);
     }
 
     [Theory]

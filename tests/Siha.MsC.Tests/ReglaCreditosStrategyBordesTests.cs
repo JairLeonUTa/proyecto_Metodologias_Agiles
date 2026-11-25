@@ -29,7 +29,8 @@ public class ReglaCreditosStrategyBordesTests
     [InlineData(3, 3, 100.00)]
     public void Pcred_se_redondea_a_dos_decimales(int origen, int destino, double esperado)
     {
-        Calcular(origen, destino).Pcred.Should().Be((decimal)esperado);
+        // El literal double se pasa a decimal con dos cifras (en .NET 9+ (decimal)66.67d no es exactamente 66.67m).
+        Calcular(origen, destino).Pcred.Should().Be(Math.Round((decimal)esperado, 2));
     }
 
     [Fact]
@@ -81,7 +82,7 @@ public class ReglaCreditosStrategyBordesTests
         // Prepara US-10: varias asignaturas de origen hacia una de destino se evalúan con la suma.
         var r = Calcular(origenes.Sum(), destino);
 
-        r.Pcred.Should().Be((decimal)esperado);
+        r.Pcred.Should().Be(Math.Round((decimal)esperado, 2));
     }
 
     [Fact]

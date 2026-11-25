@@ -3,6 +3,7 @@ WORKDIR /src
 
 COPY ["src/Services/Siha.MsB.Api/Siha.MsB.Api.csproj", "src/Services/Siha.MsB.Api/"]
 COPY ["src/BuildingBlocks/Siha.Contracts/Siha.Contracts.csproj", "src/BuildingBlocks/Siha.Contracts/"]
+COPY ["src/BuildingBlocks/Siha.Certificados/Siha.Certificados.csproj", "src/BuildingBlocks/Siha.Certificados/"]
 RUN dotnet restore "src/Services/Siha.MsB.Api/Siha.MsB.Api.csproj"
 
 COPY . .

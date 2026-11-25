@@ -1,0 +1,1601 @@
+{
+ "carrera": "TEL",
+ "nombre": "Telecomunicaciones",
+ "fuente": "Sílabos oficiales publicados en uta.edu.ec (2026)",
+ "asignaturas": [
+  {
+   "nombre": "CALCULO DE UNA VARIABLE",
+   "nivel": 1,
+   "creditos": 4,
+   "horas": 192,
+   "descripcion": "Cálculo de una variable desarrolla criterios sobre límites, propiedades y aplicaciones, Derivación, interpretación matemática, reglas generales y específicas, Aplicaciones geométricas y mecánicas. Integración, Reglas, métodos especiales de integración y aplicaciones relacionadas con el entorno de formación.",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "Analizar la teoría básica de los límites de una función en la resolución de ejercicios.",
+     "horas": 48,
+     "contenidos": "Funciones; Límites; Tipo de límites; Teoremas"
+    },
+    {
+     "numero": 2,
+     "nombre": "Aplicar adecuadamente las reglas de derivación para todo tipo de funciones y utilizar el criterio de derivada a la solución de problemas",
+     "horas": 48,
+     "contenidos": "Derivada; Reglas de derivación; Derivación implícita; Aplicaciones de la derivada"
+    },
+    {
+     "numero": 3,
+     "nombre": "Aplicar los métodos de integración para deducir que la diferenciación y la integración son procesos inversos.",
+     "horas": 48,
+     "contenidos": "Integral Indefinida; Métodos de Integración; Aplicaciones; Integrales Irracionales"
+    },
+    {
+     "numero": 4,
+     "nombre": "Utilizar la integral para el cálculo de áreas y volúmenes, relacionando con problemas reales.",
+     "horas": 48,
+     "contenidos": "Integral definida; Aplicaciones a la integral definida; Integrales Impropias; Integración Numérica"
+    }
+   ],
+   "codigo": "08050115"
+  },
+  {
+   "nombre": "METODOLOGIA DE LA INVESTIGACION",
+   "nivel": 1,
+   "creditos": 2,
+   "horas": 96,
+   "descripcion": "La metodología de la investigación es una asignatura que trata en forma concreta de los diferentes pasos a llevarse a cabo en una investigación de carácter científico y tecnológico y como un proceso dinámico, cambiante y continuo. Este proceso está compuesto por una serie de etapas, las cuales se derivan en forma lógica una de otras, cuando se trata de resolver problemas con la consecuente generación de nuevos conocimientos, los cuales a su vez producen nuevas ideas e interrogantes para investigar.",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "Identificar las definiciones del conocimiento, ciencia y el método científico, así como los principales concetos metodológicos, aplicados a la",
+     "horas": 24,
+     "contenidos": "Fundamentos de la metodología de la investigación"
+    },
+    {
+     "numero": 2,
+     "nombre": "Identificar y delimitar una problemática relevante del campo de la ingeniería, mediante la revisión crítica de literatura científica y técnica que",
+     "horas": 24,
+     "contenidos": "Tipos y métodos de investigación"
+    },
+    {
+     "numero": 3,
+     "nombre": "Seleccionar y aplicar técnicas e instrumentos de recolección, organización y análisis de información acordes con el tipo de estudio de",
+     "horas": 24,
+     "contenidos": "Técnicas e instrumentos de investigación"
+    },
+    {
+     "numero": 4,
+     "nombre": "Elaborar y redactar un perfil de investigación completo combinando fundamentos teóricos y actividades practicas y aplicando normas de",
+     "horas": 24,
+     "contenidos": "Componentes del perfil de investigación"
+    }
+   ],
+   "codigo": "08050116"
+  },
+  {
+   "nombre": "FISICA BASICA",
+   "nivel": 1,
+   "creditos": 3,
+   "horas": 144,
+   "descripcion": "Física Básica es una asignatura que describe los conceptos básicos de la Mecánica Newtoniana. Se estructura en 4 unidades curriculares básicas. La primera unidad está dedicada al Algebra de Vectores Tridimensionales, en la segunda unidad se tratan los conceptos básicos de la Cinemática de una partícula, en la tercera unidad se aborda la Dinámica haciendo énfasis en el conocimiento, diferenciación y aplicación de las Leyes de Newton y finalmente una cuarta unidad que se dedica al estudio del Trabajo, Energía y Potencia. Esta temática se desarrolla a través de conferencias integradoras y actividades prácticas a través de clases magistrales y la participación activa y del trabajo colaborativo, acompañado del trabajo autónomo del estudiante.",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "Aplicar la fundamentación teórica del Álgebra de Vectores Tridimensionales en la resolución de problemas y la descripción de fenómenos",
+     "horas": 36,
+     "contenidos": "Introducción a la asignatura.; Concepto de vector.; Tipos de coordenadas y sus transformaciones.; Operaciones con vectores."
+    },
+    {
+     "numero": 2,
+     "nombre": "Identificar los tipos de movimiento de la Cinemática de una partícula presentes en cualquier fenómeno físico en descripción y en la resolución",
+     "horas": 36,
+     "contenidos": "Movimientos Rectilíneos; Movimientos Parabólicos; Movimientos Circulares; Movimiento Armónico Simple"
+    },
+    {
+     "numero": 3,
+     "nombre": "Analizar sistemas físicos de partículas o de sólidos rígidos que presentan condiciones estáticas o dinámicas, los cuales se encuentran en",
+     "horas": 45,
+     "contenidos": "Estática y dinámica de una partícula; Impulso y cantidad de movimiento lineal.; Gravitación Universal; Estática y Dinámica Rotacional"
+    },
+    {
+     "numero": 4,
+     "nombre": "Distinguir sistemas físicos que requieren un tratamiento a través del trabajo, la energía mecánica o la potencia y establecer soluciones a los",
+     "horas": 27,
+     "contenidos": "Trabajo y Energía; Fuerzas conservativas y no conservativas, conservación de; Potencia Mecánica"
+    }
+   ],
+   "codigo": "08050117"
+  },
+  {
+   "nombre": "ALGEBRA LINEAL",
+   "nivel": 1,
+   "creditos": 2,
+   "horas": 96,
+   "descripcion": "Esta asignatura abarca conceptos tales como números complejos, estructuras algebraicas, espacios vectoriales, matrices, sistemas de ecuaciones lineales y su enfoque de manera más formal; por lo que su aporte en la formación profesional de los estudiantes es proporcionar algunos conocimientos básicos.",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "Reconocer el conjunto de Números Complejos, sus relaciones, operaciones y propiedades para la resolución de problemas.",
+     "horas": 24,
+     "contenidos": "Números complejos; Operaciones con números complejos"
+    },
+    {
+     "numero": 2,
+     "nombre": "Determinar plenamente el tipo de estructura algebraica que es el objeto matemático; formado por un conjunto no vacío, y una o dos leyes de",
+     "horas": 24,
+     "contenidos": "Conceptos esenciales; Propiedades principales; Estructuras algebraicas"
+    },
+    {
+     "numero": 3,
+     "nombre": "Utilizar la teoría de Matrices de orden n, sus relaciones, operaciones, y propiedades en la resolución de problemas.",
+     "horas": 24,
+     "contenidos": "Matrices y operaciones con matrices; Determinantes y Matrices inversas de orden n; Solución de sistemas de ecuaciones lineales con métodos"
+    },
+    {
+     "numero": 4,
+     "nombre": "Analizar los espacios vectoriales y su aplicación en operaciones definidas con vectores en el plano (R^2) y en el espacio (R^3) y su",
+     "horas": 24,
+     "contenidos": "Espacios vectoriales; Transformaciones lineales; Valores y vectores propios"
+    }
+   ],
+   "codigo": "08050118"
+  },
+  {
+   "nombre": "TECNOLOGIAS DE LA INFORMACION (TIC)",
+   "nivel": 1,
+   "creditos": 2,
+   "horas": 96,
+   "descripcion": "La utilización de las TIC permite integrar los conocimientos de todos los módulos y representarlos a través de archivos desarrollados en herramientas informáticas a traves del análisis de los principios generales de la comunicación y su importancia en el uso de herramientas colaborativas, búsqueda de información en bases de datos científicas para el desarrollo de documentos científicos, aplicación de herramientas en el manejo de datos para el análisis descriptivo y su representación gráfica, utilización de herramientas para una correcta divulgación de la información académica, y beneficios del uso de los servicios y recursos web.",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "Analizar los principios generales de la comunicación y su importancia en el uso de herramientas colaborativas",
+     "horas": 24,
+     "contenidos": "Principios generales. de la comunicación.; Herramientas colaborativas y plataformas con IA; Tecnologías emergentes. Internet de las cosas.; Integración de la comunicación y la IA para el trabajo en"
+    },
+    {
+     "numero": 2,
+     "nombre": "Buscar información en bases de datos científicas para el desarrollo de documentos científicos",
+     "horas": 24,
+     "contenidos": "Bases de datos científicas; Estructura de documentos científicos; Herramientas de Búsqueda de Información; Herramientas de gestión bibliográfica"
+    },
+    {
+     "numero": 3,
+     "nombre": "Aplicar herramientas en el manejo de datos para el análisis descriptivo y su representación gráfica. Hojas de cálculo",
+     "horas": 24,
+     "contenidos": "Análisis descriptivo. Estadísticos.; Herramientas de análisis de datos; Tablas y Gráficos Dinámicos; Aplicación del análisis de datos para la toma de decisiones."
+    },
+    {
+     "numero": 4,
+     "nombre": "Utilizar herramientas para una correcta divulgación de la información académica. Servicios web. Recursos web 2.0",
+     "horas": 24,
+     "contenidos": "Herramientas para escribir documentos académicos (editar; Servicios web para difusión de información.; Recursos Web para la colaboración y difusión.; Estrategias de divulgación académica."
+    }
+   ],
+   "codigo": "08050119"
+  },
+  {
+   "nombre": "QUIMICA",
+   "nivel": 1,
+   "creditos": 2,
+   "horas": 96,
+   "descripcion": "La asignatura de Química se estructura en 4 unidades curriculares básicas relacionadas con Química, reacciones químicas, estequiometria, enlaces químicos, soluciones y unidades de concentración, cinética de las reacciones químicas, Termodinámica química, Electroquímica, Materiales de Ingeniería y química ambiental. los temas se desarrollarán a través de la tecnología de la información TIC de forma colaborativa entre docente - estudiante mediante un trabajo autónomo del estudiante donde resolverán problemas para el aprendizaje que sirve de entrenamiento para el rápido entendimiento de las practicas.",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "Comprender la formación de las reacciones química y el desarrollo de enlaces químicos",
+     "horas": 24,
+     "contenidos": "Reacciones químicas; Estequiometría; Enlace químico y fuerzas intermoleculares"
+    },
+    {
+     "numero": 2,
+     "nombre": "Determinar las propiedades físicas y químicas de diferente materiales ( conductores, semiconductores y aislantes) su estructura interna,",
+     "horas": 24,
+     "contenidos": "Estado de agregación de la materia; Propiedades físicas y químicas de los diferente materiales (; Soluciones y unidades de concentración"
+    },
+    {
+     "numero": 3,
+     "nombre": "Analizar la influencia de los factores cinéticos en la velocidad de las reacciones químicas.",
+     "horas": 24,
+     "contenidos": "Cinética de las reacciones químicas; Primera ley de la Termodinámica; Química Ambiental"
+    },
+    {
+     "numero": 4,
+     "nombre": "Proporcionar a los futuros ingenieros en telecomunicaciones los fundamentos electroquímicos esenciales para la aplicación en ingeniería",
+     "horas": 24,
+     "contenidos": "Celdas electroquímicas; Potencial de celda; Electrólisis"
+    }
+   ],
+   "codigo": "08050120"
+  },
+  {
+   "nombre": "CALCULO DE VARIAS VARIABLES",
+   "nivel": 2,
+   "creditos": 3,
+   "horas": 144,
+   "descripcion": "Cálculo de varias variables es una materia que introduce al estudiante en el ámbito de la matemática superior, mediante el conocimiento progresivo de teoremas, reglas, principios y técnicas para comprender: funciones vectoriales: estudio de limites derivadas e integrales: Funciones de varias variables: se aborda limites, derivadas parciales simples compuestas. Integrales Multiples: Se resuelve integrales dobles y triples. Campo vectorial: Integrales de linea.",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "Utilizar los principios y propiedades límites, derivadas e integrales de funciones vectoriales en la solución de problemas y aplicaciones de",
+     "horas": 36,
+     "contenidos": "Funciones Vectoriales de variable real; Operaciones de funciones vectoriales; Derivadas e integrales de funciones vectoriales; Integración de funciones vectoriales"
+    },
+    {
+     "numero": 2,
+     "nombre": "Solucionar problemas de varias variables aplicando un razonamiento lógico en los principios y propiedades de la derivación parcial.",
+     "horas": 36,
+     "contenidos": "Introducción a las funciones de varias variables; Límite; Derivadas Parciales; Optimización de funciones"
+    },
+    {
+     "numero": 3,
+     "nombre": "Analizar problemas de integrales múltiples aplicando un razonamiento lógico creativo en los principios y propiedades en la solución de",
+     "horas": 36,
+     "contenidos": "Integrales dobles; Integrales triples"
+    },
+    {
+     "numero": 4,
+     "nombre": "Establecer los fundamentos necesarios para la identificación de los tipos de integrales curvilineas así como sus respectivas aplicaciones.",
+     "horas": 36,
+     "contenidos": "Campos Vectoriales; Integrales de Línea; Teorema fundamental de las integrales de línea."
+    }
+   ],
+   "codigo": "08050213"
+  },
+  {
+   "nombre": "FISICA APLICADA",
+   "nivel": 2,
+   "creditos": 3,
+   "horas": 144,
+   "descripcion": "Física Aplicada es una asignatura que permite analizar y comprender la aplicación de los fenómenos físicos de los campos eléctricos, campos magnéticos, ondas mecánicas y la óptica. Se estructura en 4 unidades curriculares. La primera unidad está dedicada al estudio de la Electrostática, en la segunda unidad se abordan los conceptos y leyes del Magnetismo, en la tercera unidad se realiza una revisión de las Ondas Mecánicas y el Sonido y finalmente en la cuarta unidad se aborda los fundamentos de la Óptica. Esta temática se desarrolla a través de conferencias integradoras y actividades prácticas a través de clases magistrales y la participación activa y del trabajo colaborativo, acompañado del trabajo autónomo del estudiante.",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "Identificar el comportamiento de los sistemas físicos que presentan fuerzas o campos eléctricos y contiene dispositivos capacitivos y/o",
+     "horas": 45,
+     "contenidos": "Carga eléctrica, Fuerzas eléctricas y Campo Eléctrico.; Ley de Gauss.; Potencial eléctrico.; Capacitancia y resistencia eléctrica."
+    },
+    {
+     "numero": 2,
+     "nombre": "Diferenciar el comportamiento de los sistemas magnético intrínsecos de los sistemas magnéticos inducidos para resolver problemas de",
+     "horas": 36,
+     "contenidos": "Fuerzas y campos magnético.; Fuentes de campo magnético.; Inducción Magnética.; Inductancia."
+    },
+    {
+     "numero": 3,
+     "nombre": "Describir el comportamiento de sistemas físicos en los cuales existe presencia de ondas mecánicas para resolver problemas de fenómenos",
+     "horas": 27,
+     "contenidos": "Ondas Mecánicas.; Sonido"
+    },
+    {
+     "numero": 4,
+     "nombre": "Analizar el comportamiento de la luz en sistemas ópticos de diferente naturaleza para resolver problemas de fenómenos físicos que presenten",
+     "horas": 36,
+     "contenidos": "Naturaleza y propagación de la luz; Óptica Geométrica.; Óptica Física."
+    }
+   ],
+   "codigo": "08050214"
+  },
+  {
+   "nombre": "FUNDAMENTOS DE PROGRAMACION",
+   "nivel": 2,
+   "creditos": 3,
+   "horas": 144,
+   "descripcion": "Fundamentos de Programación combina teoría y práctica para el diseño, implementación y validación de algoritmos y programas, siguiendo criterios de eficiencia, precisión y buenas prácticas de programación. Se emplean herramientas y entornos de desarrollo actuales para crear soluciones informáticas que optimicen el manejo de datos y la información. La asignatura se estructura en cuatro unidades: fundamentos de programación, estructuras de datos, programación orientada a objetos (POO) y POO avanzada con herencia y polimorfismo. Todo el desarrollo se sustenta en buenas prácticas de ingeniería de software, empleando metodologías consolidadas y criterios de calidad que favorecen la eficiencia, mantenibilidad y escalabilidad de las aplicaciones.",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "Diseñar y representar algoritmos de programación lineal usando pseudocódigo y diagramas de flujo para resolver problemas de forma lógica.",
+     "horas": 33,
+     "contenidos": "Concepto y características de los algoritmos de; Variables, constantes y tipos de datos; Operadores y expresiones; Prueba de escritorio aplicada a algoritmos de programación; Desarrollo de problemas con algoritmos secuenciales"
+    },
+    {
+     "numero": 2,
+     "nombre": "Diferenciar y utilizar métodos con y sin parámetros, así como con y sin valor devuelto, para estructurar programas de forma modular y mejorar",
+     "horas": 27,
+     "contenidos": "Concepto y finalidad de los métodos en programación; Encapsulamiento y visibilidad de métodos; Métodos constructores y su relación con y sin parámetros; Uso de métodos en la interacción entre clases; Ejercicios de aplicación"
+    },
+    {
+     "numero": 3,
+     "nombre": "Implementar la reutilización de código mediante el uso de paquetes y clases predefinidas del lenguaje de programación, promoviendo la",
+     "horas": 30,
+     "contenidos": "IDE de programación; Paquetes y librerías: organización del código; Diseño de soluciones aprovechando reutilización de código; Uso de clases predefinidas del lenguaje de programación; Ejercicios de aplicación enfocada a la programación"
+    },
+    {
+     "numero": 4,
+     "nombre": "Aplicar principios de herencia y polimorfismo junto con el uso de sentencias de control y lenguaje algorítmico, para desarrollar soluciones",
+     "horas": 54,
+     "contenidos": "Lenguaje algorítmico y su relación con la programación; Sentencias de control en algoritmos y programas; Herencia en la programación orientada a objetos; Polimorfismo y su aplicación en la solución de problemas"
+    }
+   ],
+   "codigo": "08050215"
+  },
+  {
+   "nombre": "BASE DE DATOS",
+   "nivel": 2,
+   "creditos": 2,
+   "horas": 96,
+   "descripcion": "La asignatura proporciona los conocimientos teóricos y prácticos necesarios para el análisis, diseño, implementación y administración de bases de datos, permitiendo resolver problemáticas reales relacionadas con la adquisición, almacenamiento y tratamiento de información. Incluye fundamentos de bases de datos, sistemas de información, modelado entidad-relación, transformación de modelos conceptuales a relacionales y manejo de herramientas SQL y MySQL.",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "Conocer los fundamentos de las bases de datos.",
+     "horas": 24,
+     "contenidos": "Conceptos de Base de datos; Características de los modelos de datos; Sistemas de gestión de bases de datos (SGBD); Funciones y niveles de abstracción en los SGBD"
+    },
+    {
+     "numero": 2,
+     "nombre": "Determinar las características de los sistemas de información, modelado de bases de datos y transformación del esquema conceptual al",
+     "horas": 24,
+     "contenidos": "Sistemas de información; Modelos de datos; Interpretación del modelo conceptual y modelo lógico; Transformación del esquema conceptual al esquema"
+    },
+    {
+     "numero": 3,
+     "nombre": "Describir el modelo entidad-relación y aplicar el software de gestión de base de datos",
+     "horas": 24,
+     "contenidos": "Modelo entidad-relación; Software de diagramación; Software de gestión de base de datos; Aplicación de diferentes herramientas SGBD"
+    },
+    {
+     "numero": 4,
+     "nombre": "Diseñar y administrar bases de datos relacionales empleando herramientas MySQL y el lenguaje SQL, garantizando la integridad, seguridad,",
+     "horas": 24,
+     "contenidos": "Diseño de una base de datos; Modelo de datos relacional en MySql; Formularios de ingreso y modificación de datos; Eliminación y Consultas de datos"
+    }
+   ],
+   "codigo": "08050216"
+  },
+  {
+   "nombre": "EVOLUCION DE LAS TELECOMUNICACIONES",
+   "nivel": 2,
+   "creditos": 2,
+   "horas": 96,
+   "descripcion": "La asignatura es de naturaleza teórico práctica durante las cuatro unidades que desarrollará en el estudiante la capacidad de comprender la importancia de las telecomunicaciones y sus aplicaciones en la Ingeniería. La asignatura comprende: Introducción a las telecomunicaciones, medios de comunicación, transmisión de información, las redes de datos, la red Internet, redes inalámbricas, redes de nueva generación.",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "Comprender los diversos sistemas de comunicación, identificando sus elementos constituyentes y comprendiendo sus aplicaciones generales",
+     "horas": 30,
+     "contenidos": "Las comunicaciones; Reseña histórica del telégrafo y Telefonía; Marco Regulatorio de las Telecomunicaciones"
+    },
+    {
+     "numero": 2,
+     "nombre": "Identificar las características y taxonomía de los diferentes medios de comunicación y transmisión de datos, considerando las técnicas de",
+     "horas": 24,
+     "contenidos": "Transmisión de Señales; Técnicas de Tx de la Información; Red de acceso y transporte de telecomunicaciones"
+    },
+    {
+     "numero": 3,
+     "nombre": "Realizar un análisis exhaustivo de las características de las radiocomunicaciones y las instalaciones comunes de Telecomunicaciones (ICT),",
+     "horas": 24,
+     "contenidos": "Instalaciones ICT y sus Derivadas.; Aplicaciones de ICT; Redes de datos y servicios de telecomunicaciones."
+    },
+    {
+     "numero": 4,
+     "nombre": "Dominar las redes de datos y la Internet de las Cosas (IoT) mediante el estudio exhaustivo de los protocolos y modelos de referencia",
+     "horas": 18,
+     "contenidos": "Redes de nueva generación, Futuro de las; Internet de las cosas IoT"
+    }
+   ],
+   "codigo": "08050217"
+  },
+  {
+   "nombre": "GESTION DE CALIDAD",
+   "nivel": 2,
+   "creditos": 2,
+   "horas": 96,
+   "descripcion": "La asignatura de Gestion de calidad se enfoca en los conceptos importantes como calidad, procesos, normas, gestión y su relación que tienen estas con la productividad y competitividad dentro de la empresa buscando la mejora del desempeño de una organización y la satisfacción de los clientes y de otras partes interesadas ya que los sistemas de gestión de la calidad se han convertido en uno de los pilares básicos de cualquier estrategia empresarial",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "Comprender los fundamentos y principios de la Gestión de Calidad",
+     "horas": 18,
+     "contenidos": "Fundamentos de la gestiòn de la calidad Total : principios y; Evolución del concepto Calidad; Movimiento de la Calidad Total Gurús de la calidad"
+    },
+    {
+     "numero": 2,
+     "nombre": "Caracterizar los procesos y el modelo de gestión de las empresas",
+     "horas": 24,
+     "contenidos": "Generalidades de la calidad total y la gestión por procesos; Estructuras Organizacionales; Enfoque Cliente"
+    },
+    {
+     "numero": 3,
+     "nombre": "Analizar la Normativa ISO 9001:2015.",
+     "horas": 36,
+     "contenidos": "EStandar ISO 9001; Requisitos del sistema de gestión de calidad.; Evaluaciòn mediante auditoría del sistema de la calidad."
+    },
+    {
+     "numero": 4,
+     "nombre": "Desarrollar un informe de factibilidad para la aplicación de un sistema de gestión de calidad en una empresa con la integración de otros",
+     "horas": 18,
+     "contenidos": "Modelos de Gestión integrado; Modelo de Gestión basado en la Calidad Total"
+    }
+   ],
+   "codigo": "08050218"
+  },
+  {
+   "nombre": "ECUACIONES DIFERENCIALES",
+   "nivel": 3,
+   "creditos": 3,
+   "horas": 144,
+   "descripcion": "Esta asignatura más allá de enriquecer el cúmulo de conocimientos científicos del futuro profesional, lo que pretende es contribuir con el desarrollo de su capacidad de análisis y razonamiento a través de las habilidades y destrezas desarrolladas por los procesos lógicos que utiliza en el desarrollo de las ecuaciones diferenciales apoyadas en los cálculos de una y varias variables, algebra líneal y la física básica por lo que se aborda: Unidad I. Conceptos Básicos y términología, Unidad II. Ecuaciones diferenciales ordinarias. Unidad III. Sistemas de ecuaciones diferenciales. Unidad IV. Tranformada de Laplace, Fourier.",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "Explicar la importancia de las ecuaciones diferenciales de primer orden en el desarrollo de la carrera.",
+     "horas": 36,
+     "contenidos": "Generalidades de las Ecuaciones Diferenciales; Formas de las Ecuaciones Diferenciales; Solución de las Ecuaciones Diferenciales; Origen y Aplicaciones de las Ecuaciones Diferenciales"
+    },
+    {
+     "numero": 2,
+     "nombre": "Resolver las ecuaciones diferenciales de n - ésimo orden, hasta un nivel reproductivo, profundizando en el estudio de sus leyes, con la finalidad",
+     "horas": 36,
+     "contenidos": "Ecuaciones Diferenciales Ordinarias; Formas de las Ecuaciones Ordinarias; Otro Tipo de Ecuaciones Diferenciales Ordinarias; Ecuaciones Diferenciales de primer grado"
+    },
+    {
+     "numero": 3,
+     "nombre": "Aplicar los sistemas de ecuaciones diferenciales, hasta un nivel reproductivo, profundizando en el estudio de sus leyes, con la finalidad de",
+     "horas": 36,
+     "contenidos": "Ecuaciones Diferenciales de n-ésimo orden; Conceptos básicos de notación vectorial; Ecuaciones de coeficientes variables; Sistema de Ecuaciones Diferenciales"
+    },
+    {
+     "numero": 4,
+     "nombre": "Explicar el funcionamiento de la Transformada de Laplace y la aplicabilidad de la serie de Fourier, hasta un nivel reproductivo, profundizando en",
+     "horas": 36,
+     "contenidos": "Transformada de Laplace; Series de Fourier"
+    }
+   ],
+   "codigo": "08050317"
+  },
+  {
+   "nombre": "PROBABILIDAD Y ESTADISTICA",
+   "nivel": 3,
+   "creditos": 2,
+   "horas": 96,
+   "descripcion": "La asignatura de Estadística y Probabilidades se estructura en cuatro Unidades curriculares y pretende que el estudiante de ingeniería en Telecomunicaciones desarrolle habilidades, para el manejo y tratamiento de datos de fenómenos masivos, utilizando fórmulas y grafos, regresiones estadísticas, probabilidades y distribución de variables aleatorias, presentes en muchos fenómenos relacionados a las telecomunicaciones",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "Emplear apropiadamente información estadística de fenómenos masivos, para datos no agrupados y agrupados (Tablas de distribución de",
+     "horas": 24,
+     "contenidos": "Estadística de datos No agrupados; Estadística de datos Agrupados"
+    },
+    {
+     "numero": 2,
+     "nombre": "Entender los principios y leyes de la Teoría elemental de probabilidades para fenómenos aleatorios, y análisis combinatorio",
+     "horas": 24,
+     "contenidos": "Teoría elemental de probabilidades; Análisis Combinatorio y teoría del conteo."
+    },
+    {
+     "numero": 3,
+     "nombre": "Aplicar apropiadamente distribuciones probabilísticas de carácter discreto y continuo, muestreo y pruebas de hipótesis",
+     "horas": 24,
+     "contenidos": "Distribuciones probabilísticas discretas; Distribuciones probabilísticas continuas; Muestreo y Pruebas de hipótesis"
+    },
+    {
+     "numero": 4,
+     "nombre": "Correlacionar y proyectar regresionalmente fenómenos aleatorios como técnicas de inferencia estadística",
+     "horas": 24,
+     "contenidos": "Regresión y Correlación lineal y no lineal; Evaluación de la correlación estadística"
+    }
+   ],
+   "codigo": "08050318"
+  },
+  {
+   "nombre": "DISPOSITIVOS Y MEDIDAS",
+   "nivel": 3,
+   "creditos": 2,
+   "horas": 96,
+   "descripcion": "Esta asignatura permitirá a los estudiantes conocer temas fundamentales como apoyo en el desarrollo de sus actividades en los distintos ámbitos de competencia, por lo cual se parte de los fundamentos de las mediciones y magnitudes eléctricas, para luego reconocer los instrumentos de medición de corriente continua y alterna, para aplicarlos en medición de componentes pasivos, y finalmente su aplicación en mediciones con puentes de Corriente Continua y Corriente Alterna.",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "Identificar las magnitudes eléctricas y tipos de errores en medición.",
+     "horas": 24,
+     "contenidos": "Lenguaje en las mediciones eléctricas.; Medición y error"
+    },
+    {
+     "numero": 2,
+     "nombre": "Reconocer los mecanismos más comunes en los instrumentos de medición",
+     "horas": 24,
+     "contenidos": "Medidores Analógicos CC y CA; Medidores Electrónicos Digitales; Osciloscopio"
+    },
+    {
+     "numero": 3,
+     "nombre": "Aplicar métodos de medición en elementos pasivos",
+     "horas": 24,
+     "contenidos": "Resistores y medición de la resistencia, disipación; Capacitancia, Inductancia e Impedancia"
+    },
+    {
+     "numero": 4,
+     "nombre": "Emplear puentes para la medición precisa de magnitudes eléctricas.",
+     "horas": 24,
+     "contenidos": "Puentes en corriente continua; Puentes de corriente alterna"
+    }
+   ],
+   "codigo": "08050319"
+  },
+  {
+   "nombre": "PROGRAMACION AVANZADA",
+   "nivel": 3,
+   "creditos": 3,
+   "horas": 144,
+   "descripcion": "Esta asignatura, se enfoca en capacitar a los estudiantes en el desarrollo de habilidades y creación de aplicaciones que interactúan con sensores y actuadores electrónicos. A lo largo del ciclo, los estudiantes aprenden los fundamentos de la programación en Python y cómo aplicar estos conocimientos en el desarrollo de aplicaciones visuales básicas utilizando los principales componentes del lenguaje. Además, se explora la creación de aplicaciones visuales para dispositivos móviles que permitan controlar componentes electrónicos, ofreciendo así una experiencia práctica y aplicada en el desarrollo de soluciones tecnológicas innovadoras.",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "Diseñar programas mediante estructuras básicas de programación.",
+     "horas": 36,
+     "contenidos": "Fundamentos de Sistemas Embebidos; Sistemas de adquisición y control"
+    },
+    {
+     "numero": 2,
+     "nombre": "Desarrollar interfaces gráficas funcionales mediante programación orientada a eventos.",
+     "horas": 36,
+     "contenidos": "Fundamentos de Python, estructura y manejo de datos; Introducción y Diseño Estructurado de Interfaces."
+    },
+    {
+     "numero": 3,
+     "nombre": "Implementar comunicación serial estructurada aplicando protocolos básicos de transmisión",
+     "horas": 36,
+     "contenidos": "Comunicación con Python; Gráficas y visualización de datos"
+    },
+    {
+     "numero": 4,
+     "nombre": "Crear aplicaciones visuales para móviles que controlen componentes electrónicos.",
+     "horas": 36,
+     "contenidos": "Fundamentos de comunicación en Android; Recepción e Integración de Datos"
+    }
+   ],
+   "codigo": "08050320"
+  },
+  {
+   "nombre": "FISICA PARA ELECTRONICA",
+   "nivel": 3,
+   "creditos": 3,
+   "horas": 144,
+   "descripcion": "En esta asignatura los estudiantes adquirirán las capacidades integradas de: Aplicar procedimientos matemáticos y de la Física Moderna en la solución de problemas relacionados con la interacción de la radiación con la materia, el tratamiento cuántico de los sistemas mecánicos y el fundamento teórico de la estructura y funcionamiento de los disposistivos semiconductores, además de determinar el comportamiento de las partículas elementales en el interior de los materiales y en la estructura interna de los dispositivos electrónicos, teniendo presente los parámetros que influyen en la movilidad de los portadores de carga; por lo que el sílabo incluye las temáticas de Física Cuántica, Mecánica Cuántica, Física Atómica y Molecular y Física cuántica de sólidos, Física Estadística y Electrónica de Semiconductores, los cuales se consolidan con el estudio de los contenidos prerrequisitos de las materias de Física Aplicada y Química.",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "Identificar el comportamiento cuántico de los sistemas físicos y resolver problemas asociados a este tipo de comportamiento.",
+     "horas": 36,
+     "contenidos": "Fundamentos de Relatividad Especial; Radiación de cuerpo negro y el postulado de Planck; Propiedades corpusculares de la radiación; Propiedades ondulatorias de las partículas."
+    },
+    {
+     "numero": 2,
+     "nombre": "Diferenciar el comportamiento Mecánico Clásico del Mecánico Cuántico de los sistemas físicos en análisis y resolver problemas asociados con",
+     "horas": 36,
+     "contenidos": "Función de onda.; Ecuación de Schrödinger.; Pozos de Potencial.; Efecto túnel."
+    },
+    {
+     "numero": 3,
+     "nombre": "Describir el comportamiento atómico y molecular de los sistemas físicos y resolver problemas asociados con este tipo de sistemas.",
+     "horas": 36,
+     "contenidos": "Los primeros modelos del átomo.; Modelo de Bohr y modelo cuántico del átomo de hidrógeno.; Las funciones de onda para el átomo de hidrógeno.; El principio de exclusión"
+    },
+    {
+     "numero": 4,
+     "nombre": "Analizar el comportamiento cuántico de los sólidos, la Física Estadística asociada a estos sistemas físicos y la estructura y características de los",
+     "horas": 36,
+     "contenidos": "Teoría cuántica de sólidos; Física Estadística; Propiedades térmicas de los cristales; Electrónica de semiconductores"
+    }
+   ],
+   "codigo": "08050321"
+  },
+  {
+   "nombre": "METODOS NUMERICOS",
+   "nivel": 3,
+   "creditos": 2,
+   "horas": 96,
+   "descripcion": "Los métodos numéricos constituyen una herramienta importante que permite el desarrollo de la ciencia y la tecnología, porque permite la resolución de problemas complejos que se presentan en el campo del conocimiento, que no pueden ser resueltos mediante métodos analíticos. La exactitud de los resultados depende de la metodología aplicada y son comparables a los resultados de los métodos analíticos. Contenidos de la asignatura: Errores y solución de ecuaciones no lineales. Métodos para la solución de sistemas lineales. Ajuste de funciones. Integración numérica y ecuaciones diferenciales.",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "Resolver ecuaciones no lineales por métodos iterativos",
+     "horas": 24,
+     "contenidos": "Análisis de errores; Métodos de resolución de ecuaciones no lineales"
+    },
+    {
+     "numero": 2,
+     "nombre": "Solucionar sistemas de ecuaciones lineales por métodos directos y por métodos iterativos",
+     "horas": 24,
+     "contenidos": "Métodos directos de resolución de sistemas de ecuaciones; Métodos iterativos de solución de sistemas de ecuaciones"
+    },
+    {
+     "numero": 3,
+     "nombre": "Utilizar la aproximación funcional y la interpolación para la obtención de ecuaciones que representen un conjunto de datos.",
+     "horas": 24,
+     "contenidos": "Ajuste de funciones"
+    },
+    {
+     "numero": 4,
+     "nombre": "Aplicar cálculos numéricos en integrales y ecuaciones diferenciales para la resolución de ejercicios.",
+     "horas": 24,
+     "contenidos": "Integración Numérica; Ecuaciones diferenciales"
+    }
+   ],
+   "codigo": "08050322"
+  },
+  {
+   "nombre": "SISTEMAS LINEALES",
+   "nivel": 4,
+   "creditos": 2,
+   "horas": 96,
+   "descripcion": "En esta asignatura los estudiantes adquirirán capacidades integradas para aplicar procedimientos y criterios sobre los diferentes tipos de señales y sus aplicaciones en los diferentes sistemas, la aplicación de la transformada de Laplace a la solución de los circuitos eléctricos, la determinación de la serie y transformada de Fourier, Análisis y comportamiento de los filtros en la transmisión sin distorsión, así como el estudio y la aplicación de la convolución y la transformada Z. Las metodologías de aprendizaje que se emplean para garantizar las capacidades de exploración, construcción y el desarrollo del pensamiento crítico y creativo en los estudiantes serán: El aprendizaje basado en problemas (ABP), aprendizaje colaborativo y el aprendizaje orientado a proyectos.",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "Analizar los diferentes tipos de señales y sistemas y sus aplicaciones en las redes eléctricas",
+     "horas": 18,
+     "contenidos": "Introducción a las Señales y Sistemas; Clasificación de los"
+    },
+    {
+     "numero": 2,
+     "nombre": "Aplicar la transformada de Laplace en la solución de circuitos eléctricos",
+     "horas": 18,
+     "contenidos": "Transformada de Laplace; Análisis de circuitos en eldominio"
+    },
+    {
+     "numero": 3,
+     "nombre": "Aplicar la Serie de Fourier y Transformada de Fourier en el análisis de circuitos",
+     "horas": 18,
+     "contenidos": "Series de Fourier; Espectro complejo; Transformada de"
+    },
+    {
+     "numero": 4,
+     "nombre": "Analizar el Comportamiento de los Filtros y la Transmisión sin distorsión",
+     "horas": 21,
+     "contenidos": "Filtros; Transmisión sin distorsión; Filtros ideales; Espectro"
+    },
+    {
+     "numero": 5,
+     "nombre": "Aplicar la transformada Z en el procesamiento de señales",
+     "horas": 21,
+     "contenidos": "Integral de convolución; Integral de superposición;"
+    }
+   ],
+   "codigo": "08050411"
+  },
+  {
+   "nombre": "ANALISIS DE CIRCUITOS",
+   "nivel": 4,
+   "creditos": 4,
+   "horas": 192,
+   "descripcion": "En el presente modulo los alumnos serán capaces de aplicar procedimientos matemáticos, físicos y de análisis de circuitos en la solución de problemas relacionados con elementos pasivos, activos, basados en la ley de Ohm, leyes de Kirchhoff, teoremas fundamentales, gráficas de lugares geométricos, análisi senoidal, circuitos trifásicos balanceados y desbalanceados, circuitos resonantes, determinación de respuesta completa a la red. Las metodologías de aprendizaje que se emplean para garantizar las capacidades de exploración, construcción y el desarrollo del pensamiento crítico y creativo en los estudiantes serán: El aprendizaje basado en problemas (ABP), eprendizaje colaborativo y el aprendizajeorientado a proyectos.",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "Analizar los conceptos y leyes básicas de circuitos",
+     "horas": 36,
+     "contenidos": "Análisis de circuitos."
+    },
+    {
+     "numero": 2,
+     "nombre": "Estudiar los Métodos de análisis de circuitos y los Teoremas de Circuitos",
+     "horas": 39,
+     "contenidos": "Circuitos polifásicos."
+    },
+    {
+     "numero": 3,
+     "nombre": "Estudiar los circuitos de ca, análisis senoidal en estado estable y su aplicación en el estudio de circuitos trifásicos",
+     "horas": 39,
+     "contenidos": "Circuitos trifásicos."
+    },
+    {
+     "numero": 4,
+     "nombre": "Estudiar los principios electromagnéticos que tiene que ver con el acoplamiento magnético, y el análisis de respuesta de frecuencia",
+     "horas": 39,
+     "contenidos": "Circuitos acoplados magnéticamente."
+    },
+    {
+     "numero": 5,
+     "nombre": "Analizar la respuesta completa en una red",
+     "horas": 39,
+     "contenidos": "Análisis de la relación del tiempo con la frecuencia."
+    }
+   ],
+   "codigo": "08050412"
+  },
+  {
+   "nombre": "SOFTWARE DE SIMULACION",
+   "nivel": 4,
+   "creditos": 3,
+   "horas": 144,
+   "descripcion": "Software de Simulación permite al estudiante modelar elementos eléctricos y electrónicos, con el fin de diseñar y monitorear sistemas bajo entornos de simulación con el uso de Software especializado en el campo de ingenieria.",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "Diseñar y simular circuitos electrónicos con Proteus y PSpice.",
+     "horas": 36,
+     "contenidos": "Introducción al Software de Simulación Proteus y PSpice .; Simulación mediante Proteus y PSpice.; Diseño PCB."
+    },
+    {
+     "numero": 2,
+     "nombre": "Analizar datos, visualizar, modelar y programar de scripts en un entorno de cálculo técnico por computador utilizando Matlab y Octave.",
+     "horas": 36,
+     "contenidos": "Modelado a través de MATLAB.; Modelado a través de Octave.; Interacción con sistemas embebidos."
+    },
+    {
+     "numero": 3,
+     "nombre": "Diseñar interfaces de usuario capaces de monitorear y controlar procesos utilizando programación gráfica con bloques en Simulink.",
+     "horas": 36,
+     "contenidos": "Introducción al software de simulación basado en bloques; Programación y visualización de bloques y Señales.; Diseño y desarrollo de interfaces de usuario (GUI)."
+    },
+    {
+     "numero": 4,
+     "nombre": "Diseñar Sistemas de Control con Instrumentos Virtuales en entornos de desarrollo gráfico utilizando LabVIEW.",
+     "horas": 36,
+     "contenidos": "Introducción a la programación de instrumentos virtuales; Diseño de sistemas de control empleando LabVIEW.; Aplicaciones con Dispositivos de Adquisición de Datos."
+    }
+   ],
+   "codigo": "08050413"
+  },
+  {
+   "nombre": "ELECTROMAGNETISMO",
+   "nivel": 4,
+   "creditos": 4,
+   "horas": 192,
+   "descripcion": "Electromagnetismo es una asignatura en la que los estudiantes adquirirán las capacidades para aplicar procedimientos matemáticos y físicos en la solución de problemas relacionados con los campos electromagnéticos en estado estacionario, además de analizar el comportamiento y energía de las ondas electromagnéticas cuando se propagan en medios dieléctricos y conductores. Se estructura en 4 unidades curriculares: La primera unidad está dedicada al estudio de los Fundamentos del Electromagnetismo, en la segunda unidad se abordan los conceptos y leyes de la Electrostática, en la tercera unidad se realiza una revisión de los conceptos y leyes de la Magnetostática y la Electrodinámica Clásica y finalmente en la cuarta unidad se aborda el análisis y estudio del comportamiento de las Ondas Electromagnéticas tanto en dominio del tiempo como de la frecuencia. Esta temática se desarrolla a través de conferencias integradoras y actividades prácticas a través de clases magistrales y la participación activa y del trabajo colaborativo, acompañado del trabajo autónomo del estudiante.",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "Aplicar procedimientos matemáticos del Cálculo Vectorial para dar solución a problemas relacionados con los Fundamentos del",
+     "horas": 48,
+     "contenidos": "Álgebra Vectorial; Cálculo Vectorial; Fundamentos del Electromagnetismo; Ecuaciones de Maxwell"
+    },
+    {
+     "numero": 2,
+     "nombre": "Utilizar los principios y leyes de la Electrostática en la solución de problemas que presente una determinada distribución de carga eléctrica, a",
+     "horas": 48,
+     "contenidos": "Electrostática; Potenciales Electromagnéticos; Capacitancia y resistencia eléctrica; Ecuación de Laplace"
+    },
+    {
+     "numero": 3,
+     "nombre": "Emplear las principales leyes de la Magnetostática y la Electrodinámica Clásica en la solución de problemas del Magnetismo, empleando",
+     "horas": 48,
+     "contenidos": "Magnetostática; Magnetización; Inductancia y circuitos magnéticos; Electrodinámica"
+    },
+    {
+     "numero": 4,
+     "nombre": "Identificar los procedimientos matemáticos, físicos y del Cálculo Vectorial para la solución de problemas relacionados con las Ondas",
+     "horas": 48,
+     "contenidos": "Ondas Electromagnéticas; Propagación de las Ondas Electromagnéticas; Radiación electromagnética y conservación de la energía; Reflexión y Refracción"
+    }
+   ],
+   "codigo": "08050414"
+  },
+  {
+   "nombre": "SISTEMAS DIGITALES",
+   "nivel": 4,
+   "creditos": 2,
+   "horas": 96,
+   "descripcion": "El estudio de sistemas y códigos de numeración, álgebra de Boole, circuitos lógicos combinacionales, secuenciales, contadores, registros de desplazamiento, temporizadores, conversores de señal y los diferentes tipos de memorias; son las unidades curriculares que aborda esta asignatura, las que a través de un aprendizaje colaborativo permitirán al estudiante diseñar y construir sistemas digitales utilizando dispositivos de baja y mediana escala de integración con criterios de optimización.",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "Diseñar circuitos lógicos combinacionales, con detalles suficientes que permitan su construcción y operación, empleando diversas técnicas,",
+     "horas": 36,
+     "contenidos": "Sistemas de Numeración y Códigos.; Fundamentos de electrónica digital.; Compuertas Lógicas.; Circuitos lógicos combinacionales."
+    },
+    {
+     "numero": 2,
+     "nombre": "Diseñar circuitos lógicos secuenciales, con detalles suficientes que permitan su construcción, operación, mantenimiento, empleando diversas",
+     "horas": 36,
+     "contenidos": "Circuitos lógicos secuenciales.; Temporizadores.; Tipos de Circuitos Secuenciales."
+    },
+    {
+     "numero": 3,
+     "nombre": "Analizar los circuitos conversores, con detalles suficientes que permitan su diseño y construcción, operación, mantenimiento, empleando",
+     "horas": 12,
+     "contenidos": "Convertidores.; Circuitos Convertidores: Análogo-Digital, Digital-Análogo."
+    },
+    {
+     "numero": 4,
+     "nombre": "Diseñar circuitos lógicos para almacenar la información, con detalles suficientes que permitan su construcción, operación, mantenimiento,",
+     "horas": 12,
+     "contenidos": "Memorias y almacenamiento."
+    }
+   ],
+   "codigo": "08050415"
+  },
+  {
+   "nombre": "CIRCUITOS ELECTRONICOS",
+   "nivel": 5,
+   "creditos": 3,
+   "horas": 144,
+   "descripcion": "La presente asignatura permite a los alumnos aplicar procedimientos matemáticos, físicos y de medidas eléctricas en la solución de problemas relacionados con diodos, basados en las propiedades de los materiales semiconductores, también determinar el comportamiento de un diodo semiconductor en circuitos sujetadores, recortadores, duplicadores y rectificadores de voltaje, así mismo analizar la estructura de otros dispositivos de dos terminales y el comportamiento del diodo Zener en el interior de un circuito electrónico, de la misma manera establecer las características de los transistores bipolares y su empleo en el diseño de amplificadores de pequeña señal, análisis de parámetros híbridos, análisis de circuitos que tienen transistores de efecto de campo, su empleo en el diseño de amplificadores de pequeña señal, la aplicación de transistores de potencia, así como el uso de amplificadores operacionales en el diseño de filtros activos. Las metodologías de aprendizaje que se emplean para garantizar las capacidades de exploración, construcción y el desarrollo del pensamiento crítico y cretivo en los estudiantes serán: El aprendizaje basado en problemas (ABP), aprendizaje colaborativo y el aprendizaje orientado a proyectos.",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "Analizar los conceptos de materiales semiconductores, teoría de bandas de energía, Diodos semiconductores (ecuaciones del diodo,",
+     "horas": 24,
+     "contenidos": "Teoría de semiconductores,Diodo semiconductor,"
+    },
+    {
+     "numero": 2,
+     "nombre": "Estudiar el Transistor bipolar: funcionamiento, características, circuito equivalente, circuitos de polarización (configuraciones); transistor de",
+     "horas": 30,
+     "contenidos": "El transistor BJT, circuitos de polarización; El FET,"
+    },
+    {
+     "numero": 3,
+     "nombre": "Analizar Amplificadores para pequeña señal, modelos de parámetros híbridos",
+     "horas": 30,
+     "contenidos": "Amplificadores de pequeña señal. Modelo de parámetros"
+    },
+    {
+     "numero": 4,
+     "nombre": "Estudiar Amplificadores de potencia (clase A, B, AB, C), disipadores de potencia; Diseño de fuentes reguladas de voltaje (regulación en",
+     "horas": 30,
+     "contenidos": "Amplificadores de potencia; amplificadores clase A, B, AB,"
+    },
+    {
+     "numero": 5,
+     "nombre": "Estudiar y analizar Amplificadores Operacionales: funcionamiento y características, circuitos de aplicación, filtros activos",
+     "horas": 30,
+     "contenidos": "Amplificadores operacionales; Circuitos de aplicación con"
+    }
+   ],
+   "codigo": "08050515"
+  },
+  {
+   "nombre": "PROCESOS ESTOCASTICOS",
+   "nivel": 5,
+   "creditos": 3,
+   "horas": 144,
+   "descripcion": "La asignatura de Procesos Estocásticos introduce los principios matemáticos y probabilísticos necesarios para el análisis de fenómenos aleatorios en sistemas dinámicos de ingeniería. La asignatura costa de cuatro unidades donde se estudia los principios de la probabilidad de eventos aleatorios, procesos estocásticos, procesos estacionarios, densidad espectral de potencia y cadenas de Markov, el estudiante desarrolla competencias para modelar, analizar e interpretar señales y sistemas en tiempo continuo y discreto, considerando su comportamiento estadístico.",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "Comprender los conceptos fundamentales de la probabilidad y de las variables aleatorias, aplicando la probabilidad condicional y el teorema de",
+     "horas": 36,
+     "contenidos": "Análisis probabilístico de señales aleatorias."
+    },
+    {
+     "numero": 2,
+     "nombre": "Analizar la caracterización de los procesos estocásticos, identificando los principales parámetros de un proceso estocástico, sus momentos",
+     "horas": 45,
+     "contenidos": "Introducción a los procesos estocásticos"
+    },
+    {
+     "numero": 3,
+     "nombre": "Analizar la caracterización de la señal estocástica utilizando momentos en el dominio de la frecuencia, con énfasis en la descripción y",
+     "horas": 36,
+     "contenidos": "Densidad espectral de potencia"
+    },
+    {
+     "numero": 4,
+     "nombre": "Estudiar las características y los estados de las cadenas de Márkov y los aspectos principales de la teoría de filas",
+     "horas": 27,
+     "contenidos": "Cadenas de Markov"
+    }
+   ],
+   "codigo": "08050516"
+  },
+  {
+   "nombre": "REALIDAD NACIONAL",
+   "nivel": 5,
+   "creditos": 2,
+   "horas": 96,
+   "descripcion": "En esta asignatura se conocerá la realidad de nuestro país fundamentalmente en lo referente a la vinculación con el entorno político, económico, social y cultural; la realidad de la población, producción, diversidad y su multiculturalidad; y además, conocer la realidad del país articulado al nuevo orden mundial",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "Analizar el dinamismo del nuevo orden mundial y su relación con la economía y sociedad ecuatoriana",
+     "horas": 24,
+     "contenidos": "El nuevo orden mundial; El poder político mundial"
+    },
+    {
+     "numero": 2,
+     "nombre": "Examinar el marco constitucional, normativo y de desarrollo del Ecuador desde la perspectiva de la economía y la sociedad",
+     "horas": 24,
+     "contenidos": "Historia del Ecuador; Poder y organización del estado; Marco constitucional y normativo; Plan nacional de desarrollo y Agendas de desarrollo local"
+    },
+    {
+     "numero": 3,
+     "nombre": "Establecer los principios básicos relacionados a la ética y la moral.",
+     "horas": 24,
+     "contenidos": "La Ética, la Moral. Teorías éticas.; Fundamentos de la conducta moral."
+    },
+    {
+     "numero": 4,
+     "nombre": "Comprender los conceptos de la ética en la ingeniería",
+     "horas": 24,
+     "contenidos": "La ética en la ingeniería; Desarrollo de sentido de ciudadanía del Profesional y sus; La responsabilidad social"
+    }
+   ],
+   "codigo": "08050517"
+  },
+  {
+   "nombre": "SISTEMAS EMBEBIDOS (VLSI)",
+   "nivel": 5,
+   "creditos": 3,
+   "horas": 144,
+   "descripcion": "La presente asignatura pretende que los estudiantes dominen el conocimiento en las áreas del Diseño de equipos y sistemas electrónicos: analógicos y digitales; para aplicaciones industriales, y de comunicación utilizando dispositivos programables con propósitos de desarrollo de sistemas flexibles de alto rendimiento.",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "Diseñar Sistemas Electrónicos Digitales como base para el uso de micro dispositivos, considerando las limitantes de uso en forma",
+     "horas": 27,
+     "contenidos": "Sistemas Digitales y Micro dispositivos; Diseño de Sistemas Digitales de Mealy; Diseño de Sistemas Digitales de Moore; Diferencias entre Microprocesador y Microcontrolador"
+    },
+    {
+     "numero": 2,
+     "nombre": "Emplear diversas funciones para programar Microcontroladores de forma que pueda controlar sistemas digitales y análogos empleando",
+     "horas": 45,
+     "contenidos": "Visualización de Datos y uso de sensores con; Control de Motores con Microprocesadores; Aplicaciones con comunicaciones Inalámbricas; Configuración de SBCs para aplicaciones de control"
+    },
+    {
+     "numero": 3,
+     "nombre": "Simular circuitos lógicos y sistemas digitales inmersos en aplicaciones, identificando los principios para el desarrollo de programas en VHDL,",
+     "horas": 18,
+     "contenidos": "Sistemas embebidos y Modelado mediante HDLs; Programación, Modelado y Simulación mediante VHDL; Creación de estructuras VHDL"
+    },
+    {
+     "numero": 4,
+     "nombre": "Diseñar aplicaciones mediante programación que permitan relacionar los FPGA y los Sistemas Embebidos con aplicaciones prácticas de",
+     "horas": 54,
+     "contenidos": "Bases de FPGA y Sistemas Embebidos; Instalación y Configuración de Targets FPGA; Programación en FPGA"
+    }
+   ],
+   "codigo": "08050518"
+  },
+  {
+   "nombre": "LEGISLACION LABORAL",
+   "nivel": 5,
+   "creditos": 2,
+   "horas": 96,
+   "descripcion": "La asignatura de Legislación Laboral, se extructura en 4 unidades curriculares básicas relacionadas con la normativa jurídica laboral y ambiental ecuatoriana, esto es Código de Trabajo, Losep,Ley de Gestión Ambiental. Los temas se desarrollan a través de conferencias integradoras y actividades prácticas y de trabajos colaborativos acompañadas del trabajo autónomo del estudiante donde resolverán problemas administrativos laborales y ambientales decidiendo legalmente, así como podrán predecir los efectos beneficiosos o responsabilidades administrativas, civiles y penales que puedan ocurrir garantizando una adecuada toma de decisiones.",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "Establecer las pautas legales que rigen la relación laboral en general establecidas en el Código Orgánico del Trabajo, LOSEP y leyes conexas",
+     "horas": 36,
+     "contenidos": "Normativa legal aplicable al trabajador autónomo. Derecho; Código Orgánico del Trabajo"
+    },
+    {
+     "numero": 2,
+     "nombre": "Permitir al emprendedor realizar un proceso de planeación que coadyuve a seleccionar el camino adecuado para el logro de sus metas y",
+     "horas": 18,
+     "contenidos": "Emprendimiento y comercialización. Elección del Negocio; Planeación Estratégica"
+    },
+    {
+     "numero": 3,
+     "nombre": "Desarrollar ejemplos prácticos del estudio de mercado, que garanticen una toma de decisiones, ágil, correcta y fundamentada",
+     "horas": 18,
+     "contenidos": "Análisis de la demanda y oferta; Análisis de los precios y Comercialización"
+    },
+    {
+     "numero": 4,
+     "nombre": "Promover al cuidado del medio ambiente y valorar la importancia de conservar, proteger y renovar los recursos naturales; que asegure una",
+     "horas": 24,
+     "contenidos": "Desarrollo sostenible y sus principios.; Impactos por radiaciones electromagnéticas.; Gestión ambiental de desechos electrónicos"
+    }
+   ],
+   "codigo": "08050519"
+  },
+  {
+   "nombre": "COMUNICACION ANALOGICA",
+   "nivel": 6,
+   "creditos": 2,
+   "horas": 96,
+   "descripcion": "La asignatura aborda el estudio de los sistemas de comunicaciones analógicas desde un enfoque teórico- práctico. Se analizan los bloques fundamentales de un sistema de comunicación, la representación temporal y espectral de las señales, el efecto del ruido y las limitaciones del canal, así como los principios de funcionamiento de los osciladores, sistemas de sincronización y técnicas de modulación analógica, tales como AM, FM y PM. El estudiante desarrollará habilidades para analizar el comportamiento de estos sistemas mediante cálculos analíticos, simulación y prácticas de laboratorio, evaluando parámetros como ancho de banda, relación señal- ruido, potencia y calidad de la señal, con aplicaciones reales en sistemas de radiodifusión y telecomunicaciones.",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "Analizar la estructura y funcionamiento de un sistema de comunicaciones analógicas, representando señales en el dominio del tiempo y de la",
+     "horas": 24,
+     "contenidos": "Sistemas de comunicaciones analógicas. Señales; Análisis de señales.; Filtros en sistemas de comunicaciones.; Aplicaciones en comunicaciones analógicas."
+    },
+    {
+     "numero": 2,
+     "nombre": "Evaluar el impacto del ruido en los sistemas de comunicaciones analógicas, aplicando métricas como la relación señal-ruido y analizando su",
+     "horas": 15,
+     "contenidos": "Ruido en sistemas de comunicaciones.; Tipos y fuentes de ruido.; Efecto del ruido en el canal de comunicación. Impacto del; Ejercicios"
+    },
+    {
+     "numero": 3,
+     "nombre": "Analizar el funcionamiento de osciladores, sistemas de sincronización y lazos de enganche de fase (PLL), considerando su estabilidad y su",
+     "horas": 15,
+     "contenidos": "Osciladores en sistemas de comunicaciones.; Lazo de enganche de fase (PLL); Sintetizadores de frecuencias; Ejercicios"
+    },
+    {
+     "numero": 4,
+     "nombre": "Aplicar técnicas de modulación y demodulación analógica (AM, FM y PM) para el análisis, simulación y comparación de sistemas de",
+     "horas": 42,
+     "contenidos": "Concepto y necesidad de la modulación.; Técnicas de modulación analógica.; Modulación y demodulación AM.; Modulación y demodulación FM.; Modulación y demodulación PM.; Interferencia en sistemas de modulación analógica."
+    }
+   ],
+   "codigo": "08050608"
+  },
+  {
+   "nombre": "LINEAS DE TRANSMISION",
+   "nivel": 6,
+   "creditos": 2,
+   "horas": 96,
+   "descripcion": "En esta asignatura los estudiantes adquirirán las capacidades integradas de: Aplicar procedimientos matemáticos, físicos en la solución de problemas relacionados con las ondas eléctricas y electromagnéticas, además de analizar el comportamiento y energía de estas ondas cuando se propagan en medios de transmisión guiados. Ests asignatura consta de 4 unidades, en la primera unidad de analiza la estructura y los parámetros primarios de una línea de transmisión, en la segunda unidad de estudia el comportamiento de las ondas eléctricas en líneas de transmisión reales y el acoplamiiento empleando el Diagrama de Smith, en el tercera unidad de analiza la propagación de las ondas eletromágneticas en el interior de una guía de onda y finalmente en la cuarta unidad se estudia el comportamiento de las ondas en una cavidad resonante Las metodologías de aprendizaje que se emplearán para garantizar las capacidades de exploración, construcción y el desarrollo del pensamiento crítico y creativo en los estudiantes serán: El Aprendizaje Basado en Problemas (ABP), en el cual el problema será utilizado como base para identificar los temas de aprendizaje para su estudio de manera independiente o grupal. Aprendizaje Colaborativo, los estudiantes forman grupos o equipos de trabajo, en cada grupo los estudiantes intercambian información y trabajan en una tarea hasta que todos sus miembros la han entendido y terminado, aprendiendo a través de la colaboración. Aprendizaje Orientado a Proyecto, se busca enfrentar a los estudiantes a situaciones reales que los lleven a, comprender y aplicar aquello que aprendieron como una herramienta para resolver problemas o proponer mejoras.",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "Analizar la propagación de una onda eléctrica en el interior de una línea de transmisión y su comportamiento cuando termina en cargas",
+     "horas": 24,
+     "contenidos": "Estructura general de la línea de transmisión; Ecuaciones de la línea de transmisión; Parámetros de la línea de transmisión; Cargas Especiales"
+    },
+    {
+     "numero": 2,
+     "nombre": "Aplicar procedimientos matemáticos, físicos y del electromagnetismo en la solución de problemas relacionados con líneas de transmisión en",
+     "horas": 24,
+     "contenidos": "Coeficiente de reflexión; Impedancia de carga reflejada hacia la fuente; Diagrama de Smith; Acopladores de impedancias"
+    },
+    {
+     "numero": 3,
+     "nombre": "Analizar el comportamiento de una onda electromagnética en el interior de una guía de onda y sus parámetros de propagación",
+     "horas": 24,
+     "contenidos": "Modos de propagación de energía electromagnética en una; Modo TE y parámetros en guías de onda rectangulares.; Flujo de potencia en guías de onda rectangulares.; Pérdidas en guías de onda rectangulares."
+    },
+    {
+     "numero": 4,
+     "nombre": "Identificar las características de propagación de las ondas electromagnéticas en el interior de una cavidad resonante.",
+     "horas": 24,
+     "contenidos": "Cavidades resonantes rectangulares; Ecuaciones de una Cavidad resonante rectangular; Modos de propagación de una Cavidad resonante; Factor de Calidad de una Cavidad resonante rectangular"
+    }
+   ],
+   "codigo": "08050609"
+  },
+  {
+   "nombre": "PROCESAMIENTO DIGITAL DE SEÑALES E IMAGENES",
+   "nivel": 6,
+   "creditos": 4,
+   "horas": 192,
+   "descripcion": "Este módulo está diseñado para que los estudiantes desarrollen competencias avanzadas en el Procesamiento Digital de Señales (DSP). A lo largo del curso, los estudiantes aprenderán a entender y analizar señales y sistemas discretos, manejar la transformada Z para resolver ecuaciones en diferencias, y realizar un análisis detallado de señales discretas tanto en el dominio del tiempo como en el de la frecuencia. Además, se introducirá el procesamiento de imágenes digitales, explorando técnicas clave para la manipulación y mejora de imágenes. Estos temas son fundamentales para comprender y contribuir al desarrollo de la ciencia y la tecnología electrónica, permitiendo a los futuros ingenieros diseñar y construir equipos digitales confiables y eficientes en el ámbito de las telecomunicaciones.",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "Comprender los modelos de señales y sistemas discretos, aplicando principios matemáticos fundamentales y métodos de análisis, como la",
+     "horas": 84,
+     "contenidos": "Señales y sistemas discretos; Operaciones con señales y sistemas discretos; Ecuaciones de diferencia. Método Iterativo; Ecuaciones de diferencia. Método Clásico"
+    },
+    {
+     "numero": 2,
+     "nombre": "Analizar Señales Discretas en los Dominios del Tiempo y la Frecuencia, para extraer características relevantes y aplicar filtros digitales.",
+     "horas": 24,
+     "contenidos": "Transformada de Fourier y Serie Discreta de Forurier; Transformada Discreta de Fourier; Convolución Circular"
+    },
+    {
+     "numero": 3,
+     "nombre": "Analizar la forma de operar la transformada Z para resolver ecuaciones en diferencias y diseñar sistemas discretos, empleando esta",
+     "horas": 48,
+     "contenidos": "Transformada Z básicas; Transformada Inversa Z; Uso de la transformada Z en LCCDE.; Transformada de Fourier en tiempo discreto; Conversión de señales usando DTFT"
+    },
+    {
+     "numero": 4,
+     "nombre": "Estudiar los conceptos y la formulación matemática para el procesamiento de imágenes digitales mediante técnicas de filtrado, transformación y",
+     "horas": 36,
+     "contenidos": "Procesamiento digital de imágenes; Imagen digital y procesamiento de imágenes en color; Procesamiento de video digital"
+    }
+   ],
+   "codigo": "08050610"
+  },
+  {
+   "nombre": "PROYECTO DE TELECOMUNICACIONES",
+   "nivel": 6,
+   "creditos": 3,
+   "horas": 144,
+   "descripcion": "En este módulo durante las cuatro unidades se analizará los conceptos básicos para la evaluación de factibilidad de un proyecto de Telecomunicaciones desde el punto de vista técnico, mercado, y económico con normativas internacionales por medio del desarrollo de un proyectode Telecomunicaciones donde se apliquen los conocimientos adquiridos en el mòdulo.",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "Analizar la importancia de un proyecto de telecomunicaciones",
+     "horas": 30,
+     "contenidos": "Modelo de red de un sistema de Telecomunicaciones; Evolución de las Telecomunicaciones; Definición e importancia de los Proyectos"
+    },
+    {
+     "numero": 2,
+     "nombre": "Verificar la posibilidad técnica- operativa de un proyecto de Telecomunicaciones",
+     "horas": 24,
+     "contenidos": "Pasos para el desarrolllo de proyectos; Estudio de mercado; Estudio de Técnico"
+    },
+    {
+     "numero": 3,
+     "nombre": "Comprender el estudio económico de un proyecto de telecomunicaciones.",
+     "horas": 51,
+     "contenidos": "Parámetros económicos de una empresa de servicios.; Estudio Económico; Análisis de costos en un proyecto de telecomunicaciones; Balance General"
+    },
+    {
+     "numero": 4,
+     "nombre": "Aprender los pasos que se deben realizar para determinar la factibilidad económica de un proyecto.",
+     "horas": 39,
+     "contenidos": "Evaluación de proyectos de telecomunicaciones; Métodos de evaluación que toman en cuenta el valor del; Elaboración y Presentación del proyecto final"
+    }
+   ],
+   "codigo": "08050611"
+  },
+  {
+   "nombre": "REDES DE DATOS",
+   "nivel": 6,
+   "creditos": 2,
+   "horas": 96,
+   "descripcion": "El módulo de redes de datos, el cual se imparte en el sexto ciclo de estudio de la carrera de telecomunicaciones enseña una secuencia de contenidos prácticos que le da la habilidad al estudiante para diseñar una estructura y establecer la función de una red convergente como plataforma de colaboración. Lo que permite cumplir el objetivo de la pericia necesaria para integrarla con componentes y protocolos en la construcción de una red con dispositivos intermediarios, usando reglas de comunicación y seguridad para aprovecha al máximo esquemas de direccionamiento IP a configurar en dispositivos intermediarios.",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "Establecer la estructura y función de una red convergente como plataforma de colaboración",
+     "horas": 24,
+     "contenidos": "Exploración de Red; Sistemas de Red"
+    },
+    {
+     "numero": 2,
+     "nombre": "Integrar componentes y protocolos en la construcción de una red con dispositivos intermediarios.",
+     "horas": 24,
+     "contenidos": "Comunicación de red; Acceso a la red; Ethernet; Capa de red"
+    },
+    {
+     "numero": 3,
+     "nombre": "Planificar el uso de las reglas y aprovechar al máximo un esquema de direcciones IP.",
+     "horas": 24,
+     "contenidos": "Asignación de direcciones; División de redes IP"
+    },
+    {
+     "numero": 4,
+     "nombre": "Diseñar e implementar un esquema de direccionamiento en una topología de dispositivos intermediarios.",
+     "horas": 24,
+     "contenidos": "Transporte y aplicación; Diseño de red LAN"
+    }
+   ],
+   "codigo": "08050612"
+  },
+  {
+   "nombre": "SISTEMAS DE TELEFONIA",
+   "nivel": 6,
+   "creditos": 2,
+   "horas": 96,
+   "descripcion": "Los etudiantes estarán en capacidad de diseñar, comprender y aplicar la estructura de las redes de datos para el envío y recepción de la información por distintos medios.",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "Identificar el modelo de red y las tecnologías de acceso",
+     "horas": 24,
+     "contenidos": "Modelo de red; Principales tendencias de las telecomunicaciones; Análisis de las nuevas tecnologías de acceso; Regularización y estandarización en telecomunicaciones"
+    },
+    {
+     "numero": 2,
+     "nombre": "Estudiar los componentes de planta externa y telefonía digital",
+     "horas": 21,
+     "contenidos": "Estructura de la red telefónica y Planta externa; Central de conmutación y sus funciones; Telefonía digital; Señales PDH y SDH"
+    },
+    {
+     "numero": 3,
+     "nombre": "Determinar los modos de transporte y señalización",
+     "horas": 15,
+     "contenidos": "Sistemas de Señalización; Transmisión de señales digitales; Sincronía y tarifación"
+    },
+    {
+     "numero": 4,
+     "nombre": "Determinar las unidades de la ingeniería de tráfico telefónico y sus aplicaciones",
+     "horas": 21,
+     "contenidos": "Unidades de medición del tráfico telefónico; Calidad de servicio; Aplicaciones de tráfico telefónico"
+    },
+    {
+     "numero": 5,
+     "nombre": "Estudiar las aplicaciones de telefonía y voz sobre IP",
+     "horas": 15,
+     "contenidos": "Telefonía IP; Voz sobre IP"
+    }
+   ],
+   "codigo": "08050613"
+  },
+  {
+   "nombre": "COMUNICACION DIGITAL",
+   "nivel": 7,
+   "creditos": 2,
+   "horas": 96,
+   "descripcion": "La asignatura de Comunicaciones Digitales aborda los principios fundamentales que rigen la transmisión eficiente y confiable de información en sistemas digitales. Se estudian la representación y el análisis de señales en los dominios del tiempo y la frecuencia, los conceptos esenciales de la teoría de la información, las técnicas de modulación digital y el análisis de su desempeño frente al ruido. Asimismo, se analizan los procesos de digitalización de señales analógicas, la codificación de canal y las técnicas de multiplexación, integrando estos conceptos en el estudio de sistemas de comunicación digital completos. La asignatura combina fundamentos teóricos con actividades prácticas y de simulación, orientadas a la comprensión del comportamiento de sistemas reales de telecomunicaciones.",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "Analizar señales en sistemas de comunicación digital, considerando su representación temporal y espectral, así como el efecto del canal y del",
+     "horas": 24,
+     "contenidos": "Naturaleza de las señales en telecomunicaciones.; Análisis espectral aplicado a comunicaciones digitales.; Densidad espectral de potencia (DSP). Introducción al canal; Correlación y autocorrelación de señales"
+    },
+    {
+     "numero": 2,
+     "nombre": "Aplicar los principios de la Teoría de la Información para caracterizar fuentes discretas, calcular entropía y redundancia, y analizar los límites",
+     "horas": 24,
+     "contenidos": "Teoría de la información. Fuentes.; Medidas de información; Capacidad de canal y límites teóricos. Codificación de; Códigos de línea"
+    },
+    {
+     "numero": 3,
+     "nombre": "Analizar y aplicar esquemas de modulación digital, evaluando su eficiencia espectral y desempeño en presencia de ruido mediante el estudio",
+     "horas": 24,
+     "contenidos": "Introducción a la modulación digital. Modulación por; Modulación por desplazamiento de fase; Modulación en amplitud en cuadratura; Desempeño de sistemas digitales. Introducción a la"
+    },
+    {
+     "numero": 4,
+     "nombre": "Analizar el proceso de digitalización de señales analógicas y aplicar técnicas de codificación de canal y multiplexación para mejorar la",
+     "horas": 24,
+     "contenidos": "Digitalización de señales analógicas; Modulaciones de pulsos; Técnicas de multiplexación. Codificación de canal; Desempeño con codificación. Sistemas de comunicación"
+    }
+   ],
+   "codigo": "08050708"
+  },
+  {
+   "nombre": "CIRCUITOS RF",
+   "nivel": 7,
+   "creditos": 2,
+   "horas": 96,
+   "descripcion": "El presente módulo pretende que los estudiantes adquieran las capacidades integradas de Circuitos RF (Microondas), a través del desarrollo de los elementos de competencia del módulo que le permitan entender las señales en el rango de las microondas, técnicas de generación y amplificación de señales en el rango de las microondas permitiendo el desarrollo de sistemas de comunicación seguros y confiables, el proceso de enseñanza - aprendizaje se lo realiza a través del método expositivo y el aprendizaje basado en problemas",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "Comprender los conceptos básicos de microondas, así como de los circuitos cuadripolos y sus aplicaciones en las telecomunicaciones.",
+     "horas": 24,
+     "contenidos": "Definición y Ventajas de las Microondas; Cuadripolos; Conexión de Cuadripolos; Constantes de transferencia en Cuadripolos"
+    },
+    {
+     "numero": 2,
+     "nombre": "Analizar las características básicas de las guías de ondas y los diferentes tipos de guía de onda que se utilizan en equipos de la ingeniería",
+     "horas": 24,
+     "contenidos": "Guías de Onda; Análisis de las Bocinas en Microondas; Líneas de Transmisión con Dieléctricos; Microstrip"
+    },
+    {
+     "numero": 3,
+     "nombre": "Analizar los diversos dispositivos de tubos de vacío para generar y amplificar señales en el rango de las microondas.",
+     "horas": 24,
+     "contenidos": "Técnicas de Tubos de Vacío; Fuentes de Microondas; Filtros de Microondas; Aisladores y Circuladores"
+    },
+    {
+     "numero": 4,
+     "nombre": "Analizar los diversos dispositivos semiconductores para generar y amplificar señales en el rango de las microondas.",
+     "horas": 24,
+     "contenidos": "Semiconductores en Microondas; Diodos Gunn, Impatt, y Trapatt; Tecnología de Radiofrecuencia (RF); Sistemas de Radiofrecuencia (RF)"
+    }
+   ],
+   "codigo": "08050709"
+  },
+  {
+   "nombre": "PROPAGACIÓN Y ANTENAS",
+   "nivel": 7,
+   "creditos": 4,
+   "horas": 192,
+   "descripcion": "En esta asignatura los estudiantes adquirirán las capacidades integradas para aplicar procedimientos matemáticos, físicos y del electromagnetismo en la solución de problemas relacionados con la propagación de las ondas electromagnéticas, analizar los parámetros que influyen en la propagación o radiación de los campos u ondas electromagnéticas cuando el medio de transmisión es la tropósfera, estableciendo las características de energía de los principales tipos de antenas y su empleo en la transmisión y recepción de información, además de determinar las características de los principales arreglos de antenas para obtener un mayor nivel de señal de transmisión y recepción entre dos puntos distantes. Las metodologías de aprendizaje que se emplearán para garantizar las capacidades de exploración, construcción y el desarrollo del pensamiento crítico y creativo en los estudiantes serán: El Aprendizaje Basado en Problemas (ABP), en el cual el problema será utilizado como base para identificar los temas de aprendizaje para su estudio de manera independiente o grupal. Aprendizaje Colaborativo, los estudiantes forman grupos o equipos de trabajo, en cada grupo los estudiantes intercambian información y trabajan en una tarea hasta que todos sus miembros la han entendido y terminado, aprendiendo a través de la colaboración. Aprendizaje Orientado a Proyecto, se busca enfrentar a los estudiantes a situaciones reales que los lleven a, comprender y aplicar aquello que aprendieron como una herramienta para resolver problemas o proponer mejoras.",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "Establecer las características de energía de los principales tipos de antenas y su empleo en la transmisión de información entre dos puntos",
+     "horas": 48,
+     "contenidos": "Antenas Elementales; Antenas con distribución senoidal de corriente; Parámetros de antenas; Fórmula de Friis"
+    },
+    {
+     "numero": 2,
+     "nombre": "Determinar las características de los principales arreglos de antenas para obtener un mayor nivel de señal de transmisión y recepción de las",
+     "horas": 48,
+     "contenidos": "Arreglo de dos elementos; Tipos de Arreglos de Antenas; Antenas Inteligentes. Tipos; Aplicaciones"
+    },
+    {
+     "numero": 3,
+     "nombre": "Analizar el comportamiento de la propagación de ondas electromagnéticas dentro de la estructura atmosférica.",
+     "horas": 48,
+     "contenidos": "Generalidades de Propagación de Ondas y tipos de; Propagación terrestre de las ondas electromagnéticas; Atenuación; Absorción"
+    },
+    {
+     "numero": 4,
+     "nombre": "Determinar los parámetros y características a tener en cuenta para realizar un radioenlace terrestre por onda troposférica",
+     "horas": 48,
+     "contenidos": "Zonas de Fresnell; Onda terrestre. Polarización horizontal y vertical del campo; Radioenlace terrestre; Balance del Enlace"
+    }
+   ],
+   "codigo": "08050710"
+  },
+  {
+   "nombre": "CONMUTACION Y ENRUTAMIENTO DE REDES",
+   "nivel": 7,
+   "creditos": 2,
+   "horas": 96,
+   "descripcion": "La asignatura de Conmutación y Enrutamiento permite g estionar proyectos de redes en el área comunicaciones utilizando tecnologías de punta, encaminadas a satisfacer eficaz y eficientemente las necesidades del contexto.",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "Configurar redes Lan con dispositivos capa 2 Vlan - Conmutación",
+     "horas": 24,
+     "contenidos": "Switch; Vlans; Enlaces trocales - Conmutación"
+    },
+    {
+     "numero": 2,
+     "nombre": "Configurar enrutamiento redes Wan con dispositivos capa 3 MPLS",
+     "horas": 27,
+     "contenidos": "Configuración Incial de Routers; Enrutamiento entre VLAN .; Enrutamiento estático; Routing dinámico"
+    },
+    {
+     "numero": 3,
+     "nombre": "Analizar y Configurar el funcionamiento de los diferentes servicios en una red para la gestión de redes",
+     "horas": 30,
+     "contenidos": "Instalación Servidor Linux; Comandos Linux; Configuración de un router Linux; Configuración de Servicios de Red"
+    },
+    {
+     "numero": 4,
+     "nombre": "Analizar los diferentes niveles de seguridad en el entorno de redes.",
+     "horas": 15,
+     "contenidos": "Seguridad en redes TCP/IP; Tipos de ataques; Programas de gestión y monitoreo de redes"
+    }
+   ],
+   "codigo": "08050711"
+  },
+  {
+   "nombre": "SISTEMAS INALAMBRICOS",
+   "nivel": 8,
+   "creditos": 2,
+   "horas": 96,
+   "descripcion": "El estudiante estará en capacidad de diseñar, comprender y aplicar el funcionamiento de redes inalámbricas, así como realizar cálculos de los enlaces inalámbricos, para determinar los equipos requeridos de acuerdo a la aplicación a realizarse.",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "Definir los criterios del diseño de radioenlaces y sistemas de radiocomunicación por medios radioeléctricos.",
+     "horas": 24,
+     "contenidos": "Conceptos de las radiocomunicaciones; Conceptos multidisciplinares"
+    },
+    {
+     "numero": 2,
+     "nombre": "Discutir las bases conceptuales de estándares, protocolos de comunicación, métodos de certificación y seguridades según la tecnología",
+     "horas": 24,
+     "contenidos": "Teoría Inalámbrica; Estándares; Seguridad inalámbrica"
+    },
+    {
+     "numero": 3,
+     "nombre": "Establecer el conjunto de protocolos de comunicación inalámbrica según su alcance y aplicación.",
+     "horas": 24,
+     "contenidos": "Redes de área personal inalámbrica; Redes de área local inalámbrica; Redes de área metropolitana inalámbrica; Redes de área extendida inalámbrica"
+    },
+    {
+     "numero": 4,
+     "nombre": "Implementar una red inalámbrica unificada para abordar de manera rentable los problemas de seguridad, implementación, configuración y",
+     "horas": 24,
+     "contenidos": "Operación; Configuración; Diseño"
+    }
+   ],
+   "codigo": "08050808"
+  },
+  {
+   "nombre": "COMUNICACIONES MOVILES",
+   "nivel": 8,
+   "creditos": 2,
+   "horas": 96,
+   "descripcion": "La presente asingatura aborda los conceptos básicos de los sistemas de radiocomunicaciones, arquitectura y planificación técnica para el diseño de sistemas de telefonía celular de última generación",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "Comprender los Fundamentos de las comunicaciones inalámbricas móviles actuales",
+     "horas": 24,
+     "contenidos": "Introducción a las comunicaciones inalámbricas móviles; Panorama de las Comunicaciones Inalámbricas"
+    },
+    {
+     "numero": 2,
+     "nombre": "Determinar los aspectos más importantes relacionados con la arquitectura y el funcionamiento de los sistemas celular y PCS",
+     "horas": 24,
+     "contenidos": "Sistemas de Comunicación personal PCS; Arquitectura del sistema celular y PCS; Características de la interfaz inalámbrica"
+    },
+    {
+     "numero": 3,
+     "nombre": "Analizar la evolución de las redes celulares y los fundamentos técnicos empleados en Técnicas de Acceso y Modulación en Sistemas Celulares",
+     "horas": 24,
+     "contenidos": "Evolución de las Redes Celulares; Técnicas de Acceso y Modulación en Sistemas Celulares"
+    },
+    {
+     "numero": 4,
+     "nombre": "Aplicar los conceptos técnicos relacionados con la planeación de frecuencias en sistemas celulares",
+     "horas": 24,
+     "contenidos": "Planeación de Frecuencias; Planeación Celular; Antenas en sistemas Celulares; Diseño de la cobertura de un sistema celular"
+    }
+   ],
+   "codigo": "08050809"
+  },
+  {
+   "nombre": "COMUNICACIONES OPTICAS",
+   "nivel": 8,
+   "creditos": 2,
+   "horas": 96,
+   "descripcion": "En este módulo se analizará los conceptos básicos de un sistema de Telecomunicaciones basados en fibra ópticas, como sus tecnologías, protocolos y mulitplexación para el diseño de una red óptica de alta velocidad con normativas internacionales.",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "Comprender los Sistemas de telecomunicaciones en fibra óptica.",
+     "horas": 36,
+     "contenidos": "Sistemas de telecomunicaciones en fibra óptica.; Principio Físico de la propagación; Fibras ópticas; Componentes Ópticos"
+    },
+    {
+     "numero": 2,
+     "nombre": "Analizar las Redes ópticas y técnicas de multiplexación.",
+     "horas": 18,
+     "contenidos": "Redes ópticas y técnicas de multiplexación.; Multiplexación por división de longitud de onda (WDM); Multiplexación por división de longitud de onda densa"
+    },
+    {
+     "numero": 3,
+     "nombre": "Diseñar Redes de fibra óptica.",
+     "horas": 24,
+     "contenidos": "Redes de fibra óptica.; Tipos de redes de fibra óptica.; Diseño de redes de fibra óptica."
+    },
+    {
+     "numero": 4,
+     "nombre": "Analizar las Redes ópticas en el Ecuador y en el mundo.",
+     "horas": 18,
+     "contenidos": "Redes ópticas en el Ecuador y en el mundo; Agencia de regulación y control de las Telecomunicaciones; Comunicación Óptica Mundial"
+    }
+   ],
+   "codigo": "08050810"
+  },
+  {
+   "nombre": "TELEVISION DIGITAL",
+   "nivel": 8,
+   "creditos": 2,
+   "horas": 96,
+   "descripcion": "El presente módulo de Televisión Digital con las 4 unidades temáticas pretende que los estudiantes adquieran las capacidades integradas de analizar las características de la televisión especialmente de la televisión digital terrestre TDT, así como los diferentes estándares de transmisión y del lenguaje NCL usado en la simulación de TDT, temas que permiten reconocer la importancia en el desarrollo de la ciencia y la tecnología electrónica de las telecomunicaciones, con el uso del método expositivo y el aprendizaje basado en problemas y con la resolución de ejercicios por los estudiantes en sus horas autonómas.",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "Comprender los principios básicos del funcionamiento de la televisión tanto analógica como a color y su uso en los aspectos relacionados con",
+     "horas": 12,
+     "contenidos": "Fundamentos de la televisión; Análisis de la televisión analógica; Análisis de la televisión a color"
+    },
+    {
+     "numero": 2,
+     "nombre": "Comprender los principios básicos del funcionamiento de la televisión digital terrestre y su uso en los aspectos relacionados con la ingeniería de",
+     "horas": 18,
+     "contenidos": "Características de la televisión digital; Televisión de alta definición; Formatos tecnológicos de la Televisión digital; Transmisores y receptores de la TV digital"
+    },
+    {
+     "numero": 3,
+     "nombre": "Analizar los diferentes estándares para la televisión digital terrestre y especialmente el estándar aprobado por el organismo de control del",
+     "horas": 45,
+     "contenidos": "Introducción al estándar mpeg-2; Análisis del sistema isdb-t; Aspectos Regulatorios de la televisión digital terrestre"
+    },
+    {
+     "numero": 4,
+     "nombre": "Comprender el lenguaje NCL para su utilización en la simulación de la televisión digital terrestre y su importancia en las telecomunicaciones",
+     "horas": 21,
+     "contenidos": "Tecnología Ginga; Introducción al lenguaje NCL; Ejercicios de aplicación"
+    }
+   ],
+   "codigo": "08050811"
+  },
+  {
+   "nombre": "SISTEMAS SATELITALES Y GPS",
+   "nivel": 8,
+   "creditos": 2,
+   "horas": 96,
+   "descripcion": "El estudiante estará en capacidad de diseñar, comprender y aplicar los satélites de comunicaciones, así como realizar cálculos de propagación para determinar los equipos requeridos de acuerdo a la aplicación a realizarse y poder establecer posicionamientos globales.",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "Analizar las leyes de Kepler y las órbitas satelitales",
+     "horas": 21,
+     "contenidos": "Leyes de Kepler; Orbitas de satélites; Categorías de elevación de y trayectorias orbitales de los"
+    },
+    {
+     "numero": 2,
+     "nombre": "Describir los Satélites Geoestacionarios, ángulos visuales de una antena",
+     "horas": 24,
+     "contenidos": "Parámetros orbitales de los satélites geosíncrono; Ángulos de elevación, azimut y haces locales y zonales; Asignación de frecuencias en los satélites"
+    },
+    {
+     "numero": 3,
+     "nombre": "Evaluar los modelos de enlace, parámetros del sistema satelital y las ecuaciones del enlace satelital",
+     "horas": 24,
+     "contenidos": "Modelo de enlace de subida; Modelo de enlace de bajada; Ruido en Comunicaciones satelitales"
+    },
+    {
+     "numero": 4,
+     "nombre": "Aplicar las redes VSAT en servicios satelitales",
+     "horas": 15,
+     "contenidos": "Métodos de acceso; Redes VSAT y aplicaciones"
+    },
+    {
+     "numero": 5,
+     "nombre": "Analizar los Sistemas de Posicionamiento Satelital",
+     "horas": 12,
+     "contenidos": "GPS; GIS"
+    }
+   ],
+   "codigo": "08050812"
+  },
+  {
+   "nombre": "COMUNICACIONES AVANZADAS",
+   "nivel": 8,
+   "creditos": 2,
+   "horas": 96,
+   "descripcion": "La asignatura aborda de manera teórico-práctica conceptos, arquitecturas, protocolos y tecnologías de comunicaciones avanzadas, integrando recursos y herramientas digitales como apoyo al proceso de enseñanza-aprendizaje. Se prioriza la aplicación de metodologías activas como el aprendizaje basado en problemas, proyectos y simulaciones, con el fin de que el estudiante adquiera competencias técnicas y transversales que le permitan desenvolverse con eficacia en el ámbito profesional.",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "Analizar y comparar alternativas de sistemas operativos para servidores, evaluando su compatibilidad, rendimiento y seguridad en la",
+     "horas": 21,
+     "contenidos": "Comunicaciones Unificadas; Sistemas Operativos de Red para servidores; Máquinas Virtuales y Contenedores"
+    },
+    {
+     "numero": 2,
+     "nombre": "Comprender y explicar los servicios de red y comunicaciones actuales, identificando su funcionamiento, aplicaciones y relevancia en entornos",
+     "horas": 18,
+     "contenidos": "Openssh; LAMP en Almalinux; FTP en Almalinux; Sistema de Control de Versiones de software"
+    },
+    {
+     "numero": 3,
+     "nombre": "Utilizar herramientas y técnicas de gestión de la información y de apoyo al aprendizaje para optimizar el análisis, diseño e implementación de",
+     "horas": 30,
+     "contenidos": "Arquitectura y componentes de sistemas de; Tecnologías y plataformas para la integración; Diseño e Implementación de soluciones integradas; Herramientas y métricas de evaluación del rendimiento"
+    },
+    {
+     "numero": 4,
+     "nombre": "Analizar y evaluar alternativas para la integración de sistemas, considerando criterios de eficiencia, escalabilidad e innovación tecnológica en",
+     "horas": 27,
+     "contenidos": "Integración de sistema de comunicaciones; Asterisk; Redes definidas por software (SDN)"
+    }
+   ],
+   "codigo": "08050813"
+  },
+  {
+   "nombre": "DISEÑO DE PROYECTOS",
+   "nivel": 8,
+   "creditos": 3,
+   "horas": 144,
+   "descripcion": "La asignatura de Diseño de Proyectos se estructura en cuatro unidades curriculares, orientadas a que el estudiante elabore el perfil del Trabajo de Titulación en la modalidad seleccionada, ya sea proyecto de investigación o artículo científico. La asignatura se desarrolla desde la identificación del problema hasta la formulación del marco metodológico, fortaleciendo el aprendizaje en la búsqueda, selección y organización de información con fines de estructurar el plan de trabajo del proceso de titulación.",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "Identificar los enfoques y el problema de investigación",
+     "horas": 36,
+     "contenidos": "El problema de investigación"
+    },
+    {
+     "numero": 2,
+     "nombre": "Analizar los antecedentes investigativos relevantes y marco teórico en el contexto de la investigación",
+     "horas": 36,
+     "contenidos": "Antecedentes investigativos y desarrollo del marco teórico"
+    },
+    {
+     "numero": 3,
+     "nombre": "Identificar la metodología y herramientas para el desarrollo de la investigación",
+     "horas": 36,
+     "contenidos": "Metodología y otros componenetes de la investigación"
+    },
+    {
+     "numero": 4,
+     "nombre": "Emplear los criterios metodológicos de la investigación científica en la redacción de artículos científicos o académicos",
+     "horas": 36,
+     "contenidos": "Artículo Científico"
+    }
+   ],
+   "codigo": "08050814"
+  },
+  {
+   "nombre": "DESARROLLO DE PROYECTOS",
+   "nivel": 9,
+   "creditos": 6,
+   "horas": 288,
+   "descripcion": "Desarollar el proyecto de titulación para culminar con éxito la carrera profesional de Ingeniería en Telecomunicaciones realizando una panificación, desarollo e informe final.",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "Analizar la planificación del proyecto de titulación para el adecuado cumplimiento del cronograma de actividades",
+     "horas": 72,
+     "contenidos": "Proyecto y administración de proyectos; Planificación y Ambiente del proyecto; El ciclo de vida de los proyectos; Beneficios de la administración de proyectos"
+    },
+    {
+     "numero": 2,
+     "nombre": "Ejecutar las actividades que llevarán al cumplimiento de los objetivos para la modalidad de titulación que corresponda",
+     "horas": 72,
+     "contenidos": "Desarrollo o tutoría mediante el control y monitoreo del; Modificación al proyecto; El ciclo de vida de la ejecución del proyecto"
+    },
+    {
+     "numero": 3,
+     "nombre": "Analizar las actividades de ejecución de un proyecto para relacionar los esfuerzos necesarios en el desarrollo",
+     "horas": 72,
+     "contenidos": "Actividades recomendadas; Reuniones eficaces; El enfoque adaptativo de la gestión de proyectos"
+    },
+    {
+     "numero": 4,
+     "nombre": "Realizar el cierre de proyecto identificando los aspectos importantes en la etapa de finalización",
+     "horas": 72,
+     "contenidos": "Tipos de cierre de proyectos; Relación del cierre de proyecto con las otras etapas; Recopila las lecciones aprendidas; Informe de Investigación y sistema de información para el"
+    }
+   ],
+   "codigo": "08050904"
+  }
+ ]
+}

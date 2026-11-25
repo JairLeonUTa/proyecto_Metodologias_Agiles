@@ -27,6 +27,7 @@ interface FormularioUsuario {
   correoInstitucional: string;
   nombreCompleto: string;
   password: string;
+  confirmarPassword: string;
   rol: string;
   activo: boolean;
 }
@@ -35,6 +36,7 @@ const FORMULARIO_VACIO: FormularioUsuario = {
   correoInstitucional: '',
   nombreCompleto: '',
   password: '',
+  confirmarPassword: '',
   rol: 'OPERADOR',
   activo: true,
 };
@@ -61,10 +63,18 @@ export function UsuariosPage(): JSX.Element {
   const [guardando, setGuardando] = useState(false);
   const [porDesactivar, setPorDesactivar] = useState<Usuario | null>(null);
   const [procesandoBaja, setProcesandoBaja] = useState(false);
+  const [mostrarPassword, setMostrarPassword] = useState(false);
+  const [porRestablecer, setPorRestablecer] = useState<Usuario | null>(null);
+  const [passwordNueva, setPasswordNueva] = useState('');
+  const [passwordConfirmada, setPasswordConfirmada] = useState('');
+  const [errorPassword, setErrorPassword] = useState('');
+  const [guardandoPassword, setGuardandoPassword] = useState(false);
+  const [mostrarPasswordRestablecer, setMostrarPasswordRestablecer] = useState(false);
 
   const abrirCreacion = (): void => {
     setEnEdicion(null);
-    setFormulario({ ...FORMULARIO_VACIO, rol: roles.datos?.[0]?.nombre ?? 'OPERADOR' });
+    const rolInicial = roles.datos?.find((rol) => rol.nombre === 'OPERADOR')?.nombre ?? roles.datos?.[0]?.nombre ?? 'OPERADOR';
+    setFormulario({ ...FORMULARIO_VACIO, rol: rolInicial });
     setErrores({});
     limpiar();
     setModalAbierto(true);
@@ -76,6 +86,7 @@ export function UsuariosPage(): JSX.Element {
       correoInstitucional: usuario.correoInstitucional,
       nombreCompleto: usuario.nombreCompleto,
       password: '',
+      confirmarPassword: '',
       rol: usuario.rol,
       activo: usuario.activo,
     });
@@ -101,6 +112,9 @@ export function UsuariosPage(): JSX.Element {
       }
       if (formulario.password.length < 8) {
         nuevos.password = 'La contraseña debe tener al menos 8 caracteres.';
+      }
+      if (formulario.password !== formulario.confirmarPassword) {
+        nuevos.confirmarPassword = 'Las contraseñas no coinciden.';
       }
     }
 
@@ -134,6 +148,33 @@ export function UsuariosPage(): JSX.Element {
       reportarError(mensajeDeError(fallo));
     } finally {
       setGuardando(false);
+    }
+  };
+
+  const confirmarRestablecimiento = async (evento: FormEvent<HTMLFormElement>): Promise<void> => {
+    evento.preventDefault();
+    limpiar();
+    if (passwordNueva.length < 8) {
+      setErrorPassword('La contraseña debe tener al menos 8 caracteres.');
+      return;
+    }
+    if (passwordNueva !== passwordConfirmada) {
+      setErrorPassword('Las contraseñas no coinciden.');
+      return;
+    }
+    if (!porRestablecer) return;
+    setErrorPassword('');
+    setGuardandoPassword(true);
+    try {
+      await usuariosApi.restablecerPassword(porRestablecer.id, passwordNueva);
+      setPorRestablecer(null);
+      setPasswordNueva('');
+      setPasswordConfirmada('');
+      exito('Contraseña actualizada. Comuníquela a la persona por un medio seguro.');
+    } catch (fallo) {
+      reportarError(mensajeDeError(fallo));
+    } finally {
+      setGuardandoPassword(false);
     }
   };
 
@@ -210,6 +251,9 @@ export function UsuariosPage(): JSX.Element {
         <div className="flex flex-wrap items-center gap-1">
           <Boton variante="fantasma" tamano="sm" onClick={() => abrirEdicion(usuario)} aria-label={`Editar la cuenta ${usuario.correoInstitucional}`}>
             Editar
+          </Boton>
+          <Boton variante="fantasma" tamano="sm" onClick={() => { setPorRestablecer(usuario); setPasswordNueva(''); setPasswordConfirmada(''); setErrorPassword(''); limpiar(); }}>
+            Restablecer contraseña
           </Boton>
           <Boton variante="fantasma" tamano="sm" onClick={() => void alternarEstado(usuario)}>
             {usuario.activo ? 'Desactivar' : 'Activar'}
@@ -329,19 +373,28 @@ export function UsuariosPage(): JSX.Element {
               htmlFor="usuario-password"
               etiqueta="Contraseña inicial"
               obligatorio
-              ayuda="Mínimo 8 caracteres. Se almacena como hash BCrypt en el servidor."
+              ayuda="Mínimo 8 caracteres. Revise que Bloq Mayús esté desactivado."
               error={errores.password}
             >
-              <EntradaTexto
-                id="usuario-password"
-                type="password"
-                value={formulario.password}
-                autoComplete="new-password"
-                invalido={Boolean(errores.password)}
-                onChange={(evento) => setFormulario({ ...formulario, password: evento.target.value })}
-              />
+              <div className="relative">
+                <EntradaTexto
+                  id="usuario-password"
+                  type={mostrarPassword ? 'text' : 'password'}
+                  className="pr-20"
+                  aria-controls="usuario-password"
+                  value={formulario.password}
+                  autoComplete="new-password"
+                  invalido={Boolean(errores.password)}
+                  onChange={(evento) => setFormulario({ ...formulario, password: evento.target.value })}
+                />
+                <button type="button" aria-pressed={mostrarPassword} aria-controls="usuario-password" onClick={() => setMostrarPassword(!mostrarPassword)} className="absolute inset-y-0 right-0 px-3 text-xs font-semibold text-institucional-700 hover:text-institucional-800 focus-visible:ring-2 focus-visible:ring-institucional-500 rounded-md">{mostrarPassword ? 'Ocultar' : 'Mostrar'}</button>
+              </div>
             </Campo>
           ) : null}
+
+          {!enEdicion ? <Campo htmlFor="usuario-confirmar-password" etiqueta="Confirmar contraseña" obligatorio error={errores.confirmarPassword}>
+            <EntradaTexto id="usuario-confirmar-password" type={mostrarPassword ? 'text' : 'password'} autoComplete="new-password" value={formulario.confirmarPassword} invalido={Boolean(errores.confirmarPassword)} onChange={(evento) => setFormulario({ ...formulario, confirmarPassword: evento.target.value })} />
+          </Campo> : null}
 
           <Campo
             htmlFor="usuario-rol"
@@ -371,6 +424,23 @@ export function UsuariosPage(): JSX.Element {
             checked={formulario.activo}
             onChange={(evento) => setFormulario({ ...formulario, activo: evento.target.checked })}
           />
+        </form>
+      </Modal>
+
+      <Modal abierto={porRestablecer !== null} titulo={`Restablecer contraseña de ${porRestablecer?.nombreCompleto ?? ''}`} onCerrar={() => setPorRestablecer(null)} acciones={<>
+        <Boton variante="secundario" onClick={() => setPorRestablecer(null)} disabled={guardandoPassword}>Cancelar</Boton>
+        <Boton type="submit" form="formulario-restablecer-password" cargando={guardandoPassword} textoCargando="Guardando…">Guardar contraseña</Boton>
+      </>}>
+        <form id="formulario-restablecer-password" className="space-y-4" onSubmit={(evento) => void confirmarRestablecimiento(evento)} noValidate>
+          <Campo htmlFor="password-nueva" etiqueta="Nueva contraseña" obligatorio ayuda="Mínimo 8 caracteres. Revise que Bloq Mayús esté desactivado." error={errorPassword === 'La contraseña debe tener al menos 8 caracteres.' ? errorPassword : undefined}>
+            <div className="relative">
+              <EntradaTexto id="password-nueva" type={mostrarPasswordRestablecer ? 'text' : 'password'} className="pr-20" autoComplete="new-password" value={passwordNueva} onChange={(evento) => setPasswordNueva(evento.target.value)} invalido={errorPassword === 'La contraseña debe tener al menos 8 caracteres.'} />
+              <button type="button" aria-pressed={mostrarPasswordRestablecer} aria-controls="password-nueva" onClick={() => setMostrarPasswordRestablecer(!mostrarPasswordRestablecer)} className="absolute inset-y-0 right-0 px-3 text-xs font-semibold text-institucional-700 hover:text-institucional-800 focus-visible:ring-2 focus-visible:ring-institucional-500 rounded-md">{mostrarPasswordRestablecer ? 'Ocultar' : 'Mostrar'}</button>
+            </div>
+          </Campo>
+          <Campo htmlFor="password-confirmada" etiqueta="Confirmar contraseña" obligatorio error={errorPassword === 'Las contraseñas no coinciden.' ? errorPassword : undefined}>
+            <EntradaTexto id="password-confirmada" type={mostrarPasswordRestablecer ? 'text' : 'password'} autoComplete="new-password" value={passwordConfirmada} onChange={(evento) => setPasswordConfirmada(evento.target.value)} invalido={Boolean(errorPassword)} />
+          </Campo>
         </form>
       </Modal>
 

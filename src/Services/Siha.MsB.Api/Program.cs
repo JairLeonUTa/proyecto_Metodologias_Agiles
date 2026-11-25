@@ -48,6 +48,17 @@ builder.Services.AddScoped<IExpedienteEventPublisher, ExpedienteEventPublisher>(
 
 // --- Flujo borrador -> documentos verificados -> publicación, y reintento automático tras caídas del bus ---
 builder.Services.AddScoped<ExpedienteEnvioService>();
+
+// gRPC hacia MS A: verificación de los docentes revisores del certificado SIHA.
+builder.Services.Configure<Siha.MsB.Api.Options.CatalogoGrpcOptions>(
+    builder.Configuration.GetSection(Siha.MsB.Api.Options.CatalogoGrpcOptions.SectionName));
+builder.Services.AddGrpcClient<Siha.MsA.Api.Grpc.CatalogoGrpc.CatalogoGrpcClient>((sp, options) =>
+{
+    var cfg = sp.GetRequiredService<Microsoft.Extensions.Options.IOptions<Siha.MsB.Api.Options.CatalogoGrpcOptions>>().Value;
+    options.Address = new Uri(cfg.Url);
+})
+.ConfigureChannel(o => o.Credentials = Grpc.Core.ChannelCredentials.Insecure);
+builder.Services.AddScoped<IVerificadorDocentes, VerificadorDocentesGrpc>();
 builder.Services.Configure<RepublicacionOptions>(builder.Configuration.GetSection(RepublicacionOptions.SectionName));
 builder.Services.AddSingleton<RepublicacionAutomaticaWorker>();
 builder.Services.AddHostedService(sp => sp.GetRequiredService<RepublicacionAutomaticaWorker>());

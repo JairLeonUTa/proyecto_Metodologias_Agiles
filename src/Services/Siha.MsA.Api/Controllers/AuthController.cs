@@ -54,6 +54,34 @@ public class AuthController : ControllerBase
         return Ok(new LoginResponse(token, _jwt.ObtenerExpiracion(), Mapeos.AUsuarioDto(usuario)));
     }
 
+    /// <summary>
+    /// Renueva la sesión: con un token todavía vigente entrega uno nuevo (otra hora más), sin volver a
+    /// pedir la contraseña. Lo usa el aviso "Su sesión está por cerrarse" del frontend. Si la cuenta se
+    /// desactivó o cambió de rol mientras tanto, se responde 401 o se emite el token con el rol actual.
+    /// </summary>
+    [HttpPost("renovar")]
+    [Authorize(Roles = $"{RolesSistema.Administrador},{RolesSistema.Docente},{RolesSistema.Operador}")]
+    [ProducesResponseType(typeof(LoginResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public async Task<ActionResult<LoginResponse>> Renovar()
+    {
+        var id = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+        if (!int.TryParse(id, out var usuarioId))
+        {
+            return Unauthorized(new { mensaje = "La sesión no es válida. Vuelva a iniciar sesión." });
+        }
+
+        var usuario = await _db.Usuarios.Include(u => u.Rol).FirstOrDefaultAsync(u => u.Id == usuarioId);
+        if (usuario is null || !usuario.Activo)
+        {
+            return Unauthorized(new { mensaje = "La cuenta ya no está activa. Vuelva a iniciar sesión." });
+        }
+
+        var rolNombre = usuario.Rol?.Nombre ?? RolesSistema.Operador;
+        var token = _jwt.CrearToken(usuario, rolNombre, usuario.RolId.ToString());
+        return Ok(new LoginResponse(token, _jwt.ObtenerExpiracion(), Mapeos.AUsuarioDto(usuario)));
+    }
+
     /// <summary>Devuelve la identidad contenida en el token vigente (útil para el frontend).</summary>
     [HttpGet("yo")]
     [Authorize]

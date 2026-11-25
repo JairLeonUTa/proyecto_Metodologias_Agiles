@@ -138,6 +138,7 @@ export const ESTADO_FINAL = {
   REQUIERE_VALIDACION_CONOCIMIENTOS: 3,
   ERROR_REGLAS_GRPC: 4,
   EXTRACCION_NO_CONFIRMADA: 5,
+  CONTENIDO_INSUFICIENTE: 6,
 } as const;
 
 export interface AnalisisCompleto {
@@ -148,4 +149,143 @@ export interface AnalisisCompleto {
   estadoFinal: number;
   alertasGlobales: string[];
   detalleTrazabilidad: string;
+}
+
+/** Regla del instructivo de homologación y si la solicitud la cumple. */
+export interface Requisito {
+  regla: string;
+  cumple: boolean;
+  explicacion: string;
+}
+
+export interface MateriaOrigenEvaluada {
+  nombre: string;
+  nivel: number;
+  periodoAcademico: string;
+  nota: number;
+  horas: number | null;
+  codigoCatalogo: string | null;
+  encontradaEnMalla: boolean;
+}
+
+export interface CoberturaUnidad {
+  numero: number;
+  nombre: string;
+  horas: number;
+  /** Parecido de temas en porcentaje (0–100) con la unidad aprobada más parecida. */
+  similitud: number;
+  cubierta: boolean;
+  materiaOrigen: string | null;
+  numeroUnidadOrigen: number | null;
+  nombreUnidadOrigen: string | null;
+  horasUnidadOrigen: number | null;
+}
+
+/**
+ * Estimación del agente: CUMPLE (80 % en contenidos y en créditos), NO_CUMPLE (no llega: recomienda no homologar; deciden los docentes)
+ * o CRITERIO_DOCENTE (sin sílabo para comparar: deciden los docentes).
+ */
+export type EstimacionAgente = 'CUMPLE' | 'NO_CUMPLE' | 'CRITERIO_DOCENTE';
+
+/** Evaluación del agente de una materia pedida: deciden contenidos y créditos; el resto es informativo. */
+export interface EvaluacionMateria {
+  numero: number;
+  materiaDestino: string;
+  codigoDestino: string | null;
+  nivelDestino: number | null;
+  creditosDestino: number | null;
+  horasDestino: number;
+  materiasOrigen: MateriaOrigenEvaluada[];
+  /** Decide: mínimo 80 %. */
+  contenidos: number;
+  /** Solo informativo. */
+  profundidad: number;
+  /** Solo informativo. */
+  cargaHoraria: number;
+  estimacion: EstimacionAgente;
+  unidades: CoberturaUnidad[];
+  explicacion: string[];
+  conclusion: string;
+  precedentes: Precedente[];
+  /** True si el agente no tiene sílabo para comparar (otra institución o materia sin unidades): sin porcentajes. */
+  sinSilabo?: boolean;
+  /** Decide: % de créditos aprobados frente a los de destino (mínimo 80 %). */
+  porcentajeCreditos?: number;
+  creditosOrigen?: number | null;
+  /** True si no se conocían los créditos y se usaron las horas. */
+  creditosPorHoras?: boolean;
+}
+
+export interface AnalisisAutomatico {
+  expedienteId: string;
+  requisitos: Requisito[];
+  evaluaciones: EvaluacionMateria[];
+  alertas: string[];
+  resumen: string;
+  detalleTrazabilidad: string;
+}
+
+export interface DecisionMateria {
+  codigoDestino: string;
+  aprobada: boolean;
+  observacion: string | null;
+}
+
+export interface DictamenDocente {
+  correoDocente: string;
+  nombreDocente: string;
+  decisiones: DecisionMateria[];
+  comentario: string | null;
+  fechaUtc: string;
+}
+
+export interface ResultadoFinalMateria {
+  codigoDestino: string;
+  nombreDestino: string;
+  /** Recomendación del agente; el resultado lo deciden siempre los dos docentes. */
+  estimacion: EstimacionAgente;
+  aprobaciones: number;
+  rechazos: number;
+  /** PENDIENTE, HOMOLOGADA, NO_HOMOLOGADA o SIN_ACUERDO. */
+  resultado: string;
+  /** Decisión del administrador cuando los docentes no se pusieron de acuerdo. */
+  decisionFinal?: DecisionFinal | null;
+}
+
+/** Respuesta de `GET /api/extracciones/expedientes/{id}/analisis`: todo lo de una solicitud. */
+export interface SolicitudAnalisis {
+  expedienteId: string;
+  codigoExpediente: string;
+  numeroCertificado: string;
+  estudianteNombre: string;
+  tipoTramite: string;
+  rutaNormativa: string;
+  institucionOrigen: string;
+  carreraOrigen: string;
+  carreraDestino: string;
+  historial: Array<{ nombre: string; nivel: number; periodoAcademico: string; nota: number; aprobada: boolean }>;
+  revisores: Array<{ nombre: string; correo: string; respondio: boolean }>;
+  /**
+   * PENDIENTE (el agente está analizando), PREPARANDO (la IA aún no está lista; se reintenta sola),
+   * ANALIZADO o ERROR.
+   */
+  estado: string;
+  mensaje: string | null;
+  analizadoUtc: string | null;
+  resultado: AnalisisAutomatico | null;
+  dictamenes: DictamenDocente[];
+  resultadoFinal: ResultadoFinalMateria[];
+  /** PENDIENTE, EN_REVISION o RESUELTA. */
+  estadoRevision: string;
+  puedeResponder: boolean;
+  /** True si el análisis se hizo con reglas anteriores del agente y conviene volver a analizarlo. */
+  analisisDesactualizado?: boolean;
+}
+
+/** Decisión final del administrador (coordinador o director de carrera) en una materia sin acuerdo. */
+export interface DecisionFinal {
+  aprobada: boolean;
+  comentario: string;
+  nombreAdministrador: string;
+  fechaUtc: string;
 }

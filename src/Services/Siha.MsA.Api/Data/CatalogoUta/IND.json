@@ -1,0 +1,1605 @@
+{
+ "carrera": "IND",
+ "nombre": "Ingeniería Industrial",
+ "fuente": "Sílabos oficiales publicados en uta.edu.ec (2026)",
+ "asignaturas": [
+  {
+   "nombre": "QUIMICA",
+   "nivel": 1,
+   "creditos": 3,
+   "horas": 144,
+   "descripcion": "Esta asignatura de carácter teórico-práctico tiene como finalidad que el estudiante adquiera una comprensión integral de la composición, estructura y comportamiento de la materia, desarrollando competencias conceptuales, analíticas y experimentales propias del nivel universitario. Se organiza en cuatro unidades curriculares: en la Unidad I: Estructura atómica, enlaces , reacciones químicas, estequiometría y gases, el estudiante determinará la constitución del núcleo atómico y la distribución de electrones en los distintos niveles y subniveles, identificará y analizará los diferentes tipos de enlaces químicos (iónico, covalente, metálico e interacciones intermoleculares), y estudiará las reacciones químicas, enfatizando en la representación simbólica y el balance de ecuaciones como herramienta fundamental para la cuantificación de procesos químicos; además, aplicará principios químicos y operaciones matemáticas en la resolución de problemas de estequiometría y en el uso de las leyes de los gases ideales considerando condiciones de presión, volumen y temperatura; en la Unidad II: Comportamiento de la materia en soluciones, se estudiarán los principios que regulan la disolución y las propiedades coligativas, desarrollando la habilidad para calcular concentraciones, preparar soluciones y aplicar estrategias cuantitativas y cualitativas para analizar sistemas en disolución, integrando actividades experimentales que refuercen la interpretación de resultados; en la Unidad III: Cinética y equilibrio químico, se abordarán las leyes que gobiernan la velocidad de las reacciones químicas, la determinación de constantes cinéticas y de equilibrio, y la influencia de factores como la concentración, la temperatura y los catalizadores, fomentando la capacidad de analizar fenómenos dinámicos; y en la Unidad IV: Química orgánica, el estudiante aprenderá a nombrar y formular compuestos orgánicos, identificar y caracterizar hidrocarburos y grupos funcionales relevantes, comprender sus propiedades físico-químicas y aplicaciones, y emplear el lenguaje técnico de la química para comunicar conceptos, procedimientos y resultados de forma clara, rigurosa y profesional, integrando conocimientos teóricos y prácticos en la resolución de problemas y en la presentación de informes científicos.",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "Determinar cómo está constituido el núcleo atómico y cómo se distribuyen los electrones en los distintos niveles electrónicos. Identificar los",
+     "horas": 36,
+     "contenidos": "Estructura atómica , Estequiometria y Gases"
+    },
+    {
+     "numero": 2,
+     "nombre": "Utilizar las reglas del comportamiento de la materia en solución y aplicar los principios químicos y operaciones matemáticas en la resolución de",
+     "horas": 36,
+     "contenidos": "Líquido y Soluciones"
+    },
+    {
+     "numero": 3,
+     "nombre": "Conocer las leyes de la cinética química, las constantes de equilibrio químico y los factores que afectan la velocidad de la reacción.",
+     "horas": 36,
+     "contenidos": "Cinética química y Equilibrio químico"
+    },
+    {
+     "numero": 4,
+     "nombre": "Nombrar y formular compuestos orgánicos, conocer las características físico químicas y aplicaciones de los hidrocarburos e identificar los",
+     "horas": 36,
+     "contenidos": "Química Orgánica"
+    }
+   ],
+   "codigo": "08070113"
+  },
+  {
+   "nombre": "FISICA BASICA",
+   "nivel": 1,
+   "creditos": 3,
+   "horas": 144,
+   "descripcion": "La asignatura de Física Básica es de carácter teórico-práctico y está diseñada para desarrollar competencias fundamentales en la aplicación de los principios de la física en el ámbito de la Ingeniería Industrial. Se estructura en cuatro unidades curriculares y la metodología de aprendizaje combina clases teóricas, actividades prácticas y habilidades blandas, fomentando un ambiente participativo y colaborativo que promueve el pensamiento crítico y la resolución de problemas. Al finalizar la asignatura, se espera que los estudiantes dominen los fundamentos de la Mecánica Newtoniana, sean capaces de modelar y analizar sistemas físicos y apliquen estos conocimientos en contextos reales.",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "Aplicar operaciones vectoriales en 2D y 3D para resolver problemas físicos.",
+     "horas": 36,
+     "contenidos": "Operaciones vectoriales en 2D y 3D."
+    },
+    {
+     "numero": 2,
+     "nombre": "Evaluar sistemas en equilibrio 2D y 3D aplicando la primera y la tercera ley de Newton.",
+     "horas": 36,
+     "contenidos": "Equilibrio de fuerzas. Primera y Tercera ley de Newton."
+    },
+    {
+     "numero": 3,
+     "nombre": "Analizar el comportamiento cinemático de partículas en problemas físicos.",
+     "horas": 36,
+     "contenidos": "Cinemática de la partícula.- Movimientos rectilíneos,"
+    },
+    {
+     "numero": 4,
+     "nombre": "Aplicar la segunda ley de Newton para modelar y resolver problemas dinámicos.",
+     "horas": 36,
+     "contenidos": "Dinámica de la partícula en base a la segunda ley de"
+    }
+   ],
+   "codigo": "08070114"
+  },
+  {
+   "nombre": "ALGEBRA",
+   "nivel": 1,
+   "creditos": 3,
+   "horas": 144,
+   "descripcion": "La asignatura de Álgebra para la carrera de Ingeniería Industrial se organiza en cuatro unidades curriculares esenciales que proporcionan una base sólida en los conceptos algebraicos fundamentales. Estas unidades son: Análisis de Conjuntos: En esta unidad, se explorarán los conceptos básicos de la teoría de conjuntos, incluyendo la definición y operación con conjuntos, relaciones, y funciones. Se enfatizará la importancia de estos conceptos como fundamentos para la comprensión de estructuras matemáticas más complejas. Polinomios y Ecuaciones: Esta unidad abordará la construcción, manipulación, y factorización de polinomios, así como la resolución de ecuaciones algebraicas. Los estudiantes aprenderán a aplicar estas técnicas en la modelización y solución de problemas ingenieriles. Inecuaciones: Aquí, los estudiantes analizarán las inecuaciones lineales y no lineales, explorando métodos para su resolución gráfica y algebraica. Se prestará especial atención a las aplicaciones de las inecuaciones en la optimización y análisis de sistemas industriales. Funciones: La última unidad se centrará en el estudio de funciones, incluyendo su definición, clasificación, y representación gráfica. Se investigarán funciones lineales, cuadráticas, y polinómicas, con énfasis en su aplicación en el modelado de procesos industriales. La metodología de enseñanza se basará en la combinación de clases teóricas, ejercicios prácticos, trabajos en equipo, y el uso de herramientas tecnológicas para la resolución de problemas algebraicos. El enfoque estará orientado a la aplicación práctica de los conceptos, facilitando la integración de los conocimientos en situaciones reales. Al finalizar el curso, los estudiantes estarán capacitados para identificar y aplicar los conocimientos algebraicos adquiridos en las distintas asignaturas de la carrera. Este aprendizaje será fundamental para resolver problemas técnicos con precisión, contribuyendo así a su desarrollo profesional como Ingenieros Industriales.",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "Analizar la teoría de conjuntos, sus relaciones, operaciones y propiedades para la resolución de problemas aplicados en afinidad a la carrera",
+     "horas": 36,
+     "contenidos": "Análisis de conjuntos"
+    },
+    {
+     "numero": 2,
+     "nombre": "Identificar los diferentes tipos de polinomios, ecuaciones y sus operaciones para aplicarlos en la solución de problemas prácticos",
+     "horas": 36,
+     "contenidos": "Polinomios y Ecuaciones"
+    },
+    {
+     "numero": 3,
+     "nombre": "Analizar las inecuaciones y los axiomas, operaciones y propiedades que la rodean para la resolución de problemas",
+     "horas": 36,
+     "contenidos": "Inecuaciones"
+    },
+    {
+     "numero": 4,
+     "nombre": "Reconocer las funciones exponencial, logarítmica y las operaciones de potenciación y radicación para aplicarlas en la resolución de problemas",
+     "horas": 36,
+     "contenidos": "Funciones"
+    }
+   ],
+   "codigo": "08070115"
+  },
+  {
+   "nombre": "INTRODUCCION A LA INGENIERIA INDUSTRIAL",
+   "nivel": 1,
+   "creditos": 2,
+   "horas": 96,
+   "descripcion": "La asignatura de Introducción a la Ingeniería Industrial se estructura en 4 unidades curriculares básicas relacionadas con las principales áreas de conocimiento involucradas y relacionadas con la carrera: Historia de la Ingeniería Industrial, Estrategia, Calidad, Gestión de Seguridad y Salud Ocupacional, automatización, métodos de trabajo a través de actividades prácticas y de trabajo colaborativos acompañadas del trabajo autónomo del estudiante donde conocerán el propósito de la Ingeniería Industrial en la industria.",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "Identificar la historia, evolución y la importancia de la Ingeniería Industrial",
+     "horas": 24,
+     "contenidos": "Introducción y orígenes de la Ingeniería Industrial."
+    },
+    {
+     "numero": 2,
+     "nombre": "Analizar los campos de la Ingeniería Industrial y su influencia en el ámbito empresarial",
+     "horas": 24,
+     "contenidos": "Campos de la Ingeniería Industrial y su influencia en el"
+    },
+    {
+     "numero": 3,
+     "nombre": "Identificar las características de los procesos industriales",
+     "horas": 30,
+     "contenidos": "Naturaleza de los Procesos Industriales."
+    },
+    {
+     "numero": 4,
+     "nombre": "Analizar el ámbito de desempeño del Ingeniero Industrial",
+     "horas": 18,
+     "contenidos": "Ámbito de desempeño de un Ingeniero Industrial."
+    }
+   ],
+   "codigo": "08070116"
+  },
+  {
+   "nombre": "LOGICA MATEMATICA",
+   "nivel": 1,
+   "creditos": 2,
+   "horas": 96,
+   "descripcion": "La asignatura de Lógica Matemática desarrolla las destrezas para poder formalizar las proposiciones gramaticales del lenguaje natural hacia términos representables matemáticamente, para demostrar con exactitud si un argumento/razonamiento es válido. Las proposiciones formales obtenidas en la lógica matemática permiten comprender los enlaces lógico- matemáticos como la conjunción, disyunción, expresiones condicionales y pueden ser transformados a estructuras representables en los diferentes lenguajes computacionales, para formular tanto los algoritmosde la programación clásica como las bases de conocimiento para sistemas expertos.",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "Aplicar los fundamentos para la simbolización de proposiciones lógicas.",
+     "horas": 24,
+     "contenidos": "1.Lógica proposicional"
+    },
+    {
+     "numero": 2,
+     "nombre": "Utilizar las leyes de Inferencia lógica mediante demostraciones formales.",
+     "horas": 24,
+     "contenidos": "2. Leyes de inferencia"
+    },
+    {
+     "numero": 3,
+     "nombre": "Verificar la Certeza y/o Validez lógica de las conclusiones de los razonamientos.",
+     "horas": 24,
+     "contenidos": "3. Demostraciones"
+    },
+    {
+     "numero": 4,
+     "nombre": "Desarrollar inferencia predicativa mediante ejemplos prácticos.",
+     "horas": 24,
+     "contenidos": "4. Lógica de predicados"
+    }
+   ],
+   "codigo": "08070117"
+  },
+  {
+   "nombre": "TECNOLOGIAS DE LA INFORMACION Y LA COMUNICACION (TIC)",
+   "nivel": 1,
+   "creditos": 2,
+   "horas": 96,
+   "descripcion": "La asignatura se enfoca La asignatura de Tecnologías de la Información y de la comunicación se enfoca en la identificación de los principios generales de la comunicación y su importancia en el uso de herramientas colaborativas, la búsqueda correcta de información en bases de datos científicas para el desarrollo de documentos científicos, el uso adecuado de herramientas para análisis descriptivo y representación gráfica de datos; así como hojas de cálculo, además del uso de herramientas para una correcta divulgación de la información académica.",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "Identificar principios generales de la comunicación y su importancia en el uso de herramientas colaborativas.",
+     "horas": 24,
+     "contenidos": "Principios generales de la comunicación"
+    },
+    {
+     "numero": 2,
+     "nombre": "Aplicar la búsqueda correcta de información en bases de datos científicas para el desarrollo de documentos científicos.",
+     "horas": 24,
+     "contenidos": "Búsqueda de información en bases de datos científicas"
+    },
+    {
+     "numero": 3,
+     "nombre": "Conocer el uso adecuado de herramientas para análisis descriptivo y representación gráfica de datos; así como hojas de cálculo.",
+     "horas": 24,
+     "contenidos": "Manejo de datos para el análisis descriptivo y su"
+    },
+    {
+     "numero": 4,
+     "nombre": "Utilizar herramientas para una correcta divulgación de la información académica.",
+     "horas": 24,
+     "contenidos": "Herramientas para una correcta divulgación de la"
+    }
+   ],
+   "codigo": "08070118"
+  },
+  {
+   "nombre": "FISICA APLICADA",
+   "nivel": 2,
+   "creditos": 3,
+   "horas": 144,
+   "descripcion": "La asignatura se estructura en 4 unidades. La primera desarrolla relaciones matemáticas para, a través del método alternativo de trabajo, potencia y energía calcular los valores de las variables cinemáticas analizadas al producirse movimientos de masas (cuerpos) como resultado de la acción de fuerzas accionantes externas. La finalidad es calcular los valores de energía mecánica que existe en el movimiento. A partir del cálculo de la energía mecánica se puede relacionar dicha energía en tipos de energías evidentes, como ondas, calor, sonido, vibraciones, luz. Entonces se describen los diferentes tipos de cómo está presente en la industria, la energía, sus conceptos particulares, definiciones, características, usos, ventajas y riesgos. En particular la energía que transportan los líquidos, sus características y cómo se comportan en hidrostática y en hidrodinámica. Al final se estudia la electricidad, también desde le punto de vista de ser una energía, tratando las cargas eléctricas, sus tipos y relación entre ellas. Se definen magnitudes eléctricas, corriente, resistencia y componentes eléctricos. Los temas se desarrollan a través de metodología expositiva con el apoyo de diapositivas y documentación obtenida de la bibliografía; además en cada clase los estudiantes formarán grupos de trabajo para investigar sobre el tema planteado y presentarán en una plenaria sus dudas y conclusiones. Se realizarán actividades prácticas de solución de ejercicios junto al acompañamiento del desarrollo de los trabajos autónomos del estudiante.",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "1. Comprender los conceptos de trabajo, energía, potencia y calor para la solución de problemas relacionados con energía mecánica y su",
+     "horas": 36,
+     "contenidos": "Trabajo & energía. Calor / temperatura."
+    },
+    {
+     "numero": 2,
+     "nombre": "2. Identificar algunas formas como se presenta la energía en una industria, tales como: ondas, calor, sonido, vibraciones, luz. Sus usos,",
+     "horas": 36,
+     "contenidos": "Las ondas como formas en las que se evidencia la energía"
+    },
+    {
+     "numero": 3,
+     "nombre": "3. Explicar la naturaleza de los fluidos incompresibles y sus características para su aplicación en la resolución de problemas de hidrostática e",
+     "horas": 36,
+     "contenidos": "Hidrostática e Hidrodinámica"
+    },
+    {
+     "numero": 4,
+     "nombre": "4. Examinar las características de la energía eléctrica, sus leyes y aplicaciones para sus usos en la industria.",
+     "horas": 36,
+     "contenidos": "Energía eléctrica"
+    }
+   ],
+   "codigo": "08070213"
+  },
+  {
+   "nombre": "CALCULO DIFERENCIAL",
+   "nivel": 2,
+   "creditos": 3,
+   "horas": 144,
+   "descripcion": "La asignatura de Cálculo Diferencial se estructura en 4 unidades curriculares básicas relacionadas con la identificación e interpretación de funciones, en base a lo anterior se hace el estudio del límite de funciones para continuar con derivadas, sus aplicaciones, y se finaliza con integrales indefinidas, los temas se desarrollan a través de conferencias integradoras y actividades prácticas y de trabajo colaborativos acompañadas del trabajo autónomo del estudiante donde resolverán problemas práticos para que aprendan a elegir adecuadamente los métodos ante diferentes casos para la resolución de los ejercicios.",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "Aplicar la teoría básica de los límites de una función en la resolución de ejercicios.",
+     "horas": 36,
+     "contenidos": "Límite de una función"
+    },
+    {
+     "numero": 2,
+     "nombre": "Identificar adecuadamente las reglas de derivación para los diferentes tipos de funciones.",
+     "horas": 36,
+     "contenidos": "Derivadas de funciones"
+    },
+    {
+     "numero": 3,
+     "nombre": "Utilizar el criterio de derivada a la solución de problemas relacionados al estudio de problemas de ingeniería.",
+     "horas": 36,
+     "contenidos": "Aplicaciones de la derivada"
+    },
+    {
+     "numero": 4,
+     "nombre": "Aplicar los métodos de integración para deducir que la diferenciación y la integración son procesos inversos.",
+     "horas": 36,
+     "contenidos": "Integral indefinida"
+    }
+   ],
+   "codigo": "08070214"
+  },
+  {
+   "nombre": "METODOLOGIA DE LA INVESTIGACION",
+   "nivel": 2,
+   "creditos": 2,
+   "horas": 96,
+   "descripcion": "La asignatura de Metodología de la Investigación se estructura en 4 unidades curriculares básicas relacionadas con los fundamentos de la metodología de investigación, tipos y métodos de investigación científica, técnicas e instrumentos de investigación y componentes estructurales del perfil de investigación. Los temas se desarrollan a través de conferencias integradoras y actividades prácticas y de trabajo autónomo del estudiante donde elaboran un perfil de investigación sobre una problemática identificada, utilizando técnicas y herramientas de organización, procesamiento y análisis de información, así como la aplicación de normas de redacción técnica en la presentación de informes y artículos de investigación.",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "Identificar los fundamentos de la metodología de la investigación científica que influyen en la generación de conocimiento",
+     "horas": 12,
+     "contenidos": "Fundamentos de la metodología de investigación"
+    },
+    {
+     "numero": 2,
+     "nombre": "Analizar los tipos y métodos de investigación científica.",
+     "horas": 18,
+     "contenidos": "Tipos y métodos de investigación científica"
+    },
+    {
+     "numero": 3,
+     "nombre": "Aplicar las técnicas e instrumentos de investigación",
+     "horas": 18,
+     "contenidos": "Técnicas e instrumentos de investigación"
+    },
+    {
+     "numero": 4,
+     "nombre": "Desarrollar los componentes estructurales del perfil de investigación.",
+     "horas": 48,
+     "contenidos": "Componentes estructurales del perfil de investigación"
+    }
+   ],
+   "codigo": "08070215"
+  },
+  {
+   "nombre": "REALIDAD NACIONAL",
+   "nivel": 2,
+   "creditos": 2,
+   "horas": 96,
+   "descripcion": "Este silabo está conformado por 4 unidades temáticas, las cuales desde un enfoque deductivo aborda las temáticas basadas en los fundamentos teóricos conceptuales que registran las etapas, momentos y escenarios de la realidad socioeconómica del mundo y particularmente del Ecuador. En su primera parte desde una manera contextual se analiza el dinamismo del nuevo orden hegemónico mundial y su relación con la economía y sociedad ecuatoriana, en la segunda parte se contrasta la historia del Ecuador con el actual contexto político, económico, cultural y social en el Ecuador En la tercera parte se interpreta el marco constitucional y normativo desde la perspectiva de la economía y la sociedad y finalmente en la cuarta parte se realiza una revisión del Plan Nacional de Desarrollo y las agendas locales desde la perspectiva socioeconómica.",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "Analizar el dinamismo del nuevo orden hegemónico mundial y su relación con la economía y sociedad ecuatoriana.",
+     "horas": 24,
+     "contenidos": "Nuevo orden mundial y su relación con la economía y"
+    },
+    {
+     "numero": 2,
+     "nombre": "Contrastar la historia del Ecuador con el actual contexto político, económico, cultural y social en el Ecuador.",
+     "horas": 24,
+     "contenidos": "Historia del ecuador en el contexto político, económico"
+    },
+    {
+     "numero": 3,
+     "nombre": "Interpretar el marco constitucional y normativo desde la perspectiva de la economía y la sociedad.",
+     "horas": 24,
+     "contenidos": "Marco constitucional y normativo desde la perspectiva de la"
+    },
+    {
+     "numero": 4,
+     "nombre": "Revisar el Plan Nacional de Desarrollo y las agendas locales desde la perspectiva socioeconómica.",
+     "horas": 24,
+     "contenidos": "Plan nacional de desarrollo y las agendas locales desde la"
+    }
+   ],
+   "codigo": "08070216"
+  },
+  {
+   "nombre": "ALGEBRA LINEAL",
+   "nivel": 2,
+   "creditos": 3,
+   "horas": 144,
+   "descripcion": "Algebra lineal es una asignatura que introduce al estudiante en el ámbito de la matemática superior, mediante el concepto de estructura vectorial y la programación lineal, así como el conocimiento progresivo de teoremas, reglas, principios y técnicas para resolver sistemas de ecuaciones lineales y sus aplicaciones, a fin de que haga suyo el lenguaje de las Ciencias, que es matemática, alrededor de la cual se articula la formación del ingeniero, con ayuda de paquetes computacionales, por tanto, esta se constituye en una asignatura insustituible en la formación matemática de un buen profesional.",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "Analizar los sistemas de ecuaciones con operaciones relacionadas a las cátedras carrera de ingeniería industrial",
+     "horas": 36,
+     "contenidos": "Sistemas de ecuaciones"
+    },
+    {
+     "numero": 2,
+     "nombre": "Analizar las matrices, sus relaciones, operaciones, propiedades y determinantes para su correcta aplicación en cátedras de la carrera de",
+     "horas": 36,
+     "contenidos": "Tipos de matrices"
+    },
+    {
+     "numero": 3,
+     "nombre": "Interpretar las estructuras algebraicas para su aplicación en diferentes operaciones afines a las cátedras de ingeniería industrial",
+     "horas": 36,
+     "contenidos": "Estructuras algebráicas"
+    },
+    {
+     "numero": 4,
+     "nombre": "Interpretar espacios vectoriales para su aplicación en operaciones definidas con vectores en el plano en el espacio y su generalización",
+     "horas": 36,
+     "contenidos": "Espacios vectoriales"
+    }
+   ],
+   "codigo": "08070217"
+  },
+  {
+   "nombre": "PROGRAMACION",
+   "nivel": 2,
+   "creditos": 2,
+   "horas": 96,
+   "descripcion": "La asignatura de Programación se estructura en 4 unidades curriculares básicas relacionadas con el uso y aplicación de algoritmos, los temas se desarrollan a través de conferencias integradoras y actividades prácticas y de trabajo colaborativos acompañados del trabajo autónomo del estudiante donde resolverán problemas de Ingeniería para que aprendan a diseñar y desarrollar una solución de software con criterios de precisión y calidad.",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "1.-Aplicar algoritmos para solucionar los problemas planteados",
+     "horas": 24,
+     "contenidos": "1. Algoritmos"
+    },
+    {
+     "numero": 2,
+     "nombre": "2- Utilizar algoritmos eficientes con criterios de precisión en la resolución de problemas",
+     "horas": 24,
+     "contenidos": "2. Estructuras básicas"
+    },
+    {
+     "numero": 3,
+     "nombre": "3- Aplicar el algoritmo de solución mediante un lenguaje de programación",
+     "horas": 24,
+     "contenidos": "3. Ciclos"
+    },
+    {
+     "numero": 4,
+     "nombre": "4- Desarrollar aplicaciones para la solución de problemas básicos",
+     "horas": 24,
+     "contenidos": "4. Programación orientada a eventos"
+    }
+   ],
+   "codigo": "08070218"
+  },
+  {
+   "nombre": "ESTADISTICA Y PROBABILIDADES",
+   "nivel": 3,
+   "creditos": 3,
+   "horas": 144,
+   "descripcion": "La asignatura de Estadística y Probabilidades se estructura en cuatro Unidades curriculares y pretende que el estudiante de ingeniería industrial desarrolle habilidades, para el manejo y tratamiento de datos de fenómenos masivos, utilizando fórmulas y grafos, regresiones estadísticas, probabilidades y distribución de variables aleatorias, como herramientas de control estadístico para el mejoramiento de la calidad de procesos industriales.",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "Analizar medidas de tendencia central y dispersión para datos agrupados y no agrupados, sesgo y curtosis.",
+     "horas": 45,
+     "contenidos": "Datos No agrupados; Datos Agrupados. Tablas de distribución de frecuencias."
+    },
+    {
+     "numero": 2,
+     "nombre": "Interpretar resultados de correlación y dispersión estadísticas, ajuste de curvas.",
+     "horas": 36,
+     "contenidos": "Correlación Lineal y no lineal; Regresión lineal y no lineal"
+    },
+    {
+     "numero": 3,
+     "nombre": "Explicar los fundamentos de la teoría elemental de probabilidades y distribuciones probabilísticas.",
+     "horas": 45,
+     "contenidos": "Teoría elemental de Probabilidades. Análisis combinatorio y; Distribuciones probabilísticas discretas; Distribuciones probabilísticas continuas"
+    },
+    {
+     "numero": 4,
+     "nombre": "Aplicar el control estadístico de procesos para mejoramiento de la calidad.",
+     "horas": 18,
+     "contenidos": "Muestreo y Prueba de hipótesis; Control estadístico de procesos. Calidad"
+    }
+   ],
+   "codigo": "08070313"
+  },
+  {
+   "nombre": "TERMODINAMICA",
+   "nivel": 3,
+   "creditos": 2,
+   "horas": 96,
+   "descripcion": "La asignatura de Termodinámica está compuesta por 4 unidades temáticas en las que se analizan las modalidades de Energía, Trabajo y los medios de transferencia empleados para su interacción, además del estudio de las sustancias puras que debido a sus características facilitan el análisis de sistemas y procesos termodinámicos, así como las diferentes leyes de la termodinámica que se involucran en dichos procesos para finalmente proceder al análisis de ciclos de potencia para el diseño y optimización de máquinas térmicas. Los temas se desarrollan a través de clases integradoras, resolución de ejercicios y actividades prácticas y de trabajo colaborativo, acompañado del trabajo autónomo del estudiante donde resolverá los problemas prácticos de la materia, desarrollando el razonamiento para describir la ejecución de los procesos termodinámicos que se ejecutan en las industrias.",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "Identificar la ley cero de la termodinámica y sus aplicaciones industriales",
+     "horas": 24,
+     "contenidos": "Inducción a la Termodinámica, ley cero y aplicaciones"
+    },
+    {
+     "numero": 2,
+     "nombre": "Aplicar la conservación de la masa para el trabajo en sistemas cerrados",
+     "horas": 24,
+     "contenidos": "Conservación de la masa y propiedades para el trabajo en"
+    },
+    {
+     "numero": 3,
+     "nombre": "Aplicar los diagramas de fase y del buen uso del vapor",
+     "horas": 24,
+     "contenidos": "Fases, diagramas de fases, calidad del vapor"
+    },
+    {
+     "numero": 4,
+     "nombre": "Analizar la primera y segunda ley de la termodinámica y los ciclos de potencia en las maquinas térmicas",
+     "horas": 24,
+     "contenidos": "Análisis de la primera y segunda ley de la termodinámica en"
+    }
+   ],
+   "codigo": "08070314"
+  },
+  {
+   "nombre": "ELECTRONICA Y ELECTRICIDAD",
+   "nivel": 3,
+   "creditos": 2,
+   "horas": 96,
+   "descripcion": "La asignatura de Electrónica y Electricidad se estructura en 4 unidades curriculares básicas relacionadas con la importancia de los Fundamentos de Electricidad y Electromagnetismo, Análisis de circuitos eléctricos en AC y en DC., Electrónica de Potencia, elementos semiconductores y Electrónica Digital, compuertas lógicas, los temas se desarrollan a través de conferencias integradoras y actividades prácticas y de trabajo colaborativos acompañadas del trabajo autónomo del estudiante donde d esarrollarán sistemas eléctricos y electrónicos utilizando dispositivos digitales y de potencia para optimizar los sistemas automatizados reduciendo al máximo el consumo de energía.",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "Analizar los conceptos básicos de electricidad y electromagnetismo para aplicar en la obtención de mediciones básicas en circuitos eléctricos.",
+     "horas": 24,
+     "contenidos": "Fundamentos de Electricidad y Electromagnetismo."
+    },
+    {
+     "numero": 2,
+     "nombre": "Analizar los circuitos eléctricos tanto en DC como en AC.",
+     "horas": 24,
+     "contenidos": "Análisis de circuitos eléctricos AC-DC"
+    },
+    {
+     "numero": 3,
+     "nombre": "Identificar los dispositivos semiconductores como elementos fundamentales para la implementación en los diferentes tipos de rectificadores de",
+     "horas": 24,
+     "contenidos": "Electrónica de Potencia."
+    },
+    {
+     "numero": 4,
+     "nombre": "Explicar en forma básica el diseño e implementación de circuitos digitales, las operaciones lógicas y la diferencia con las magnitudes",
+     "horas": 24,
+     "contenidos": "Electrónica Digital."
+    }
+   ],
+   "codigo": "08070315"
+  },
+  {
+   "nombre": "INVESTIGACION DE OPERACIONES",
+   "nivel": 3,
+   "creditos": 3,
+   "horas": 144,
+   "descripcion": "La asignatura de Investigación de Operaciones se estructura en 4 unidades curriculares esenciales relacionadas con la optimización matemática, la construcción de modelos en Investigación de Operaciones, modelamiento matemático de problemas de programación lineal y transporte, modelaje de aplicaciones prácticas y planificación, programación, revisión y evaluación de operaciones y gestión de proyectos de REDES/PERT-CPM/RUTA CRÍTICA-DIAGRAMA/GANTT-MS/PROJECT.",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "Establecer los procesos de optimización en la construcción de Modelos para la toma de decisiones con Investigación de Operaciones.",
+     "horas": 54,
+     "contenidos": "Modelos de optimización para la toma de decisiones con"
+    },
+    {
+     "numero": 2,
+     "nombre": "Resolver matemática, gráficamente y con aplicaciones informáticas problemas del Modelo de Programación Lineal y Transporte",
+     "horas": 54,
+     "contenidos": "Modelo de Programación Lineal y Algoritmo del Transporte"
+    },
+    {
+     "numero": 3,
+     "nombre": "Resolver problemas del Modelo de Diseño y Programación de REDES/PERT-CPM/RUTA CRÍTICA-DIAGRAMA/GANTT",
+     "horas": 18,
+     "contenidos": "Modelo de Diseño y Programación de REDES/PERT-"
+    },
+    {
+     "numero": 4,
+     "nombre": "Desarrollar aplicaciones prácticas del Modelo de planeación, revisión y evaluación de operaciones y gestión de proyectos. MS/PROJECT",
+     "horas": 18,
+     "contenidos": "Modelo de planeación, revisión y evaluación de operaciones"
+    }
+   ],
+   "codigo": "08070316"
+  },
+  {
+   "nombre": "TECNOLOGIA DE MATERIALES",
+   "nivel": 3,
+   "creditos": 2,
+   "horas": 96,
+   "descripcion": "La asignatura de Tecnología de los Materiales permite al estudiante desarrollar proyectos creativos afines a su profesión impulsando actividades de emprendimiento útiles para las empresas y su entorno; la misma está estructurada por cuatro unidades curriculares en las que se encuentran involucradas la identificación de propiedades y estructuras de los materiales, el análisis de diagramas de fase, la caracterización aceros y la selección de otros tipos de materiales como cerámicos, polímeros y compuestos, de acuerdo con sus propiedades y la funcionalidades. Los temas se desarrollan a través de clases sincrónicas y actividades prácticas, con trabajo colaborativos, acompañadas del trabajo autónomo del estudiante, donde adquirirán destreza en caracterización y selección de materiales y hacer uso de ellos ante diferentes necesidades de fabricación y/o producción.",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "Identificar las propiedades y estructuras cristalinas de los materiales",
+     "horas": 24,
+     "contenidos": "Propiedades y estructuras cristalinas de los materiales"
+    },
+    {
+     "numero": 2,
+     "nombre": "Analizar los diferentes tipos de diagramas de fase",
+     "horas": 24,
+     "contenidos": "Diagramas de Fase"
+    },
+    {
+     "numero": 3,
+     "nombre": "Caracterizar el diagrama hierro carbono y los aceros utilizados en la industria",
+     "horas": 24,
+     "contenidos": "Diagrama hierro-carbono y los aceros."
+    },
+    {
+     "numero": 4,
+     "nombre": "Especificar la características y utilidades de los materiales cerámicos, polímeros y materiales compuestos",
+     "horas": 24,
+     "contenidos": "Materiales cerámicos, polímeros y materiales compuestos."
+    }
+   ],
+   "codigo": "08070317"
+  },
+  {
+   "nombre": "CALCULO INTEGRAL",
+   "nivel": 3,
+   "creditos": 3,
+   "horas": 144,
+   "descripcion": "La asignatura de cálculo integral desarrolla criterios sobre la aplicación de la integral y la derivada para la solución de problemas relacionados a características de figuras geométricas tanto en el plano como en el espacio, características como el área, centros de gravedad, volúmenes, entre otras, involucrando problemas básicos relacionados a las ecuaciones diferenciales homogéneas de orden superior.",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "Relacionar conceptualmente la derivada y la integral y su aplicación a la solución de problemas de cálculo de áreas bajo la curva.",
+     "horas": 36,
+     "contenidos": "Integral definida"
+    },
+    {
+     "numero": 2,
+     "nombre": "Identificar fórmulas y procesos de la integral definida para la resolución de problemas geométricos en el plano y espacio.",
+     "horas": 36,
+     "contenidos": "Aplicaciones geométricas de la Integral"
+    },
+    {
+     "numero": 3,
+     "nombre": "Comprender problemas geométricos en el plano y volúmenes bajo una superficie aplicando conceptos de la integral múltiple.",
+     "horas": 36,
+     "contenidos": "Integrales Múltiples"
+    },
+    {
+     "numero": 4,
+     "nombre": "Calcular ecuaciones diferenciales ordinarias con la aplicación de criterios lógicos, analíticos y reflexivos.",
+     "horas": 36,
+     "contenidos": "Ecuaciones Diferenciales"
+    }
+   ],
+   "codigo": "08070318"
+  },
+  {
+   "nombre": "SEGURIDAD INDUSTRIAL",
+   "nivel": 4,
+   "creditos": 3,
+   "horas": 144,
+   "descripcion": "La asignatura de Seguridad Industrial se desarrolla en 4 unidades básicas, las dos primeras abordan el estudio del marco legal vigente aplicable a la prevención de riesgos laborales, como: Decreto Ejecutivo 255, Acuerdo Ministerial Nro. MDT-2024-196, Resolución del IESS 513 reglamento del seguro general de riesgos del trabajo. En este contexto, se analizan los conceptos básicos de seguridad, las clasificaciones de riesgos laborales, las matrices de identificación, además los procedimientos técnicos para su gestión. Las dos unidades restantes están orientadas al diseño de programas de seguridad y la elaboración de protocolos específicos para condiciones de riesgo. Se abordan temáticas especializadas como señalética, accidentabilidad, trabajo en alturas, exposición a agentes químicos y riesgos eléctricos. Como trabajo de investigación se formula un plan de seguridad aplicado a empresas del entorno.",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "Discernir la importancia de la Seguridad Industrial en una empresa.",
+     "horas": 27,
+     "contenidos": "Generalidades de la Seguridad Industrial"
+    },
+    {
+     "numero": 2,
+     "nombre": "Caracterizar la Gestión Técnica de riesgos laborales que generan accidentes.",
+     "horas": 45,
+     "contenidos": "Gestión de Riesgos Laborales"
+    },
+    {
+     "numero": 3,
+     "nombre": "Diseñar Programas de Seguridad en base a estándares legales o internacionales.",
+     "horas": 36,
+     "contenidos": "Programas de Seguridad Industrial"
+    },
+    {
+     "numero": 4,
+     "nombre": "Evaluar los accidentes laborales.",
+     "horas": 36,
+     "contenidos": "Accidentabilidad"
+    }
+   ],
+   "codigo": "08070413"
+  },
+  {
+   "nombre": "CONTABILIDAD Y COSTOS INDUSTRIALES",
+   "nivel": 4,
+   "creditos": 2,
+   "horas": 96,
+   "descripcion": "La asignatura Contabilidad y Costos Industriales se organiza en cuatro unidades curriculares fundamentales que abarcan el registro de transacciones contables en el libro diario y el libro mayor, la elaboración del balance general, el estado de pérdidas y ganancias y el cálculo de los costos de producción. Estos contenidos se desarrollan mediante conferencias integradoras, actividades prácticas y trabajo colaborativo, complementados con el estudio autónomo del estudiante. La asignatura está orientada a la resolución de casos prácticos , fortaleciendo la capacidad para interpretar estados financieros básicos y determinar los costos de producción como insumo esencial para la toma de decisiones gerenciales .",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "Establecer la estructura del sistema contable y de los estados financieros básicos",
+     "horas": 48,
+     "contenidos": "Estructura contable y Estados Financieros Básicos"
+    },
+    {
+     "numero": 2,
+     "nombre": "Elaborar auxiliares contables para controlar las cuentas",
+     "horas": 12,
+     "contenidos": "Auxiliares Contables para el control de las cuentas"
+    },
+    {
+     "numero": 3,
+     "nombre": "Identificar y controlar los elementos del costo de producción",
+     "horas": 18,
+     "contenidos": "Elementos del costo de producción"
+    },
+    {
+     "numero": 4,
+     "nombre": "Controlar los costos de producción de un artículo",
+     "horas": 18,
+     "contenidos": "Sistemas de control de costos"
+    }
+   ],
+   "codigo": "08070414"
+  },
+  {
+   "nombre": "OPERACIONES UNITARIAS",
+   "nivel": 4,
+   "creditos": 2,
+   "horas": 96,
+   "descripcion": "La asignatura de operaciones unitarias se estructura en 4 unidades curricuales básicas relacionadas con el análisis de las operaciones que se llevan a cabo dentro de la industria y que dependen de la transferencia de momento lineal, transferencia de calor, transferencia de masa y manejo de sólidos a través de conferencias integradoras, actividades prácticas y de trabajo colaborativo acompañadas de trabajo autónomo donde el estudiante resolverá problemas para la selección y diseño de equipos que permitan garantizar una adecuada ejecución de operaciones dentro de procesos que sean empleados en entornos reales de la industria.",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "Identificar las operaciones unitarias y analizar la transferencia de momento lineal.",
+     "horas": 24,
+     "contenidos": "Inducción a las Operaciones Unitarias y transferencia de"
+    },
+    {
+     "numero": 2,
+     "nombre": "Reconocer los principios de transferencia de calor y sus aplicaciones",
+     "horas": 24,
+     "contenidos": "Principios de transferencia de calor y sus aplicaciones"
+    },
+    {
+     "numero": 3,
+     "nombre": "Identificar los principales mecanismos de transferencia de masa y sus aplicaciones",
+     "horas": 24,
+     "contenidos": "Principios de transferencia de masa y sus aplicaciones"
+    },
+    {
+     "numero": 4,
+     "nombre": "Analizar los principales procesos empleados para el manejo de sólidos",
+     "horas": 24,
+     "contenidos": "Procesos de separación físicomecánicos"
+    }
+   ],
+   "codigo": "08070415"
+  },
+  {
+   "nombre": "MAQUINAS ELECTRICAS",
+   "nivel": 4,
+   "creditos": 2,
+   "horas": 96,
+   "descripcion": "Máquinas Eléctricas es una asignatura básica y específica de profesionalización que se estructura en cuatro unidades curriculares básicas, relacionadas con los principios físicos y matemáticos de la conversión de energía eléctrica a mecánica, enfocándose en el análisis, simulación y pruebas de laboratorio de maquinaria eléctrica mediante un enfoque mayormente práctico. A través de la resolución de problemas y el desarrollo de proyectos, los estudiantes aplicarán conceptos teóricos en situaciones reales, fortaleciendo además habilidades blandas como el trabajo en equipo, la comunicación efectiva y el pensamiento crítico. Como resultado, los alumnos serán capaces de analizar, diseñar y optimizar sistemas electromecánicos, interpretar y validar resultados experimentales, y proponer soluciones innovadoras a desafíos técnicos e industriales, integrando de forma efectiva la teoría y la práctica.",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "Establecer los principios fundamentales del electromagnetismo y de los sistemas de conversión de energía en las máquinas eléctricas",
+     "horas": 18,
+     "contenidos": "Introducción a las máquinas eléctricas"
+    },
+    {
+     "numero": 2,
+     "nombre": "Diseñar transformadores mediante el cálculo y la aplicación de las leyes electromagnéticas, asegurando su buen funcionamiento en",
+     "horas": 18,
+     "contenidos": "Transformadores"
+    },
+    {
+     "numero": 3,
+     "nombre": "Establecer estrategias para el arranque de motores de corriente continua y alterna aplicando los principios electromagnéticos que rigen su",
+     "horas": 24,
+     "contenidos": "Motores A.C. y D.C."
+    },
+    {
+     "numero": 4,
+     "nombre": "Implementar estrategias de control industrial utilizando algoritmos y técnicas de simulación que permitan el desarrollo de aplicaciones",
+     "horas": 36,
+     "contenidos": "Control Industrial"
+    }
+   ],
+   "codigo": "08070416"
+  },
+  {
+   "nombre": "DIBUJO ASISTIDO POR COMPUTADOR",
+   "nivel": 4,
+   "creditos": 3,
+   "horas": 144,
+   "descripcion": "La asignatura de Dibujo Asistido por Computador se estructura en 4 unidades curriculares básicas relacionadas con fundamentos de dibujo técnico, diseño en 2D, diseño en 3D - Alámbrico y Superficies, y Diseño en 3D - Sólido, los temas se desarrollan a través de conferencias integradoras y actividades prácticas, y de trabajo colaborativos acompañadas del trabajo autónomo del estudiante donde desarrollara ejercicios prácticos de diseño para que aprendan a dibujar adecuadamente en el software en diferentes escenarios en 2D y 3D, con el objeto de que es estudiante este en capacidad de diseñar procesos integrados de manufactura asistida por computador, para incrementar la producción en serie de bienes industriales bajo estándares.",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "Analizar los Fundamentos de dibujo técnico.",
+     "horas": 27,
+     "contenidos": "Fundamentos de dibujo técnico"
+    },
+    {
+     "numero": 2,
+     "nombre": "Utilizar un paquete computacional para Diseño en 2D con AutoCAD.",
+     "horas": 45,
+     "contenidos": "Diseño en 2D con AutoCAD"
+    },
+    {
+     "numero": 3,
+     "nombre": "Utilizar un paquete computacional para Diseño en 3D con AutoCAD - Alámbrico y Superficies.",
+     "horas": 36,
+     "contenidos": "Diseño en 3D con AutoCAD - Alámbrico y Superficies"
+    },
+    {
+     "numero": 4,
+     "nombre": "Utilizar un paquete computacional para Diseño en 3D con AutoCAD - Sólidos.",
+     "horas": 36,
+     "contenidos": "Diseño en 3D con AutoCAD - Sólido"
+    }
+   ],
+   "codigo": "08070417"
+  },
+  {
+   "nombre": "INGENIERIA DE METODOS",
+   "nivel": 4,
+   "creditos": 3,
+   "horas": 144,
+   "descripcion": "La asignatura Ingeniería de Métodos se organiza en cuatro unidades: Productividad, donde se abordan enfoques para mejorar la eficiencia; Estudio de Métodos, que analiza técnicas y diagramas para optimizar procesos; Medición del Trabajo, centrada en el estudio de tiempos y estandarización; y Curva de la Experiencia, que explora cómo la repetición mejora la productividad.",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "Analizar la importancia de la Ingeniería de Métodos aplicando los conceptos de productividad para mejorar la utilización eficaz de los recursos",
+     "horas": 36,
+     "contenidos": "Productividad"
+    },
+    {
+     "numero": 2,
+     "nombre": "Diseñar métodos de trabajo más sencillos mediante la reducción del trabajo innecesario o excesivo.",
+     "horas": 36,
+     "contenidos": "Estudio de Métodos"
+    },
+    {
+     "numero": 3,
+     "nombre": "Determinar con precisión los tiempos de ejecución de una operación o secuencia de operaciones para estandarizar procesos, mejorar la",
+     "horas": 36,
+     "contenidos": "Medición del Trabajo"
+    },
+    {
+     "numero": 4,
+     "nombre": "Evaluar el impacto de la experiencia en la reducción de tiempos, optimizando procesos y mejorando la productividad.",
+     "horas": 36,
+     "contenidos": "Curva de la experiencia."
+    }
+   ],
+   "codigo": "08070418"
+  },
+  {
+   "nombre": "MAQUINAS HERRAMIENTAS",
+   "nivel": 5,
+   "creditos": 2,
+   "horas": 96,
+   "descripcion": "La asignatura de Máquinas Herramientas, está organizada para la impartición del conocimiento en estudiantes de ingeniería, interesados en desarrollar habilidades avanzadas en fabricación y construcción de elementos mecánicos. En este curso, los estudiantes adquirirán conocimientos sobre los principios de conformado, metrología, soldadura y manejo de máquinas herramientas. Aprenderán a aplicarlos en la solución de problemas de procesos de fabricación. Los temas se desarrollan a través de clases sincrónicas y actividades prácticas, con trabajo colaborativos, acompañadas del trabajo autónomo del estudiante, donde adquirirán destreza en el manejo de herramientas y máquinas herramientas y hacer uso de ellas ante diferentes casos en la fabricación y/o mantenimiento de equipos o máquinas de uso industrial impulsando las actividades de emprendimiento y fabricación útiles para las empresas y su entorno, en los que se encuentra involucrado el conocimiento y la innovación.",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "Describir los procesos de manufactura, conformado y las herramientas de taller.",
+     "horas": 24,
+     "contenidos": "Procesos de manufactura, conformado y las herramientas"
+    },
+    {
+     "numero": 2,
+     "nombre": "Medir con instrumentos de precisión para la aplicación de metrología en los procesos de fabricación.",
+     "horas": 24,
+     "contenidos": "Instrumentos de precisión para la aplicación de metrología"
+    },
+    {
+     "numero": 3,
+     "nombre": "Caracterizar los tipos de soldadura para la fabricación de componentes metálicos.",
+     "horas": 24,
+     "contenidos": "Soldadura para la fabricación de componentes metálicos."
+    },
+    {
+     "numero": 4,
+     "nombre": "Operar máquinas herramientas para producir componentes industriales.",
+     "horas": 24,
+     "contenidos": "Máquinas herramientas para producir componentes"
+    }
+   ],
+   "codigo": "08070513"
+  },
+  {
+   "nombre": "ADMINISTRACION DE LA PRODUCCION",
+   "nivel": 5,
+   "creditos": 3,
+   "horas": 144,
+   "descripcion": "El módulo de Administración de la Producción se estructura en 4 unidades curriculares básicas relacionadas con la administración de operaciones, proyecciones y componentes de la demanda, sistemas de gestión de inventarios y ciertos principios de la programación de operaciones, dando a conocer al estudiante diferentes herramientas vinculadas con cada una de ellas y la manera en la que se pueden aplicar para la obtención de soluciones óptimas en los medios productivos analizados.",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "Reconocer la administración de operaciones y sus conceptos básicos",
+     "horas": 24,
+     "contenidos": "Principios de la administración de operaciones"
+    },
+    {
+     "numero": 2,
+     "nombre": "Desarrollar pronósticos para adquisición, producción y comercialización",
+     "horas": 36,
+     "contenidos": "Pronósticos de adquisición, producción y comercialización"
+    },
+    {
+     "numero": 3,
+     "nombre": "Diseñar y aplicar sistemas de gestión de inventarios",
+     "horas": 48,
+     "contenidos": "Gestión de inventarios"
+    },
+    {
+     "numero": 4,
+     "nombre": "Establecer programación de operaciones para medios productivos",
+     "horas": 36,
+     "contenidos": "Programación de las operaciones y Teoría de restricciones"
+    }
+   ],
+   "codigo": "08070514"
+  },
+  {
+   "nombre": "ERGONOMIA",
+   "nivel": 5,
+   "creditos": 2,
+   "horas": 96,
+   "descripcion": "La asignatura de Ergonomía se estructura de 4 unidades curriculares cada una tiene aproximadamente 16 horas de clases. Se busca desarrollar la gestión de riesgos disergonómicos, que implica identificar, estimar, valuar y controlar los diferentes factores y sub-factores presentes en el trabajo relacionados con la manipulación manual de cargas, movimientos repetitivos y sobreesfuerzos. Se pretende adaptar las medidas y características de herramientas y condiciones de puestos de trabajo a las características antropométricas de cada trabajador. También se evalúan los ambientes laborales en función de factores como: calor, ruido, iluminación y vibraciones. Todo lo mencionado sirve para establecer medidas de control sobre los riesgos presentes en los puestos de trabajo de los obreros logrando un diseño confortable, óptimo y normado de los mismos. La metodología de aprendizaje se lo realiza a través de investigaciones bibliográficas de información inherente a los temas mencionados, talleres de análisis de problemas ejemplos, disertación de charlas y comentarios apoyadas en la bibliografía consignada en el Aula Virtual.",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "Describir dentro de la relación persona-máquina los conceptos relacionados con Ergonomía y sus correspondientes factores de riesgo debidos",
+     "horas": 24,
+     "contenidos": "Sistemas persona-máquina-entorno. Ergonomía: conceptos,"
+    },
+    {
+     "numero": 2,
+     "nombre": "Explicar el uso de dimensiones de antropología física (antropometría) y de la mecánica corporal (biomecánica) para el diseño de puestos de",
+     "horas": 24,
+     "contenidos": "Relaciones dimensionales. Antropometría y dimensiones."
+    },
+    {
+     "numero": 3,
+     "nombre": "Analizar con criterios ergonómicos el diseño y selección de herramientas manuales y puestos de trabajo centrados en el usuario.",
+     "horas": 24,
+     "contenidos": "Criterios ergonómicos para el diseño y selección de"
+    },
+    {
+     "numero": 4,
+     "nombre": "Evaluar los riesgos presentes en un puesto de trabajo debidos a factores ambientales como: calor, iluminación, ruido, vibraciones.",
+     "horas": 24,
+     "contenidos": "Ergonomía ambiental del trabajo: calor, ruido, iluminación,"
+    }
+   ],
+   "codigo": "08070515"
+  },
+  {
+   "nombre": "PROCESOS INDUSTRIALES",
+   "nivel": 5,
+   "creditos": 3,
+   "horas": 144,
+   "descripcion": "Procesos Industriales es una asignatura específica de profesionalización, de naturaleza teórico-práctico estructurado en 4 unidades curriculares básicas que proporciona a los estudiantes las características de las transformaciones industriales, desde las materias primas hasta los productos terminados, considerando el análisis de materias primas, operaciones y procesos, la calidad y utilidad de los productos terminados y las características de los medios de fabricación. Los temas se desarrollan a través de conferencias integradoras y actividades prácticas y de trabajo colaborativos acompañadas del trabajo autónomo del estudiante.",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "Identificar los materiales empleados en la manufactura, así como los diferentes sistemas de producción y adquirir la capacidad de diagramar un",
+     "horas": 36,
+     "contenidos": "Introducción a los Procesos Industriales"
+    },
+    {
+     "numero": 2,
+     "nombre": "Aplicar los conceptos para el diseño de productos y servicios.",
+     "horas": 36,
+     "contenidos": "Diseño de productos y servicios"
+    },
+    {
+     "numero": 3,
+     "nombre": "Diferenciar las transformaciones industriales como fundición, moldeo, así como varios procesos productivos.",
+     "horas": 36,
+     "contenidos": "Fundición, moldeo y procesos productivos"
+    },
+    {
+     "numero": 4,
+     "nombre": "Identificar las características principales de los sistemas flexibles de manufactura así como la aplicación de las herramientas de manufactura",
+     "horas": 36,
+     "contenidos": "Sistemas flexibles de manufactura"
+    }
+   ],
+   "codigo": "08070516"
+  },
+  {
+   "nombre": "GESTION DE OPERACIONES",
+   "nivel": 5,
+   "creditos": 3,
+   "horas": 144,
+   "descripcion": "La asignatura de Gestión de Operaciones se estructura en 4 unidades curriculares relacionadas con fundamentos de planificación de operaciones donde se establece el plan maestro, el plan agregado, MRP y programación a corto plazo, los temas se desarrollan a través de Aprendizaje Basado en Proyectos, Método expositivo, Métodos de caso, Aprendizaje Basado en Problemas, Aprendizaje Basado en Proyectos con conferencias integradoras y actividades prácticas y de trabajo colaborativos acompañadas del trabajo autónomo del estudiante donde resolverán gestión de operaciones y de planificación a corto, mediano y largo plazo.",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "Conceptualizar la planeación estratégica de operaciones para obtener un entendimiento teórico básico",
+     "horas": 36,
+     "contenidos": "Planificación de Operaciones"
+    },
+    {
+     "numero": 2,
+     "nombre": "Analizar la planeación agregada y programa maestro de producción para aplicarlo en casos propuestos",
+     "horas": 45,
+     "contenidos": "Plan Maestro y Plan Agregado"
+    },
+    {
+     "numero": 3,
+     "nombre": "Diseñar planes de requerimientos de materiales",
+     "horas": 45,
+     "contenidos": "Planeación de Requerimiento de Materiales (MRP)"
+    },
+    {
+     "numero": 4,
+     "nombre": "Emplear distintos tipos de métodos para la programación a corto plazo",
+     "horas": 18,
+     "contenidos": "Programación a corto plazo"
+    }
+   ],
+   "codigo": "08070517"
+  },
+  {
+   "nombre": "INSTRUMENTACION INDUSTRIAL",
+   "nivel": 5,
+   "creditos": 2,
+   "horas": 96,
+   "descripcion": "La asignatura de Instrumentación Industrial se estructura en cuatro unidades integradas que abarcan desde la comprensión de las variables en un proceso, ciclos de control en lazo abierto y cerrado, caracterización de instrumentos a través de la transducción de señales, el análisis de sensores basados en principios físicos y la identificación de actuadores con un enfoque en la automatización industrial. La metodología de aprendizaje combina clases teóricas, actividades prácticas en laboratorio y proyectos colaborativos, promoviendo el aprendizaje autónomo y el desarrollo de habilidades blandas como la comunicación, el trabajo en equipo y el pensamiento crítico. Como resultado de aprendizaje, el estudiante será capaz de analizar y aplicar sistemas de instrumentación y control, aplicando conocimientos teóricos y prácticos para resolver problemas reales en entornos productivos modernos.",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "Emplear los conceptos de sensor, acondicionador y transmisor de señales en el contexto de la Instrumentación Industrial",
+     "horas": 18,
+     "contenidos": "Introducción a la instrumentación industrial"
+    },
+    {
+     "numero": 2,
+     "nombre": "Analizar las características y principios de transducción de los sensores",
+     "horas": 24,
+     "contenidos": "Características y principios de transducción de los sensores"
+    },
+    {
+     "numero": 3,
+     "nombre": "Analizar los principios de funcionamiento de los instrumentos industriales",
+     "horas": 18,
+     "contenidos": "Sensores para automatización industrial"
+    },
+    {
+     "numero": 4,
+     "nombre": "Implementar estrategias de control para la automatización industrial utilizando sensores y actuadores",
+     "horas": 36,
+     "contenidos": "Actuadores en procesos de automatización industrial"
+    }
+   ],
+   "codigo": "08070518"
+  },
+  {
+   "nombre": "SISTEMAS CAD/CAM",
+   "nivel": 6,
+   "creditos": 3,
+   "horas": 144,
+   "descripcion": "La asignatura de Sistemas CAD/CAM se estructura en cuatro unidades curriculares fundamentales, orientadas al conocimiento de los principios y el desarrollo de los sistemas CAD/CAM. Además, se aborda el uso de software especializado que permite realizar diversos mecanizados y simularlos, con el fin de identificar y corregir posibles errores. Finalmente, se contempla la fabricación de partes y piezas en máquinas herramientas de control numérico computarizado (MHCN), mediante la programación con códigos G y M.",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "Conocer los principios y desarrollo de los sistemas CAD/CAM",
+     "horas": 36,
+     "contenidos": "Introducción a los sistemas CAD/CAM"
+    },
+    {
+     "numero": 2,
+     "nombre": "Elaborar y ejecutar programas para la producción de piezas en MHCN",
+     "horas": 36,
+     "contenidos": "Programas de control numérico"
+    },
+    {
+     "numero": 3,
+     "nombre": "Utilizar software CAD /CAM para la generación de piezas ensambles y simulaciones",
+     "horas": 36,
+     "contenidos": "Hardware y Software CAD/CAM"
+    },
+    {
+     "numero": 4,
+     "nombre": "Fabricar y ensamblar un prototipo integrando criterios técnicos y económicos",
+     "horas": 36,
+     "contenidos": "Fabricacion de prototipos"
+    }
+   ],
+   "codigo": "08070607"
+  },
+  {
+   "nombre": "CONTROL NEUMÁTICO Y OLEOHIDRAULICA",
+   "nivel": 6,
+   "creditos": 2,
+   "horas": 96,
+   "descripcion": "La asignatura de Control Neumático y Oleohidráulica hace que el estudiante de Ingeniería Industrial, aprenda a utilizar energías alternativas para el desarrollo y ejecución de las actividades y procesos mecánicos e industriales. Se trabaja en 4 unidades, empezando con una visión completa de los componentes esenciales que forman un sistema hidráulico o neumático para posteriormente ir detallando el funcionamiento de cada uno de ellos, sus características físicas, llegando al propósito de formar sistemas completos. Los temas se desarrollan a través de clases sincrónicas y actividades prácticas, con trabajo colaborativos, acompañadas del trabajo autónomo del estudiante, donde adquirirán destreza en el manejo de la neumática e hidráulica y hacer uso de ellas ante diferentes casos en la fabricación y/o mantenimiento de equipos o máquinas de uso industrial impulsando las actividades de emprendimiento y fabricación útiles para las empresas y su entorno, en los que se encuentra involucrado el conocimiento y la innovación.",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "Fundamentar a la Neumática y Oleohidráulica en la industria",
+     "horas": 24,
+     "contenidos": "Fundamentos de la neumática y oleohidráulica"
+    },
+    {
+     "numero": 2,
+     "nombre": "Aplicar los principios físicos de la Neumática y Oleohidráulica",
+     "horas": 24,
+     "contenidos": "Principios físicos de la neumática y oleohidráulica"
+    },
+    {
+     "numero": 3,
+     "nombre": "Caracterizar los componentes neumáticos y oleohidráulicos que forman los sistemas de uso industrial",
+     "horas": 24,
+     "contenidos": "Caracterización de componentes neumáticos y"
+    },
+    {
+     "numero": 4,
+     "nombre": "Desarrollar sistemas neumáticos y oleohidráulicos de acuerdo a necesidades mecánicas e industriales.",
+     "horas": 24,
+     "contenidos": "Desarrollo de sistemas neumáticos y oleohidráulicos"
+    }
+   ],
+   "codigo": "08070608"
+  },
+  {
+   "nombre": "GESTION POR PROCESOS",
+   "nivel": 6,
+   "creditos": 2,
+   "horas": 96,
+   "descripcion": "Gestión por Procesos es un módulo teórico-práctico estructurado en cuatro unidades curriculares básicas. Su objetivo es capacitar al estudiante en el desarrollo de metodologías sistémicas que, mediante herramientas administrativas, permitan la estandarización de procesos en empresas manufactureras y de servicios, con un enfoque en la mejora continua.",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "Analizar las características de la Gestión por Procesos para su aplicación en entornos organizacionales",
+     "horas": 24,
+     "contenidos": "Introducción a la Gestión por Procesos"
+    },
+    {
+     "numero": 2,
+     "nombre": "Aplicar herramientas para el modelado y diseño de procesos, optimizando su representación",
+     "horas": 36,
+     "contenidos": "Modelado y diseño de procesos"
+    },
+    {
+     "numero": 3,
+     "nombre": "Determinar las mediciones que se realizan en los procesos a través de indicadores",
+     "horas": 18,
+     "contenidos": "Medición de procesos por medio de indicadores."
+    },
+    {
+     "numero": 4,
+     "nombre": "Establecer herramientas para el mejoramiento de los procesos",
+     "horas": 18,
+     "contenidos": "Mejoramiento continuo de procesos"
+    }
+   ],
+   "codigo": "08070609"
+  },
+  {
+   "nombre": "HIGIENE INDUSTRIAL",
+   "nivel": 6,
+   "creditos": 3,
+   "horas": 144,
+   "descripcion": "El módulo de Higiene Industrial se estructura en 4 unidades curriculares relacionadas con la gestión técnica de riesgos laborales relacionados a físicos (ruido, vibraciones, iluminación, temperaturas anormales), químicos (gases, vapores, neblinas, maerial particulado) y biológicos (microorganismos y vectores) basadas en la revisión de legislación ecuatoriana y extranjera sobre higiene industrial y tambien en las normas INEN - ISO para el desarrollo de procedimientos normalizados de evaluación de riesgos laborales. La metodología para el desarrollo de la cátedra se basa en conferencias integradoras, clases y talleres en escenarios de aprendizaje físicos y virtuales; además, se realizarán visitas de campo a empresas, donde los estudiantes aplicaran los métodos de evaluación de riesgos laborales para establecer las condiciones de trabajo que pueden generar enfermedades profesionales en los trabajadores.",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "Describir la terminología asociada a Higiene Industrial y su relación con las enfermedades profesionales y analizar riesgos biológicos",
+     "horas": 27,
+     "contenidos": "Terminología en Higiene Industrial y Riesgos Biológicos"
+    },
+    {
+     "numero": 2,
+     "nombre": "Analizar los principios de evaluación y control de riesgos químicos",
+     "horas": 27,
+     "contenidos": "Riesgos químicos"
+    },
+    {
+     "numero": 3,
+     "nombre": "Analizar los principios de evaluación y control de riesgos físicos por ruido y vibraciones",
+     "horas": 45,
+     "contenidos": "Valoración de riesgos físicos por ruido y vibraciones"
+    },
+    {
+     "numero": 4,
+     "nombre": "Analizar los principios de evaluación y control de riesgos físicos por iluminación y temperaturas anormales",
+     "horas": 45,
+     "contenidos": "Valoración de riesgos físicos por iluminación y temperaturas"
+    }
+   ],
+   "codigo": "08070610"
+  },
+  {
+   "nombre": "DISEÑO Y ORGANIZACION DE PLANTAS",
+   "nivel": 6,
+   "creditos": 3,
+   "horas": 144,
+   "descripcion": "Diseño y Organización de Plantas es un módulo desarrollado de manera teórico-práctico estructurado en 4 unidades curriculares básicas que capacita al estudiante en la definición de la mejor opción de la localización de una planta industrial, al igual que proponer un diseño con el tamaño óptimo y una adecuada organización de sus instalaciones para el correcto flujo y manejo de materiales. Los temas se desarrollan a través de conferencias integradoras, actividades prácticas y trabajos colaborativos acompañadas del trabajo autónomo del estudiante.",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "Identificar los principios básicos y generalidades en el diseño de plantas industriales.",
+     "horas": 18,
+     "contenidos": "Introducción y generalidades."
+    },
+    {
+     "numero": 2,
+     "nombre": "Analizar en forma crítica los fundamentos del proceso de selección del sitio y los modelos de toma de decisiones que permiten la optimización",
+     "horas": 36,
+     "contenidos": "Localización de planta."
+    },
+    {
+     "numero": 3,
+     "nombre": "Dimensionar el tamaño de una planta industrial a partir de los requerimientos de producción y espacio.",
+     "horas": 36,
+     "contenidos": "Tamaño de Planta."
+    },
+    {
+     "numero": 4,
+     "nombre": "Determinar en forma cuantitativa y cualitativa los formatos de distribución de planta proponiendo alternativas aplicadas a un área de producción.",
+     "horas": 54,
+     "contenidos": "Distribución de planta, flujo y manejo de materiales."
+    }
+   ],
+   "codigo": "08070611"
+  },
+  {
+   "nombre": "GESTION AMBIENTAL Y ENERGIAS ALTERNATIVAS",
+   "nivel": 6,
+   "creditos": 2,
+   "horas": 96,
+   "descripcion": "El módulo de Gestión Ambiental y Energías Alternativas para su estudio está dividido en cuatro unidades temáticas, de las cuales dos de ellas están relacionadas a los problemas ambientales que las empresas públicas y privadas del Ecuador enfrentan en el desarrollo de sus actividades. En el desarrollo del contenido de la cátedra, se plantean temas que corresponden a la revisión de la legislación ambiental que aplica a la gestión y operación de las empresas, las bases del sistema de gestión ambiental ISO 1001:2015, el análisis de los requisitos necesarios para la categorización ambiental en el Ecuador, el manejo de la plataforma SUIA del Ministerio del Ambiente, Agua y Transición Ecológica y finalmente los impactos ambientales que afectan al recurso agua, suelo y aire. En el contexto de las Energías Alternativas se analiza el aprovechamiento de energías limpias en aplicaciones domésticas e industriales, con las cuales se pueda plantear soluciones de ahorro de energías tradicionales que son las causantes de problemas ambientales a nivel mundial; se estudiará energías relacionadas al sol, viento, agua, biomasa y geotérmica. La metodología de aprendizaje corresponderá al basado en proyectos y problemas; para ello se utilizará escenarios de aprendizaje de campo, áulico y laboratorio.",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "Reconocer la normativa legal sobre gestión ambiental en el Ecuador",
+     "horas": 24,
+     "contenidos": "Normativas de Gestión Ambiental"
+    },
+    {
+     "numero": 2,
+     "nombre": "Describir los términos de referencia e impactos ambientales generada por la industria",
+     "horas": 24,
+     "contenidos": "Términos de referencia e impactos ambientales"
+    },
+    {
+     "numero": 3,
+     "nombre": "Analizar los tipos de energías alternativas de índole solar, hidráulica y eólica",
+     "horas": 24,
+     "contenidos": "Energías solar, hidráulica y eólica"
+    },
+    {
+     "numero": 4,
+     "nombre": "Analizar los tipos de energías alternativas referentes a biomasa, geotérmica, mareomotriz y nuclear",
+     "horas": 24,
+     "contenidos": "Biomasa, geotérmica, mareomotriz y nuclear"
+    }
+   ],
+   "codigo": "08070612"
+  },
+  {
+   "nombre": "EMPRENDIMIENTO E INNOVACION",
+   "nivel": 7,
+   "creditos": 2,
+   "horas": 96,
+   "descripcion": "La asignatura de Emprendimiento se organiza en cuatro unidades curriculares fundamentales, centradas en la identificación del marco conceptual y en el desarrollo de una mentalidad y una forma de actuar orientadas al crecimiento económico. Esta disciplina promueve una manera de razonar y proceder enfocada en la detección de oportunidades, con una visión global, liderazgo equilibrado y gestión de riesgos calculados. Su propósito es la creación de valor, generando beneficios tanto para la empresa como para la economía y la sociedad en su conjunto.",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "Identificar el marco conceptual del emprendimiento",
+     "horas": 24,
+     "contenidos": "Marco conceptual"
+    },
+    {
+     "numero": 2,
+     "nombre": "Analizar con una visión clara las características del bien o del servicio que se piensa colocar en el mercado",
+     "horas": 24,
+     "contenidos": "Estudio de mercado"
+    },
+    {
+     "numero": 3,
+     "nombre": "Identificar el estudio financiero de la empresa y su utilidad en la toma de decisiones",
+     "horas": 24,
+     "contenidos": "Estudio financiero"
+    },
+    {
+     "numero": 4,
+     "nombre": "Determinar la importancia de generar un modelo de negocios así como sus ventajas y elementos",
+     "horas": 24,
+     "contenidos": "El modelo de negocio"
+    }
+   ],
+   "codigo": "08070708"
+  },
+  {
+   "nombre": "GERENCIA EMPRESARIAL",
+   "nivel": 7,
+   "creditos": 2,
+   "horas": 96,
+   "descripcion": "La asignatura de Gerencia Empresarial se organiza en cuatro unidades curriculares fundamentales, orientadas al análisis técnico del registro sistemático y cronológico de las operaciones financieras, así como a la interpretación y presentación de los costos de producción. Estos contenidos permiten al estudiante desarrollar capacidades para la generación de soluciones empresariales, fortaleciendo los procesos de planificación, control y toma de decisiones en el contexto de una empresa industrial. Adicionalmente, la asignatura incorpora una perspectiva integral del entorno comercial mediante el estudio de negocios internacionales.",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "Analizar la obtención, gestión y administración de fondos.",
+     "horas": 24,
+     "contenidos": "Análisis de las Principales Cuentas Contables.Análisis de"
+    },
+    {
+     "numero": 2,
+     "nombre": "Determinar oportunidades, amenazas, fortalezas y debilidades en las Empresas Industriales.",
+     "horas": 24,
+     "contenidos": "Análisis estratégico del Entorno Análisis estratégico Interno"
+    },
+    {
+     "numero": 3,
+     "nombre": "Establecer procedimientos de seguimiento y evaluaciones continuas para asegurar la eficacia y eficiencia del sistema de control interno",
+     "horas": 24,
+     "contenidos": "Análisis de Control Interno. Normas Generales Ambiente de"
+    },
+    {
+     "numero": 4,
+     "nombre": "Demostrar el incremento de la competitividad promoviendo los negocios internacionales",
+     "horas": 24,
+     "contenidos": "Legislación Nacional e Internacional de"
+    }
+   ],
+   "codigo": "08070709"
+  },
+  {
+   "nombre": "CONTROL DE CALIDAD",
+   "nivel": 7,
+   "creditos": 2,
+   "horas": 96,
+   "descripcion": "La asignatura aborda el Control de la Calidad en cuatro unidades temáticas, comenzando con la historia y evolución de la calidad, destacando su adaptación a los contextos industriales y sociales. Luego, se analizan las herramientas de control de calidad, tanto estadísticas como no estadísticas, dentro del marco del Sistema de Gestión de Calidad ISO 9001. La tercera unidad se enfoca en los tipos de muestreo para el control de calidad de mercancías y servicios, y finalmente, se estudia la metodología Six Sigma para evaluar la variabilidad de los procesos.",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "Analizar la historia y evolución de la calidad para comprender la importancia de la temática a ser estudiada y aplicada en la organización.",
+     "horas": 18,
+     "contenidos": "Introducción a la Calidad"
+    },
+    {
+     "numero": 2,
+     "nombre": "Aplicar las herramientas del control de la calidad que permiten evaluar la calidad de productos o servicios entregados a los clientes",
+     "horas": 30,
+     "contenidos": "Herramientas del Control de Calidad"
+    },
+    {
+     "numero": 3,
+     "nombre": "Establecer el muestreo por atributos y variables sea para productos o servicios que permitan seleccionar los elementos de estudio a ser",
+     "horas": 18,
+     "contenidos": "Planes de muestreo para atributos y variables"
+    },
+    {
+     "numero": 4,
+     "nombre": "Analizar la metodología Six Sigma como herramienta del control de calidad",
+     "horas": 30,
+     "contenidos": "Metodología Six Sigma"
+    }
+   ],
+   "codigo": "08070710"
+  },
+  {
+   "nombre": "GESTION DEL MANTENIMIENTO",
+   "nivel": 7,
+   "creditos": 2,
+   "horas": 96,
+   "descripcion": "Gestión del Mantenimiento desarrolla contenidos generales y específicos de las actividades de mantenimiento en una industria; empezando con la identificación de los tipos de mantenimiento con sus características. La detección temprana de fallos que ayudarán a gestionar la eficiencia en la mantenibilidad, fiabilidad y disponibilidad de equipos. Se continúa con la revisión de mantenimiento predictivo, las técnicas de verificación en máquinas industriales, de donde se obtiene valores de indicadores que ayudarán en la planificación y posterior programación con uso de software de mantenimiento industrial. Se propone finalmente la aplicación de técnicas y modelos de gestión del mantenimiento industrial: predictivo, preventivo, correctivo, de alta disponibilidad, centrado en la confiabilidad, repuestos, recursos humanos y riesgos. Varias son las metodologías de enseñanza aprendizaje ocupadas: la metodología expositiva durante la cual el docente se apoya en recursos informáticos audiovisuales para disertar cada tema de clases durante 40 minutos aproximadamente. Después se forman grupos de trabajo que investigan en fuentes de internet y la IA actualizaciones de los temas expuestos, que serán discutidos y debatidos por sus integrantes. Al final como última metodología profesor y alumnos realizan la retroalimentación junto con la exposición o plenaria de las investigaciones desarrolladas por los alumnos.",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "Analizar los tipos de mantenimiento: correctivo, preventivo y predictivo. Analizar los fallos y averías: modos, causas y efectos. El análisis de",
+     "horas": 24,
+     "contenidos": "Introducción a la Gestión del Mantenimiento. Análisis de"
+    },
+    {
+     "numero": 2,
+     "nombre": "Describir las técnicas de inspección, verificación y diagnóstico de fallos para mantenimiento en máquinas, equipos y herramientas industriales",
+     "horas": 24,
+     "contenidos": "AMFE. Fricción y desgaste. Predicción de fallas, técnicas y"
+    },
+    {
+     "numero": 3,
+     "nombre": "Planificar las fases, actividades y tareas del mantenimiento, de acuerdo al tipo y la realidad de la empresa o industria; que serán llevadas a un",
+     "horas": 24,
+     "contenidos": "Fases de la administración del mantenimiento. Árbol de"
+    },
+    {
+     "numero": 4,
+     "nombre": "Realizar la gestión (de recursos materiales y humanos) del mantenimiento industrial apoyados en los módelos posibles: correctivo, sistemático,",
+     "horas": 24,
+     "contenidos": "Modelos de mantenimiento: correctivo, sistemático,"
+    }
+   ],
+   "codigo": "08070711"
+  },
+  {
+   "nombre": "INSTRUMENTACIÓN VIRTUAL",
+   "nivel": 7,
+   "creditos": 2,
+   "horas": 96,
+   "descripcion": "El curso de Instrumentación Virtual está diseñado para estudiantes de grado de ingeniería interesados en desarrollar habilidades avanzadas en el diseño y programación de sistemas automatizados para el control y optimización de procesos industriales. En este curso, los estudiantes adquirirán conocimientos sobre los principios fundamentales de la instrumentación virtual y los autómatas programables, y aprenderán a aplicarlos en la solución de problemas y el diseño de sistemas automatizados complejos. El curso se centrará en el aprendizaje práctico, a través de la realización de prácticas y proyectos que permitan a los estudiantes experimentar con diferentes configuraciones de sistemas automatizados, dispositivos de entrada/salida y software de programación avanzado. Los estudiantes también tendrán la oportunidad de trabajar en proyectos en grupo para diseñar y programar sistemas automatizados completos que puedan ser utilizados en aplicaciones reales. Al finalizar el curso, los estudiantes estarán capacitados para diseñar soluciones innovadoras y eficaces para el control y optimización de procesos industriales, utilizando herramientas de instrumentación virtual y autómatas programables. Esto les permitirá desarrollar habilidades altamente valoradas en la industria, que pueden ser aplicadas en una amplia gama de sectores, desde la manufactura hasta la energía renovable y la automatización de edificios.",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "Conceptualizar los fundamentos de sistemas de adquisición de datos mediante la integración de sensores y actuadores para el procesamiento",
+     "horas": 18,
+     "contenidos": "Conceptos básicos de sistemas de adquisición de datos; Origen y tipos de las variables físicas; Variables Físicas lineales y no lineales; Adquisición de Variables Físicas"
+    },
+    {
+     "numero": 2,
+     "nombre": "Diseñar sistemas de instrumentación virtual con software especializado para el monitoreo y control de procesos industriales en tiempo real",
+     "horas": 30,
+     "contenidos": "Introducción a Labview; Panel frontal y Diagrama Bloques; Estructuras en Labview; Diseño de Vis y SubVIs básicos"
+    },
+    {
+     "numero": 3,
+     "nombre": "Diseñar sistemas automatizados mediante el análisis y programación de autómatas para la implementación de soluciones industriales",
+     "horas": 30,
+     "contenidos": "Introducción a PLCs; Programación básica usando lenguaje Ladder; Programación usando Timers, Contadores, comparaciones; Manejo de archivos de texto"
+    },
+    {
+     "numero": 4,
+     "nombre": "Desarrollar sistemas automatizados mediante la programación avanzada de autómatas para garantizar la seguridad, detección de fallas y",
+     "horas": 18,
+     "contenidos": "Fundamentos de comunicación OPC; Configuración de OPC Server para comunicación PLC -; Tarjetas DAQ y comunicación OPC"
+    }
+   ],
+   "codigo": "08070712"
+  },
+  {
+   "nombre": "AUTOMATIZACION INDUSTRIAL Y ROBOTICA",
+   "nivel": 8,
+   "creditos": 2,
+   "horas": 96,
+   "descripcion": "El curso de tiene como objetivo proporcionar a los estudiantes una formación sólida en los conceptos fundamentales de las redes industriales, la automatización y la robótica. A través de este curso, los estudiantes adquirirán las habilidades necesarias para diseñar, implementar y mantener sistemas de automatización y control industrial. Los estudiantes aprenderán sobre las redes industriales, sus características, tipos y protocolos de comunicación utilizados en el control de procesos industriales. También se abordará el diseño y programación de sistemas de control automático, la selección y uso de sensores y actuadores, y la integración de los sistemas de control en redes industriales. En cuanto a la robótica, el curso abarcará los conceptos básicos de la cinemática de robots, la programación de robots industriales, la selección y utilización de sensores y actuadores, y la integración de los robots en sistemas de automatización industrial. Los estudiantes tendrán acceso a equipos y herramientas de laboratorio para la realización de prácticas y proyectos, que les permitirán aplicar los conceptos teóricos adquiridos en el aula de manera práctica y efectiva.",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "Diseñar e implementar un sistema HMI utilizando la norma ISA 101 para la automatización de maquetas reales o simuladas con comunicación",
+     "horas": 25,
+     "contenidos": "Desarrollo de Sistemas HMI con Estándar ISA 101 y"
+    },
+    {
+     "numero": 2,
+     "nombre": "Definir las redes industriales, los elementos que las integran y su función en los sistemas de automatización de procesos industriales.",
+     "horas": 15,
+     "contenidos": "Redes industriales básicas, tiempo real en comunicaciones"
+    },
+    {
+     "numero": 3,
+     "nombre": "Configurar redes de campo y de control utilizando software especializado para su implementación en sistemas de automatización industrial.",
+     "horas": 25,
+     "contenidos": "Redes de Control o buses de Campo"
+    },
+    {
+     "numero": 4,
+     "nombre": "Determinar la importancia de la robótica y el modelo cinemático de un robot mediante el Teorema de Denavit-Hartenberg.",
+     "horas": 15,
+     "contenidos": "Resolución de cinemática directa de robots usando"
+    }
+   ],
+   "codigo": "08070808"
+  },
+  {
+   "nombre": "LOGISTICA Y CADENA DE ABASTECIEMIENTO",
+   "nivel": 8,
+   "creditos": 3,
+   "horas": 144,
+   "descripcion": "La asignatura de Logística y Cadena de Abastecimiento se estructura en 4 unidades curriculares básicas relacionadas con fundamentos de la logística y cadena de abastecimiento. En estas unidades se profundizan los fundamentos conceptuales de la logística, se analizan los principios de la gestión de la cadena de abastecimiento, así como, la gestión de almacenes y transporte. Los temas se desarrollan a través de Aprendizaje Basado en Proyectos, Método expositivo, Métodos de caso, Aprendizaje Basado en Problemas, con conferencias integradoras y actividades prácticas y de trabajo colaborativos acompañadas del trabajo autónomo del estudiante donde resolverán problemas de gestión de stock en almacenes y establecer medios de transporte y distribución.",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "Describir los fundamentos conceptuales de Logística",
+     "horas": 27,
+     "contenidos": "Fundamentos de Logística"
+    },
+    {
+     "numero": 2,
+     "nombre": "Identificar la importancia de la cadena de abastecimiento",
+     "horas": 45,
+     "contenidos": "Cadena de abastecimiento"
+    },
+    {
+     "numero": 3,
+     "nombre": "Analizar los principios de la gestión de stocks y almacenes",
+     "horas": 36,
+     "contenidos": "Gestión de stock y almacenes"
+    },
+    {
+     "numero": 4,
+     "nombre": "Caracterizar los medios de transporte y distribución física",
+     "horas": 36,
+     "contenidos": "Administración del transporte y gestión de la distribución"
+    }
+   ],
+   "codigo": "08070809"
+  },
+  {
+   "nombre": "SIMULACIÓN Y LABORATORIO",
+   "nivel": 8,
+   "creditos": 3,
+   "horas": 144,
+   "descripcion": "La asignatura Simulación y Laboratorio introduce a los estudiantes de ingeniería industrial en la modelación y análisis de sistemas complejos mediante simulación discreta. Se centra en el uso del software FlexSim para construir modelos dinámicos, visualizar procesos industriales y evaluar el rendimiento bajo diferentes escenarios. Metodológicamente, el curso abarca desde la conceptualización del sistema hasta la interpretación de resultados, integrando teoría de colas, manejo de datos y optimización. Los estudiantes desarrollarán habilidades prácticas para identificar cuellos de botella, mejorar la eficiencia operativa y tomar decisiones informadas en un entorno industrial.",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "Analizar los fundamentos de la simulación que constituyen la base primordial para la aplicación de programas en procesos de producción y",
+     "horas": 36,
+     "contenidos": "Conceptos básicos, distribuciones y funciones de"
+    },
+    {
+     "numero": 2,
+     "nombre": "Determinar los parámetros como son características, locaciones, entidades, atributos, operaciones y variables para usar el programa de",
+     "horas": 36,
+     "contenidos": "Conceptos básicos y funciones de simulación de Flexsim"
+    },
+    {
+     "numero": 3,
+     "nombre": "Analizar modelos básicos de simulación con software para ser aplicados en las empresas industriales",
+     "horas": 36,
+     "contenidos": "Modelamiento en Flexim"
+    },
+    {
+     "numero": 4,
+     "nombre": "Aplicar software de simulación para casos de sistemas de producción y logística",
+     "horas": 36,
+     "contenidos": "Módulos avanzados de Flexsim y otros software de"
+    }
+   ],
+   "codigo": "08070810"
+  },
+  {
+   "nombre": "DISEÑO DE PROYECTOS",
+   "nivel": 8,
+   "creditos": 3,
+   "horas": 144,
+   "descripcion": "La asignatura de Diseño de Proyectos está diseñada para que los estudiantes adquieran las habilidades necesarias para formular perfiles de proyectos efectivos. La estructura del curso se organiza en las siguientes unidades curriculares: El Problema de Investigación, Antecedentes Investigativos y marco teórico, Metodología y otros componentes del proyecto de investigación y finalmente el Artículo Científico . La metodología se basará en clases teóricas interactivas, talleres prácticos, y el desarrollo progresivo de un perfil de proyecto de investigación o artículo científico. Al concluir el curso, los estudiantes estarán capacitados para diseñar perfiles de proyectos que ofrezcan soluciones prácticas a problemas específicos, aplicando criterios metodológicos de investigación.",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "Plantear problemas científicos en su área, estableciendo un marco teórico que sustente la investigación.",
+     "horas": 36,
+     "contenidos": "El problema de investigación"
+    },
+    {
+     "numero": 2,
+     "nombre": "Analizar los antecedentes investigativos relevantes y el marco teórico pertinente en el contexto de la elaboración de proyectos.",
+     "horas": 36,
+     "contenidos": "Antecedentes investigativos y desarrollo del marco teórico"
+    },
+    {
+     "numero": 3,
+     "nombre": "Diseñar la estructura metodológica del proyecto de investigación, así como la planificación del cronograma y la gestión eficiente de los recursos",
+     "horas": 36,
+     "contenidos": "Metodología y otros componentes del proyecto de"
+    },
+    {
+     "numero": 4,
+     "nombre": "Desarrollar un artículo científico que contribuya al conocimiento en su área de estudio.",
+     "horas": 36,
+     "contenidos": "El artículo científico"
+    }
+   ],
+   "codigo": "08070811"
+  },
+  {
+   "nombre": "GESTION DE CALIDAD",
+   "nivel": 8,
+   "creditos": 2,
+   "horas": 96,
+   "descripcion": "La asignatura de Gestión de la calidad se estructura en cuatro unidades curriculares básicas relacionadas con la importancia de los Sistemas de Gestión, el análisis de la norma ISO 9001, los requisitos a cumplir por parte de las organizaciones, el contenido de auditorías para certificación y la importancia de los Sistemas Integrados de Gestión ISO, todo en la búsqueda de la mejora continua del desempeño de una organización y la satisfacción de los clientes. Los temas se desarrollan a través de clases sincrónicas y actividades prácticas, con trabajo colaborativos, acompañadas del trabajo autónomo del estudiante, donde adquirirán destreza en el manejo de la noramativa ISO y hacer uso de ellas ante diferentes casos en la implementación para las empresas y su entorno, en los que se encuentra involucrado el conocimiento y la innovación.",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "Realizar una introducción y fundamentación de la Calidad como estrategia empresarial.",
+     "horas": 24,
+     "contenidos": "Introducción y fundamentación de la Calidad como"
+    },
+    {
+     "numero": 2,
+     "nombre": "Determinar los requisitos del Sistema de Gestión de Calidad ISO 9001",
+     "horas": 24,
+     "contenidos": "Requisitos del Sistema de Gestión de Calidad ISO 9001"
+    },
+    {
+     "numero": 3,
+     "nombre": "Caracterizar las auditorías para un Sistema de Gestión de la Calidad en base a la ISO 19011",
+     "horas": 24,
+     "contenidos": "Auditorías para un Sistema de Gestión de la Calidad en"
+    },
+    {
+     "numero": 4,
+     "nombre": "Describir el desarrollo de Sistemas Integrados de Gestión",
+     "horas": 24,
+     "contenidos": "Sistemas Integrados de Gestión"
+    }
+   ],
+   "codigo": "08070812"
+  },
+  {
+   "nombre": "DESARROLLO DE PROYECTOS",
+   "nivel": 9,
+   "creditos": 6,
+   "horas": 288,
+   "descripcion": "La asignatura de Desarrollo de Proyectos se estructura en cuatro unidades curriculares que brindan a los estudiantes los conocimientos, herramientas y metodologías necesarias para formular, planificar, ejecutar y evaluar proyectos de manera efectiva. Mediante un enfoque práctico y estratégico, los estudiantes desarrollarán habilidades para gestionar recursos, analizar la viabilidad de proyectos y tomar decisiones fundamentadas en datos.",
+   "unidades": [
+    {
+     "numero": 1,
+     "nombre": "Aplicar la metodología de investigación en la elaboración del proyecto de investigación",
+     "horas": 72,
+     "contenidos": "Metodología de investigación"
+    },
+    {
+     "numero": 2,
+     "nombre": "Establecer las técnicas y herramientas para la recolección, análisis e interpretación de datos",
+     "horas": 72,
+     "contenidos": "Fuentes y técnicas de recolección de la información"
+    },
+    {
+     "numero": 3,
+     "nombre": "Comprender los resultados obtenidos de la investigación",
+     "horas": 72,
+     "contenidos": "Interpretación y análisis de los resultados"
+    },
+    {
+     "numero": 4,
+     "nombre": "Organizar la información teniendo en cuenta las normas a seguir para su presentación (Informe de investigación)",
+     "horas": 72,
+     "contenidos": "Presentación del proyecto de investigación (Formato)"
+    }
+   ],
+   "codigo": "08070904"
+  }
+ ]
+}

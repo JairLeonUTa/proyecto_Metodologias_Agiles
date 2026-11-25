@@ -1,8 +1,10 @@
 /// <reference types="@testing-library/jest-dom" />
 
-import { Vi } from 'vitest';
+import 'vitest';
 
 declare module 'vitest' {
+  // El parámetro debe coincidir con la declaración original de vitest para poder ampliarla.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   interface Assertion<T = any> {
     toBeDisabled(): T;
     toHaveFocus(): T;

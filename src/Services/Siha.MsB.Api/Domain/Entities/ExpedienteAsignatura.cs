@@ -25,4 +25,19 @@ public class ExpedienteAsignatura
 
     /// <summary>Número de matrícula de la persona en la asignatura de destino, si consta en el expediente.</summary>
     public int? NumeroMatriculaDestino { get; set; }
+
+    /// <summary>Nivel (semestre) de la carrera de origen en que se cursó (certificado SIHA).</summary>
+    public int? Nivel { get; set; }
+
+    /// <summary>Período académico en que se cursó, por ejemplo "Abr-Sep 2025" (certificado SIHA).</summary>
+    public string? PeriodoAcademico { get; set; }
+
+    /// <summary>True si la aprobó; false si la reprobó (el certificado trae ambas).</summary>
+    public bool? Aprobada { get; set; }
+
+    /// <summary>Materia de la carrera de destino por la que pide homologarla (nombre completo).</summary>
+    public string? AsignaturaDestinoNombre { get; set; }
+
+    /// <summary>Número de la solicitud del certificado (varias materias pueden ir en la misma).</summary>
+    public int? SolicitudNumero { get; set; }
 }

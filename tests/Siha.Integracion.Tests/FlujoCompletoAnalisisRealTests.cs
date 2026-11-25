@@ -87,7 +87,7 @@ public class FlujoCompletoAnalisisRealTests
         await using var publicador = await PublicadorPrueba.IniciarAsync(_infra);
 
         // ---- 1. Evento: el plan analítico llega por RabbitMQ como lo publica B ----
-        var evento = EventoConPlan(volumen, Encoding.UTF8.GetBytes(PlanOrigen));
+        var evento = EventoConPlan(volumen, Encoding.Latin1.GetBytes(PlanOrigen));
         await publicador.PublicarAsync(evento);
         (await msc.EsperarFilasAsync($"SELECT COUNT(*) FROM PROCESSED_EVENTS WHERE ExpedienteId = '{evento.ExpedienteId}'", 1, Espera))
             .Should().Be(1);

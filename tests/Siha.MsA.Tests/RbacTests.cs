@@ -99,6 +99,14 @@ public class RbacTests
             $"{controlador.Name} solo debe ser accesible por ADMINISTRADOR (US-01, CA3)");
     }
 
+    [Fact]
+    public void Restablecer_password_exige_rol_administrador()
+    {
+        var accion = typeof(UsuariosController).GetMethod(nameof(UsuariosController.RestablecerPassword));
+        accion.Should().NotBeNull();
+        RolesEfectivos(typeof(UsuariosController), accion!).Should().Contain(RolesSistema.Administrador);
+    }
+
     [Theory]
     [InlineData(typeof(CarrerasController), nameof(CarrerasController.Crear))]
     [InlineData(typeof(CarrerasController), nameof(CarrerasController.Actualizar))]
@@ -194,9 +202,9 @@ public class RbacTests
 
     [Theory]
     [InlineData(80d, 10d, 70d)]
-    [InlineData(0d, 0d, 0d)]
+    [InlineData(80d, 0d, 0d)]
     [InlineData(100d, 100d, 100d)]
-    [InlineData(75d, 15d, 65d)]
+    [InlineData(85d, 15d, 65d)]
     public void Acepta_parametros_dentro_de_rango_con_banda_menor_o_igual_al_umbral(double theta, double delta, double tau)
     {
         var (valido, error) = ParametrosValidator.Validar(theta, delta, tau);
@@ -206,9 +214,9 @@ public class RbacTests
     }
 
     [Theory]
-    [InlineData(50d, 80d, 60d)]   // δ > θ
-    [InlineData(60d, 75d, 50d)]   // δ > θ (caso del README de Sprint 1)
-    [InlineData(0d, 0.5d, 0d)]    // δ > θ con umbral cero
+    [InlineData(80d, 85d, 60d)]     // δ > θ
+    [InlineData(85d, 90d, 50d)]     // δ > θ
+    [InlineData(100d, 100.5d, 0d)]  // δ > θ con umbral máximo (δ fuera de rango)
     public void Rechaza_la_banda_de_tolerancia_mayor_que_el_umbral(double theta, double delta, double tau)
     {
         var (valido, error) = ParametrosValidator.Validar(theta, delta, tau);

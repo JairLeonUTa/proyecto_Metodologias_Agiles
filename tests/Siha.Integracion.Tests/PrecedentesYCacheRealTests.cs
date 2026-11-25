@@ -51,12 +51,14 @@ public class PrecedentesYCacheRealTests
     }
 
     [Fact]
-    public async Task Las_cuatro_migraciones_de_DB_C_se_aplican_en_orden_sobre_una_base_vacia()
+    public async Task Todas_las_migraciones_de_DB_C_se_aplican_en_orden_sobre_una_base_vacia()
     {
         await using var msc = await MsCMigradoAsync(_infra);
 
-        (await msc.ContarAsync("SELECT COUNT(*) FROM __EFMigrationsHistory")).Should().Be(4);
-        foreach (var tabla in new[] { "PRECEDENTE", "EMBEDDING_UNIDAD" })
+        var esperadas = typeof(SihaDbContextC).Assembly.GetTypes()
+            .Count(t => t.IsSubclassOf(typeof(Microsoft.EntityFrameworkCore.Migrations.Migration)));
+        (await msc.ContarAsync("SELECT COUNT(*) FROM __EFMigrationsHistory")).Should().Be(esperadas);
+        foreach (var tabla in new[] { "PRECEDENTE", "EMBEDDING_UNIDAD", "ANALISIS_EXPEDIENTE", "DICTAMEN_DOCENTE" })
         {
             (await msc.ContarAsync($"SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = '{tabla}'"))
                 .Should().Be(1, $"la tabla {tabla} debe existir");
@@ -65,7 +67,7 @@ public class PrecedentesYCacheRealTests
         (await msc.ContarAsync(
             "SELECT COUNT(*) FROM sys.indexes WHERE name = 'IX_EMBEDDING_UNIDAD_CodigoAsignatura_NumeroUnidad_Modelo' AND is_unique = 1"))
             .Should().Be(1);
-        _salida.WriteLine($"[DB C real] {msc.BaseDatos}: 4 migraciones, PRECEDENTE y EMBEDDING_UNIDAD creadas.");
+        _salida.WriteLine($"[DB C real] {msc.BaseDatos}: {esperadas} migraciones aplicadas, tablas del Sprint 2 y de solicitudes SIHA creadas.");
     }
 
     [Fact]

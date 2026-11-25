@@ -44,8 +44,8 @@ public sealed record SolicitudCreadaEvent
     /// <summary>Marca temporal de creación en UTC.</summary>
     public DateTimeOffset FechaCreacionUtc { get; init; } = DateTimeOffset.UtcNow;
 
-    /// <summary>Versión del contrato del evento.</summary>
-    public string Version { get; init; } = "1.1";
+    /// <summary>Versión del contrato del evento (v1.2: tipo y materia de cada documento).</summary>
+    public string Version { get; init; } = "1.2";
 
     /// <summary>
     /// Referencias verificadas por el servidor (v1.1, agregado al final según EV-02): cada entrada corresponde a un documento en estado
@@ -71,4 +71,13 @@ public sealed record DocumentoReferencia
     public string HashSha256 { get; init; } = string.Empty;
 
     public long TamanoBytes { get; init; }
+
+    /// <summary>
+    /// Qué es el PDF (v1.2, agregado al final): CERTIFICADO o SILABO_EXTERNO
+    /// (<see cref="TiposDocumentoExpediente"/>). Nulo en eventos del contrato anterior.
+    /// </summary>
+    public string? Tipo { get; init; }
+
+    /// <summary>Materia aprobada del certificado a la que corresponde el sílabo externo (v1.2).</summary>
+    public string? MateriaOrigen { get; init; }
 }

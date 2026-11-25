@@ -55,6 +55,16 @@ public static class TiposTramite
     public static readonly string[] Todos = { Interno, Externo };
 }
 
+/// <summary>Tipos de documento dentro de una solicitud registrada con certificado SIHA.</summary>
+public static class TiposDocumentoExpediente
+{
+    /// <summary>El certificado de homologación SIHA (SIHA-CH-01).</summary>
+    public const string Certificado = "CERTIFICADO";
+
+    /// <summary>Sílabo o plan analítico de una materia aprobada en otra universidad (movilidad externa).</summary>
+    public const string SilaboExterno = "SILABO_EXTERNO";
+}
+
 /// <summary>Roles del sistema (control de acceso basado en roles - RBAC).</summary>
 public static class RolesSistema
 {

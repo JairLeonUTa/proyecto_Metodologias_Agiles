@@ -112,17 +112,22 @@ public class ReglasGrpcRealTests
         var antes = await cliente.ObtenerConfiguracionRutaAsync(new SolicitudConfiguracionRuta { RutaNormativa = ruta });
 
         var admin = ms.ClienteCon(RolesSistema.Administrador);
-        var cambio = await admin.PutAsJsonAsync($"/api/reglas/parametros/{ruta}", new { theta = 77.5, delta = 7.5, tau = 66.0 });
+        var cambio = await admin.PutAsJsonAsync($"/api/reglas/parametros/{ruta}", new { theta = 87.5, delta = 7.5, tau = 66.0 });
         cambio.StatusCode.Should().Be(HttpStatusCode.OK, await cambio.Content.ReadAsStringAsync());
 
         // Un cambio inválido (δ > θ) se rechaza y no altera lo que ve gRPC.
-        var invalido = await admin.PutAsJsonAsync($"/api/reglas/parametros/{ruta}", new { theta = 50.0, delta = 60.0, tau = 66.0 });
+        var invalido = await admin.PutAsJsonAsync($"/api/reglas/parametros/{ruta}", new { theta = 90.0, delta = 95.0, tau = 66.0 });
         invalido.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+
+        // Tampoco se puede bajar el contenido mínimo del 80 % que fija el reglamento.
+        var bajoReglamento = await admin.PutAsJsonAsync($"/api/reglas/parametros/{ruta}", new { theta = 77.5, delta = 7.5, tau = 66.0 });
+        bajoReglamento.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        (await bajoReglamento.Content.ReadAsStringAsync()).Should().Contain("80 %");
 
         var despues = await cliente.ObtenerConfiguracionRutaAsync(new SolicitudConfiguracionRuta { RutaNormativa = ruta });
         _salida.WriteLine($"[gRPC real] antes θ={antes.Parametros.Theta} v{antes.Parametros.Version} -> después θ={despues.Parametros.Theta} δ={despues.Parametros.Delta} τ={despues.Parametros.Tau} v{despues.Parametros.Version} por {despues.Parametros.ActualizadoPor}");
 
-        despues.Parametros.Theta.Should().Be(77.5);
+        despues.Parametros.Theta.Should().Be(87.5);
         despues.Parametros.Delta.Should().Be(7.5);
         despues.Parametros.Tau.Should().Be(66.0);
         despues.Parametros.Version.Should().BeGreaterThan(antes.Parametros.Version);
@@ -132,7 +137,7 @@ public class ReglasGrpcRealTests
         using var canal2 = otraInstancia.CanalGrpc();
         var releida = await new ReglasGrpc.ReglasGrpcClient(canal2)
             .ObtenerConfiguracionRutaAsync(new SolicitudConfiguracionRuta { RutaNormativa = ruta });
-        releida.Parametros.Theta.Should().Be(77.5);
+        releida.Parametros.Theta.Should().Be(87.5);
         releida.Parametros.Version.Should().Be(despues.Parametros.Version);
     }
 }
