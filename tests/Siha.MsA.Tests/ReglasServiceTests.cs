@@ -225,6 +225,13 @@ public class ReglasServiceTests
         Assert.Contains("decisión final es siempre de los dos docentes", rn01.Descripcion);
         Assert.Equal(DbSeederA.VigenciaReglaRecomendacion, rn01.VigenteDesde);
         Assert.Null(rn01.VigenteHasta);
+        // InMemory no aplica el largo de las columnas: se comprueba contra el modelo (SQL Server lo exige).
+        foreach (var regla in db.Reglas)
+        {
+            Assert.True(regla.Descripcion is null || regla.Descripcion.Length <= MaximoDe(db, nameof(regla.Descripcion)), regla.Codigo + " " + regla.Version);
+            Assert.True(regla.Expresion is null || regla.Expresion.Length <= MaximoDe(db, nameof(regla.Expresion)), regla.Codigo + " " + regla.Version);
+            Assert.True(regla.Fuente is null || regla.Fuente.Length <= MaximoDe(db, nameof(regla.Fuente)), regla.Codigo + " " + regla.Version);
+        }
         var v2 = await db.Reglas.SingleAsync(r => r.Codigo == "RN-01" && r.Version == "2.0");
         Assert.Equal(DbSeederA.VigenciaReglaRecomendacion.AddDays(-1), v2.VigenteHasta);
     }
@@ -362,6 +369,9 @@ public class ReglasServiceTests
         (await db.Mallas.CountAsync(m => m.CarreraId == malla.CarreraId && m.Version == DbSeederA.VersionMallaUta)).Should().Be(1);
         (await db.Asignaturas.Include(a => a.Unidades).SingleAsync(a => a.Codigo == quitadas[0].Codigo)).Unidades.Should().NotBeEmpty();
     }
+
+    private static int MaximoDe(SihaDbContextA db, string propiedad)
+        => db.Model.FindEntityType(typeof(Siha.MsA.Api.Domain.Entities.Regla))!.FindProperty(propiedad)!.GetMaxLength() ?? int.MaxValue;
 
     private static Task Sembrar(SihaDbContextA db) => DbSeederA.SembrarAsync(db,
         new BCryptPasswordHasher(), "admin@uta.edu.ec", "no-usada", NullLogger.Instance);

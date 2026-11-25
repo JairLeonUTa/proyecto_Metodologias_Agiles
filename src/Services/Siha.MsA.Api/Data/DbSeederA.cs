@@ -189,6 +189,12 @@ public static class DbSeederA
         logger.LogInformation("Reglas RN-01 y RN-13 versionadas a 2.0: 80 % en contenidos y 80 % en créditos.");
     }
 
+    /// <summary>Texto de RN-01 2.1 (cabe en REGLA.Descripcion, 400 caracteres).</summary>
+    public const string DescripcionRn01Recomendacion =
+        "El agente recomienda homologar (CAU-P-011) si llega al 80 % en contenidos y al 80 % en créditos; si no llega, " +
+        "recomienda no homologar y explica por qué. La decisión final es siempre de los dos docentes revisores, que pueden " +
+        "homologarla aunque no llegue (por ejemplo, si el tema está en el sílabo de origen con otro nombre).";
+
     /// <summary>Inicio de la versión 2.1 de RN-01: el agente recomienda y los docentes deciden.</summary>
     public static readonly DateOnly VigenciaReglaRecomendacion = new(2026, 11, 24);
 
@@ -214,11 +220,8 @@ public static class DbSeederA
             RutaNormativa = anterior.RutaNormativa,
             TipoTramite = anterior.TipoTramite,
             EsNormativa = anterior.EsNormativa,
-            Descripcion =
-                "El agente recomienda homologar una materia (CAU-P-011) cuando llega al menos al 80 % en contenidos y al 80 % en créditos; " +
-                "si alguno no llega, recomienda no homologarla y explica por qué. La decisión final es siempre de los dos docentes revisores, " +
-                "que pueden homologarla aunque no llegue (por ejemplo, si el tema está en el sílabo de origen con otro nombre). " +
-                "Profundidad y carga horaria se muestran solo como datos informativos.",
+            // Máximo 400 caracteres (columna REGLA.Descripcion).
+            Descripcion = DescripcionRn01Recomendacion,
             Expresion = "recomendacion: contenido>=80 && creditos>=80; decision: docentes",
             Version = "2.1",
             Fuente = "Definición del equipo SIHA-IA (noviembre 2026): el agente recomienda y los docentes deciden",
