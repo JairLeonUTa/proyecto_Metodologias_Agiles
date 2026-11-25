@@ -88,7 +88,7 @@ public sealed class AnalisisAutomaticoService : IAnalisisAutomaticoService
     /// textos de la decisión): los análisis guardados con otra versión se marcan como desactualizados y los
     /// que todavía no tienen decisiones de los docentes se vuelven a analizar solos al arrancar MS C.
     /// </summary>
-    public const string VersionReglas = "2026-11-recomendacion-docente-decide";
+    public const string VersionReglas = "2026-11-creditos-bloquean";
 
     /// <summary>Mensaje mientras se actualiza un análisis hecho con reglas anteriores.</summary>
     public const string MensajeActualizando =

@@ -70,6 +70,8 @@ export function SolicitudesPage(): JSX.Element {
   const meToca = (analisis: SolicitudAnalisis | null): boolean =>
     esDocente &&
     analisis?.estado === 'ANALIZADO' &&
+    // Si no queda nada que votar (por ejemplo, todas bloqueadas por créditos) el servidor no deja responder.
+    analisis.puedeResponder &&
     analisis.revisores.some((rv) => rv.correo === correo && !rv.respondio);
   const pendientes = filas.filter((f) => meToca(f.analisis));
 
