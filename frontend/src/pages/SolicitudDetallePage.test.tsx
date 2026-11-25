@@ -2,20 +2,36 @@ import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { ErrorApi } from '../api/httpClient';
 import { SolicitudDetallePage } from './SolicitudDetallePage';
 
-const api = vi.hoisted(() => ({ obtenerSolicitud: vi.fn(), responder: vi.fn(), reanalizar: vi.fn() }));
+const api = vi.hoisted(() => ({
+  obtenerSolicitud: vi.fn(),
+  responder: vi.fn(),
+  reanalizar: vi.fn(),
+  decidirComoAdministrador: vi.fn(),
+  reenviarAgente: vi.fn(),
+}));
+const DOCENTE = { rol: 'DOCENTE', correoInstitucional: 'hnaranjo@uta.edu.ec', nombreCompleto: 'Ing. Hernán Naranjo' };
+const sesion = vi.hoisted(() => ({ usuario: null as unknown }));
 
 vi.mock('../api', async (importOriginal) => {
   const real = await importOriginal<typeof import('../api')>();
   return {
     ...real,
-    extraccionesApi: { ...real.extraccionesApi, ...api },
+    extraccionesApi: {
+      ...real.extraccionesApi,
+      obtenerSolicitud: api.obtenerSolicitud,
+      responder: api.responder,
+      reanalizar: api.reanalizar,
+      decidirComoAdministrador: api.decidirComoAdministrador,
+    },
+    expedientesApi: { ...real.expedientesApi, reenviarAgente: api.reenviarAgente },
   };
 });
 
 vi.mock('../hooks/useAuth', () => ({
-  useAuth: () => ({ usuario: { rol: 'DOCENTE', correoInstitucional: 'hnaranjo@uta.edu.ec', nombreCompleto: 'Ing. Hernán Naranjo' } }),
+  useAuth: () => ({ usuario: sesion.usuario }),
 }));
 
 const evaluacion = (numero: number, destino: string, origen: string, valor: number) => ({
@@ -79,6 +95,7 @@ const SOLICITUD = {
 
 describe('Solicitud: análisis explicado y decisión del docente', () => {
   beforeEach(() => {
+    sesion.usuario = DOCENTE;
     api.obtenerSolicitud.mockResolvedValue(SOLICITUD);
     api.responder.mockResolvedValue({ ...SOLICITUD, estadoRevision: 'EN_REVISION' });
   });
@@ -101,6 +118,71 @@ describe('Solicitud: análisis explicado y decisión del docente', () => {
     expect(screen.getAllByText(/la cubre la unidad 1/).length).toBeGreaterThan(0);
     expect(screen.getByText(/queda a criterio de los docentes/)).toBeInTheDocument();
     expect(screen.queryByText(/θ|δ|τ|0,65/)).not.toBeInTheDocument();
+  });
+
+  it('si los docentes no coinciden, el administrador toma la decisión final con un motivo', async () => {
+    const user = userEvent.setup();
+    sesion.usuario = { rol: 'ADMINISTRADOR', correoInstitucional: 'admin@uta.edu.ec', nombreCompleto: 'Director' };
+    const sinAcuerdo = {
+      ...SOLICITUD,
+      estadoRevision: 'RESUELTA',
+      puedeResponder: false,
+      resultadoFinal: [{ ...SOLICITUD.resultadoFinal[1], aprobaciones: 1, rechazos: 1, resultado: 'SIN_ACUERDO' }],
+    };
+    api.obtenerSolicitud.mockResolvedValue(sinAcuerdo);
+    api.decidirComoAdministrador.mockResolvedValue({
+      ...sinAcuerdo,
+      resultadoFinal: [
+        {
+          ...sinAcuerdo.resultadoFinal[0],
+          resultado: 'HOMOLOGADA',
+          decisionFinal: { aprobada: true, comentario: 'Cubre los temas', nombreAdministrador: 'Director', fechaUtc: '2026-11-24T00:00:00Z' },
+        },
+      ],
+    });
+    abrir();
+
+    expect(await screen.findByText('Los docentes no coinciden: su decisión final')).toBeInTheDocument();
+    const guardar = screen.getByRole('button', { name: 'Guardar decisión final' });
+    expect(guardar).toBeDisabled();
+    await user.click(within(screen.getByRole('group', { name: 'Decisión final para Cálculo Diferencial' })).getByRole('button', { name: 'Sí, homologar' }));
+    expect(guardar).toBeDisabled();
+    await user.type(screen.getByLabelText('Motivo de la decisión final para Cálculo Diferencial'), 'Cubre los temas');
+    await user.click(guardar);
+
+    expect(api.decidirComoAdministrador).toHaveBeenCalledWith('e1', {
+      codigoDestino: 'Cálculo Diferencial',
+      aprobada: true,
+      comentario: 'Cubre los temas',
+    });
+    expect(await screen.findByText(/Cubre los temas/)).toBeInTheDocument();
+    expect(screen.queryByText('Los docentes no coinciden: su decisión final')).not.toBeInTheDocument();
+  });
+
+  it('el docente ve que, sin acuerdo, decide el administrador', async () => {
+    api.obtenerSolicitud.mockResolvedValue({
+      ...SOLICITUD,
+      resultadoFinal: [{ ...SOLICITUD.resultadoFinal[1], aprobaciones: 1, rechazos: 1, resultado: 'SIN_ACUERDO' }],
+    });
+    abrir();
+
+    expect(await screen.findByText(/La decisión final la toma el\s+administrador/)).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Guardar decisión final' })).not.toBeInTheDocument();
+  });
+
+  it('si el agente no responde lo explica y deja volver a enviar la solicitud', async () => {
+    const user = userEvent.setup();
+    sesion.usuario = { rol: 'OPERADOR', correoInstitucional: 'op@uta.edu.ec', nombreCompleto: 'Operador' };
+    api.obtenerSolicitud.mockRejectedValue(new ErrorApi('Bad Gateway', 502));
+    api.reenviarAgente.mockResolvedValue({});
+    abrir();
+
+    expect(await screen.findByText('El agente no está respondiendo')).toBeInTheDocument();
+    expect(screen.getByText(/docker compose --profile sprint23 up -d/)).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Volver a enviar al agente' }));
+
+    expect(api.reenviarAgente).toHaveBeenCalledWith('e1');
+    expect(await screen.findByText(/Se volvió a enviar al agente/)).toBeInTheDocument();
   });
 
   it('un análisis con reglas anteriores ofrece volver a analizarlo', async () => {

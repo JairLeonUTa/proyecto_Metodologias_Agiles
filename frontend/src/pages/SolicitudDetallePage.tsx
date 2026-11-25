@@ -1,13 +1,15 @@
 import { useEffect, useState } from 'react';
 import type { ReactNode } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { detallesDeError, extraccionesApi, mensajeDeError } from '../api';
+import { detallesDeError, expedientesApi, extraccionesApi, mensajeDeError } from '../api';
+import { ErrorApi } from '../api/httpClient';
 import { Alerta, AreaTexto, Boton, CargandoBloque, Etiqueta, Tabla } from '../components/ui';
 import type { ColumnaTabla, TonoEtiqueta } from '../components/ui';
 import { useAuth } from '../hooks/useAuth';
 import { useTituloPagina } from '../hooks/useTituloPagina';
 import { RUTAS } from '../layouts/navegacion';
-import type { CoberturaUnidad, EvaluacionMateria, SolicitudAnalisis } from '../types/analisis';
+import type { CoberturaUnidad, EvaluacionMateria, ResultadoFinalMateria, SolicitudAnalisis } from '../types/analisis';
+import { ROLES } from '../types/comunes';
 import { formatearPorcentaje } from '../utils/analisis';
 import { estadoSolicitud } from './SolicitudesPage';
 
@@ -148,6 +150,155 @@ function AnalisisMateria({ e, carreraOrigen }: { e: EvaluacionMateria; carreraOr
   );
 }
 
+/**
+ * La solicitud no llega al agente: normalmente porque el agente (MS C) estaba apagado cuando se registró.
+ * Se explica en lenguaje simple y el operador o el administrador pueden volver a enviarla.
+ */
+function NoLlegaAlAgente({ id, agenteApagado }: { id: string; agenteApagado: boolean }): JSX.Element {
+  const { usuario } = useAuth();
+  const puedeReenviar = usuario?.rol === ROLES.OPERADOR || usuario?.rol === ROLES.ADMINISTRADOR;
+  const [enviando, setEnviando] = useState(false);
+  const [aviso, setAviso] = useState<{ tono: 'exito' | 'error'; texto: string } | null>(null);
+
+  const reenviar = async (): Promise<void> => {
+    setEnviando(true);
+    setAviso(null);
+    try {
+      await expedientesApi.reenviarAgente(id);
+      setAviso({ tono: 'exito', texto: 'Se volvió a enviar al agente. En unos segundos esta pantalla mostrará el análisis.' });
+    } catch (fallo) {
+      setAviso({ tono: 'error', texto: mensajeDeError(fallo) });
+    } finally {
+      setEnviando(false);
+    }
+  };
+
+  return (
+    <Alerta tono="advertencia" titulo={agenteApagado ? 'El agente no está respondiendo' : 'La solicitud todavía no llega al agente'}>
+      <p>
+        {agenteApagado
+          ? 'El servicio del agente (MS C) no responde, así que no puede analizar la solicitud.'
+          : 'La solicitud quedó registrada, pero el agente no la ha recibido. Suele pasar si el agente estaba apagado cuando se registró.'}{' '}
+        Quien administra el sistema debe encenderlo con <code>docker compose --profile sprint23 up -d</code>.
+        {puedeReenviar ? ' Cuando esté encendido, pulse «Volver a enviar al agente».' : ''}
+      </p>
+      {puedeReenviar ? (
+        <Boton className="mt-2" onClick={() => void reenviar()} cargando={enviando} textoCargando="Enviando…">
+          Volver a enviar al agente
+        </Boton>
+      ) : null}
+      {aviso ? (
+        <p className={`mt-2 text-sm font-medium ${aviso.tono === 'exito' ? 'text-emerald-800' : 'text-red-800'}`}>{aviso.texto}</p>
+      ) : null}
+      <p className="mt-2 text-xs text-muted">Esta pantalla se sigue actualizando sola.</p>
+    </Alerta>
+  );
+}
+
+/**
+ * Cuando los dos docentes no coinciden en una materia, la decide el administrador (coordinador o director de
+ * carrera) con un comentario obligatorio. Los demás ven que falta esa decisión.
+ */
+function DecisionDelAdministrador({
+  solicitud,
+  alGuardar,
+}: {
+  solicitud: SolicitudAnalisis;
+  alGuardar: (s: SolicitudAnalisis) => void;
+}): JSX.Element {
+  const { usuario } = useAuth();
+  const esAdministrador = usuario?.rol === ROLES.ADMINISTRADOR;
+  const sinAcuerdo = solicitud.resultadoFinal.filter((m) => m.resultado === 'SIN_ACUERDO');
+
+  if (!esAdministrador) {
+    return (
+      <Alerta tono="advertencia" titulo="Los docentes no coinciden">
+        En {sinAcuerdo.map((m) => `«${m.nombreDestino}»`).join(', ')} un docente aprobó y el otro no. La decisión final la toma el
+        administrador (coordinador o director de carrera).
+      </Alerta>
+    );
+  }
+
+  return (
+    <div className="space-y-3 rounded-lg border-2 border-amber-300 bg-amber-50 p-4">
+      <p className="text-sm font-semibold text-ink">Los docentes no coinciden: su decisión final</p>
+      <p className="text-sm text-slate-700">
+        Un docente aprobó y el otro no. Como coordinador o director de carrera, decida cada materia y escriba el motivo.
+      </p>
+      {sinAcuerdo.map((m) => (
+        <DecisionFinalMateria key={m.codigoDestino} expedienteId={solicitud.expedienteId} materia={m} alGuardar={alGuardar} />
+      ))}
+    </div>
+  );
+}
+
+function DecisionFinalMateria({
+  expedienteId,
+  materia,
+  alGuardar,
+}: {
+  expedienteId: string;
+  materia: ResultadoFinalMateria;
+  alGuardar: (s: SolicitudAnalisis) => void;
+}): JSX.Element {
+  const [aprobada, setAprobada] = useState<boolean | undefined>(undefined);
+  const [comentario, setComentario] = useState('');
+  const [guardando, setGuardando] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const botonClase = (activo: boolean, color: string): string =>
+    `rounded-lg border-2 px-4 py-2 text-sm font-semibold transition ${activo ? `${color} text-white` : 'border-slate-300 bg-white text-slate-700 hover:bg-slate-50'}`;
+
+  const guardar = async (): Promise<void> => {
+    if (aprobada === undefined) return;
+    setGuardando(true);
+    setError(null);
+    try {
+      alGuardar(
+        await extraccionesApi.decidirComoAdministrador(expedienteId, {
+          codigoDestino: materia.codigoDestino,
+          aprobada,
+          comentario: comentario.trim(),
+        }),
+      );
+    } catch (fallo) {
+      setError(mensajeDeError(fallo));
+    } finally {
+      setGuardando(false);
+    }
+  };
+
+  return (
+    <div className="space-y-2 rounded-md bg-white p-3">
+      <div className="flex flex-wrap items-center gap-3">
+        <span className="min-w-64 flex-1 font-medium text-ink">{materia.nombreDestino}</span>
+        <span className="text-sm text-muted">
+          {materia.aprobaciones} a favor · {materia.rechazos} en contra
+        </span>
+        <div className="flex gap-2" role="group" aria-label={`Decisión final para ${materia.nombreDestino}`}>
+          <button type="button" aria-pressed={aprobada === true} className={botonClase(aprobada === true, 'border-emerald-600 bg-emerald-600')} onClick={() => setAprobada(true)}>
+            Sí, homologar
+          </button>
+          <button type="button" aria-pressed={aprobada === false} className={botonClase(aprobada === false, 'border-red-600 bg-red-600')} onClick={() => setAprobada(false)}>
+            No homologar
+          </button>
+        </div>
+      </div>
+      <AreaTexto
+        aria-label={`Motivo de la decisión final para ${materia.nombreDestino}`}
+        placeholder="Motivo de la decisión (obligatorio)"
+        value={comentario}
+        onChange={(e) => setComentario(e.target.value)}
+        rows={2}
+        className="font-sans"
+      />
+      {error ? <Alerta tono="error">{error}</Alerta> : null}
+      <Boton onClick={() => void guardar()} disabled={aprobada === undefined || !comentario.trim()} cargando={guardando} textoCargando="Guardando…">
+        Guardar decisión final
+      </Boton>
+    </div>
+  );
+}
+
 /** Decisión del docente revisor: un botón por materia, en lenguaje simple. */
 function SuDecision({ solicitud, alGuardar }: { solicitud: SolicitudAnalisis; alGuardar: (s: SolicitudAnalisis) => void }): JSX.Element {
   const { usuario } = useAuth();
@@ -257,14 +408,22 @@ export function SolicitudDetallePage(): JSX.Element {
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [reanalizando, setReanalizando] = useState(false);
+  /** Consultas seguidas en las que la solicitud todavía no llega al agente, y si el agente ni siquiera responde. */
+  const [espera, setEspera] = useState<{ intentos: number; agenteApagado: boolean }>({ intentos: 0, agenteApagado: false });
 
   useEffect(() => {
     let activo = true;
     let temporizador: ReturnType<typeof setTimeout> | undefined;
     const cargar = async (): Promise<void> => {
-      const analisis = await extraccionesApi.obtenerSolicitud(id).catch(() => null);
+      let agenteApagado = false;
+      const analisis = await extraccionesApi.obtenerSolicitud(id).catch((fallo: unknown) => {
+        // 404: el agente responde pero la solicitud aún no le llega. Otro error (502, 503, sin red): el agente no responde.
+        agenteApagado = !(fallo instanceof ErrorApi && fallo.estado === 404);
+        return null;
+      });
       if (!activo) return;
       setSolicitud(analisis);
+      setEspera((e) => (analisis ? { intentos: 0, agenteApagado: false } : { intentos: e.intentos + 1, agenteApagado }));
       setCargando(false);
       // Mientras el agente trabaja, se vuelve a consultar cada 3 segundos; si se está preparando
       // (reintenta solo cada cierto tiempo), cada 15 segundos.
@@ -281,6 +440,8 @@ export function SolicitudDetallePage(): JSX.Element {
   if (cargando) return <CargandoBloque />;
   if (error) return <Alerta tono="error">{error}</Alerta>;
   if (!solicitud) {
+    // Unos 20 segundos sin respuesta (o el agente no responde): se explica qué pasa y cómo seguir.
+    if (espera.agenteApagado || espera.intentos >= 7) return <NoLlegaAlAgente id={id} agenteApagado={espera.agenteApagado} />;
     return <Alerta tono="informacion">Estamos recibiendo el certificado… esta pantalla se actualiza sola.</Alerta>;
   }
 
@@ -442,14 +603,25 @@ export function SolicitudDetallePage(): JSX.Element {
               })}
             </ul>
             {solicitud.estadoRevision === 'RESUELTA' ? (
-              <ul className="space-y-1">
+              <ul className="space-y-2">
                 {solicitud.resultadoFinal.map((m) => (
-                  <li key={m.codigoDestino} className="flex items-center gap-3 text-sm">
-                    <span className="min-w-64 font-medium">{m.nombreDestino}</span>
-                    <Etiqueta tono={RESULTADO[m.resultado]?.tono ?? 'neutro'}>{RESULTADO[m.resultado]?.texto}</Etiqueta>
+                  <li key={m.codigoDestino} className="space-y-1 text-sm">
+                    <div className="flex flex-wrap items-center gap-3">
+                      <span className="min-w-64 font-medium">{m.nombreDestino}</span>
+                      <Etiqueta tono={RESULTADO[m.resultado]?.tono ?? 'neutro'}>{RESULTADO[m.resultado]?.texto}</Etiqueta>
+                    </div>
+                    {m.decisionFinal ? (
+                      <p className="text-slate-700">
+                        Los docentes no coincidieron. Decisión final de <strong>{m.decisionFinal.nombreAdministrador}</strong>:{' '}
+                        {m.decisionFinal.aprobada ? 'homologar' : 'no homologar'} — “{m.decisionFinal.comentario}”
+                      </p>
+                    ) : null}
                   </li>
                 ))}
               </ul>
+            ) : null}
+            {solicitud.resultadoFinal.some((m) => m.resultado === 'SIN_ACUERDO') ? (
+              <DecisionDelAdministrador solicitud={solicitud} alGuardar={setSolicitud} />
             ) : null}
             {solicitud.puedeResponder ? <SuDecision solicitud={solicitud} alGuardar={setSolicitud} /> : null}
           </div>

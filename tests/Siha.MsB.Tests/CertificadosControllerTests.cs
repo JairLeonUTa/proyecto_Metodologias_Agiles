@@ -250,6 +250,23 @@ public class CertificadosControllerTests : IDisposable
     }
 
     [Fact]
+    public async Task Una_solicitud_que_no_llego_al_agente_se_puede_volver_a_enviar_sin_cambiar_su_estado()
+    {
+        var registro = await Controlador().Registrar(Certificado("SIHA-TI-SW-cambio-de-carrera.pdf"), CancellationToken.None);
+        var id = ((SolicitudCertificadoResponse)((AcceptedResult)registro.Result!).Value!).Expediente.Id;
+        var envio = new ExpedienteEnvioService(_db, Pruebas.CrearAlmacenamiento(Pruebas.OpcionesArchivos(_directorio)), _publicador.Object,
+            Options.Create(Pruebas.OpcionesArchivos(_directorio)), Options.Create(new RepublicacionOptions()),
+            NullLogger<ExpedienteEnvioService>.Instance);
+
+        var reenvio = await envio.ReenviarAlAgenteAsync(id);
+
+        reenvio.Tipo.Should().Be(TipoResultadoEnvio.Publicado);
+        _publicados.Should().HaveCount(2);
+        _publicados[1].CorrelationId.Should().Be(_publicados[0].CorrelationId, "es el mismo evento");
+        _db.Expedientes.Single().Estado.Should().Be(ExpedienteEstados.PendienteContenidos);
+    }
+
+    [Fact]
     public async Task El_numero_que_se_muestra_al_revisar_es_el_mismo_que_queda_registrado()
     {
         var revision = await Controlador().ValidarManual(Manual(), CancellationToken.None);

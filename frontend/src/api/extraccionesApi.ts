@@ -41,6 +41,10 @@ export const extraccionesApi = {
   responder: (expedienteId: string, dictamen: { decisiones: DecisionMateria[]; comentario: string | null }) =>
     peticion<SolicitudAnalisis>(`/api/extracciones/expedientes/${expedienteId}/dictamen`, { metodo: 'POST', cuerpo: dictamen }),
 
+  /** Decisión final del administrador en una materia en la que los dos docentes no coinciden. */
+  decidirComoAdministrador: (expedienteId: string, decision: { codigoDestino: string; aprobada: boolean; comentario: string }) =>
+    peticion<SolicitudAnalisis>(`/api/extracciones/expedientes/${expedienteId}/decision-final`, { metodo: 'POST', cuerpo: decision }),
+
   /** Coincidencia exacta; sin coincidencia devuelve `[]` (S2-A07). */
   buscarPrecedentes: (datos: BuscarPrecedente) =>
     peticion<Precedente[]>('/api/extracciones/precedentes/buscar', { metodo: 'POST', cuerpo: datos }),

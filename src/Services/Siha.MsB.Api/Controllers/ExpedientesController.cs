@@ -120,6 +120,17 @@ public class ExpedientesController : ControllerBase
     public async Task<ActionResult<ExpedienteAceptadoResponse>> Republicar(Guid id, CancellationToken cancellationToken)
         => ARespuesta(await _envio.EnviarAsync(id, ModoEnvio.Reintento, cancellationToken));
 
+    /// <summary>
+    /// Vuelve a mandar al agente una solicitud que nunca le llegó (por ejemplo, si el agente estaba apagado
+    /// al registrarla). No duplica nada: el agente ignora lo que ya procesó.
+    /// </summary>
+    [HttpPost("{id:guid}/reenviar-agente")]
+    [Authorize(Roles = $"{RolesSistema.Operador},{RolesSistema.Administrador}")]
+    [ProducesResponseType(typeof(ExpedienteAceptadoResponse), StatusCodes.Status202Accepted)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<ExpedienteAceptadoResponse>> ReenviarAlAgente(Guid id, CancellationToken cancellationToken)
+        => ARespuesta(await _envio.ReenviarAlAgenteAsync(id, cancellationToken));
+
     private ActionResult<ExpedienteAceptadoResponse> ARespuesta(ResultadoEnvio resultado)
     {
         if (resultado.Expediente is null)

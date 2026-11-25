@@ -17,6 +17,7 @@ public class SihaDbContextC : DbContext
     public DbSet<EmbeddingUnidad> EmbeddingsUnidad => Set<EmbeddingUnidad>();
     public DbSet<AnalisisExpediente> AnalisisExpedientes => Set<AnalisisExpediente>();
     public DbSet<DictamenDocente> DictamenesDocentes => Set<DictamenDocente>();
+    public DbSet<DecisionFinalAdministrador> DecisionesFinales => Set<DecisionFinalAdministrador>();
     public DbSet<ResultadoHomologacion> ResultadosHomologacion => Set<ResultadoHomologacion>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -107,6 +108,17 @@ public class SihaDbContextC : DbContext
             e.Property(x => x.DecisionesJson).HasColumnType("NVARCHAR(MAX)").IsRequired();
             e.Property(x => x.Comentario).HasMaxLength(2000);
             e.HasIndex(x => new { x.ExpedienteId, x.CorreoDocente }).IsUnique();
+        });
+
+        modelBuilder.Entity<DecisionFinalAdministrador>(e =>
+        {
+            e.ToTable("DECISION_FINAL");
+            e.HasKey(x => x.Id);
+            e.Property(x => x.Materia).HasMaxLength(200).IsRequired();
+            e.Property(x => x.Comentario).HasMaxLength(2000).IsRequired();
+            e.Property(x => x.CorreoAdministrador).HasMaxLength(150).IsRequired();
+            e.Property(x => x.NombreAdministrador).HasMaxLength(200);
+            e.HasIndex(x => new { x.ExpedienteId, x.Materia }).IsUnique();
         });
 
         modelBuilder.Entity<ExtraccionUnidad>(e =>

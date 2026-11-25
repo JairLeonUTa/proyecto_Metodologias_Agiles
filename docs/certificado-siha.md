@@ -23,8 +23,16 @@ Flujo completo, en pocas pantallas:
    horaria** se muestran solo como datos informativos: no deciden el resultado.
 3. **Los dos docentes revisores** que vienen en el PDF ven la solicitud con el análisis ya hecho y deciden
    **todas** las materias (Sí, homologar / No homologar), también las que no llegan al 80 %. Queda
-   **homologada** si los dos la aprueban, **no homologada** si los dos la rechazan y **sin acuerdo** si
-   discrepan. La solicitud queda resuelta cuando responden los dos.
+   **homologada** si los dos la aprueban y **no homologada** si los dos la rechazan.
+4. **Sin acuerdo** (un docente aprueba y el otro no): la materia la decide el **administrador** (coordinador o
+   director de carrera) en la misma pantalla, con un **motivo obligatorio** (tabla `DECISION_FINAL`, DB C). La
+   lista muestra "Docentes sin acuerdo · decide el administrador" hasta que lo haga. Los votos de los docentes
+   se conservan; si un docente cambia su voto y se ponen de acuerdo, vale la votación.
+
+Si una solicitud se queda en "Estamos recibiendo el certificado…", el agente (MS C) no la recibió (por ejemplo,
+estaba apagado al registrarla). La pantalla lo explica a los ~20 s; con el agente encendido
+(`docker compose --profile sprint23 up -d`), el operador o el administrador pulsa **«Volver a enviar al
+agente»** (`POST /api/expedientes/{id}/reenviar-agente`), que reenvía el mismo evento sin duplicar nada.
 
 ## Registro manual (sin PDF)
 
@@ -167,6 +175,8 @@ Desde el 24-11-2026 **RN-01 2.1**: el 80 % es la recomendación del agente y la 
 | MS C | `GET /api/extracciones/expedientes/{id}/analisis` | Historial, reglas, análisis explicado, revisores y resultado final |
 | MS C | `POST /api/extracciones/expedientes/{id}/analisis-automatico` | Reintentar si la IA no estaba disponible |
 | MS C | `POST /api/extracciones/expedientes/{id}/dictamen` | Decisión del docente revisor (rol DOCENTE) |
+| MS C | `POST /api/extracciones/expedientes/{id}/decision-final` | Decisión final del administrador en una materia sin acuerdo (motivo obligatorio) |
+| MS B | `POST /api/expedientes/{id}/reenviar-agente` | Volver a enviar al agente una solicitud que no le llegó |
 | MS C | `GET /api/extracciones/resultados-homologacion` | Tabla `RESULTADO_HOMOLOGACION`: una fila por materia (operador y administrador) |
 | MS A (gRPC) | `CatalogoGrpc.ObtenerMallaVigente` / `ResolverCarrera` / `VerificarDocentes` / `ListarDocentes` | Sílabos para el agente / carreras por nombre / revisores válidos / docentes para el registro manual |
 

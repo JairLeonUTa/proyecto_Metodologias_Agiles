@@ -36,9 +36,62 @@ public sealed class SolicitudesAnalisisService
             .Where(d => d.ExpedienteId == expedienteId)
             .OrderBy(d => d.FechaUtc)
             .ToListAsync(cancellationToken);
+        var decisiones = await _db.DecisionesFinales.AsNoTracking()
+            .Where(d => d.ExpedienteId == expedienteId)
+            .ToListAsync(cancellationToken);
 
-        return Armar(contexto, dictamenes, esDocente && contexto.EsRevisor(correoUsuario));
+        return Armar(contexto, dictamenes, esDocente && contexto.EsRevisor(correoUsuario), decisiones);
     }
+
+    /// <summary>
+    /// El administrador (coordinador o director de carrera) decide una materia en la que los dos docentes no se
+    /// pusieron de acuerdo, con un comentario obligatorio. Solo se permite mientras la materia esté SIN_ACUERDO.
+    /// </summary>
+    public async Task<(SolicitudAnalisisResponse? Respuesta, string? Error, int Codigo)> DecidirComoAdministradorAsync(
+        Guid expedienteId, string correo, string nombre, DecisionFinalRequest? solicitud, CancellationToken cancellationToken = default)
+    {
+        var contexto = await _db.AnalisisExpedientes.FirstOrDefaultAsync(a => a.ExpedienteId == expedienteId, cancellationToken);
+        if (contexto is null)
+            return (null, "La solicitud no existe.", StatusCodes.Status404NotFound);
+        if (contexto.Estado != EstadosAnalisis.Analizado || contexto.ResultadoJson is null)
+            return (null, "El agente todavía no termina el análisis de esta solicitud.", StatusCodes.Status409Conflict);
+
+        var materia = solicitud?.CodigoDestino?.Trim() ?? string.Empty;
+        var comentario = solicitud?.Comentario?.Trim() ?? string.Empty;
+        if (comentario.Length == 0)
+            return (null, "Escriba el motivo de la decisión final: queda registrado junto a la decisión.", StatusCodes.Status400BadRequest);
+
+        var dictamenes = await _db.DictamenesDocentes.AsNoTracking().Where(d => d.ExpedienteId == expedienteId).ToListAsync(cancellationToken);
+        var votacion = CalcularResultadoFinal(Leer(contexto.ResultadoJson), ARespuestas(dictamenes))
+            .FirstOrDefault(m => string.Equals(m.CodigoDestino, materia, StringComparison.OrdinalIgnoreCase));
+        if (votacion is null)
+            return (null, $"La materia «{materia}» no forma parte de esta solicitud.", StatusCodes.Status400BadRequest);
+        if (votacion.Resultado != SinAcuerdo)
+            return (null, $"«{votacion.NombreDestino}» no necesita decisión final: los docentes no están en desacuerdo.", StatusCodes.Status409Conflict);
+
+        var existente = await _db.DecisionesFinales
+            .FirstOrDefaultAsync(d => d.ExpedienteId == expedienteId && d.Materia == votacion.CodigoDestino, cancellationToken);
+        if (existente is null)
+        {
+            existente = new DecisionFinalAdministrador { ExpedienteId = expedienteId, Materia = votacion.CodigoDestino };
+            _db.DecisionesFinales.Add(existente);
+        }
+
+        existente.Aprobada = solicitud!.Aprobada;
+        existente.Comentario = comentario.Length > 2000 ? comentario[..2000] : comentario;
+        existente.CorreoAdministrador = correo.ToLowerInvariant();
+        existente.NombreAdministrador = nombre;
+        existente.FechaUtc = DateTimeOffset.UtcNow;
+        await _db.SaveChangesAsync(cancellationToken);
+
+        await TablaResultadosHomologacion.GuardarAsync(_db, contexto, Leer(contexto.ResultadoJson), cancellationToken);
+        await _db.SaveChangesAsync(cancellationToken);
+
+        return (await ObtenerAsync(expedienteId, correo, esDocente: false, cancellationToken), null, StatusCodes.Status200OK);
+    }
+
+    /// <summary>Resultado de una materia en la que un docente aprobó y el otro no.</summary>
+    public const string SinAcuerdo = "SIN_ACUERDO";
 
     /// <summary>Guarda (o reemplaza) la respuesta final del docente revisor que inicia sesión.</summary>
     public async Task<(SolicitudAnalisisResponse? Respuesta, string? Error, int Codigo)> ResponderAsync(
@@ -86,7 +139,8 @@ public sealed class SolicitudesAnalisisService
         return (await ObtenerAsync(expedienteId, correo, esDocente: true, cancellationToken), null, StatusCodes.Status200OK);
     }
 
-    private static SolicitudAnalisisResponse Armar(AnalisisExpediente c, List<DictamenDocente> dictamenes, bool puedeResponder)
+    private static SolicitudAnalisisResponse Armar(
+        AnalisisExpediente c, List<DictamenDocente> dictamenes, bool puedeResponder, IReadOnlyList<DecisionFinalAdministrador> decisionesFinales)
     {
         AnalisisAutomaticoResponse? resultado = null;
         try
@@ -101,7 +155,7 @@ public sealed class SolicitudesAnalisisService
         var respuestas = ARespuestas(dictamenes);
         var final = resultado is null
             ? new List<ResultadoFinalMateriaResponse>()
-            : CalcularResultadoFinal(resultado, respuestas);
+            : CalcularResultadoFinal(resultado, respuestas, decisionesFinales);
 
         var revisores = new[] { (c.Revisor1Nombre, c.Revisor1Correo), (c.Revisor2Nombre, c.Revisor2Correo) }
             .Where(r => !string.IsNullOrWhiteSpace(r.Item2))
@@ -151,7 +205,8 @@ public sealed class SolicitudesAnalisisService
     /// agente (CUMPLE o NO_CUMPLE) no decide: siempre votan los dos docentes.
     /// </summary>
     internal static List<ResultadoFinalMateriaResponse> CalcularResultadoFinal(
-        AnalisisAutomaticoResponse resultado, IReadOnlyCollection<DictamenResponse> respuestas)
+        AnalisisAutomaticoResponse resultado, IReadOnlyCollection<DictamenResponse> respuestas,
+        IReadOnlyCollection<DecisionFinalAdministrador>? decisionesFinales = null)
         => Todas(resultado).Select(m =>
         {
             var votos = respuestas
@@ -160,7 +215,19 @@ public sealed class SolicitudesAnalisisService
                 .ToList();
             var si = votos.Count(v => v!.Aprobada);
             var no = votos.Count - si;
-            var estado = votos.Count < 2 ? "PENDIENTE" : si == 2 ? "HOMOLOGADA" : no == 2 ? "NO_HOMOLOGADA" : "SIN_ACUERDO";
+            var estado = votos.Count < 2 ? "PENDIENTE" : si == 2 ? "HOMOLOGADA" : no == 2 ? "NO_HOMOLOGADA" : SinAcuerdo;
+
+            // Sin acuerdo entre los docentes: decide el administrador (coordinador o director de carrera).
+            var decision = estado == SinAcuerdo
+                ? decisionesFinales?.FirstOrDefault(d => string.Equals(d.Materia, m.Codigo, StringComparison.OrdinalIgnoreCase))
+                : null;
+            if (decision is not null)
+            {
+                return new ResultadoFinalMateriaResponse(m.Codigo, m.Nombre, m.Estimacion, si, no,
+                    decision.Aprobada ? "HOMOLOGADA" : "NO_HOMOLOGADA",
+                    new DecisionFinalResponse(decision.Aprobada, decision.Comentario, decision.NombreAdministrador, decision.FechaUtc));
+            }
+
             return new ResultadoFinalMateriaResponse(m.Codigo, m.Nombre, m.Estimacion, si, no, estado);
         }).ToList();
 

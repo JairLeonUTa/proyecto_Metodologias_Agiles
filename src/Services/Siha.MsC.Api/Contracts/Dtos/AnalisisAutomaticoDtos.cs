@@ -119,7 +119,15 @@ public record ResultadoFinalMateriaResponse(
     string Estimacion,
     int Aprobaciones,
     int Rechazos,
-    string Resultado);
+    string Resultado,
+    /// <summary>Decisión del administrador cuando los docentes no se pusieron de acuerdo (si la hay).</summary>
+    DecisionFinalResponse? DecisionFinal = null);
+
+/// <summary>Decisión final del administrador sobre una materia sin acuerdo entre los docentes.</summary>
+public record DecisionFinalResponse(bool Aprobada, string Comentario, string NombreAdministrador, DateTimeOffset FechaUtc);
+
+/// <summary>El administrador decide una materia en la que los dos docentes no se pusieron de acuerdo.</summary>
+public record DecisionFinalRequest(string? CodigoDestino, bool Aprobada, string? Comentario);
 
 /// <summary>Materia del historial del certificado (aprobada o reprobada).</summary>
 public record MateriaHistorialResponse(string Nombre, int Nivel, string PeriodoAcademico, decimal Nota, bool Aprobada);

@@ -136,6 +136,49 @@ namespace Siha.MsC.Api.Migrations
                     b.ToTable("ANALISIS_EXPEDIENTE", (string)null);
                 });
 
+            modelBuilder.Entity("Siha.MsC.Api.Domain.Entities.DecisionFinalAdministrador", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<bool>("Aprobada")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Comentario")
+                        .IsRequired()
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
+
+                    b.Property<string>("CorreoAdministrador")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.Property<Guid>("ExpedienteId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("FechaUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("Materia")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("NombreAdministrador")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ExpedienteId", "Materia")
+                        .IsUnique();
+
+                    b.ToTable("DECISION_FINAL", (string)null);
+                });
+
             modelBuilder.Entity("Siha.MsC.Api.Domain.Entities.DictamenDocente", b =>
                 {
                     b.Property<Guid>("Id")

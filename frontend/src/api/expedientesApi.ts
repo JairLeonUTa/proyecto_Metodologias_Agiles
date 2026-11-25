@@ -48,6 +48,10 @@ export const expedientesApi = {
       cuerpo: formularioPdf(archivo, silabos),
     }),
 
+  /** Vuelve a mandar al agente una solicitud que nunca le llegó (por ejemplo, si estaba apagado). */
+  reenviarAgente: (expedienteId: string) =>
+    peticion<unknown>(`/api/expedientes/${expedienteId}/reenviar-agente`, { metodo: 'POST' }),
+
   /** Docentes revisores y materias de las carreras, para el registro manual. */
   opcionesManual: (carreraOrigen = '', carreraDestino = '') =>
     peticion<OpcionesRegistroManual>(

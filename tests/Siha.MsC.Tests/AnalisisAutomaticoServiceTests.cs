@@ -677,6 +677,66 @@ public class AnalisisAutomaticoServiceTests
         dos.Respuesta!.ResultadoFinal.Single(m => m.CodigoDestino == alg).Resultado.Should().Be("SIN_ACUERDO");
     }
 
+    private static async Task<(SolicitudesAnalisisService Servicio, Guid Expediente)> SinAcuerdoEnAlgoritmos(SihaDbContextC db)
+    {
+        var expediente = await SolicitudAnalizada(db);
+        var solicitudes = new SolicitudesAnalisisService(db);
+        const string alg = "Algoritmos y Lógica de Programación", poo = "Programación Orientada a Objetos";
+        await solicitudes.ResponderAsync(expediente, "hnaranjo@uta.edu.ec", "Naranjo", Decidir((alg, true), (poo, false)));
+        await solicitudes.ResponderAsync(expediente, "mvaca@uta.edu.ec", "Vaca", Decidir((alg, false), (poo, false)));
+        return (solicitudes, expediente);
+    }
+
+    [Fact]
+    public async Task Sin_acuerdo_lo_decide_el_administrador_con_un_comentario()
+    {
+        await using var db = CrearDb();
+        var (solicitudes, expediente) = await SinAcuerdoEnAlgoritmos(db);
+        const string alg = "Algoritmos y Lógica de Programación";
+
+        var (respuesta, error, _) = await solicitudes.DecidirComoAdministradorAsync(expediente, "admin@uta.edu.ec", "Director de carrera",
+            new DecisionFinalRequest(alg, true, "Revisé el plan analítico: cubre los temas."));
+
+        error.Should().BeNull();
+        var fila = respuesta!.ResultadoFinal.Single(m => m.CodigoDestino == alg);
+        fila.Resultado.Should().Be("HOMOLOGADA");
+        (fila.Aprobaciones, fila.Rechazos).Should().Be((1, 1), "los votos de los docentes se conservan");
+        fila.DecisionFinal!.Comentario.Should().Be("Revisé el plan analítico: cubre los temas.");
+        fila.DecisionFinal.NombreAdministrador.Should().Be("Director de carrera");
+        (await db.ResultadosHomologacion.SingleAsync(f => f.MateriaDestino == alg)).ResultadoFinal.Should().Be("HOMOLOGADA");
+    }
+
+    [Fact]
+    public async Task La_decision_final_exige_comentario_y_solo_aplica_a_materias_sin_acuerdo()
+    {
+        await using var db = CrearDb();
+        var (solicitudes, expediente) = await SinAcuerdoEnAlgoritmos(db);
+
+        var sinComentario = await solicitudes.DecidirComoAdministradorAsync(expediente, "admin@uta.edu.ec", "Admin",
+            new DecisionFinalRequest("Algoritmos y Lógica de Programación", true, "  "));
+        sinComentario.Codigo.Should().Be(400);
+
+        var conAcuerdo = await solicitudes.DecidirComoAdministradorAsync(expediente, "admin@uta.edu.ec", "Admin",
+            new DecisionFinalRequest("Programación Orientada a Objetos", true, "Quiero cambiarla"));
+        conAcuerdo.Codigo.Should().Be(409, "los dos docentes coincidieron en no homologarla");
+        db.DecisionesFinales.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task Si_un_docente_cambia_su_voto_y_se_ponen_de_acuerdo_decide_la_votacion()
+    {
+        await using var db = CrearDb();
+        var (solicitudes, expediente) = await SinAcuerdoEnAlgoritmos(db);
+        const string alg = "Algoritmos y Lógica de Programación", poo = "Programación Orientada a Objetos";
+        await solicitudes.DecidirComoAdministradorAsync(expediente, "admin@uta.edu.ec", "Admin", new DecisionFinalRequest(alg, true, "Procede."));
+
+        var cambio = await solicitudes.ResponderAsync(expediente, "hnaranjo@uta.edu.ec", "Naranjo", Decidir((alg, false), (poo, false)));
+
+        var fila = cambio.Respuesta!.ResultadoFinal.Single(m => m.CodigoDestino == alg);
+        fila.Resultado.Should().Be("NO_HOMOLOGADA");
+        fila.DecisionFinal.Should().BeNull();
+    }
+
     [Fact]
     public async Task Los_docentes_pueden_homologar_una_materia_que_no_llega_al_80()
     {

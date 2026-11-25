@@ -22,7 +22,10 @@ public static class TablaResultadosHomologacion
         var dictamenes = await db.DictamenesDocentes.AsNoTracking()
             .Where(d => d.ExpedienteId == contexto.ExpedienteId)
             .ToListAsync(cancellationToken);
-        var finales = SolicitudesAnalisisService.CalcularResultadoFinal(resultado, SolicitudesAnalisisService.ARespuestas(dictamenes));
+        var decisiones = await db.DecisionesFinales.AsNoTracking()
+            .Where(d => d.ExpedienteId == contexto.ExpedienteId)
+            .ToListAsync(cancellationToken);
+        var finales = SolicitudesAnalisisService.CalcularResultadoFinal(resultado, SolicitudesAnalisisService.ARespuestas(dictamenes), decisiones);
 
         var filas = await db.ResultadosHomologacion
             .Where(r => r.ExpedienteId == contexto.ExpedienteId)

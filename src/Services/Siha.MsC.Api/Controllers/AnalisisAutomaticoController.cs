@@ -74,6 +74,27 @@ public class AnalisisAutomaticoController : ControllerBase
         return respuesta is null ? StatusCode(codigo, new { mensaje = error }) : Ok(respuesta);
     }
 
+    /// <summary>
+    /// Decisión final del administrador (coordinador o director de carrera) en una materia en la que los dos
+    /// docentes no se pusieron de acuerdo. El comentario es obligatorio.
+    /// </summary>
+    [HttpPost("{expedienteId:guid}/decision-final")]
+    [Authorize(Roles = RolesSistema.Administrador)]
+    [ProducesResponseType(typeof(SolicitudAnalisisResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    public async Task<ActionResult<SolicitudAnalisisResponse>> DecidirComoAdministrador(
+        Guid expedienteId, [FromBody] DecisionFinalRequest decision, CancellationToken cancellationToken)
+    {
+        var correo = Correo();
+        if (string.IsNullOrWhiteSpace(correo)) return Forbid();
+
+        var (respuesta, error, codigo) = await _solicitudes.DecidirComoAdministradorAsync(
+            expedienteId, correo, User.FindFirst(ClaimTypes.Name)?.Value ?? correo, decision, cancellationToken);
+        return respuesta is null ? StatusCode(codigo, new { mensaje = error }) : Ok(respuesta);
+    }
+
     private string? Correo() => User.FindFirst(ClaimTypes.Email)?.Value;
 
     private bool EsDocente() => User.IsInRole(RolesSistema.Docente);
