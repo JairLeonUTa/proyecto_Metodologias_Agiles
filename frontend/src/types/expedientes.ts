@@ -190,3 +190,38 @@ export interface SolicitudCertificado {
   publicado: boolean;
   mensaje: string;
 }
+
+/** Materia del historial en el registro manual. */
+export interface MateriaManual {
+  nombre: string;
+  nivel: number | null;
+  periodoAcademico: string;
+  nota: number | null;
+  aprobada: boolean;
+}
+
+/** Materia de destino y las aprobadas con las que se pide homologarla. */
+export interface SolicitudManual {
+  materiasOrigen: string[];
+  materiaDestino: string;
+}
+
+/** Registro manual de una solicitud (sin PDF): los mismos datos del certificado SIHA. */
+export interface RegistroManual {
+  estudianteNombre: string;
+  cedula: string;
+  tipoTramite: string;
+  institucionOrigen: string;
+  carreraOrigen: string;
+  carreraDestino: string;
+  revisor1Correo: string;
+  revisor2Correo: string;
+  materias: MateriaManual[];
+  solicitudes: SolicitudManual[];
+}
+
+export interface OpcionesRegistroManual {
+  docentes: { nombre: string; correo: string }[];
+  materiasOrigen: string[];
+  materiasDestino: string[];
+}

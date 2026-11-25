@@ -50,7 +50,8 @@ describe('LayoutPrincipal — navegación simple según rol', () => {
     const navegacion = screen.getByRole('navigation', { name: 'Navegación principal' });
     expect(navegacion).toHaveTextContent('Registrar solicitud');
     expect(navegacion).toHaveTextContent('Solicitudes');
-    expect(navegacion).toHaveTextContent('Reglas de homologación');
+    expect(navegacion).toHaveTextContent('Registro manual');
+    expect(navegacion).not.toHaveTextContent('Reglas de homologación');
     expect(navegacion).toHaveTextContent('Usuarios y roles');
   });
 

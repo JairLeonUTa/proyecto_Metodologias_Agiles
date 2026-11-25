@@ -40,11 +40,14 @@ function Paso({ id, numero, titulo, ayuda, children }: { id?: string; numero: nu
   );
 }
 
-/** CUMPLE (80 % en contenidos y créditos), NO_CUMPLE (no se puede homologar) o sin sílabo (decide el docente). */
+/**
+ * Recomendación del agente: CUMPLE (llega al 80 % en contenidos y créditos), NO_CUMPLE (no llega: recomienda no
+ * homologar) o sin sílabo. Es solo una recomendación: la decisión es siempre de los dos docentes revisores.
+ */
 function Veredicto({ estimacion, sinSilabo = false }: { estimacion: string; sinSilabo?: boolean }): JSX.Element {
   if (sinSilabo) return <Etiqueta tono="neutro">Sin sílabo para comparar · decide el docente</Etiqueta>;
-  if (estimacion === 'CUMPLE') return <Etiqueta tono="exito">✔ Cumple el {MINIMO} %</Etiqueta>;
-  if (estimacion === 'NO_CUMPLE') return <Etiqueta tono="error">✘ No se puede homologar</Etiqueta>;
+  if (estimacion === 'CUMPLE') return <Etiqueta tono="exito">✔ Cumple el {MINIMO} % · recomienda homologar</Etiqueta>;
+  if (estimacion === 'NO_CUMPLE') return <Etiqueta tono="advertencia">✘ No llega al {MINIMO} % · recomienda no homologar</Etiqueta>;
   return <Etiqueta tono="advertencia">? A criterio del docente</Etiqueta>;
 }
 
@@ -118,7 +121,7 @@ function AnalisisMateria({ e, carreraOrigen }: { e: EvaluacionMateria; carreraOr
 
       <p
         className={`rounded-md px-3 py-2 text-sm font-medium ${
-          e.sinSilabo ? 'bg-slate-100 text-slate-800' : cumple ? 'bg-emerald-50 text-emerald-900' : 'bg-red-50 text-red-900'
+          e.sinSilabo ? 'bg-slate-100 text-slate-800' : cumple ? 'bg-emerald-50 text-emerald-900' : 'bg-amber-50 text-amber-900'
         }`}
       >
         {e.conclusion}
@@ -149,9 +152,8 @@ function AnalisisMateria({ e, carreraOrigen }: { e: EvaluacionMateria; carreraOr
 function SuDecision({ solicitud, alGuardar }: { solicitud: SolicitudAnalisis; alGuardar: (s: SolicitudAnalisis) => void }): JSX.Element {
   const { usuario } = useAuth();
   const previa = solicitud.dictamenes.find((d) => d.correoDocente === usuario?.correoInstitucional?.toLowerCase());
-  // Las que no llegan al 80 % en contenidos o créditos no se votan: el reglamento no permite homologarlas.
-  const aDecidir = solicitud.resultadoFinal.filter((m) => m.estimacion !== 'NO_CUMPLE');
-  const noHomologables = solicitud.resultadoFinal.filter((m) => m.estimacion === 'NO_CUMPLE');
+  // El agente solo recomienda: el docente decide todas las materias, también las que no llegan al 80 %.
+  const aDecidir = solicitud.resultadoFinal;
   const [decisiones, setDecisiones] = useState<Record<string, boolean | undefined>>(() =>
     Object.fromEntries(
       aDecidir.map((m) => [
@@ -219,13 +221,6 @@ function SuDecision({ solicitud, alGuardar }: { solicitud: SolicitudAnalisis; al
               No homologar
             </button>
           </div>
-        </div>
-      ))}
-      {noHomologables.map((m) => (
-        <div key={m.codigoDestino} className="flex flex-wrap items-center gap-3 rounded-md bg-white px-3 py-2">
-          <span className="min-w-64 flex-1 font-medium text-ink">{m.nombreDestino}</span>
-          <Veredicto estimacion={m.estimacion} />
-          <span className="text-sm text-muted">No se vota: no llega al {MINIMO} % en contenidos o en créditos.</span>
         </div>
       ))}
       <AreaTexto
@@ -415,9 +410,6 @@ export function SolicitudDetallePage(): JSX.Element {
               </li>
             ))}
           </ul>
-          <Link to={RUTAS.reglasHomologacion} className="mt-3 inline-block text-sm font-semibold text-institucional-700 hover:underline">
-            Ver todas las reglas
-          </Link>
         </Paso>
       ) : null}
 
@@ -425,7 +417,7 @@ export function SolicitudDetallePage(): JSX.Element {
         <Paso
           numero={4}
           titulo="Análisis del agente, materia por materia"
-          ayuda={`El agente compara los sílabos oficiales. Una materia se puede homologar solo si llega al ${MINIMO} % en contenidos y al ${MINIMO} % en créditos; si no llega, no se homologa. Sin sílabo para comparar, deciden los docentes.`}
+          ayuda={`El agente compara los sílabos oficiales y recomienda: homologar si llega al ${MINIMO} % en contenidos y al ${MINIMO} % en créditos, y no homologar si no llega, explicando por qué. Es solo una recomendación: los dos docentes revisores deciden cada materia.`}
         >
           <div className="space-y-4">
             {resultado.evaluaciones.map((e) => (

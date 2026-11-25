@@ -16,7 +16,7 @@ export const RUTAS = {
   nuevaSolicitud: '/solicitudes/nueva',
   solicitudes: '/solicitudes',
   detalleSolicitud: '/solicitudes/:id',
-  reglasHomologacion: '/reglas-homologacion',
+  registroManual: '/solicitudes/manual',
   expedientes: '/expedientes',
   consultaExpediente: '/expedientes/consulta',
   detalleExpediente: '/expedientes/:id',
@@ -40,7 +40,7 @@ export const ROLES_EVALUACION: string[] = [ROLES.DOCENTE, ROLES.ADMINISTRADOR];
 /** Permisos de cada ruta protegida. App y las redirecciones post-login comparten esta tabla. */
 export const RUTAS_PROTEGIDAS: { patron: string; roles: string[] }[] = [
   { patron: RUTAS.solicitudes, roles: TODOS_LOS_ROLES },
-  { patron: RUTAS.reglasHomologacion, roles: TODOS_LOS_ROLES },
+  { patron: RUTAS.registroManual, roles: ROLES_EXPEDIENTES },
   { patron: RUTAS.detalleSolicitud, roles: TODOS_LOS_ROLES },
   { patron: RUTAS.reglas, roles: TODOS_LOS_ROLES },
   { patron: RUTAS.carreras, roles: TODOS_LOS_ROLES },
@@ -104,17 +104,17 @@ export const MENU: GrupoNavegacion[] = [
         rolesPermitidos: ROLES_EXPEDIENTES,
       },
       {
+        etiqueta: 'Registro manual',
+        descripcion: 'Registrar una solicitud escribiendo los datos, sin el certificado en PDF',
+        ruta: RUTAS.registroManual,
+        icono: 'registro-manual',
+        rolesPermitidos: ROLES_EXPEDIENTES,
+      },
+      {
         etiqueta: 'Solicitudes',
         descripcion: 'Estimación del agente y respuesta de los docentes revisores',
         ruta: RUTAS.solicitudes,
         icono: 'bandeja',
-        rolesPermitidos: TODOS_LOS_ROLES,
-      },
-      {
-        etiqueta: 'Reglas de homologación',
-        descripcion: 'Qué se necesita y cómo se decide, explicado de forma sencilla',
-        ruta: RUTAS.reglasHomologacion,
-        icono: 'instructivo',
         rolesPermitidos: TODOS_LOS_ROLES,
       },
     ],

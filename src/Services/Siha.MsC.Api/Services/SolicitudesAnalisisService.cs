@@ -61,15 +61,6 @@ public sealed class SolicitudesAnalisisService
         if (faltan.Count > 0)
             return (null, $"Debe decidir todas las materias. Falta: {string.Join(", ", faltan)}.", StatusCodes.Status400BadRequest);
 
-        var noCumplen = Todas(Leer(contexto.ResultadoJson))
-            .Where(m => m.Estimacion == AnalisisAutomaticoService.NoCumple)
-            .Select(m => m.Codigo)
-            .ToHashSet(StringComparer.OrdinalIgnoreCase);
-        var noHomologables = decisiones.Where(d => noCumplen.Contains(d.CodigoDestino)).Select(d => d.CodigoDestino).ToList();
-        if (noHomologables.Count > 0)
-            return (null, $"{string.Join(", ", noHomologables)}: no se puede(n) homologar porque no llega(n) al 80 % en contenidos o en créditos; no se vota(n).",
-                StatusCodes.Status400BadRequest);
-
         var ajenas = decisiones.Where(d => !materias.Contains(d.CodigoDestino)).Select(d => d.CodigoDestino).ToList();
         if (ajenas.Count > 0)
             return (null, $"Las materias {string.Join(", ", ajenas)} no forman parte del análisis.", StatusCodes.Status400BadRequest);
@@ -119,8 +110,7 @@ public sealed class SolicitudesAnalisisService
             .ToList();
 
         var respondieron = revisores.Count(r => r.Respondio);
-        // Si ninguna materia necesita la decisión de los docentes (todas quedaron NO_HOMOLOGADA por el
-        // reglamento), la solicitud ya está resuelta y no hay nada que responder.
+        // El agente solo recomienda: toda materia pedida la deciden los dos docentes.
         var nadaQueDecidir = resultado is not null && !Materias(resultado).Any();
         var estadoRevision = nadaQueDecidir ? "RESUELTA"
             : respondieron == 0 ? "PENDIENTE" : respondieron < 2 ? "EN_REVISION" : "RESUELTA";
@@ -157,17 +147,13 @@ public sealed class SolicitudesAnalisisService
 
     /// <summary>
     /// Resultado final por materia: HOMOLOGADA si los dos docentes aprueban, NO_HOMOLOGADA si los dos
-    /// rechazan, SIN_ACUERDO si discrepan y PENDIENTE mientras falte alguna respuesta. Las que no llegan al
-    /// 80 % en contenidos o créditos (NO_CUMPLE) quedan NO_HOMOLOGADA directamente: el reglamento no las
-    /// permite y los docentes no las votan.
+    /// rechazan, SIN_ACUERDO si discrepan y PENDIENTE mientras falte alguna respuesta. La recomendación del
+    /// agente (CUMPLE o NO_CUMPLE) no decide: siempre votan los dos docentes.
     /// </summary>
     internal static List<ResultadoFinalMateriaResponse> CalcularResultadoFinal(
         AnalisisAutomaticoResponse resultado, IReadOnlyCollection<DictamenResponse> respuestas)
         => Todas(resultado).Select(m =>
         {
-            if (m.Estimacion == AnalisisAutomaticoService.NoCumple)
-                return new ResultadoFinalMateriaResponse(m.Codigo, m.Nombre, m.Estimacion, 0, 0, "NO_HOMOLOGADA");
-
             var votos = respuestas
                 .Select(r => r.Decisiones.FirstOrDefault(x => string.Equals(x.CodigoDestino, m.Codigo, StringComparison.OrdinalIgnoreCase)))
                 .Where(x => x is not null)
@@ -182,12 +168,9 @@ public sealed class SolicitudesAnalisisService
     private static IEnumerable<(string Codigo, string Nombre, string Estimacion)> Todas(AnalisisAutomaticoResponse r)
         => (r.Evaluaciones ?? Array.Empty<EvaluacionMateriaResponse>()).Select(e => (e.MateriaDestino, e.MateriaDestino, e.Estimacion));
 
-    /// <summary>
-    /// Materias que los docentes deben decidir: las que cumplen (confirman) y las que no tienen sílabo
-    /// (deciden con la documentación). Las que no llegan al 80 % no se votan: no se pueden homologar.
-    /// </summary>
+    /// <summary>Materias que los docentes deben decidir: todas las pedidas (el agente solo recomienda).</summary>
     private static IEnumerable<(string Codigo, string Nombre, string Estimacion)> Materias(AnalisisAutomaticoResponse r)
-        => Todas(r).Where(m => m.Estimacion != AnalisisAutomaticoService.NoCumple);
+        => Todas(r);
 
     private static AnalisisAutomaticoResponse Leer(string json)
         => JsonSerializer.Deserialize<AnalisisAutomaticoResponse>(json, AnalisisAutomaticoService.Json)!;

@@ -215,13 +215,28 @@ public class ReglasServiceTests
     }
 
     [Fact]
+    public async Task Rn01_version_2_1_el_agente_recomienda_y_los_docentes_deciden()
+    {
+        using var db = NuevaDb();
+        await Sembrar(db);
+        await Sembrar(db); // idempotente: una sola 2.1
+
+        var rn01 = await db.Reglas.SingleAsync(r => r.Codigo == "RN-01" && r.Version == "2.1");
+        Assert.Contains("decisión final es siempre de los dos docentes", rn01.Descripcion);
+        Assert.Equal(DbSeederA.VigenciaReglaRecomendacion, rn01.VigenteDesde);
+        Assert.Null(rn01.VigenteHasta);
+        var v2 = await db.Reglas.SingleAsync(r => r.Codigo == "RN-01" && r.Version == "2.0");
+        Assert.Equal(DbSeederA.VigenciaReglaRecomendacion.AddDays(-1), v2.VigenteHasta);
+    }
+
+    [Fact]
     public async Task La_actualizacion_de_la_regla_de_creditos_se_aplica_una_sola_vez()
     {
         using var db = NuevaDb();
         await Sembrar(db);
         await Sembrar(db);
 
-        Assert.Equal(2, await db.Reglas.CountAsync(r => r.Codigo == "RN-01"));
+        Assert.Equal(3, await db.Reglas.CountAsync(r => r.Codigo == "RN-01")); // 1.0, 2.0 y 2.1
         Assert.Equal(2, await db.Reglas.CountAsync(r => r.Codigo == "RN-13"));
     }
 
@@ -285,7 +300,7 @@ public class ReglasServiceTests
         await db.SaveChangesAsync();
         await Sembrar(db);
         Assert.Equal(2, await db.ParametrosEvaluacion.CountAsync());
-        Assert.Equal(8, await db.Reglas.CountAsync()); // 6 reglas 1.0 + RN-01 y RN-13 en 2.0
+        Assert.Equal(9, await db.Reglas.CountAsync()); // 6 reglas 1.0 + RN-01 y RN-13 en 2.0 + RN-01 2.1
         Assert.Equal(42, parametro.Tau);
         Assert.Equal("Configuración local", regla.Descripcion);
     }

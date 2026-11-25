@@ -12,6 +12,11 @@ service CatalogoGrpc {
   rpc VerificarDocentes (SolicitudDocentes) returns (RespuestaDocentes);
   // Busca una carrera por su nombre completo (o código), sin importar tildes ni "Ingeniería en/de".
   rpc ResolverCarrera (SolicitudCarrera) returns (CarreraResuelta);
+  // Docentes activos que pueden ser revisores (para el registro manual de solicitudes).
+  rpc ListarDocentes (SolicitudListaDocentes) returns (RespuestaDocentes);
+}
+
+message SolicitudListaDocentes {
 }
 
 message SolicitudCarrera {

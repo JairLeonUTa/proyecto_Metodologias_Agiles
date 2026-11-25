@@ -53,6 +53,10 @@ public class CertificadosControllerTests : IDisposable
                 ? new DocenteRevisorVerificado(c, true, u.Docente, u.Activo, $"Docente {c.Split('@')[0]}")
                 : new DocenteRevisorVerificado(c, false, false, false, string.Empty)).ToList());
 
+        public Task<IReadOnlyList<DocenteRevisorVerificado>> ListarDocentesAsync(CancellationToken cancellationToken = default)
+            => Task.FromResult<IReadOnlyList<DocenteRevisorVerificado>>(usuarios.Where(u => u.Value.Docente && u.Value.Activo)
+                .Select(u => new DocenteRevisorVerificado(u.Key, true, true, true, $"Docente {u.Key.Split('@')[0]}")).ToList());
+
         public Task<CarreraCatalogo?> ResolverCarreraAsync(string nombre, CancellationToken cancellationToken = default)
             => Task.FromResult<CarreraCatalogo?>(nombre switch
             {
@@ -198,6 +202,110 @@ public class CertificadosControllerTests : IDisposable
     [InlineData("SIHA-UN-NUMERO-DE-CERTIFICADO-MUY-LARGO-0001", "EXP-20261104-E46994")]
     public void El_numero_archivado_cabe_en_la_columna(string numero, string codigo)
         => CertificadosController.NumeroArchivado(numero, codigo).Length.Should().BeLessThanOrEqualTo(40);
+
+    // ---------- Registro manual (sin PDF) ----------
+
+    private static RegistroManualRequest Manual() => new(
+        "Torres Vega Martín Andrés", "1805123456", "Cambio de carrera", "Universidad Técnica de Ambato",
+        "Tecnologías de la Información", "Software", "hnaranjo@uta.edu.ec", "mvaca@uta.edu.ec",
+        new[]
+        {
+            new MateriaManualRequest("Fundamentos de Programación", 1, "Abr-Sep 2025", 8.9m, true),
+            new MateriaManualRequest("Física", 1, "Abr-Sep 2025", 8.1m, true),
+            new MateriaManualRequest("Cálculo Integral", 2, "Oct 2025-Mar 2026", 6.2m, false)
+        },
+        new[]
+        {
+            new SolicitudManualRequest(new[] { "Fundamentos de Programación" }, "Algoritmos y Lógica de Programación"),
+            new SolicitudManualRequest(new[] { "Física" }, "Física")
+        });
+
+    [Fact]
+    public async Task El_registro_manual_crea_la_solicitud_igual_que_el_certificado()
+    {
+        var resultado = await Controlador().RegistrarManual(Manual(), CancellationToken.None);
+
+        var respuesta = resultado.Result.Should().BeOfType<AcceptedResult>().Subject.Value
+            .Should().BeOfType<SolicitudCertificadoResponse>().Subject;
+        respuesta.Publicado.Should().BeTrue();
+        var e = respuesta.Expediente;
+        e.NumeroCertificado.Should().StartWith("MANUAL-");
+        e.TipoTramite.Should().Be(TiposTramite.Interno);
+        e.RutaNormativa.Should().Be(RutasNormativas.CambioCarreraOu);
+        e.CarreraOrigenCodigo.Should().Be("TI");
+        e.CarreraDestinoCodigo.Should().Be("SW");
+        e.Asignaturas.Should().HaveCount(3);
+        e.Asignaturas.Single(a => a.NombreOrigen == "Física").PeriodoAcademico.Should().Be("Abr-Sep 2025");
+        e.Revisores!.Select(r => r.Nombre).Should().Equal("Docente hnaranjo", "Docente mvaca");
+
+        // El documento guardado son los datos validados en JSON: MS C los lee como un certificado.
+        var documento = _db.ExpedienteDocumentos.Single();
+        documento.MimeType.Should().Be("application/json");
+        var guardado = System.Text.Json.JsonSerializer.Deserialize<CertificadoSiha>(
+            File.ReadAllBytes(Path.Combine(_directorio, documento.RutaAlmacenamiento)))!;
+        guardado.EstudianteNombre.Should().Be("Torres Vega Martín Andrés");
+        guardado.Solicitudes.Should().HaveCount(2);
+        guardado.EmitidoPor.Should().StartWith("Registro manual");
+        _publicados.Should().ContainSingle();
+    }
+
+    [Fact]
+    public async Task El_registro_manual_con_datos_faltantes_se_rechaza_con_la_lista_de_verificacion()
+    {
+        var incompleto = Manual() with { Cedula = "", Revisor2Correo = null, CarreraDestino = "SW" };
+
+        var resultado = await Controlador().ValidarManual(incompleto, CancellationToken.None);
+
+        var rechazo = resultado.Result.Should().BeOfType<UnprocessableEntityObjectResult>().Subject.Value
+            .Should().BeOfType<RechazoCertificadoResponse>().Subject;
+        rechazo.Secciones.Single(s => s.Seccion == "Estudiante").Ok.Should().BeFalse("falta la cédula");
+        rechazo.Secciones.Single(s => s.Seccion == "Revisores").Ok.Should().BeFalse("falta el segundo revisor");
+        rechazo.Detalles.Should().Contain(d => d.Contains("siglas") || d.Contains("nombre completo"));
+        _db.Expedientes.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task Pedir_una_materia_reprobada_a_mano_se_rechaza_igual_que_en_el_certificado()
+    {
+        var conReprobada = Manual() with
+        {
+            Solicitudes = new[] { new SolicitudManualRequest(new[] { "Cálculo Integral" }, "Cálculo Integral") }
+        };
+
+        var resultado = await Controlador().RegistrarManual(conReprobada, CancellationToken.None);
+
+        var cuerpo = resultado.Result.Should().BeOfType<UnprocessableEntityObjectResult>().Subject.Value!;
+        Detalles(cuerpo).Should().Contain(d => d.Contains("'Cálculo Integral' está reprobada"));
+        _db.Expedientes.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task Las_opciones_del_registro_manual_traen_los_docentes_y_las_materias()
+    {
+        _mallas["SW"] = new[] { "ALGORITMOS Y LOGICA DE PROGRAMACION", "FISICA" };
+
+        var resultado = await Controlador().OpcionesManual("Tecnologías de la Información", "Software", CancellationToken.None);
+
+        var opciones = resultado.Result.Should().BeOfType<OkObjectResult>().Subject.Value
+            .Should().BeOfType<OpcionesRegistroManualResponse>().Subject;
+        opciones.Docentes.Select(d => d.Correo).Should().BeEquivalentTo("hnaranjo@uta.edu.ec", "mvaca@uta.edu.ec", "jcastro@uta.edu.ec");
+        opciones.MateriasDestino.Should().Equal("ALGORITMOS Y LOGICA DE PROGRAMACION", "FISICA");
+    }
+
+    [Fact]
+    public void Las_lineas_del_registro_manual_quitan_saltos_de_linea_y_usan_la_ruta_del_tramite()
+    {
+        var r = Manual() with { EstudianteNombre = "Ana\nLucía", TipoTramite = "Movilidad externa" };
+
+        var lineas = CertificadosController.LineasRegistroManual(r, "MANUAL-1", new DateOnly(2026, 11, 24), "Operador",
+            new Dictionary<string, string> { ["hnaranjo@uta.edu.ec"] = "Ing. Hernán Naranjo" });
+
+        lineas.Should().Contain("Estudiante: Ana Lucía");
+        lineas.Should().Contain("Ruta normativa: CAU-P-122");
+        lineas.Should().Contain("Docente revisor 1: Ing. Hernán Naranjo - hnaranjo@uta.edu.ec");
+        lineas.Should().Contain("Nivel: 1 Período académico: Abr-Sep 2025 Nota: 8.9 Estado: Aprobada");
+        lineas.Last().Should().Be("FIN DEL CERTIFICADO");
+    }
 
     [Fact]
     public async Task Validar_lee_el_certificado_sin_registrar()

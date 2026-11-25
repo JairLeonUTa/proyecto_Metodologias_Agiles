@@ -4,13 +4,15 @@ Flujo completo, en pocas pantallas:
 
 1. **Operador**: sube un solo PDF, el certificado de homologación preaprobado por Secretaría. En una
    **movilidad externa** puede adjuntar además el sílabo (plan analítico) de cada materia aprobada en la
-   otra universidad.
+   otra universidad. Si no tiene el PDF, usa **Registro manual** (ver más abajo).
 2. **Agente (MS C)**: en cuanto llega, trae de MS A por gRPC las mallas y sílabos oficiales de la carrera
-   de origen y de destino y compara cada materia que se pide homologar con la **regla RN-01 (versión 2.0)**:
-   al menos **80 % en contenidos y 80 % en créditos, las dos sí o sí**. Todo se explica unidad por unidad.
-   - Si las dos llegan → **Cumple**: los docentes lo confirman.
-   - Si cualquiera no llega → **No se puede homologar**, aunque la otra esté completa. Ejemplo del docente:
-     Física con 2 créditos frente a 3 = 66,67 % → no se homologa, aunque cubra todos los temas.
+   de origen y de destino y compara cada materia que se pide homologar con la **regla RN-01 (versión 2.1)**:
+   al menos **80 % en contenidos y 80 % en créditos**. Todo se explica unidad por unidad. **El agente solo
+   recomienda; la decisión de cada materia es siempre de los dos docentes revisores.**
+   - Si las dos llegan → **Recomienda homologar**.
+   - Si cualquiera no llega → **Recomienda no homologar** y explica qué faltó (por ejemplo, Física con 2
+     créditos frente a 3 = 66,67 %). Los docentes igual la deciden: si el estudiante sí vio el tema pero en su
+     sílabo se llama distinto, el agente puede no reconocerlo, y los docentes pueden homologarla.
    - Si el agente no tiene el sílabo de alguna de las dos materias (movilidad externa sin sílabo adjunto,
      materia que no está en la malla o que no tiene unidades publicadas) se muestra **"Sin sílabo para
      comparar"**, sin barras ni porcentajes, y deciden los docentes con el plan analítico del estudiante.
@@ -20,10 +22,24 @@ Flujo completo, en pocas pantallas:
    que es equivalente, y la explicación lo dice. **Profundidad** (horas dedicadas a cada tema) y **carga
    horaria** se muestran solo como datos informativos: no deciden el resultado.
 3. **Los dos docentes revisores** que vienen en el PDF ven la solicitud con el análisis ya hecho y deciden
-   las materias que **cumplen** y las que **no tienen sílabo** (Sí, homologar / No homologar). Queda
-   **homologada** si los dos la aprueban. Las que **no llegan al 80 %** quedan **NO_HOMOLOGADA** directamente,
-   sin votación (el servidor rechaza un voto sobre ellas). Si ninguna materia necesita decisión, la solicitud
-   queda resuelta sin respuestas de los docentes.
+   **todas** las materias (Sí, homologar / No homologar), también las que no llegan al 80 %. Queda
+   **homologada** si los dos la aprueban, **no homologada** si los dos la rechazan y **sin acuerdo** si
+   discrepan. La solicitud queda resuelta cuando responden los dos.
+
+## Registro manual (sin PDF)
+
+Menú **Solicitudes → Registro manual** (operador y administrador). El operador escribe los mismos datos del
+certificado: estudiante y cédula, tipo de trámite, carreras (de la lista del catálogo), los dos docentes
+revisores (de la lista de docentes activos), el historial (materia, nivel, período, nota y estado; la nota
+marca sola Aprobada o Reprobada) y las materias que pide homologar (con sugerencias de la malla de destino).
+
+- **Revisar los datos** los valida con exactamente las mismas reglas que un PDF: MS B arma el texto del
+  certificado SIHA-CH-01 con lo digitado y lo pasa por `LectorCertificadoSiha`. Si falta algo se muestra la
+  misma lista de verificación ✔/✘ por sección. El botón **Registrar** solo se habilita después de una
+  revisión sin problemas y si no se cambió nada desde entonces.
+- Al registrar, el número es `MANUAL-AAAAMMDD-XXXXXX`, "Emitido por" dice *Registro manual (operador)* y el
+  documento del expediente son los datos validados en JSON. MS C lo lee igual que un certificado, así que el
+  análisis del agente y la decisión de los docentes son idénticos.
 
 ## Movilidad externa: sílabos de la otra universidad
 
@@ -130,13 +146,14 @@ FROM RESULTADO_HOMOLOGACION WHERE TipoTramite = 'EXTERNO' ORDER BY AnalizadoUtc 
 
 ## Contenido mínimo (80 %)
 
-El administrador ve el contenido mínimo en **Reglas de homologación**, pero **no puede bajarlo del 80 %**
+El administrador ve el contenido mínimo en **Configurar mínimo (80 %)**, pero **no puede bajarlo del 80 %**
 que fija el reglamento de la UTA (puede exigir más). Ese único valor se aplica a los dos criterios que
 deciden: contenidos y créditos.
 
 Las reglas del catálogo **RN-01** y **RN-13** se versionan solas a la **2.0** al arrancar MS A (también en
 bases que ya existían): RN-01 exige `contenido>=80 && creditos>=80` y RN-13 exige `Pcred>=80`. La versión
 1.0 (contenido, profundidad y carga horaria; créditos solo como apoyo) queda en el historial, cerrada.
+Desde el 24-11-2026 **RN-01 2.1**: el 80 % es la recomendación del agente y la decisión es de los docentes.
 
 ## API
 
@@ -144,12 +161,14 @@ bases que ya existían): RN-01 exige `contenido>=80 && creditos>=80` y RN-13 exi
 |---|---|---|
 | MS B | `POST /api/expedientes/certificado/validar` | Vista previa de lo leído |
 | MS B | `POST /api/expedientes/certificado` | Registra, guarda el PDF y publica `SolicitudCreadaEvent` |
+| MS B | `GET /api/expedientes/manual/opciones` | Docentes revisores y materias de las carreras para el registro manual |
+| MS B | `POST /api/expedientes/manual/validar` · `POST /api/expedientes/manual` | Revisar / registrar una solicitud digitada a mano |
 | MS B | `GET /api/expedientes` | El docente solo recibe las solicitudes donde es revisor |
 | MS C | `GET /api/extracciones/expedientes/{id}/analisis` | Historial, reglas, análisis explicado, revisores y resultado final |
 | MS C | `POST /api/extracciones/expedientes/{id}/analisis-automatico` | Reintentar si la IA no estaba disponible |
 | MS C | `POST /api/extracciones/expedientes/{id}/dictamen` | Decisión del docente revisor (rol DOCENTE) |
 | MS C | `GET /api/extracciones/resultados-homologacion` | Tabla `RESULTADO_HOMOLOGACION`: una fila por materia (operador y administrador) |
-| MS A (gRPC) | `CatalogoGrpc.ObtenerMallaVigente` / `ResolverCarrera` / `VerificarDocentes` | Sílabos para el agente / carreras por nombre / revisores válidos |
+| MS A (gRPC) | `CatalogoGrpc.ObtenerMallaVigente` / `ResolverCarrera` / `VerificarDocentes` / `ListarDocentes` | Sílabos para el agente / carreras por nombre / revisores válidos / docentes para el registro manual |
 
 ## Ejemplos (`documentos-prueba/certificados`, también descargables en la pantalla de registro)
 
@@ -158,8 +177,8 @@ Los revisores de ejemplo (`hnaranjo`, `mvaca`, `jcastro` @uta.edu.ec) se crean c
 
 | PDF | Resultado con los sílabos reales |
 |---|---|
-| `SIHA-TI-SW-cambio-de-carrera.pdf` | TI → Software. Reprobó 2 materias del segundo nivel. El agente compara cada materia con la regla de 80 % en contenidos y créditos; las que no llegan (por ejemplo, Programación Orientada a Objetos: 3 créditos frente a 4) no se pueden homologar |
-| `SIHA-IND-SW-cambio-de-carrera.pdf` | Industrial → Software: materias con temas o créditos por debajo del 80 %, que no se pueden homologar |
+| `SIHA-TI-SW-cambio-de-carrera.pdf` | TI → Software. Reprobó 2 materias del segundo nivel. El agente compara cada materia con la regla de 80 % en contenidos y créditos; en las que no llegan (por ejemplo, Programación Orientada a Objetos: 3 créditos frente a 4) recomienda no homologar y deciden los docentes |
+| `SIHA-IND-SW-cambio-de-carrera.pdf` | Industrial → Software: materias con temas o créditos por debajo del 80 %: el agente recomienda no homologarlas y deciden los docentes |
 | `SIHA-con-errores.pdf` | Rechazado: siglas en la carrera, primer nivel no aprobado, pide una reprobada, materia de hace más de 10 años, cédula y revisor con Gmail |
 | `plan-analitico-no-valido.pdf` | Rechazado: no es la plantilla SIHA-CH-01 |
 

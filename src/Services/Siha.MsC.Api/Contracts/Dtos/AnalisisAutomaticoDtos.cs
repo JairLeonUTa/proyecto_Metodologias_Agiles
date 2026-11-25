@@ -50,7 +50,7 @@ public record EvaluacionMateriaResponse(
     /// <summary>% de horas aprobadas frente a las horas de la materia de destino (máximo 100). Solo informativo.</summary>
     decimal CargaHoraria,
     /// <summary>
-    /// CUMPLE (contenidos y créditos llegan al 80 %), NO_CUMPLE (alguno no llega: no se puede homologar)
+    /// CUMPLE (contenidos y créditos llegan al 80 %), NO_CUMPLE (alguno no llega: recomienda no homologar; deciden los docentes)
     /// o CRITERIO_DOCENTE (sin sílabo para comparar: deciden los docentes).
     /// </summary>
     string Estimacion,

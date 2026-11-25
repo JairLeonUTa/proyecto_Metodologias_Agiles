@@ -182,7 +182,7 @@ export interface CoberturaUnidad {
 }
 
 /**
- * Estimación del agente: CUMPLE (80 % en contenidos y en créditos), NO_CUMPLE (no se puede homologar)
+ * Estimación del agente: CUMPLE (80 % en contenidos y en créditos), NO_CUMPLE (no llega: recomienda no homologar; deciden los docentes)
  * o CRITERIO_DOCENTE (sin sílabo para comparar: deciden los docentes).
  */
 export type EstimacionAgente = 'CUMPLE' | 'NO_CUMPLE' | 'CRITERIO_DOCENTE';
@@ -242,7 +242,7 @@ export interface DictamenDocente {
 export interface ResultadoFinalMateria {
   codigoDestino: string;
   nombreDestino: string;
-  /** NO_CUMPLE queda NO_HOMOLOGADA sin votos de los docentes. */
+  /** Recomendación del agente; el resultado lo deciden siempre los dos docentes. */
   estimacion: EstimacionAgente;
   aprobaciones: number;
   rechazos: number;

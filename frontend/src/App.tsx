@@ -19,7 +19,7 @@ import { SolicitudDetallePage } from './pages/SolicitudDetallePage';
 import { SolicitudesPage } from './pages/SolicitudesPage';
 import { LoginPage } from './pages/LoginPage';
 import { MallasPage } from './pages/MallasPage';
-import { ReglasHomologacionPage } from './pages/ReglasHomologacionPage';
+import { RegistroManualPage } from './pages/RegistroManualPage';
 import { ReglasPage } from './pages/ReglasPage';
 import { SolicitudNuevaPage } from './pages/SolicitudNuevaPage';
 import { UsuariosPage } from './pages/UsuariosPage';
@@ -69,14 +69,6 @@ export default function App(): JSX.Element {
           element={
             <RutaProtegida rolesPermitidos={rolesParaRuta(RUTAS.solicitudes)}>
               <SolicitudesPage />
-            </RutaProtegida>
-          }
-        />
-        <Route
-          path="reglas-homologacion"
-          element={
-            <RutaProtegida rolesPermitidos={rolesParaRuta(RUTAS.reglasHomologacion)}>
-              <ReglasHomologacionPage />
             </RutaProtegida>
           }
         />
@@ -134,6 +126,14 @@ export default function App(): JSX.Element {
         />
 
         {/* Expedientes */}
+        <Route
+          path="solicitudes/manual"
+          element={
+            <RutaProtegida rolesPermitidos={rolesParaRuta(RUTAS.registroManual)}>
+              <RegistroManualPage />
+            </RutaProtegida>
+          }
+        />
         <Route
           path="solicitudes/nueva"
           element={

@@ -31,6 +31,10 @@ public interface IVerificadorDocentes
     /// </summary>
     Task<IReadOnlyList<string>> ObtenerMateriasAsync(string carreraCodigo, CancellationToken cancellationToken = default)
         => Task.FromResult<IReadOnlyList<string>>(Array.Empty<string>());
+
+    /// <summary>Docentes activos que pueden ser revisores (registro manual).</summary>
+    Task<IReadOnlyList<DocenteRevisorVerificado>> ListarDocentesAsync(CancellationToken cancellationToken = default)
+        => Task.FromResult<IReadOnlyList<DocenteRevisorVerificado>>(Array.Empty<DocenteRevisorVerificado>());
 }
 
 public sealed class VerificadorDocentesGrpc : IVerificadorDocentes
@@ -86,6 +90,21 @@ public sealed class VerificadorDocentesGrpc : IVerificadorDocentes
         {
             // Solo sirve para sugerir nombres: si MS A no responde, no se sugiere nada.
             return Array.Empty<string>();
+        }
+    }
+
+    public async Task<IReadOnlyList<DocenteRevisorVerificado>> ListarDocentesAsync(CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            var r = await _cliente.ListarDocentesAsync(
+                new SolicitudListaDocentes(), deadline: DateTime.UtcNow.AddSeconds(10), cancellationToken: cancellationToken);
+            return r.Docentes.Select(d => new DocenteRevisorVerificado(d.Correo, d.Existe, d.EsDocente, d.Activo, d.NombreCompleto)).ToList();
+        }
+        catch (RpcException ex)
+        {
+            throw new VerificacionDocentesNoDisponibleException(
+                "No se pudo consultar los docentes en el servicio de usuarios (MS A). Intente nuevamente.", ex);
         }
     }
 }

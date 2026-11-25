@@ -6,6 +6,8 @@ import type {
   DocumentosExpediente,
   Expediente,
   ExpedienteAceptado,
+  OpcionesRegistroManual,
+  RegistroManual,
   SilaboAdjunto,
   SolicitudCertificado,
 } from '../types/expedientes';
@@ -45,6 +47,20 @@ export const expedientesApi = {
       metodo: 'POST',
       cuerpo: formularioPdf(archivo, silabos),
     }),
+
+  /** Docentes revisores y materias de las carreras, para el registro manual. */
+  opcionesManual: (carreraOrigen = '', carreraDestino = '') =>
+    peticion<OpcionesRegistroManual>(
+      `/api/expedientes/manual/opciones?carreraOrigen=${encodeURIComponent(carreraOrigen)}&carreraDestino=${encodeURIComponent(carreraDestino)}`,
+    ),
+
+  /** Revisa el registro manual con las mismas reglas del certificado, sin registrar nada. */
+  validarManual: (registro: RegistroManual) =>
+    peticion<CertificadoLeido>('/api/expedientes/manual/validar', { metodo: 'POST', cuerpo: registro }),
+
+  /** Registra y envía una solicitud digitada a mano (sin PDF). */
+  registrarManual: (registro: RegistroManual) =>
+    peticion<SolicitudCertificado>('/api/expedientes/manual', { metodo: 'POST', cuerpo: registro }),
 
   /** Registra el borrador del expediente. El servidor responde 201 Created. */
   registrar: (expediente: CrearExpediente) =>

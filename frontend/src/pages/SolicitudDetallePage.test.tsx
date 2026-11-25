@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -152,7 +152,7 @@ describe('Solicitud: análisis explicado y decisión del docente', () => {
     expect(screen.queryByText('0 %')).not.toBeInTheDocument();
   });
 
-  it('la que no llega al 80 % en créditos no se vota y muestra contenidos y créditos', async () => {
+  it('la que no llega al 80 % es una recomendación: el docente igual la decide y puede homologarla', async () => {
     const user = userEvent.setup();
     const noCumple = {
       ...evaluacion(2, 'Física', 'Física Básica', 100),
@@ -161,27 +161,31 @@ describe('Solicitud: análisis explicado y decisión del docente', () => {
       porcentajeCreditos: 66.67,
       creditosOrigen: 2,
       unidades: [{ numero: 1, nombre: 'Estática', horas: 36, similitud: 95, cubierta: true, materiaOrigen: 'Física Básica', numeroUnidadOrigen: 1, nombreUnidadOrigen: 'Estática', horasUnidadOrigen: 36 }],
-      conclusion: 'No se puede homologar: no llega al 80 % en créditos (66,67 %).',
+      conclusion: 'Recomendación: no homologar. No llega al 80 % en créditos (66,67 %). Los docentes revisores deciden.',
     };
     api.obtenerSolicitud.mockResolvedValue({
       ...SOLICITUD,
       resultado: { ...SOLICITUD.resultado, evaluaciones: [SOLICITUD.resultado.evaluaciones[0], noCumple] },
       resultadoFinal: [
         SOLICITUD.resultadoFinal[0],
-        { codigoDestino: 'Física', nombreDestino: 'Física', estimacion: 'NO_CUMPLE', aprobaciones: 0, rechazos: 0, resultado: 'NO_HOMOLOGADA' },
+        { codigoDestino: 'Física', nombreDestino: 'Física', estimacion: 'NO_CUMPLE', aprobaciones: 0, rechazos: 0, resultado: 'PENDIENTE' },
       ],
     });
     abrir();
 
-    expect((await screen.findAllByText('✘ No se puede homologar')).length).toBeGreaterThan(0);
+    expect((await screen.findAllByText('✘ No llega al 80 % · recomienda no homologar')).length).toBeGreaterThan(0);
     expect(screen.getByRole('img', { name: 'Créditos: 66.67 %' })).toBeInTheDocument();
     expect(screen.getByText('2 crédito(s) aprobado(s) frente a 3.')).toBeInTheDocument();
-    expect(screen.getByText(/No se vota: no llega al 80 %/)).toBeInTheDocument();
-    expect(screen.queryByRole('group', { name: 'Decisión para Física' })).not.toBeInTheDocument();
+    expect(screen.queryByText(/No se vota/)).not.toBeInTheDocument();
 
+    const grupo = screen.getByRole('group', { name: 'Decisión para Física' });
+    await user.click(within(grupo).getByRole('button', { name: 'Sí, homologar' }));
     await user.click(screen.getByRole('button', { name: 'Enviar mi decisión' }));
     expect(api.responder).toHaveBeenLastCalledWith('e1', {
-      decisiones: [{ codigoDestino: 'Algoritmos y Lógica de Programación', aprobada: true, observacion: null }],
+      decisiones: [
+        { codigoDestino: 'Algoritmos y Lógica de Programación', aprobada: true, observacion: null },
+        { codigoDestino: 'Física', aprobada: true, observacion: null },
+      ],
       comentario: null,
     });
   });
