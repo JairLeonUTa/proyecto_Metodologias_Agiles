@@ -245,13 +245,19 @@ public sealed class AnalisisAutomaticoService : IAnalisisAutomaticoService
         var requisitos = Requisitos(certificado, mallaOrigen, evaluaciones, theta, contexto);
         var cumplen = evaluaciones.Count(e => e.Estimacion == Cumple);
         var sinSilabo = evaluaciones.Count(e => e.SinSilabo);
-        var noCumplen = evaluaciones.Count(e => e.Estimacion == NoCumple);
+        var bloqueadas = evaluaciones.Count(e => e.BloqueadaPorCreditos);
+        var soloContenidos = evaluaciones.Count(e => e.Estimacion == NoCumple && !e.BloqueadaPorCreditos);
         var partes = new List<string>();
         if (sinSilabo < evaluaciones.Count) partes.Add($"{cumplen} cumple(n) el {Num(theta)} % en contenidos y créditos");
-        if (noCumplen > 0) partes.Add($"{noCumplen} no llega(n) al {Num(theta)} % y el agente recomienda no homologarla(s)");
+        if (bloqueadas > 0) partes.Add($"{bloqueadas} no se puede(n) homologar porque los créditos no llegan al {Num(theta)} %");
+        if (soloContenidos > 0) partes.Add($"{soloContenidos} no llega(n) al {Num(theta)} % en contenidos y el agente recomienda no homologarla(s)");
         if (sinSilabo > 0) partes.Add($"{sinSilabo} no tiene(n) sílabo para comparar y la(s) deciden los docentes");
         var resumen = $"Se analizaron {evaluaciones.Count} materia(s) pedida(s): {Unir(partes)}. " +
-                      "El agente solo recomienda: la decisión final de cada materia es de los dos docentes revisores.";
+                      (bloqueadas == evaluaciones.Count
+                          ? "Ninguna materia se puede votar: los créditos son obligatorios."
+                          : bloqueadas > 0
+                              ? "Las que no llegan en créditos no se votan; las demás las deciden los dos docentes revisores."
+                              : "El agente solo recomienda: la decisión final de cada materia es de los dos docentes revisores.");
 
         return new AnalisisAutomaticoResponse(contexto.ExpedienteId, requisitos, evaluaciones, Array.Empty<string>(), resumen, string.Join(" | ", traza), theta, VersionReglas);
     }
@@ -444,7 +450,7 @@ public sealed class AnalisisAutomaticoService : IAnalisisAutomaticoService
         // Las materias sin sílabo no cuentan como que fallaron el mínimo: no se pudieron medir.
         var detalle = evaluaciones.Select(e => e.SinSilabo
             ? $"«{e.MateriaDestino}»: sin sílabo para comparar (deciden los docentes)."
-            : $"«{e.MateriaDestino}»: {Estado(e.Estimacion)} (contenidos {Num((double)e.Contenidos)} %, " +
+            : $"«{e.MateriaDestino}»: {(e.BloqueadaPorCreditos ? "no se puede homologar (los créditos no llegan al mínimo)" : Estado(e.Estimacion))} (contenidos {Num((double)e.Contenidos)} %, " +
               $"créditos {Num((double)e.PorcentajeCreditos)} %).");
         requisitos.Add(new RequisitoResponse($"Equivalencia mínima del {Num(theta)} % en contenidos y en créditos",
             comparables.All(e => e.Estimacion == Cumple), string.Join(" ", detalle)));

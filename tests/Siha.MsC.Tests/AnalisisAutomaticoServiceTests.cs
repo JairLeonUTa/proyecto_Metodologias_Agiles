@@ -267,10 +267,13 @@ public class AnalisisAutomaticoServiceTests
         r.Requisitos.Should().Contain(q => q.Regla.StartsWith("Aprobó al menos el primer período") && q.Cumple);
         r.Requisitos.Should().Contain(q => q.Regla == "Solo se piden materias aprobadas" && q.Explicacion.Contains("Cálculo Integral"));
         r.Requisitos.Should().Contain(q => q.Regla.StartsWith("Tiene al menos una materia") && q.Cumple && q.Explicacion.Contains("1 de 2"));
-        r.Resumen.Should().Contain("1 cumple(n) el 80 % en contenidos y créditos").And.Contain("1 no llega(n) al 80 % y el agente recomienda no homologarla(s)")
-            .And.Contain("la decisión final de cada materia es de los dos docentes revisores");
+        // POO tiene 75 % en créditos: está bloqueada, así que el resumen no debe decir que "se recomienda" (H-01 del informe).
+        r.Resumen.Should().Contain("1 cumple(n) el 80 % en contenidos y créditos")
+            .And.Contain("1 no se puede(n) homologar porque los créditos no llegan al 80 %")
+            .And.Contain("Las que no llegan en créditos no se votan")
+            .And.NotContain("recomienda no homologar");
         r.Requisitos.Should().Contain(q => q.Regla == "Equivalencia mínima del 80 % en contenidos y en créditos" && !q.Cumple
-            && q.Explicacion.Contains("no llega al mínimo (recomienda no homologar) (contenidos 100 %, créditos 75 %)"));
+            && q.Explicacion.Contains("no se puede homologar (los créditos no llegan al mínimo) (contenidos 100 %, créditos 75 %)"));
         string.Join(" ", r.Requisitos.Select(q => q.Explicacion)).Should().NotContainAny("θ", "δ", "τ");
     }
 
@@ -648,7 +651,7 @@ public class AnalisisAutomaticoServiceTests
         var solicitudes = new SolicitudesAnalisisService(db);
         const string alg = "Algoritmos y Lógica de Programación", poo = "Programación Orientada a Objetos";
 
-        // POO no llega al 80 % en créditos: el agente recomienda no homologarla, pero los docentes la votan.
+        // POO no llega al 80 % en créditos: está bloqueada y no se vota; los docentes solo votan Algoritmos.
         var uno = await solicitudes.ResponderAsync(expediente, "cparedes@uta.edu.ec", "Paredes", Decidir((alg, true)));
         uno.Error.Should().BeNull();
         uno.Respuesta!.EstadoRevision.Should().Be("EN_REVISION");
@@ -865,6 +868,8 @@ public class AnalisisAutomaticoServiceTests
         vista.ResultadoFinal.Single().Resultado.Should().Be("PENDIENTE");
         vista.Resultado!.Evaluaciones.Single().Contenidos.Should().Be(50m);
         vista.Resultado.Evaluaciones.Single().PorcentajeCreditos.Should().Be(100m);
+        vista.Resultado.Resumen.Should().Contain("1 no llega(n) al 80 % en contenidos y el agente recomienda no homologarla(s)")
+            .And.Contain("la decisión final de cada materia es de los dos docentes revisores");
     }
 
     // ---------- tabla RESULTADO_HOMOLOGACION ----------
