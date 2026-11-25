@@ -45,7 +45,7 @@ Responde en ≤15 líneas: archivos cambiados, resultado de lint y tests (númer
 ## 4. Subir a develop (solo cuando el usuario lo pida)
 1. `git fetch` y `git log --oneline HEAD..origin/develop`: si hay commits nuevos, `git pull --rebase` y repetir pruebas.
 2. Mensaje de commit en español (convención `feat:`/`fix:`/`test:`), en archivo y `git commit -F`,
-   terminando con `Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>`.
+   **sin** línea `Co-Authored-By` (el usuario no la quiere).
 3. `git push origin develop` (el equipo sube directo, sin PR). Nunca subir `.env`.
 
 ## Ahorro de tokens

@@ -222,8 +222,46 @@ export interface RegistroManual {
   numeroCertificado?: string | null;
 }
 
+/** Materia de la malla vigente (para llenar el historial solo). */
+export interface MateriaMalla {
+  nombre: string;
+  nivel: number;
+  creditos: number;
+}
+
 export interface OpcionesRegistroManual {
   docentes: { nombre: string; correo: string }[];
   materiasOrigen: string[];
   materiasDestino: string[];
+  mallaOrigen?: MateriaMalla[] | null;
+  mallaDestino?: MateriaMalla[] | null;
+}
+
+/** Materia de destino sugerida para una materia aprobada, con el parecido de sus temas. */
+export interface SugerenciaHomologacion {
+  materiaOrigen: string;
+  materiaDestino: string;
+  porcentaje: number;
+}
+
+/** Si una solicitud del formulario se relaciona; si no, por qué y qué materia se sugiere. */
+export interface AfinidadSolicitud {
+  solicitud: number;
+  seRelacionan: boolean;
+  porcentaje: number;
+  mensaje: string;
+  sugerencia: string | null;
+}
+
+export interface AfinidadManual {
+  sugerencias: SugerenciaHomologacion[];
+  solicitudes: AfinidadSolicitud[];
+}
+
+export interface ConsultaAfinidad {
+  tipoTramite: string;
+  carreraOrigen: string;
+  carreraDestino: string;
+  aprobadas: string[];
+  solicitudes: SolicitudManual[];
 }

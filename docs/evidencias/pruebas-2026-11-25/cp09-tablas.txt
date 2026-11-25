@@ -1,0 +1,28 @@
+== MS B · SihaDbB.EXPEDIENTE
+Codigo NumeroCertificado EstudianteNombre TipoTramite Estado EventoPublicado
+EXP-20261125-8EC017 SIHA-2026-0202 Benítez Lara Camila Fernanda INTERNO PENDIENTE_CONTENIDOS 1
+
+== MS B · SihaDbB.EXPEDIENTE_DOC
+NombreArchivo Tipo MimeType TamanoBytes EstadoRecepcion
+V02-ROB-SW-cambio-de-carrera.pdf CERTIFICADO application/pdf 4521 VALIDADO
+
+== MS C · SihaDbC.ANALISIS_EXPEDIENTE
+CodigoExpediente Estado Revisor1Correo Revisor2Correo
+EXP-20261125-8EC017 ANALIZADO mvaca@uta.edu.ec cparedes@uta.edu.ec
+
+== MS C · SihaDbC.DICTAMEN_DOCENTE
+CorreoDocente DecisionesJson Comentario
+cparedes@uta.edu.ec [{"codigoDestino":"C\u00E1lculo Diferencial","aprobada":true,"observacion":null},{"codigoDestino":"Metodolog\u00EDa de la Investigaci\u00F3n","aprobada":true,"observacion":null}] Los temas coinciden con el sílabo de Software.
+mvaca@uta.edu.ec [{"codigoDestino":"C\u00E1lculo Diferencial","aprobada":false,"observacion":null},{"codigoDestino":"Metodolog\u00EDa de la Investigaci\u00F3n","aprobada":true,"observacion":null}] En Cálculo Diferencial faltan aplicaciones de la derivada.
+
+== MS C · SihaDbC.DECISION_FINAL
+Materia Aprobada CorreoAdministrador Comentario
+Cálculo Diferencial 1 admin@uta.edu.ec Revisé el plan analítico: las aplicaciones de la derivada se vieron en Cálculo I. Se homologa.
+
+== MS C · SihaDbC.RESULTADO_HOMOLOGACION
+MateriaDestino PorcentajeContenidos PorcentajeCreditos EstimacionAgente Aprobaciones Rechazos ResultadoFinal
+Algoritmos y Lógica de Programación 68.75 50.00 NO_CUMPLE 0 0 NO_HOMOLOGADA
+Cálculo Diferencial 100.00 100.00 CUMPLE 1 1 HOMOLOGADA
+Programación Orientada a Objetos 75.00 50.00 NO_CUMPLE 0 0 NO_HOMOLOGADA
+Metodología de la Investigación 100.00 100.00 CUMPLE 2 0 HOMOLOGADA
+Álgebra Lineal 100.00 66.67 NO_CUMPLE 0 0 NO_HOMOLOGADA

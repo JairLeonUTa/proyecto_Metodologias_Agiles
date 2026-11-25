@@ -48,6 +48,23 @@ marca sola Aprobada o Reprobada) y las materias que pide homologar (con sugerenc
 - Al registrar, el número es `MANUAL-AAAAMMDD-XXXXXX`, "Emitido por" dice *Registro manual (operador)* y el
   documento del expediente son los datos validados en JSON. MS C lo lee igual que un certificado, así que el
   análisis del agente y la decisión de los docentes son idénticos.
+- **Lo más automático posible:** en un cambio de carrera, **Cargar materias de la malla** llena el historial
+  con las materias de la carrera de origen hasta el nivel elegido (solo falta período y nota); al escribir
+  una materia de la malla su nivel se llena solo y el período se copia a las demás del mismo nivel. La
+  materia de destino se elige de la malla (con nivel y créditos) y se **sugiere sola** al elegir la aprobada;
+  **Agregar todas las sugerencias** arma las solicitudes con las aprobadas que tienen temas parecidos.
+
+### Las materias pedidas deben relacionarse
+
+Antes de enviar nada al agente, MS B comprueba (`AfinidadMaterias`, en `Siha.Certificados`) que cada
+solicitud pide algo con sentido: las materias aprobadas y la de destino comparten una palabra propia del
+nombre ("Programación", "Cálculo", "Física") **o** sus sílabos tratan temas parecidos (TF-IDF de nombre +
+unidades + contenidos de la malla vigente, similitud ≥ 10 %). Si no, la sección **Solicitudes** sale con ✘
+("«Química» no se relaciona con «Algoritmos y Lógica de Programación»… por ejemplo «…»") y no se registra.
+Vale igual para el PDF y para el registro manual; en el registro manual se avisa mientras se llena
+(`POST /api/expedientes/manual/afinidad`). En movilidad externa se compara el nombre de la materia aprobada
+con los temas de la materia de destino. Si el catálogo no responde no se bloquea (lo deciden el agente y los
+docentes). No reemplaza el análisis del agente (créditos y contenidos al 80 %): solo evita pedir cualquier cosa.
 
 ## Movilidad externa: sílabos de la otra universidad
 
@@ -171,6 +188,7 @@ Desde el 24-11-2026 **RN-01 2.1**: el 80 % es la recomendación del agente y la 
 | MS B | `POST /api/expedientes/certificado` | Registra, guarda el PDF y publica `SolicitudCreadaEvent` |
 | MS B | `GET /api/expedientes/manual/opciones` | Docentes revisores y materias de las carreras para el registro manual |
 | MS B | `POST /api/expedientes/manual/validar` · `POST /api/expedientes/manual` | Revisar / registrar una solicitud digitada a mano |
+| MS B | `POST /api/expedientes/manual/afinidad` | Sugerencias de materia de destino y aviso de las solicitudes que no se relacionan |
 | MS B | `GET /api/expedientes` | El docente solo recibe las solicitudes donde es revisor |
 | MS C | `GET /api/extracciones/expedientes/{id}/analisis` | Historial, reglas, análisis explicado, revisores y resultado final |
 | MS C | `POST /api/extracciones/expedientes/{id}/analisis-automatico` | Reintentar si la IA no estaba disponible |

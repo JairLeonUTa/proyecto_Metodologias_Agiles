@@ -102,7 +102,7 @@ public static class TablaResultadosHomologacion
 
         fila.Aprobaciones = final?.Aprobaciones ?? 0;
         fila.Rechazos = final?.Rechazos ?? 0;
-        fila.ResultadoFinal = final?.Resultado ?? "PENDIENTE";
+        fila.ResultadoFinal = e.BloqueadaPorCreditos ? "NO_HOMOLOGADA" : final?.Resultado ?? "PENDIENTE";
 
         if (c.AnalizadoUtc is { } analizado) fila.AnalizadoUtc = analizado;
         fila.ActualizadoUtc = ahora;

@@ -9,6 +9,7 @@ const api = vi.hoisted(() => ({
   opcionesManual: vi.fn(),
   validarManual: vi.fn(),
   registrarManual: vi.fn(),
+  afinidadManual: vi.fn(),
   listarCarreras: vi.fn(),
 }));
 
@@ -21,6 +22,7 @@ vi.mock('../api', async (importOriginal) => {
       opcionesManual: api.opcionesManual,
       validarManual: api.validarManual,
       registrarManual: api.registrarManual,
+      afinidadManual: api.afinidadManual,
     },
     carrerasApi: { ...real.carrerasApi, listar: api.listarCarreras },
   };
@@ -61,9 +63,19 @@ describe('Registro manual de una solicitud (sin PDF)', () => {
         { nombre: 'Ing. Carlos Paredes', correo: 'cparedes@uta.edu.ec' },
         { nombre: 'Ing. María Vaca', correo: 'mvaca@uta.edu.ec' },
       ],
-      materiasOrigen: [],
+      materiasOrigen: ['FISICA', 'ALGEBRA LINEAL', 'CALCULO INTEGRAL'],
       materiasDestino: ['FISICA'],
+      mallaOrigen: [
+        { nombre: 'FISICA', nivel: 1, creditos: 4 },
+        { nombre: 'ALGEBRA LINEAL', nivel: 1, creditos: 4 },
+        { nombre: 'CALCULO INTEGRAL', nivel: 2, creditos: 4 },
+      ],
+      mallaDestino: [
+        { nombre: 'FISICA', nivel: 1, creditos: 4 },
+        { nombre: 'ALGORITMOS Y LOGICA DE PROGRAMACION', nivel: 1, creditos: 5 },
+      ],
     });
+    api.afinidadManual.mockResolvedValue({ sugerencias: [], solicitudes: [] });
   });
 
   const abrir = () =>
@@ -86,7 +98,7 @@ describe('Registro manual de una solicitud (sin PDF)', () => {
     await user.type(screen.getByLabelText('Período académico'), 'Abr-Sep 2025');
     await user.type(screen.getByLabelText('Nota'), '8,5');
     await user.selectOptions(screen.getByLabelText('Materia aprobada'), 'Física');
-    await user.type(screen.getByLabelText(/Homologar por/), 'Física');
+    await user.selectOptions(screen.getByLabelText(/Homologar por/), 'Fisica');
   };
 
   it('revisa los datos antes de registrar y luego registra la solicitud', async () => {
@@ -113,7 +125,7 @@ describe('Registro manual de una solicitud (sin PDF)', () => {
         tipoTramite: 'Cambio de carrera',
         carreraDestino: 'Software',
         materias: [{ nombre: 'Física', nivel: 1, periodoAcademico: 'Abr-Sep 2025', nota: 8.5, aprobada: true }],
-        solicitudes: [{ materiasOrigen: ['Física'], materiaDestino: 'Física' }],
+        solicitudes: [{ materiasOrigen: ['Física'], materiaDestino: 'Fisica' }],
       }),
     );
 
@@ -151,5 +163,77 @@ describe('Registro manual de una solicitud (sin PDF)', () => {
     await user.type(screen.getByLabelText('Nota'), '5,9');
 
     expect(screen.getByLabelText('Estado')).toHaveValue('no');
+  });
+
+  const elegirCarreras = async (user: ReturnType<typeof userEvent.setup>) => {
+    await screen.findAllByRole('option', { name: 'Software' });
+    await user.selectOptions(screen.getByLabelText(/Carrera de origen/), 'Tecnologías de la Información');
+    await user.selectOptions(screen.getByLabelText(/Carrera a la que quiere pasar/), 'Software');
+  };
+
+  it('carga las materias de la malla de origen con su nivel y copia el período', async () => {
+    const user = userEvent.setup();
+    abrir();
+    await elegirCarreras(user);
+
+    await user.selectOptions(await screen.findByLabelText(/Cargar las materias de la malla hasta el nivel/), '2');
+    await user.click(screen.getByRole('button', { name: 'Cargar materias de la malla' }));
+
+    const materias = screen.getAllByLabelText('Materia');
+    expect(materias.map((m) => (m as HTMLInputElement).value)).toEqual(['Fisica', 'Algebra lineal', 'Calculo integral']);
+    expect(screen.getAllByLabelText('Nivel').map((n) => (n as HTMLInputElement).value)).toEqual(['1', '1', '2']);
+
+    await user.type(screen.getAllByLabelText('Período académico')[0], 'Abr-Sep 2025');
+    const periodos = screen.getAllByLabelText('Período académico').map((p) => (p as HTMLInputElement).value);
+    expect(periodos).toEqual(['Abr-Sep 2025', 'Abr-Sep 2025', '']);
+  });
+
+  it('escribir una materia de la malla llena su nivel', async () => {
+    const user = userEvent.setup();
+    abrir();
+    await elegirCarreras(user);
+    await screen.findByLabelText(/Cargar las materias de la malla/);
+
+    await user.type(screen.getByLabelText('Materia'), 'Cálculo Integral');
+
+    expect(screen.getByLabelText('Nivel')).toHaveDisplayValue('2');
+  });
+
+  it('sugiere la materia de destino y avisa si lo pedido no se relaciona', async () => {
+    const user = userEvent.setup();
+    api.afinidadManual.mockImplementation(async (consulta: { solicitudes: { materiasOrigen: string[]; materiaDestino: string }[] }) => {
+      const pedida = consulta.solicitudes[0];
+      if (pedida.materiaDestino === 'Algoritmos y logica de programacion') {
+        return {
+          sugerencias: [],
+          solicitudes: [
+            {
+              solicitud: 1,
+              seRelacionan: false,
+              porcentaje: 3,
+              mensaje: 'Solicitud 1: «Física» no se relaciona con «Algoritmos y logica de programacion».',
+              sugerencia: 'Fisica',
+            },
+          ],
+        };
+      }
+      return pedida.materiasOrigen[0]
+        ? { sugerencias: [], solicitudes: [{ solicitud: 1, seRelacionan: true, porcentaje: 60, mensaje: 'Se relacionan: sus temas se parecen un 60 %.', sugerencia: null }] }
+        : { sugerencias: [{ materiaOrigen: 'Física', materiaDestino: 'Fisica', porcentaje: 60 }], solicitudes: [] };
+    });
+    abrir();
+    await elegirCarreras(user);
+    await user.type(screen.getByLabelText('Materia'), 'Física');
+    await user.type(screen.getByLabelText('Nota'), '8');
+
+    expect(await screen.findByText(/Sugerencias automáticas/)).toBeInTheDocument();
+    await user.selectOptions(screen.getByLabelText('Materia aprobada'), 'Física');
+    expect(screen.getByLabelText(/Homologar por/)).toHaveValue('Fisica');
+    expect(await screen.findByText(/Se relacionan: sus temas se parecen un 60 %/)).toBeInTheDocument();
+
+    await user.selectOptions(screen.getByLabelText(/Homologar por/), 'Algoritmos y logica de programacion');
+    expect(await screen.findByText('Estas materias no se relacionan')).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Usar «Fisica»' }));
+    expect(screen.getByLabelText(/Homologar por/)).toHaveValue('Fisica');
   });
 });

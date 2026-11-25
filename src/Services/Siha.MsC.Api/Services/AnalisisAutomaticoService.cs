@@ -88,7 +88,7 @@ public sealed class AnalisisAutomaticoService : IAnalisisAutomaticoService
     /// textos de la decisión): los análisis guardados con otra versión se marcan como desactualizados y los
     /// que todavía no tienen decisiones de los docentes se vuelven a analizar solos al arrancar MS C.
     /// </summary>
-    public const string VersionReglas = "2026-11-recomendacion-docente-decide";
+    public const string VersionReglas = "2026-11-creditos-bloquean";
 
     /// <summary>Mensaje mientras se actualiza un análisis hecho con reglas anteriores.</summary>
     public const string MensajeActualizando =
@@ -245,13 +245,19 @@ public sealed class AnalisisAutomaticoService : IAnalisisAutomaticoService
         var requisitos = Requisitos(certificado, mallaOrigen, evaluaciones, theta, contexto);
         var cumplen = evaluaciones.Count(e => e.Estimacion == Cumple);
         var sinSilabo = evaluaciones.Count(e => e.SinSilabo);
-        var noCumplen = evaluaciones.Count(e => e.Estimacion == NoCumple);
+        var bloqueadas = evaluaciones.Count(e => e.BloqueadaPorCreditos);
+        var soloContenidos = evaluaciones.Count(e => e.Estimacion == NoCumple && !e.BloqueadaPorCreditos);
         var partes = new List<string>();
         if (sinSilabo < evaluaciones.Count) partes.Add($"{cumplen} cumple(n) el {Num(theta)} % en contenidos y créditos");
-        if (noCumplen > 0) partes.Add($"{noCumplen} no llega(n) al {Num(theta)} % y el agente recomienda no homologarla(s)");
+        if (bloqueadas > 0) partes.Add($"{bloqueadas} no se puede(n) homologar porque los créditos no llegan al {Num(theta)} %");
+        if (soloContenidos > 0) partes.Add($"{soloContenidos} no llega(n) al {Num(theta)} % en contenidos y el agente recomienda no homologarla(s)");
         if (sinSilabo > 0) partes.Add($"{sinSilabo} no tiene(n) sílabo para comparar y la(s) deciden los docentes");
         var resumen = $"Se analizaron {evaluaciones.Count} materia(s) pedida(s): {Unir(partes)}. " +
-                      "El agente solo recomienda: la decisión final de cada materia es de los dos docentes revisores.";
+                      (bloqueadas == evaluaciones.Count
+                          ? "Ninguna materia se puede votar: los créditos son obligatorios."
+                          : bloqueadas > 0
+                              ? "Las que no llegan en créditos no se votan; las demás las deciden los dos docentes revisores."
+                              : "El agente solo recomienda: la decisión final de cada materia es de los dos docentes revisores.");
 
         return new AnalisisAutomaticoResponse(contexto.ExpedienteId, requisitos, evaluaciones, Array.Empty<string>(), resumen, string.Join(" | ", traza), theta, VersionReglas);
     }
@@ -375,15 +381,17 @@ public sealed class AnalisisAutomaticoService : IAnalisisAutomaticoService
         if (!creditosPorHoras)
             explicacion.Add($"Carga horaria (dato informativo, no decide): {horasOrigen} horas aprobadas frente a {horasDestino} horas de la materia de destino = {Num((double)carga)} %.");
 
-        // Regla del reglamento: al menos 80 % en contenidos y 80 % en créditos, las dos sí o sí.
+        // Los créditos por debajo del mínimo bloquean la materia. Los contenidos solo generan recomendación.
+        var bloqueadaPorCreditos = (double)creditos < theta;
         var bajos = new List<string>();
         if ((double)contenidos < theta) bajos.Add($"contenidos ({Num((double)contenidos)} %)");
         if ((double)creditos < theta) bajos.Add($"créditos ({Num((double)creditos)} %)");
         var estimacion = bajos.Count == 0 ? Cumple : NoCumple;
-        var conclusion = estimacion == Cumple
+        var conclusion = bloqueadaPorCreditos
+            ? $"No se puede homologar: no llega al {Num(theta)} % en {Unir(bajos)}; los créditos son obligatorios, así que no se vota."
+            : estimacion == Cumple
             ? $"Recomendación: homologar «{solicitud.MateriaDestino}». Llega al {Num(theta)} % en contenidos y en créditos. Los docentes revisores deciden."
-            : $"Recomendación: no homologar. No llega al {Num(theta)} % en {Unir(bajos)} (el reglamento pide al menos el {Num(theta)} % en contenidos y en créditos). " +
-              "Los docentes revisores deciden: si consideran que el estudiante sí vio esos temas (por ejemplo, con otro nombre en su sílabo), pueden homologarla.";
+            : $"Recomendación: no homologar. No llega al {Num(theta)} % en {Unir(bajos)}. Los docentes revisores deciden.";
 
         var precedentes = await _precedentes.BuscarAsync(new BuscarPrecedenteRequest(
             origenes.Select(o => o.Malla!.Codigo).ToList(), destino.Codigo, contexto.InstitucionOrigen), cancellationToken);
@@ -392,7 +400,8 @@ public sealed class AnalisisAutomaticoService : IAnalisisAutomaticoService
 
         return new EvaluacionMateriaResponse(solicitud.Numero, solicitud.MateriaDestino, destino.Codigo, destino.Semestre, destino.Creditos,
             horasDestino, origenDto, contenidos, profundidad, carga, estimacion, unidades, explicacion, conclusion, precedentes,
-            SinSilabo: false, PorcentajeCreditos: creditos, CreditosOrigen: creditosOrigen, CreditosPorHoras: creditosPorHoras);
+            SinSilabo: false, PorcentajeCreditos: creditos, CreditosOrigen: creditosOrigen, CreditosPorHoras: creditosPorHoras,
+            BloqueadaPorCreditos: bloqueadaPorCreditos);
     }
 
     /// <summary>Reglas del instructivo de cambio de carrera, verificadas con el certificado y la malla de origen.</summary>
@@ -441,7 +450,7 @@ public sealed class AnalisisAutomaticoService : IAnalisisAutomaticoService
         // Las materias sin sílabo no cuentan como que fallaron el mínimo: no se pudieron medir.
         var detalle = evaluaciones.Select(e => e.SinSilabo
             ? $"«{e.MateriaDestino}»: sin sílabo para comparar (deciden los docentes)."
-            : $"«{e.MateriaDestino}»: {Estado(e.Estimacion)} (contenidos {Num((double)e.Contenidos)} %, " +
+            : $"«{e.MateriaDestino}»: {(e.BloqueadaPorCreditos ? "no se puede homologar (los créditos no llegan al mínimo)" : Estado(e.Estimacion))} (contenidos {Num((double)e.Contenidos)} %, " +
               $"créditos {Num((double)e.PorcentajeCreditos)} %).");
         requisitos.Add(new RequisitoResponse($"Equivalencia mínima del {Num(theta)} % en contenidos y en créditos",
             comparables.All(e => e.Estimacion == Cumple), string.Join(" ", detalle)));

@@ -1,6 +1,8 @@
 import { peticion } from './httpClient';
 import type {
+  AfinidadManual,
   CertificadoLeido,
+  ConsultaAfinidad,
   CrearExpediente,
   DocumentoCargado,
   DocumentosExpediente,
@@ -57,6 +59,10 @@ export const expedientesApi = {
     peticion<OpcionesRegistroManual>(
       `/api/expedientes/manual/opciones?carreraOrigen=${encodeURIComponent(carreraOrigen)}&carreraDestino=${encodeURIComponent(carreraDestino)}`,
     ),
+
+  /** Sugiere con qué materia homologar cada aprobada y avisa si lo pedido no se relaciona (no registra nada). */
+  afinidadManual: (consulta: ConsultaAfinidad) =>
+    peticion<AfinidadManual>('/api/expedientes/manual/afinidad', { metodo: 'POST', cuerpo: consulta }),
 
   /** Revisa el registro manual con las mismas reglas del certificado, sin registrar nada. */
   validarManual: (registro: RegistroManual) =>

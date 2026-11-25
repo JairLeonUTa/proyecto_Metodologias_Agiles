@@ -94,8 +94,34 @@ public record RegistroManualRequest(
 
 public record DocenteOpcionResponse(string Nombre, string Correo);
 
+/// <summary>Materia de la malla vigente, para llenar el historial solo (nivel y créditos).</summary>
+public record MateriaOpcionResponse(string Nombre, int Nivel, int Creditos);
+
 /// <summary>Opciones para llenar el registro manual: docentes revisores y materias de cada carrera.</summary>
 public record OpcionesRegistroManualResponse(
     IReadOnlyList<DocenteOpcionResponse> Docentes,
     IReadOnlyList<string> MateriasOrigen,
-    IReadOnlyList<string> MateriasDestino);
+    IReadOnlyList<string> MateriasDestino,
+    IReadOnlyList<MateriaOpcionResponse>? MallaOrigen = null,
+    IReadOnlyList<MateriaOpcionResponse>? MallaDestino = null);
+
+/// <summary>
+/// Pide sugerencias y la comprobación de que las materias pedidas se relacionan (registro manual), sin
+/// registrar nada.
+/// </summary>
+public record AfinidadManualRequest(
+    string? TipoTramite,
+    string? CarreraOrigen,
+    string? CarreraDestino,
+    IReadOnlyList<string>? Aprobadas,
+    IReadOnlyList<SolicitudManualRequest>? Solicitudes);
+
+/// <summary>Materia de destino sugerida para una materia aprobada, con el parecido de sus temas.</summary>
+public record SugerenciaHomologacionResponse(string MateriaOrigen, string MateriaDestino, int Porcentaje);
+
+/// <summary>Si una solicitud del formulario se relaciona; si no, por qué y qué materia se sugiere.</summary>
+public record AfinidadSolicitudResponse(int Solicitud, bool SeRelacionan, int Porcentaje, string Mensaje, string? Sugerencia);
+
+public record AfinidadManualResponse(
+    IReadOnlyList<SugerenciaHomologacionResponse> Sugerencias,
+    IReadOnlyList<AfinidadSolicitudResponse> Solicitudes);
