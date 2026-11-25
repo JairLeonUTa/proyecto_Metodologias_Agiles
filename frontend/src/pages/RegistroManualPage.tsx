@@ -7,12 +7,14 @@ import { useAuth } from '../hooks/useAuth';
 import { useTituloPagina } from '../hooks/useTituloPagina';
 import type { Carrera } from '../types/catalogo';
 import type {
+  AfinidadManual,
   CertificadoLeido,
   MateriaManual,
   OpcionesRegistroManual,
   RechazoCertificado,
   RegistroManual,
   SolicitudCertificado,
+  SolicitudManual,
 } from '../types/expedientes';
 import { ListaVerificacion, ResumenCertificado, rechazoDe } from './SolicitudNuevaPage';
 
@@ -38,6 +40,8 @@ function leerNota(texto: string): number | null {
 
 const aEnviar = (f: Formulario): RegistroManual => ({ ...f, materias: f.materias.map((m) => ({ ...m, nota: leerNota(m.nota) })) });
 
+const solicitudVacia = (): SolicitudManual => ({ materiasOrigen: [''], materiaDestino: '' });
+
 const registroInicial = (): Formulario => ({
   estudianteNombre: '',
   cedula: '',
@@ -48,8 +52,18 @@ const registroInicial = (): Formulario => ({
   revisor1Correo: '',
   revisor2Correo: '',
   materias: [materiaVacia()],
-  solicitudes: [{ materiasOrigen: [''], materiaDestino: '' }],
+  solicitudes: [solicitudVacia()],
 });
+
+/** "Física Básica" → "fisica basica": para comparar nombres sin importar tildes ni mayúsculas. */
+function clave(texto: string): string {
+  return texto
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, ' ')
+    .trim();
+}
 
 /** Nombre de la malla ("ALGORITMOS Y LOGICA") en un formato más fácil de leer ("Algoritmos y logica"). */
 function legible(nombre: string): string {
@@ -74,6 +88,8 @@ export function RegistroManualPage(): JSX.Element {
   const [rechazo, setRechazo] = useState<RechazoCertificado | null>(null);
   const [error, setError] = useState<{ texto: string; detalles: string[] } | null>(null);
   const [resultado, setResultado] = useState<SolicitudCertificado | null>(null);
+  const [afinidad, setAfinidad] = useState<AfinidadManual | null>(null);
+  const [nivelCarga, setNivelCarga] = useState(1);
 
   const esMovilidad = registro.tipoTramite === MOVILIDAD;
   const datosActuales = JSON.stringify(registro);
@@ -102,6 +118,40 @@ export function RegistroManualPage(): JSX.Element {
     [registro.materias],
   );
 
+  const mallaOrigen = useMemo(() => (esMovilidad ? [] : opciones.mallaOrigen ?? []), [esMovilidad, opciones.mallaOrigen]);
+  const mallaDestino = opciones.mallaDestino ?? [];
+  const nivelesOrigen = useMemo(() => [...new Set(mallaOrigen.map((m) => m.nivel))].sort((a, b) => a - b), [mallaOrigen]);
+
+  // Mientras se llena el formulario se consulta qué materias se relacionan (sugerencias y avisos).
+  const consultaAfinidad = JSON.stringify({
+    tipoTramite: registro.tipoTramite,
+    carreraOrigen: esMovilidad ? '' : registro.carreraOrigen,
+    carreraDestino: registro.carreraDestino,
+    aprobadas,
+    solicitudes: registro.solicitudes,
+  });
+  useEffect(() => {
+    if (!registro.carreraDestino || aprobadas.length === 0) {
+      setAfinidad(null);
+      return undefined;
+    }
+    let vigente = true;
+    const espera = setTimeout(() => {
+      expedientesApi
+        .afinidadManual(JSON.parse(consultaAfinidad))
+        .then((r) => vigente && setAfinidad(r))
+        .catch(() => vigente && setAfinidad(null));
+    }, 400);
+    return () => {
+      vigente = false;
+      clearTimeout(espera);
+    };
+    // consultaAfinidad resume todo lo que influye en la consulta.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [consultaAfinidad]);
+
+  const afinidadDe = (i: number) => afinidad?.solicitudes.find((a) => a.solicitud === i + 1) ?? null;
+
   const cambiar = (parcial: Partial<Formulario>): void => {
     setRegistro((r) => ({ ...r, ...parcial }));
     setRechazo(null);
@@ -110,6 +160,39 @@ export function RegistroManualPage(): JSX.Element {
   const cambiarMateria = (i: number, parcial: Partial<FilaMateria>): void =>
     cambiar({ materias: registro.materias.map((m, j) => (j === i ? { ...m, ...parcial } : m)) });
 
+  /** Al escribir una materia de la malla de origen, su nivel se llena solo. */
+  const cambiarNombre = (i: number, nombre: string): void => {
+    const deMalla = mallaOrigen.find((m) => clave(m.nombre) === clave(nombre));
+    cambiarMateria(i, deMalla ? { nombre, nivel: deMalla.nivel } : { nombre });
+  };
+
+  /** El período se copia a las demás materias del mismo nivel que aún no lo tienen. */
+  const cambiarPeriodo = (i: number, periodo: string): void => {
+    const anterior = registro.materias[i].periodoAcademico;
+    const nivel = registro.materias[i].nivel;
+    cambiar({
+      materias: registro.materias.map((m, j) =>
+        j === i
+          ? { ...m, periodoAcademico: periodo }
+          : m.nivel === nivel && (m.periodoAcademico === '' || m.periodoAcademico === anterior) && anterior !== periodo
+            ? { ...m, periodoAcademico: periodo }
+            : m,
+      ),
+    });
+  };
+
+  /** Agrega al historial las materias de la malla de origen hasta el nivel elegido (sin repetir). */
+  const cargarMalla = (): void => {
+    const presentes = new Set(registro.materias.map((m) => clave(m.nombre)));
+    const nuevas = mallaOrigen
+      .filter((m) => m.nivel <= nivelCarga && !presentes.has(clave(m.nombre)))
+      .map((m) => ({ ...materiaVacia(m.nivel), nombre: legible(m.nombre) }));
+    const llenas = registro.materias.filter((m) => m.nombre.trim() !== '');
+    cambiar({
+      materias: [...llenas, ...nuevas].sort((a, b) => (a.nivel ?? 99) - (b.nivel ?? 99)),
+    });
+  };
+
   const cambiarNota = (i: number, texto: string): void => {
     const nota = leerNota(texto);
     cambiarMateria(i, nota === null ? { nota: texto } : { nota: texto, aprobada: nota >= NOTA_MINIMA });
@@ -117,6 +200,22 @@ export function RegistroManualPage(): JSX.Element {
 
   const cambiarSolicitud = (i: number, parcial: Partial<Formulario['solicitudes'][number]>): void =>
     cambiar({ solicitudes: registro.solicitudes.map((s, j) => (j === i ? { ...s, ...parcial } : s)) });
+
+  /** Al elegir la materia aprobada, si aún no hay materia de destino se pone la sugerida. */
+  const cambiarOrigen = (i: number, k: number, materia: string): void => {
+    const s = registro.solicitudes[i];
+    const materiasOrigen = s.materiasOrigen.map((x, y) => (y === k ? materia : x));
+    const sugerida = afinidad?.sugerencias.find((g) => g.materiaOrigen === materia)?.materiaDestino;
+    cambiarSolicitud(i, s.materiaDestino.trim() === '' && sugerida ? { materiasOrigen, materiaDestino: sugerida } : { materiasOrigen });
+  };
+
+  /** Agrega las sugerencias como solicitudes (primero llena las solicitudes vacías). */
+  const agregarSugerencias = (cuales: AfinidadManual['sugerencias']): void => {
+    const nuevas = cuales.map((g) => ({ materiasOrigen: [g.materiaOrigen], materiaDestino: g.materiaDestino }));
+    const llenas = registro.solicitudes.filter((s) => s.materiasOrigen.some((o) => o.trim()) || s.materiaDestino.trim());
+    const todas = [...llenas, ...nuevas];
+    cambiar({ solicitudes: todas.length > 0 ? todas : [solicitudVacia()] });
+  };
 
   const revisar = async (): Promise<void> => {
     setRevisando(true);
@@ -308,9 +407,26 @@ export function RegistroManualPage(): JSX.Element {
 
       <Tarjeta
         titulo="4. Historial académico"
-        descripcion="Todas las materias que cursó en la carrera de origen, aprobadas y reprobadas. Al escribir la nota se marca sola como Aprobada (7 o más) o Reprobada."
+        descripcion="Todas las materias que cursó en la carrera de origen, aprobadas y reprobadas. El nivel se llena solo con la malla, el período se copia a las materias del mismo nivel y, al escribir la nota, se marca sola como Aprobada (7 o más) o Reprobada."
       >
         <div className="space-y-3">
+          {mallaOrigen.length > 0 ? (
+            <div className="flex flex-wrap items-end gap-3 rounded-md bg-institucional-50 p-3">
+              <Campo htmlFor="nivel-carga" etiqueta="Cargar las materias de la malla hasta el nivel">
+                <Selector id="nivel-carga" value={nivelCarga} onChange={(e) => setNivelCarga(Number(e.target.value))}>
+                  {nivelesOrigen.map((n) => (
+                    <option key={n} value={n}>
+                      Nivel {n}
+                    </option>
+                  ))}
+                </Selector>
+              </Campo>
+              <Boton variante="secundario" onClick={cargarMalla}>
+                Cargar materias de la malla
+              </Boton>
+              <span className="text-sm text-muted">Solo falta escribir el período y la nota; quite las que no cursó.</span>
+            </div>
+          ) : null}
           {registro.materias.map((m, i) => (
             <fieldset key={i} className="grid items-end gap-3 rounded-md border border-slate-200 p-3 sm:grid-cols-12">
               <legend className="sr-only">Materia {i + 1}</legend>
@@ -319,7 +435,7 @@ export function RegistroManualPage(): JSX.Element {
                   id={`materia-${i}`}
                   list="materias-origen"
                   value={m.nombre}
-                  onChange={(e) => cambiarMateria(i, { nombre: e.target.value })}
+                  onChange={(e) => cambiarNombre(i, e.target.value)}
                   placeholder="Nombre completo de la materia"
                 />
               </Campo>
@@ -337,7 +453,7 @@ export function RegistroManualPage(): JSX.Element {
                 <EntradaTexto
                   id={`periodo-${i}`}
                   value={m.periodoAcademico}
-                  onChange={(e) => cambiarMateria(i, { periodoAcademico: e.target.value })}
+                  onChange={(e) => cambiarPeriodo(i, e.target.value)}
                   placeholder="Ej. Abr-Sep 2025"
                 />
               </Campo>
@@ -375,7 +491,10 @@ export function RegistroManualPage(): JSX.Element {
           ))}
           <Boton
             variante="secundario"
-            onClick={() => cambiar({ materias: [...registro.materias, materiaVacia(registro.materias.at(-1)?.nivel ?? 1)] })}
+            onClick={() => {
+              const ultima = registro.materias.at(-1);
+              cambiar({ materias: [...registro.materias, { ...materiaVacia(ultima?.nivel ?? 1), periodoAcademico: ultima?.periodoAcademico ?? '' }] });
+            }}
           >
             + Agregar otra materia
           </Boton>
@@ -384,7 +503,7 @@ export function RegistroManualPage(): JSX.Element {
 
       <Tarjeta
         titulo="5. Materias que pide homologar"
-        descripcion="Por cada materia de la carrera nueva, elija la materia aprobada con la que la quiere homologar. Si son dos materias aprobadas para una sola, agregue la segunda."
+        descripcion="Por cada materia de la carrera nueva, elija la materia aprobada con la que la quiere homologar (la materia de destino se sugiere sola). Solo se aceptan materias que se relacionan: con nombre o temas parecidos."
       >
         <div className="space-y-3">
           {registro.solicitudes.map((s, i) => (
@@ -397,9 +516,7 @@ export function RegistroManualPage(): JSX.Element {
                       <Selector
                         id={`origen-${i}-${k}`}
                         value={o}
-                        onChange={(e) =>
-                          cambiarSolicitud(i, { materiasOrigen: s.materiasOrigen.map((x, y) => (y === k ? e.target.value : x)) })
-                        }
+                        onChange={(e) => cambiarOrigen(i, k, e.target.value)}
                       >
                         <option value="">Elija una materia aprobada…</option>
                         {aprobadas.map((a) => (
@@ -415,15 +532,50 @@ export function RegistroManualPage(): JSX.Element {
                   </Boton>
                 </div>
                 <Campo htmlFor={`destino-${i}`} etiqueta="Homologar por (materia de la carrera nueva)">
-                  <EntradaTexto
-                    id={`destino-${i}`}
-                    list="materias-destino"
-                    value={s.materiaDestino}
-                    onChange={(e) => cambiarSolicitud(i, { materiaDestino: e.target.value })}
-                    placeholder="Escriba o elija de la lista"
-                  />
+                  {mallaDestino.length > 0 ? (
+                    <Selector id={`destino-${i}`} value={s.materiaDestino} onChange={(e) => cambiarSolicitud(i, { materiaDestino: e.target.value })}>
+                      <option value="">Elija la materia de la carrera nueva…</option>
+                      {s.materiaDestino && !mallaDestino.some((m) => clave(m.nombre) === clave(s.materiaDestino)) ? (
+                        <option value={s.materiaDestino}>{s.materiaDestino}</option>
+                      ) : null}
+                      {mallaDestino.map((m) => (
+                        <option key={m.nombre} value={legible(m.nombre)}>
+                          {legible(m.nombre)} (nivel {m.nivel}, {m.creditos} créditos)
+                        </option>
+                      ))}
+                    </Selector>
+                  ) : (
+                    <EntradaTexto
+                      id={`destino-${i}`}
+                      list="materias-destino"
+                      value={s.materiaDestino}
+                      onChange={(e) => cambiarSolicitud(i, { materiaDestino: e.target.value })}
+                      placeholder="Escriba o elija de la lista"
+                    />
+                  )}
                 </Campo>
               </div>
+              {(() => {
+                const a = afinidadDe(i);
+                if (!a) return null;
+                return a.seRelacionan ? (
+                  <p className="text-sm text-positive">✔ {a.mensaje}</p>
+                ) : (
+                  <Alerta
+                    tono="error"
+                    titulo="Estas materias no se relacionan"
+                    accion={
+                      a.sugerencia ? (
+                        <Boton variante="secundario" tamano="sm" onClick={() => cambiarSolicitud(i, { materiaDestino: a.sugerencia ?? '' })}>
+                          Usar «{a.sugerencia}»
+                        </Boton>
+                      ) : undefined
+                    }
+                  >
+                    {a.mensaje}
+                  </Alerta>
+                );
+              })()}
               <Boton
                 variante="fantasma"
                 tamano="sm"
@@ -436,10 +588,31 @@ export function RegistroManualPage(): JSX.Element {
           ))}
           <Boton
             variante="secundario"
-            onClick={() => cambiar({ solicitudes: [...registro.solicitudes, { materiasOrigen: [''], materiaDestino: '' }] })}
+            onClick={() => cambiar({ solicitudes: [...registro.solicitudes, solicitudVacia()] })}
           >
             + Agregar otra materia a homologar
           </Boton>
+          {afinidad && afinidad.sugerencias.length > 0 ? (
+            <div className="space-y-2 rounded-md bg-institucional-50 p-3" aria-label="Sugerencias automáticas">
+              <p className="text-sm font-semibold text-ink">Sugerencias automáticas (materias aprobadas con temas parecidos)</p>
+              <ul className="space-y-1 text-sm">
+                {afinidad.sugerencias.map((g) => (
+                  <li key={g.materiaOrigen} className="flex flex-wrap items-center gap-2">
+                    <span>
+                      {g.materiaOrigen} → <strong>{g.materiaDestino}</strong>
+                    </span>
+                    <Etiqueta tono="informacion">temas {g.porcentaje} %</Etiqueta>
+                    <Boton variante="fantasma" tamano="sm" onClick={() => agregarSugerencias([g])}>
+                      Agregar
+                    </Boton>
+                  </li>
+                ))}
+              </ul>
+              <Boton variante="secundario" tamano="sm" onClick={() => agregarSugerencias(afinidad.sugerencias)}>
+                Agregar todas las sugerencias
+              </Boton>
+            </div>
+          ) : null}
         </div>
       </Tarjeta>
 

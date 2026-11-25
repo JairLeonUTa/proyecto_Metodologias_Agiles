@@ -109,22 +109,114 @@ public class CertificadosController : ControllerBase
         try
         {
             var docentes = await _docentes.ListarDocentesAsync(cancellationToken);
-            async Task<IReadOnlyList<string>> MateriasDe(string? nombre)
-            {
-                if (string.IsNullOrWhiteSpace(nombre)) return Array.Empty<string>();
-                var carrera = await _docentes.ResolverCarreraAsync(nombre, cancellationToken);
-                return carrera is null ? Array.Empty<string>() : await _docentes.ObtenerMateriasAsync(carrera.Codigo, cancellationToken);
-            }
+            var mallaOrigen = await MallaDeAsync(carreraOrigen, cancellationToken);
+            var mallaDestino = await MallaDeAsync(carreraDestino, cancellationToken);
+            static List<MateriaOpcionResponse> Opciones(IReadOnlyList<MateriaCatalogo> malla)
+                => malla.Select(m => new MateriaOpcionResponse(m.Nombre, m.Nivel, m.Creditos)).ToList();
 
             return Ok(new OpcionesRegistroManualResponse(
                 docentes.Where(d => d.Valido).Select(d => new DocenteOpcionResponse(d.NombreCompleto, d.Correo)).ToList(),
-                await MateriasDe(carreraOrigen),
-                await MateriasDe(carreraDestino)));
+                mallaOrigen.Select(m => m.Nombre).ToList(),
+                mallaDestino.Select(m => m.Nombre).ToList(),
+                Opciones(mallaOrigen),
+                Opciones(mallaDestino)));
         }
         catch (VerificacionDocentesNoDisponibleException ex)
         {
             return StatusCode(StatusCodes.Status503ServiceUnavailable, new { mensaje = ex.Message });
         }
+    }
+
+    /// <summary>
+    /// Mientras se llena el registro manual: sugiere con qué materia de la carrera nueva homologar cada
+    /// materia aprobada y avisa de las solicitudes cuyas materias no se relacionan (no registra nada).
+    /// </summary>
+    [HttpPost("~/api/expedientes/manual/afinidad")]
+    [ProducesResponseType(typeof(AfinidadManualResponse), StatusCodes.Status200OK)]
+    public async Task<ActionResult<AfinidadManualResponse>> AfinidadManual(
+        [FromBody] AfinidadManualRequest? solicitud, CancellationToken cancellationToken)
+    {
+        solicitud ??= new AfinidadManualRequest(null, null, null, null, null);
+        try
+        {
+            var externa = string.Equals(solicitud.TipoTramite?.Trim(), "Movilidad externa", StringComparison.OrdinalIgnoreCase);
+            var afinidad = new AfinidadMaterias(
+                externa ? Array.Empty<MateriaCatalogo>() : await MallaDeAsync(solicitud.CarreraOrigen, cancellationToken),
+                await MallaDeAsync(solicitud.CarreraDestino, cancellationToken));
+
+            var pedidas = (solicitud.Solicitudes ?? Array.Empty<SolicitudManualRequest>())
+                .Select((s, i) => (Numero: i + 1, Origen: (s.MateriasOrigen ?? Array.Empty<string>()).Where(o => !string.IsNullOrWhiteSpace(o)).ToList(),
+                    Destino: s.MateriaDestino?.Trim() ?? string.Empty))
+                .ToList();
+
+            // Solo se sugieren las aprobadas que todavía no se piden, hacia materias que aún no se piden.
+            var yaUsadas = pedidas.SelectMany(p => p.Origen).ToHashSet(StringComparer.OrdinalIgnoreCase);
+            var sugerencias = afinidad.Sugerir(
+                    (solicitud.Aprobadas ?? Array.Empty<string>()).Where(a => !yaUsadas.Contains(a)),
+                    pedidas.Where(p => p.Destino.Length > 0).Select(p => p.Destino))
+                .Select(s => new SugerenciaHomologacionResponse(s.MateriaOrigen, s.MateriaDestino, s.Porcentaje))
+                .ToList();
+
+            var revisadas = pedidas
+                .Where(p => p.Origen.Count > 0 && p.Destino.Length > 0)
+                .Select(p =>
+                {
+                    var a = afinidad.Calcular(p.Origen, p.Destino);
+                    var sugerida = a.SeRelacionan ? null : afinidad.MasRelacionada(p.Origen);
+                    return new AfinidadSolicitudResponse(p.Numero, a.SeRelacionan, a.Porcentaje,
+                        a.SeRelacionan ? MensajeRelacionadas(a) : MensajeNoRelacionadas(p.Numero, p.Origen, p.Destino, a, sugerida), sugerida);
+                })
+                .ToList();
+
+            return Ok(new AfinidadManualResponse(sugerencias, revisadas));
+        }
+        catch (VerificacionDocentesNoDisponibleException ex)
+        {
+            return StatusCode(StatusCodes.Status503ServiceUnavailable, new { mensaje = ex.Message });
+        }
+    }
+
+    private static string MensajeRelacionadas(Afinidad a) => a.SinDatos
+        ? "No se pudo comparar con la malla; lo revisan el agente y los docentes."
+        : $"Se relacionan: sus temas se parecen un {a.Porcentaje} %. El agente hará la comparación completa.";
+
+    private static string MensajeNoRelacionadas(int numero, IReadOnlyList<string> origen, string destino, Afinidad a, string? sugerida)
+        => $"Solicitud {numero}: «{string.Join(" + ", origen)}» no se relaciona con «{destino}» " +
+           $"(sus temas se parecen solo un {a.Porcentaje} %). Pida una materia de la carrera nueva que trate lo mismo" +
+           (sugerida is null ? "." : $"; por ejemplo «{sugerida}».");
+
+    /// <summary>Malla vigente de una carrera escrita por su nombre; vacía si no existe o no se puede consultar.</summary>
+    private async Task<IReadOnlyList<MateriaCatalogo>> MallaDeAsync(string? nombre, CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrWhiteSpace(nombre)) return Array.Empty<MateriaCatalogo>();
+        var carrera = await _docentes.ResolverCarreraAsync(nombre, cancellationToken);
+        return carrera is null ? Array.Empty<MateriaCatalogo>() : await _docentes.ObtenerMallaAsync(carrera.Codigo, cancellationToken);
+    }
+
+    /// <summary>
+    /// Solicitudes cuyas materias aprobadas no se relacionan con la materia que se pide (ni por el nombre ni
+    /// por los temas del sílabo). Si la malla no se puede consultar no se bloquea nada.
+    /// </summary>
+    private async Task<IReadOnlyList<ProblemaCertificado>> ProblemasDeAfinidadAsync(
+        CertificadoSiha c, CarreraCatalogo? origen, CarreraCatalogo destino, CancellationToken cancellationToken)
+    {
+        var afinidad = new AfinidadMaterias(
+            origen is null || c.TipoTramite == TiposTramite.Externo
+                ? Array.Empty<MateriaCatalogo>()
+                : await _docentes.ObtenerMallaAsync(origen.Codigo, cancellationToken),
+            await _docentes.ObtenerMallaAsync(destino.Codigo, cancellationToken));
+        if (!afinidad.HayDatos) return Array.Empty<ProblemaCertificado>();
+
+        var problemas = new List<ProblemaCertificado>();
+        foreach (var s in c.Solicitudes)
+        {
+            var a = afinidad.Calcular(s.MateriasOrigen, s.MateriaDestino);
+            if (a.SeRelacionan) continue;
+            problemas.Add(new(SeccionesCertificado.Solicitudes, TiposProblema.Regla,
+                MensajeNoRelacionadas(s.Numero, s.MateriasOrigen, s.MateriaDestino, a, afinidad.MasRelacionada(s.MateriasOrigen))));
+        }
+
+        return problemas;
     }
 
     /// <summary>Revisa los datos del registro manual sin registrar nada (mismas reglas que el certificado).</summary>
@@ -564,6 +656,9 @@ public class CertificadosController : ControllerBase
         if (destino is null)
             problemas.Add(new(SeccionesCertificado.Tramite, TiposProblema.Regla,
                 $"La carrera de destino '{lectura.Certificado.CarreraDestino}' no existe en el catálogo de la UTA."));
+        else
+            // Lo que se pide homologar debe tener relación (no cualquier materia por cualquier otra).
+            problemas.AddRange(await ProblemasDeAfinidadAsync(lectura.Certificado, origen, destino, cancellationToken));
 
         if (problemas.Count > 0)
         {

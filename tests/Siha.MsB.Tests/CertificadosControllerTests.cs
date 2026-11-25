@@ -41,10 +41,18 @@ public class CertificadosControllerTests : IDisposable
     /// <summary>Materias de la malla vigente por carrera, para la sugerencia del nombre oficial.</summary>
     private readonly Dictionary<string, string[]> _mallas = new();
 
+    /// <summary>Mallas completas (con temas) por carrera, para comprobar que lo pedido se relaciona.</summary>
+    private readonly Dictionary<string, MateriaCatalogo[]> _catalogo = new();
+
     private sealed class VerificadorFalso(
         Dictionary<string, (bool Docente, bool Activo)> usuarios,
-        Dictionary<string, string[]>? mallas = null) : IVerificadorDocentes
+        Dictionary<string, string[]>? mallas = null,
+        Dictionary<string, MateriaCatalogo[]>? catalogo = null) : IVerificadorDocentes
     {
+        public async Task<IReadOnlyList<MateriaCatalogo>> ObtenerMallaAsync(string carreraCodigo, CancellationToken cancellationToken = default)
+            => catalogo is not null && catalogo.TryGetValue(carreraCodigo, out var completa) ? completa
+                : (await ObtenerMateriasAsync(carreraCodigo, cancellationToken)).Select(n => new MateriaCatalogo(n, 0, 0, string.Empty)).ToList();
+
         public Task<IReadOnlyList<string>> ObtenerMateriasAsync(string carreraCodigo, CancellationToken cancellationToken = default)
             => Task.FromResult<IReadOnlyList<string>>(mallas is not null && mallas.TryGetValue(carreraCodigo, out var m) ? m : Array.Empty<string>());
 
@@ -63,6 +71,8 @@ public class CertificadosControllerTests : IDisposable
                 "Software" => new CarreraCatalogo("SW", "Ingeniería de Software"),
                 "Tecnologías de la Información" => new CarreraCatalogo("TI", "Tecnologías de la Información"),
                 "Ingeniería Industrial" => new CarreraCatalogo("IND", "Ingeniería Industrial"),
+                "Telecomunicaciones" => new CarreraCatalogo("TEL", "Telecomunicaciones"),
+                "Automatización y Robótica" => new CarreraCatalogo("ROB", "Automatización y Robótica"),
                 _ => null
             });
     }
@@ -86,7 +96,7 @@ public class CertificadosControllerTests : IDisposable
         var envio = new ExpedienteEnvioService(_db, almacenamiento, _publicador.Object,
             Options.Create(Pruebas.OpcionesArchivos(_directorio)), Options.Create(new RepublicacionOptions()),
             NullLogger<ExpedienteEnvioService>.Instance);
-        return new CertificadosController(_db, almacenamiento, envio, new VerificadorFalso(_usuarios, _mallas), NullLogger<CertificadosController>.Instance)
+        return new CertificadosController(_db, almacenamiento, envio, new VerificadorFalso(_usuarios, _mallas, _catalogo), NullLogger<CertificadosController>.Instance)
         {
             ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() }
         };
@@ -540,6 +550,104 @@ public class CertificadosControllerTests : IDisposable
             .Validar(Certificado("SIHA-TI-SW-cambio-de-carrera.pdf"), CancellationToken.None)).Result!).Value!;
 
         leido.Avisos.Should().BeEmpty();
+    }
+
+    // ---------- Las materias pedidas deben relacionarse ----------
+
+    /// <summary>Carga en el catálogo falso las mallas reales de la UTA (las mismas que siembra MS A).</summary>
+    private void ConCatalogoReal()
+    {
+        foreach (var (codigo, malla) in CatalogoReal.Mallas()) _catalogo[codigo] = malla;
+    }
+
+    [Theory]
+    [InlineData("certificados", "SIHA-TI-SW-cambio-de-carrera.pdf")]
+    [InlineData("certificados", "SIHA-IND-SW-cambio-de-carrera.pdf")]
+    [InlineData("certificados-pruebas", "V01-TEL-SW-cambio-de-carrera.pdf")]
+    [InlineData("certificados-pruebas", "V02-ROB-SW-cambio-de-carrera.pdf")]
+    [InlineData("certificados-pruebas", "V03-SW-TI-cambio-de-carrera.pdf")]
+    [InlineData("certificados-pruebas", "V04-IND-TI-una-materia.pdf")]
+    [InlineData("certificados-pruebas", "V05-IND-SW-dos-materias-a-una.pdf")]
+    [InlineData("certificados-pruebas", "V06-movilidad-externa-TI-SW.pdf")]
+    [InlineData("certificados-pruebas", "V07-TI-SW-historial-largo.pdf")]
+    public async Task Los_certificados_validos_piden_materias_relacionadas(string carpeta, string nombre)
+    {
+        ConCatalogoReal();
+        var pdf = Pruebas.Archivo(File.ReadAllBytes(Path.Combine(Pruebas.RaizRepositorio(), "documentos-prueba", carpeta, nombre)), nombreArchivo: nombre);
+
+        var resultado = await Controlador().Validar(pdf, CancellationToken.None);
+
+        resultado.Result.Should().BeOfType<OkObjectResult>("{0} pide materias que se relacionan", nombre);
+    }
+
+    [Fact]
+    public async Task Pedir_una_materia_que_no_se_relaciona_se_rechaza_y_sugiere_otra()
+    {
+        ConCatalogoReal();
+        var registro = Manual() with
+        {
+            CarreraOrigen = "Ingeniería Industrial",
+            Materias = new[]
+            {
+                new MateriaManualRequest("Química", 1, "Abr-Sep 2025", 8.0m, true),
+                new MateriaManualRequest("Física Básica", 1, "Abr-Sep 2025", 8.2m, true),
+                new MateriaManualRequest("Álgebra", 1, "Abr-Sep 2025", 7.9m, true)
+            },
+            Solicitudes = new[]
+            {
+                new SolicitudManualRequest(new[] { "Física Básica" }, "Algoritmos y Lógica de Programación"),
+                new SolicitudManualRequest(new[] { "Álgebra" }, "Álgebra Lineal")
+            }
+        };
+
+        var resultado = await Controlador().ValidarManual(registro, CancellationToken.None);
+
+        var rechazo = resultado.Result.Should().BeOfType<UnprocessableEntityObjectResult>().Subject.Value
+            .Should().BeOfType<RechazoCertificadoResponse>().Subject;
+        var solicitudes = rechazo.Secciones.Single(s => s.Seccion == SeccionesCertificado.Solicitudes);
+        solicitudes.Ok.Should().BeFalse();
+        solicitudes.Problemas.Should().ContainSingle()
+            .Which.Should().Contain("«Física Básica» no se relaciona con «Algoritmos y Lógica de Programación»")
+            .And.Contain("por ejemplo «Fisica»");
+    }
+
+    [Fact]
+    public async Task El_registro_manual_sugiere_solo_las_materias_que_se_relacionan()
+    {
+        ConCatalogoReal();
+
+        var resultado = await Controlador().AfinidadManual(new AfinidadManualRequest(
+            "Cambio de carrera", "Ingeniería Industrial", "Software",
+            new[] { "Química", "Física Básica", "Álgebra", "Programación", "Realidad Nacional" },
+            new[]
+            {
+                new SolicitudManualRequest(new[] { "Química" }, "Algoritmos y Lógica de Programación"),
+                new SolicitudManualRequest(new[] { "Programación" }, "Física")
+            }), CancellationToken.None);
+
+        var r = resultado.Result.Should().BeOfType<OkObjectResult>().Subject.Value.Should().BeOfType<AfinidadManualResponse>().Subject;
+        r.Sugerencias.Select(s => (s.MateriaOrigen, s.MateriaDestino)).Should().Contain(new[]
+        {
+            ("Álgebra", "Algebra Lineal"), ("Realidad Nacional", "Realidad Nacional")
+        });
+        r.Sugerencias.Should().NotContain(s => s.MateriaOrigen == "Química" || s.MateriaOrigen == "Programación", "ya se piden");
+        r.Sugerencias.Should().NotContain(s => s.MateriaDestino == "Fisica", "ya se pide en la solicitud 2");
+
+        r.Solicitudes.Should().HaveCount(2).And.OnlyContain(s => !s.SeRelacionan);
+        r.Solicitudes[0].Sugerencia.Should().BeNull("ninguna materia de Software trata lo mismo que Química");
+        r.Solicitudes[1].Sugerencia.Should().Be("Algoritmos y Logica de Programacion");
+    }
+
+    [Fact]
+    public async Task Las_opciones_traen_el_nivel_de_cada_materia_para_llenar_el_historial()
+    {
+        ConCatalogoReal();
+
+        var resultado = await Controlador().OpcionesManual("Ingeniería Industrial", "Software", CancellationToken.None);
+
+        var opciones = (OpcionesRegistroManualResponse)((OkObjectResult)resultado.Result!).Value!;
+        opciones.MallaOrigen!.Single(m => m.Nombre == "CALCULO DIFERENCIAL").Nivel.Should().Be(2);
+        opciones.MallaDestino!.Should().Contain(m => m.Nombre == "ALGEBRA LINEAL" && m.Nivel == 1);
     }
 
     [Fact]

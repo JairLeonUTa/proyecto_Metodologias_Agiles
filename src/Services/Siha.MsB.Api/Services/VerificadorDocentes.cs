@@ -1,4 +1,5 @@
 using Grpc.Core;
+using Siha.Certificados;
 using Siha.MsA.Api.Grpc;
 
 namespace Siha.MsB.Api.Services;
@@ -31,6 +32,13 @@ public interface IVerificadorDocentes
     /// </summary>
     Task<IReadOnlyList<string>> ObtenerMateriasAsync(string carreraCodigo, CancellationToken cancellationToken = default)
         => Task.FromResult<IReadOnlyList<string>>(Array.Empty<string>());
+
+    /// <summary>
+    /// Malla vigente con nivel, créditos y temas de cada materia (para comprobar que lo que se pide homologar
+    /// se relaciona y para llenar el registro manual). Lista vacía si no se puede consultar.
+    /// </summary>
+    async Task<IReadOnlyList<MateriaCatalogo>> ObtenerMallaAsync(string carreraCodigo, CancellationToken cancellationToken = default)
+        => (await ObtenerMateriasAsync(carreraCodigo, cancellationToken)).Select(n => new MateriaCatalogo(n, 0, 0, string.Empty)).ToList();
 
     /// <summary>Docentes activos que pueden ser revisores (registro manual).</summary>
     Task<IReadOnlyList<DocenteRevisorVerificado>> ListarDocentesAsync(CancellationToken cancellationToken = default)
@@ -90,6 +98,24 @@ public sealed class VerificadorDocentesGrpc : IVerificadorDocentes
         {
             // Solo sirve para sugerir nombres: si MS A no responde, no se sugiere nada.
             return Array.Empty<string>();
+        }
+    }
+
+    public async Task<IReadOnlyList<MateriaCatalogo>> ObtenerMallaAsync(string carreraCodigo, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            var malla = await _cliente.ObtenerMallaVigenteAsync(
+                new SolicitudMalla { CarreraCodigo = carreraCodigo }, deadline: DateTime.UtcNow.AddSeconds(10), cancellationToken: cancellationToken);
+            return malla.Encontrada
+                ? malla.Asignaturas.Select(a => new MateriaCatalogo(a.Nombre, a.Semestre, a.Creditos,
+                    string.Join(" ", a.Unidades.Select(u => $"{u.Nombre} {u.Contenidos}")))).ToList()
+                : Array.Empty<MateriaCatalogo>();
+        }
+        catch (RpcException)
+        {
+            // Si MS A no responde no se bloquea el registro: el agente y los docentes lo revisan después.
+            return Array.Empty<MateriaCatalogo>();
         }
     }
 
