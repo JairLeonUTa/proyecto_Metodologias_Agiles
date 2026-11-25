@@ -1,0 +1,163 @@
+\section{Sprint 2: análisis de la solicitud}
+\subsection{Propósito y objetivos}
+El propósito fue procesar planes con texto o escaneados, calcular créditos y contenidos con las reglas vigentes y consultar precedentes para entregar una estimación explicable a revisión docente. El período planificado fue del 21 de octubre al 4 de noviembre de 2026, con revisión el 4 de noviembre. Las cinco historias fueron HU-07 a HU-11.
+
+\subsection{Capacidad}
+\begin{tabularx}{\textwidth}{|X|l|c|c|c|c|}\hline\rowcolor{grisTarjeta}\textbf{Integrante} & \textbf{Rol} & \textbf{Brutas} & \textbf{Coordinación} & \textbf{Técnicas} & \textbf{Planificado}\\\hline
+Jair León & Scrum Master / Backend & 30 h & 1 h & 29 h & 46 h\\\hline Paul Acurio & Product Owner Proxy / IA & 30 h & 1 h & 29 h & 36 h\\\hline Alex Chisag & Frontend / UI-UX & 30 h & 1 h & 29 h & 32 h\\\hline Rolando Sebastián Miranda & Backend / QA-DevOps & 30 h & 1 h & 29 h & 39 h\\\hline Total & & 120 h & 4 h & 116 h & 153 h\\\hline
+\end{tabularx}\captionof{table}{Capacidad del Sprint 2}
+Las tareas sumaron 153 horas frente a una capacidad técnica de 116 horas. La planificación registró una diferencia de 37 horas como riesgo del sprint.
+
+\subsection{Sprint Backlog}
+\begin{tabularx}{\textwidth}{|c|X|c|c|}\hline\rowcolor{grisTarjeta}\textbf{Historia} & \textbf{Alcance} & \textbf{SP} & \textbf{Horas}\\\hline
+HU-07 & Leer el plan analítico y confirmar datos dudosos & 8 & 36\\\hline HU-08 & Calcular con reglas y umbrales aprobados & 3 & 18\\\hline HU-09 & Mostrar proporción de créditos y alertas & 3 & 20\\\hline HU-10 & Leer planes escaneados y comparar contenidos & 8 & 40\\\hline HU-11 & Consultar casos anteriores y resoluciones & 5 & 39\\\hline Total & & 27 & 153\\\hline
+\end{tabularx}\captionof{table}{Sprint Backlog del Sprint 2}
+
+\subsection{Historias y pruebas de aceptación}
+Las siguientes tarjetas condensan las historias incluidas en el informe entregado del Sprint 2. En la tabla de pruebas se resumen los escenarios de aceptación descritos en sus secciones.
+
+\subsubsection{HU-07: Lectura del plan y confirmación}
+\historia{HU-07}{Operador académico}{Leer el plan analítico y confirmar los datos dudosos}{Alta}{Media}{8 SP}{21 al 23 de octubre}{Jair León (5 h); Paul Acurio (8 h); Alex Chisag (13 h); Rolando Miranda (10 h)}{Como operador académico, quiero que el sistema lea créditos, horas y temas del PDF y me pida revisar lo que no leyó con seguridad, para evitar evaluar con datos equivocados.}{\item Dado un PDF con texto, cuando se envía, entonces se muestran los datos leídos y un aviso repetido no genera una evaluación duplicada.\item Dado un dato obligatorio ausente o confianza menor a 0,80, cuando termina la lectura, entonces queda pendiente de confirmación y no empieza el cálculo.\item Dado un PDF escaneado, cuando se procesa, entonces queda pendiente de lectura con IA y no se inventan datos.}{La lectura escaneada continúa en HU-10.}{M-01 y M-02}
+\begin{longtable}{|p{1.45cm}|p{5.5cm}|p{1.9cm}|p{2.9cm}|p{0.95cm}|p{2.0cm}|}
+\hline\rowcolor{grisTarjeta}\textbf{Número} & \textbf{Tarea} & \textbf{Tipo} & \textbf{Responsable} & \textbf{Horas} & \textbf{Fechas}\\\hline
+\endhead
+TA-07.1 & Recibir cada solicitud enviada una sola vez & Desarrollo & Jair León & 3 h & 21/10\\\hline
+TA-07.2 & Preparar la IA local y las tablas del análisis & Otra & Sebastián Miranda & 5 h & 21/10\\\hline
+TA-07.3 & Leer créditos, horas y unidades de un PDF con texto & Desarrollo & Paul Acurio & 5 h & 21/10\\\hline
+TA-07.4 & Pantalla de bandeja de procesamiento & Desarrollo & Alex Chisag & 3 h & 21/10\\\hline
+TA-07.5 & Servicios para consultar y confirmar los datos leídos & Desarrollo & Jair León & 2 h & 22/10\\\hline
+TA-07.6 & Detectar PDF escaneados y lecturas poco seguras & Desarrollo & Paul Acurio & 3 h & 22/10\\\hline
+TA-07.7 & Formulario para revisar y corregir los datos leídos & Desarrollo & Alex Chisag & 5 h & 22/10\\\hline
+TA-07.8 & Pruebas unitarias de la lectura y del aviso repetido & Otra & Sebastián Miranda & 5 h & 22/10\\\hline
+TA-07.9 & Conectar la confirmación con el Servicio de Análisis & Desarrollo & Alex Chisag & 5 h & 23/10\\\hline
+\multicolumn{4}{|r|}{\textbf{Total}} & \textbf{36 h} & \\\hline
+\caption{Tareas de la HU-07 (9 tareas)}
+\end{longtable}
+
+\begin{longtable}{|p{1.4cm}|p{3.7cm}|p{4.6cm}|p{5.1cm}|}
+\hline\rowcolor{grisTarjeta}\textbf{N.º} & \textbf{Prueba} & \textbf{Entrada} & \textbf{Resultado esperado}\\\hline
+\endhead
+PA-07.1 & Lectura de un PDF con texto & Solicitud enviada con un plan analítico con texto & Se muestran los datos leídos con confianza 0,94 y el estado Datos leídos.\\\hline
+PA-07.2 & Aviso de solicitud repetido & El mismo aviso llega dos veces & Se crea una sola evaluación.\\\hline
+PA-07.3 & Lectura poco segura & PDF sin créditos legibles & Estado Confirmación pendiente; el cálculo no empieza.\\\hline
+PA-07.4 & Confirmar con datos vacíos & Formulario con los créditos vacíos & Aviso Ingrese los créditos; no se guarda nada.\\\hline
+PA-07.5 & PDF escaneado & PDF sin texto & Estado Pendiente de lectura con IA, sin datos inventados.\\\hline
+\caption{Pruebas de aceptación de la HU-07 (definidas en el Sprint 2)}
+\end{longtable}
+
+
+\subsubsection{HU-08: Reglas y umbrales}
+\historia{HU-08}{Docente evaluador}{Calcular con las reglas y umbrales aprobados}{Alta}{Media}{3 SP}{23 y 30 de octubre}{Jair León (10 h); Paul Acurio (3 h); Alex Chisag (2 h); Rolando Miranda (3 h)}{Como docente evaluador, quiero que el cálculo use las reglas vigentes aprobadas, para que el análisis sea consistente y explicable.}{\item Dada una solicitud confirmada, cuando se procesa, entonces el servicio consulta la versión vigente de las reglas.\item Dado un resultado calculado, cuando se presenta, entonces se identifican las reglas aplicadas.}{Consume las reglas del MS A.}{Reglas aplicadas en el análisis}
+\begin{longtable}{|p{1.45cm}|p{5.5cm}|p{1.9cm}|p{2.9cm}|p{0.95cm}|p{2.0cm}|}
+\hline\rowcolor{grisTarjeta}\textbf{Número} & \textbf{Tarea} & \textbf{Tipo} & \textbf{Responsable} & \textbf{Horas} & \textbf{Fechas}\\\hline
+\endhead
+TA-08.1 & Consultar las reglas vigentes al Servicio de Reglas & Desarrollo & Jair León & 10 h & 23/10\\\hline
+TA-08.2 & Probar el cambio de un umbral y la caída del servicio & Mejora & Paul Acurio & 3 h & 23/10\\\hline
+TA-08.3 & Pruebas de integración de la consulta de reglas & Otra & Sebastián Miranda & 3 h & 23/10\\\hline
+TA-08.4 & Mostrar en las pantallas las reglas aplicadas & Desarrollo & Alex Chisag & 2 h & 30/10\\\hline
+\multicolumn{4}{|r|}{\textbf{Total}} & \textbf{18 h} & \\\hline
+\caption{Tareas de la HU-08 (4 tareas)}
+\end{longtable}
+
+\begin{longtable}{|p{1.4cm}|p{3.7cm}|p{4.6cm}|p{5.1cm}|}
+\hline\rowcolor{grisTarjeta}\textbf{N.º} & \textbf{Prueba} & \textbf{Entrada} & \textbf{Resultado esperado}\\\hline
+\endhead
+PA-08.1 & Reglas en el resultado & Reglas en su versión 3; análisis de un expediente & El resultado muestra 80 ~\%, 15 ~\%, 0,75 y versión 3.\\\hline
+PA-08.2 & Cambio de umbral & El administrador sube el parecido mínimo a 0,80 & Se usa 0,80 y la versión sube a 4.\\\hline
+PA-08.3 & Servicio de Reglas apagado & Análisis de un expediente confirmado & Estado Pendiente de reglas con el error registrado.\\\hline
+\caption{Pruebas de aceptación de la HU-08 (definidas en el Sprint 2)}
+\end{longtable}
+
+
+\subsubsection{HU-09: Créditos y alertas}
+\historia{HU-09}{Docente evaluador}{Ver proporción de créditos y alertas}{Alta}{Media}{3 SP}{26 de octubre}{Jair León (7 h); Paul Acurio (5 h); Alex Chisag (3 h); Rolando Miranda (5 h)}{Como docente evaluador, quiero ver la proporción de créditos y las alertas antes de comparar, para valorar las condiciones de la solicitud.}{\item Dado un caso con créditos, cuando se analiza, entonces se muestra su proporción.\item Dado un caso fuera de las condiciones de vigencia o matrícula, cuando se analiza, entonces se presentan las alertas.}{Depende de los datos confirmados de HU-07 y las reglas de HU-08.}{Resumen de créditos y alertas}
+\begin{longtable}{|p{1.45cm}|p{5.5cm}|p{1.9cm}|p{2.9cm}|p{0.95cm}|p{2.0cm}|}
+\hline\rowcolor{grisTarjeta}\textbf{Número} & \textbf{Tarea} & \textbf{Tipo} & \textbf{Responsable} & \textbf{Horas} & \textbf{Fechas}\\\hline
+\endhead
+TA-09.1 & Calcular la proporción de créditos y los controles de vigencia y matrícula & Desarrollo & Jair León & 7 h & 26/10\\\hline
+TA-09.2 & Pruebas de los controles con casos de la normativa & Mejora & Paul Acurio & 5 h & 26/10\\\hline
+TA-09.3 & Panel de créditos y alertas & Desarrollo & Alex Chisag & 3 h & 26/10\\\hline
+TA-09.4 & Pruebas con casos límite del cálculo de créditos & Otra & Sebastián Miranda & 5 h & 26/10\\\hline
+\multicolumn{4}{|r|}{\textbf{Total}} & \textbf{20 h} & \\\hline
+\caption{Tareas de la HU-09 (4 tareas)}
+\end{longtable}
+
+\begin{longtable}{|p{1.4cm}|p{3.7cm}|p{4.6cm}|p{5.1cm}|}
+\hline\rowcolor{grisTarjeta}\textbf{N.º} & \textbf{Prueba} & \textbf{Entrada} & \textbf{Resultado esperado}\\\hline
+\endhead
+PA-09.1 & Créditos suficientes & 4 créditos de origen y 3 de destino & 100,00 ~\% con la etiqueta dato de apoyo.\\\hline
+PA-09.2 & Créditos insuficientes & 2 créditos de origen y 3 de destino & 66,67 ~\%.\\\hline
+PA-09.3 & Destino sin créditos & 4 frente a 0 & Mensaje de error; no se calcula.\\\hline
+PA-09.4 & Materia de más de 10 años & Cambio de carrera; materia aprobada hace 12 años & Alerta de vigencia y paso a Validación de conocimientos.\\\hline
+PA-09.5 & Tercera matrícula & Estudiante con tercera matrícula & Caso bloqueado con la alerta correspondiente.\\\hline
+\caption{Pruebas de aceptación de la HU-09 (definidas en el Sprint 2)}
+\end{longtable}
+
+
+\subsubsection{HU-10: Lectura escaneada y comparación}
+\historia{HU-10}{Docente evaluador}{Leer planes escaneados y comparar tema por tema}{Alta}{Alta}{8 SP}{27 al 29 de octubre}{Jair León (11 h); Paul Acurio (13 h); Alex Chisag (5 h); Rolando Miranda (11 h)}{Como docente evaluador, quiero que el sistema lea planes escaneados y compare sus temas, para revisar la cobertura de contenidos con evidencia.}{\item Dado un PDF escaneado, cuando se procesa, entonces se extrae información sin inventar los campos que no se reconocen.\item Dadas las materias de origen y destino, cuando se comparan, entonces se presenta el resultado por tema.}{Usa datos confirmados y reglas vigentes.}{Comparación de contenidos}
+\begin{longtable}{|p{1.45cm}|p{5.5cm}|p{1.9cm}|p{2.9cm}|p{0.95cm}|p{2.0cm}|}
+\hline\rowcolor{grisTarjeta}\textbf{Número} & \textbf{Tarea} & \textbf{Tipo} & \textbf{Responsable} & \textbf{Horas} & \textbf{Fechas}\\\hline
+\endhead
+TA-10.1 & Representar los temas con la IA local & Desarrollo & Jair León & 3 h & 27/10\\\hline
+TA-10.2 & Leer PDF escaneados con OCR e IA sin inventar datos & Desarrollo & Paul Acurio & 4 h & 27/10\\\hline
+TA-10.3 & Pantalla del estado de la lectura & Desarrollo & Alex Chisag & 2 h & 27/10\\\hline
+TA-10.4 & Guardar los vectores de las materias de Software & Desarrollo & Sebastián Miranda & 3 h & 27/10\\\hline
+TA-10.5 & Comparar temas y calcular el porcentaje de contenido & Desarrollo & Jair León & 4 h & 28/10\\\hline
+TA-10.6 & Ajustar la comparación con casos reales & Mejora & Paul Acurio & 4 h & 28/10\\\hline
+TA-10.7 & Tabla de cobertura por unidad & Desarrollo & Alex Chisag & 3 h & 28/10\\\hline
+TA-10.8 & Pruebas unitarias del porcentaje de contenido & Otra & Sebastián Miranda & 5 h & 28/10\\\hline
+TA-10.9 & Combinar dos materias de origen para un destino & Desarrollo & Jair León & 4 h & 29/10\\\hline
+TA-10.10 & Pruebas funcionales de la combinación y de los temas faltantes & Mejora & Paul Acurio & 5 h & 29/10\\\hline
+TA-10.11 & Pruebas de carga de la lectura con IA & Otra & Sebastián Miranda & 3 h & 29/10\\\hline
+\multicolumn{4}{|r|}{\textbf{Total}} & \textbf{40 h} & \\\hline
+\caption{Tareas de la HU-10 (11 tareas)}
+\end{longtable}
+
+\begin{longtable}{|p{1.4cm}|p{3.7cm}|p{4.6cm}|p{5.1cm}|}
+\hline\rowcolor{grisTarjeta}\textbf{N.º} & \textbf{Prueba} & \textbf{Entrada} & \textbf{Resultado esperado}\\\hline
+\endhead
+PA-10.1 & PDF escaneado legible & PDF sin texto & Datos leídos; lo dudoso queda vacío para el operador.\\\hline
+PA-10.2 & Cobertura de 6 de 7 unidades & 7 unidades de 12 h; 6 con parecido de 0,75 o más & 85,71 ~\% y la unidad 7 marcada como faltante.\\\hline
+PA-10.3 & Parecido bajo el umbral & Unidad con parecido 0,74 & La unidad queda como faltante.\\\hline
+PA-10.4 & Dos materias para un destino & Física I y Física II para Física & Los temas se suman sin contarse dos veces.\\\hline
+PA-10.5 & Misma materia en dos destinos & Física I usada en dos destinos & El sistema lo rechaza.\\\hline
+\caption{Pruebas de aceptación de la HU-10 (definidas en el Sprint 2)}
+\end{longtable}
+
+
+\subsubsection{HU-11: Precedentes}
+\historia{HU-11}{Docente evaluador}{Consultar casos anteriores y sus resoluciones}{Media}{Media}{5 SP}{29 de octubre al 3 de noviembre}{Jair León (13 h); Paul Acurio (7 h); Alex Chisag (9 h); Rolando Miranda (10 h)}{Como docente evaluador, quiero consultar casos anteriores idénticos y su resolución, para disponer de antecedentes durante la revisión.}{\item Dada una solicitud con materias identificables, cuando se consulta, entonces se muestran precedentes coincidentes y su resolución.\item Dado que no hay precedentes, cuando se consulta, entonces se informa que no existen coincidencias.}{La búsqueda de casos anteriores aporta contexto para la revisión.}{Consulta de precedentes}
+\begin{longtable}{|p{1.45cm}|p{5.5cm}|p{1.9cm}|p{2.9cm}|p{0.95cm}|p{2.0cm}|}
+\hline\rowcolor{grisTarjeta}\textbf{Número} & \textbf{Tarea} & \textbf{Tipo} & \textbf{Responsable} & \textbf{Horas} & \textbf{Fechas}\\\hline
+\endhead
+TA-11.1 & Pantalla de consulta de precedentes & Desarrollo & Alex Chisag & 5 h & 29/10\\\hline
+TA-11.2 & Guardar precedentes y buscarlos por coincidencia exacta & Desarrollo & Jair León & 8 h & 30/10\\\hline
+TA-11.3 & Cargar resoluciones anteriores de prueba & Mejora & Paul Acurio & 3 h & 30/10\\\hline
+TA-11.4 & Pruebas de la búsqueda de precedentes & Otra & Sebastián Miranda & 5 h & 30/10\\\hline
+TA-11.5 & Unir todos los pasos del análisis & Desarrollo & Jair León & 3 h & 02/11\\\hline
+TA-11.6 & Verificar que un precedente no salte los controles & Mejora & Paul Acurio & 2 h & 02/11\\\hline
+TA-11.7 & Mensajes de error claros en la interfaz & Corrección & Alex Chisag & 2 h & 02/11\\\hline
+TA-11.8 & Prueba completa del flujo entre servicios & Otra & Sebastián Miranda & 3 h & 02/11\\\hline
+TA-11.9 & Ordenar el código y cerrar la parte técnica & Mejora & Jair León & 2 h & 03/11\\\hline
+TA-11.10 & Repetir las pruebas funcionales y guardar evidencias & Mejora & Paul Acurio & 2 h & 03/11\\\hline
+TA-11.11 & Revisar el aspecto de las pantallas y preparar la demostración & Mejora & Alex Chisag & 2 h & 03/11\\\hline
+TA-11.12 & Agregar las pruebas a la integración continua & Otra & Sebastián Miranda & 2 h & 03/11\\\hline
+\multicolumn{4}{|r|}{\textbf{Total}} & \textbf{39 h} & \\\hline
+\caption{Tareas de la HU-11 (12 tareas)}
+\end{longtable}
+
+\begin{longtable}{|p{1.4cm}|p{3.7cm}|p{4.6cm}|p{5.1cm}|}
+\hline\rowcolor{grisTarjeta}\textbf{N.º} & \textbf{Prueba} & \textbf{Entrada} & \textbf{Resultado esperado}\\\hline
+\endhead
+PA-11.1 & Coincidencia exacta & Física I y Física II para Física, misma universidad & Se muestran la resolución, las materias y la universidad.\\\hline
+PA-11.2 & Sin coincidencia & Bases de Datos I, Universidad de Cuenca & Aviso Sin precedentes registrados.\\\hline
+PA-11.3 & Caso solo parecido & Física I sola para Física & No se muestra como coincidencia.\\\hline
+PA-11.4 & Precedente y más de 10 años & Precedente favorable; materia de hace 12 años & Igual pide validación de conocimientos y revisión docente.\\\hline
+PA-11.5 & Falla la búsqueda & Servicio de precedentes sin respuesta & Aviso; los cálculos de créditos y temas continúan.\\\hline
+\caption{Pruebas de aceptación de la HU-11 (definidas en el Sprint 2)}
+\end{longtable}
+
+
+\subsection{Resultado del Sprint 2}
+El informe del Sprint 2 registra la demostración del incremento con lectura, confirmación de datos, reglas, créditos, contenidos y precedentes. Una prueba de aceptación de HU-11 (PA-11.5) quedó pendiente y otra quedó parcial según la evidencia de ejecución. En el trabajo posterior se abordó la falla del servicio y el reintento automático, descritos en la sección de correcciones.

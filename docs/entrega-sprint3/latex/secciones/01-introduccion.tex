@@ -1,0 +1,43 @@
+\section{Introducción}
+\subsection{Descripción del problema}
+En la FISEI, la homologación de asignaturas requiere revisar planes analíticos, créditos y contenidos. La revisión manual demanda tiempo y puede dificultar la explicación de una resolución. La decisión académica corresponde al docente y debe conservar su criterio.
+
+\subsection{Descripción del proyecto}
+SIHA-IA (Sistema Inteligente de Homologación Académica) es una aplicación web para registrar solicitudes y apoyar su análisis mediante lectura documental, reglas configuradas y herramientas de inteligencia artificial local. El resultado sirve de apoyo para el personal académico; la decisión final es humana.
+
+\subsection{Alcance de los Sprints 1, 2 y 3}
+El Sprint 1 estableció la base: cuentas y roles, reglas, catálogo académico, API Gateway, expedientes y publicación de solicitudes. El Sprint 2 incorporó la lectura de planes, confirmación de datos dudosos, análisis de créditos y contenidos, y consulta de precedentes. El Sprint 3 integra el certificado SIHA único emitido por Secretaría, aplica la regla de créditos y contenidos aclarada con el docente, registra la decisión de docentes y administrador, considera movilidad externa, presenta una tabla de resultados y automatiza el registro manual del resultado.
+
+\subsection{Objetivos}
+\textbf{Objetivo general.} Apoyar el trámite de homologación con un sistema que registre y analice solicitudes y facilite una resolución académica trazable.
+
+\textbf{Objetivos específicos.}
+\begin{itemize}
+\item Registrar expedientes y documentos, y conservar los datos de la solicitud.
+\item Analizar créditos y contenidos según las reglas acordadas.
+\item Presentar los hallazgos a docentes y permitir la resolución prevista por el flujo institucional.
+\item Mantener el historial de resultados y decisiones.
+\end{itemize}
+
+\subsection{Marco normativo}
+El proyecto considera los instructivos CAU-P-011, para cambio de carrera, y CAU-P-122, para movilidad. SIHA-IA apoya la revisión y el registro del caso, pero no sustituye el trámite ni la autoridad académica.
+
+\subsection{Términos utilizados}
+\begin{tabularx}{\textwidth}{|p{0.25\textwidth}|X|}\hline
+\rowcolor{grisTarjeta}\textbf{Término} & \textbf{Significado en este informe}\\\hline
+Certificado SIHA & Documento único emitido por Secretaría que contiene la información de la solicitud.\\\hline
+Sílabo & Documento con información académica de una asignatura.\\\hline
+Créditos & Valor académico asignado a una materia.\\\hline
+Contenidos & Temas y unidades que se revisan para comparar asignaturas.\\\hline
+Agente & Componente que procesa una solicitud y coordina el análisis.\\\hline
+JWT & Token firmado que permite identificar la sesión y sus permisos.\\\hline
+Gateway & Punto de entrada que valida y dirige las peticiones a los servicios.\\\hline
+Microservicio & Servicio independiente que cumple una función del sistema.\\\hline
+RabbitMQ & Servicio de mensajería usado para intercambiar eventos.\\\hline
+Ollama & Herramienta que ejecuta modelos de inteligencia artificial localmente.\\\hline
+CUMPLE & Resultado que indica que se alcanza la condición evaluada.\\\hline
+NO\_CUMPLE & Resultado que indica que no se alcanza la condición evaluada.\\\hline
+CRITERIO\_DOCENTE & Caso que requiere valoración y decisión de docentes.\\\hline
+Bloqueada por créditos & Solicitud que no pasa a votación por no alcanzar el mínimo de créditos.\\\hline
+\end{tabularx}
+\captionof{table}{Términos utilizados}

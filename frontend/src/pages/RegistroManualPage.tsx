@@ -570,7 +570,12 @@ export function RegistroManualPage(): JSX.Element {
                 <Campo htmlFor={`destino-${i}`} etiqueta="Homologar por (materia de la carrera nueva)">
                   <Selector
                     id={`destino-${i}`}
-                    value={s.materiaDestino}
+                    // Las sugerencias pueden traer otras mayúsculas o tildes ("Logica Matematica"): se elige la
+                    // opción de la malla con el mismo nombre para que el destino no quede en blanco.
+                    value={(() => {
+                      const deMalla = mallaDestino.find((m) => clave(m.nombre) === clave(s.materiaDestino));
+                      return deMalla ? legible(deMalla.nombre) : s.materiaDestino;
+                    })()}
                     disabled={mallaDestino.length === 0}
                     onChange={(e) => cambiarSolicitud(i, { materiaDestino: e.target.value })}
                   >

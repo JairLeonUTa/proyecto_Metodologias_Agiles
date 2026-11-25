@@ -1,0 +1,31 @@
+\section{Correcciones del Sprint 2}\label{sec:correcciones}
+Después de revisar el incremento y aclarar el flujo esperado, se realizaron ajustes funcionales y de calidad. Las referencias de commits se conservan para identificar los cambios del repositorio.
+
+\subsection{C-01: Certificado SIHA único}
+El flujo anterior consideraba un plan analítico suelto y una bandeja para revisar su lectura OCR. Se cambió porque Secretaría emite un certificado SIHA único que concentra la documentación del trámite. Se adaptó la recepción para usar ese certificado como documento de entrada; la prueba PA-10.1 queda reemplazada por el escenario correspondiente al certificado SIHA. Commits: \texttt{55d6ac3}, \texttt{c8abebd}, \texttt{687f6bf}, \texttt{f1b71d6}. La verificación es la recepción y validación del certificado único por el flujo actualizado.
+
+\subsection{C-02: Regla de créditos y contenidos}
+La interpretación anterior combinaba un mínimo de 80~\% de contenido con una tolerancia de créditos. Tras la aclaración con el docente, los créditos por debajo del 80~\% bloquean el caso y no permiten votación; los contenidos por debajo del 80~\% se presentan como recomendación y la decisión corresponde a los docentes. Se actualizaron la regla y su presentación para distinguir ambos criterios. Commits: \texttt{35d0796}, \texttt{6aa9054}, \texttt{03eb265}, \texttt{cc3812d}. La prueba se comprueba con casos de créditos inferiores al umbral y con cobertura de contenidos inferior al umbral, verificando bloqueo y recomendación respectivamente.
+
+\subsection{C-03: Reintento ante servicio no disponible}
+Algunas pruebas pendientes no definían un estado claro cuando el servicio de análisis no respondía. Se agregó el estado ``El agente se está preparando'' y el reintento automático. Commits: \texttt{fc4cae5}, \texttt{28c495d}. La corrección cubre PA-08.3 y PA-11.5: al no responder el servicio, el estado se informa y el procesamiento se reintenta.
+
+\subsection{C-04: Calidad técnica}
+Se corrigió el redondeo de valores decimales, se estabilizó la prueba del bus, se incorporó ESLint, se ajustó el tratamiento de PDF como binarios en Git y se actualizaron pruebas de integración. Commits: \texttt{9602631}, \texttt{3b863e5}, \texttt{1d359be}. La comprobación se realiza con las pruebas del bus y de integración, la revisión del formato decimal y la validación estática del frontend.
+
+\subsection{C-05: Interfaz y mensajes}
+Se reorganizó el menú lateral; los errores aparecen junto al botón relacionado; se corrigió el botón que quedaba cubierto por el menú; el acceso denegado se expresa en lenguaje sencillo; y se añadieron opciones para confirmar y restablecer la contraseña. Commit: \texttt{0a3f102}. La comprobación consiste en recorrer las pantallas afectadas y verificar la visibilidad de controles y mensajes.
+
+\subsection{C-06: Solicitudes con el formato anterior}
+Las solicitudes recibidas con el formato anterior deben conservarse como registros históricos, pero sus números de certificado pueden volver a utilizarse en el flujo actualizado. Se liberan esos números sin borrar las solicitudes. Commit: \texttt{28c495d}. La comprobación verifica que el número vuelva a estar disponible y que el expediente histórico permanezca registrado.
+
+\begin{tabularx}{\textwidth}{|c|X|X|X|}\hline
+\rowcolor{grisTarjeta}\textbf{Código} & \textbf{Corrección} & \textbf{Commits} & \textbf{Verificación}\\\hline
+C-01 & Certificado SIHA único y reemplazo de PA-10.1 & \texttt{55d6ac3}, \texttt{c8abebd}, \texttt{687f6bf}, \texttt{f1b71d6} & Recepción y validación del certificado\\\hline
+C-02 & Bloqueo por créditos y recomendación por contenidos & \texttt{35d0796}, \texttt{6aa9054}, \texttt{03eb265}, \texttt{cc3812d} & Casos bajo el 80~\%\\\hline
+C-03 & Estado de preparación y reintento automático & \texttt{fc4cae5}, \texttt{28c495d} & PA-08.3 y PA-11.5\\\hline
+C-04 & Redondeo, bus, ESLint, PDF y pruebas de integración & \texttt{9602631}, \texttt{3b863e5}, \texttt{1d359be} & Pruebas técnicas y revisión estática\\\hline
+C-05 & Ajustes de menú, errores, acceso y contraseña & \texttt{0a3f102} & Recorrido de pantallas\\\hline
+C-06 & Liberación de números del formato anterior & \texttt{28c495d} & Número disponible e historial conservado\\\hline
+\end{tabularx}
+\captionof{table}{Resumen de correcciones del Sprint 2}

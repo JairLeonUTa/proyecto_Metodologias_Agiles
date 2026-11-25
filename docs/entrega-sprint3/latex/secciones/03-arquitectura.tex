@@ -1,0 +1,38 @@
+\section{Arquitectura del sistema}
+\subsection{Descripción general}
+SIHA-IA se compone de una interfaz web, un API Gateway y tres microservicios. El MS A administra usuarios, catálogo y reglas; el MS B registra expedientes y documentos; el MS C procesa el análisis. Cada microservicio dispone de su propia base SQL. RabbitMQ transporta eventos y Ollama proporciona modelos locales para el análisis.
+
+\subsection{Flujo de una solicitud actual}
+\begin{enumerate}
+\item El operador registra la solicitud y carga el certificado SIHA.
+\item La interfaz envía la petición al API Gateway, que valida el JWT y dirige la solicitud.
+\item El MS B lee y valida el certificado y comprueba que las materias indicadas se relacionan.
+\item El MS B guarda el expediente y publica el evento \texttt{SolicitudCreadaEvent} en RabbitMQ.
+\item El MS C recibe el evento y analiza el expediente con los sílabos disponibles en el MS A y los modelos de Ollama.
+\item Los docentes revisan la solicitud y registran sus votos.
+\item Si los votos no coinciden, el administrador registra la decisión correspondiente.
+\item El sistema conserva el resultado como \texttt{RESULTADO\_HOMOLOGACION}.
+\end{enumerate}
+
+\subsection{Diagrama de arquitectura}
+\begin{figure}[H]\centering
+\begin{tikzpicture}[node distance=0.9cm and 1.1cm, caja/.style={draw,rounded corners,align=center,minimum width=2.4cm,minimum height=0.85cm,font=\small}, db/.style={draw,cylinder,shape border rotate=90,aspect=0.25,align=center,minimum height=0.8cm,font=\small}, flecha/.style={-{Stealth},thick}]
+\node[caja] (ui) {Interfaz web\\5173};
+\node[caja,below=of ui] (gw) {API Gateway\\5000};
+\node[caja,below left=1cm and 1.8cm of gw] (a) {MS A\\5081};
+\node[caja,below=1cm of gw] (b) {MS B\\5082};
+\node[caja,below right=1cm and 1.8cm of gw] (c) {MS C\\5084};
+\node[db,below=of a] (da) {SQL A};
+\node[db,below=of b] (dbb) {SQL B};
+\node[db,below=of c] (dc) {SQL C};
+\node[caja,right=2.3cm of b] (mq) {RabbitMQ};
+\node[caja,below=of mq] (oll) {Ollama};
+\draw[flecha] (ui)--node[right,font=\scriptsize]{HTTP / JWT}(gw);
+\draw[flecha] (gw)--(a); \draw[flecha] (gw)--(b); \draw[flecha] (gw)--(c);
+\draw[flecha] (a)--(da); \draw[flecha] (b)--(dbb); \draw[flecha] (c)--(dc);
+\draw[flecha] (b)--node[above,font=\scriptsize]{evento}(mq);
+\draw[flecha] (mq)--(c); \draw[flecha] (c)--node[right,font=\scriptsize]{análisis}(oll);
+\draw[flecha,dashed] (c) to[bend left=20] node[above,font=\scriptsize]{gRPC: sílabos}(a);
+\end{tikzpicture}
+\caption{Arquitectura de SIHA-IA y puertos locales indicados en el despliegue}
+\end{figure}

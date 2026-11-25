@@ -1,0 +1,56 @@
+\section{Sprint 1: base del sistema}
+\subsection{Objetivo y alcance}
+El Sprint 1 estableció la base técnica y funcional: cuentas y roles, reglas y umbrales, catálogo de carreras y asignaturas, entrada central mediante Gateway, registro de expedientes con PDF y publicación de solicitudes en RabbitMQ. La planificación original identificó las historias como US-01 a US-06; aquí se presentan con la nomenclatura HU-01 a HU-06.
+
+\subsection{Sprint Backlog}
+\begin{tabularx}{\textwidth}{|c|X|c|}\hline
+\rowcolor{grisTarjeta}\textbf{Historia} & \textbf{Alcance} & \textbf{SP}\\\hline
+HU-01 & Cuentas, autenticación y roles & 5\\\hline
+HU-02 & Reglas y umbrales & 5\\\hline
+HU-03 & Carreras, mallas y asignaturas & 5\\\hline
+HU-04 & API Gateway (habilitadora) & 5\\\hline
+HU-05 & Registrar expedientes y PDF & 8\\\hline
+HU-06 & Publicar solicitudes en RabbitMQ (habilitadora) & 5\\\hline
+\multicolumn{2}{|r|}{Total} & 33\\\hline
+\end{tabularx}
+\captionof{table}{Sprint Backlog del Sprint 1}
+
+\subsection{Historias, criterios y tareas}
+\subsubsection{HU-01: Cuentas y roles}
+\historia{HU-01}{Administrador del sistema}{Gestión de cuentas y roles}{Alta}{Media}{5 SP}{Sprint 1}{Jair León; Paul Acurio; Alex Jonathan Chisag; Rolando Sebastián Miranda}{Como administrador, quiero crear y gestionar cuentas con roles, para que cada persona acceda solo a las funciones autorizadas.}{\item Dado un registro válido, cuando se crea una cuenta, entonces se asigna el rol solicitado y la contraseña se guarda como hash.\item Dado un usuario activo, cuando sus credenciales son correctas, entonces obtiene una sesión con su rol.\item Dado un rol sin permiso o un correo duplicado, cuando intenta gestionar cuentas, entonces la operación se rechaza.}{Historia denominada US-01 en la fuente.}{Pantalla de acceso y gestión de usuarios}
+\begin{tabularx}{\textwidth}{|c|X|l|c|}\hline\rowcolor{grisTarjeta}\textbf{Número} & \textbf{Tarea} & \textbf{Responsable} & \textbf{Horas}\\\hline
+S1-J01 & Contratos REST y migraciones iniciales de DB A & Jair León & 2,9 h\\\hline S1-S01 & Configuración Docker Compose & Rolando Miranda & 2,9 h\\\hline S1-J02 & Alta de usuarios, hash y roles & Jair León & 2,9 h\\\hline S1-S02 & Autenticación JWT & Rolando Miranda & 2,9 h\\\hline S1-A02 & Vista de inicio de sesión & Alex Chisag & 2,9 h\\\hline S1-P02 & Verificación de permisos por rol & Paul Acurio & 2,9 h\\\hline
+\end{tabularx}\captionof{table}{Tareas de HU-01}
+
+\subsubsection{HU-02: Reglas y umbrales}
+\historia{HU-02}{Administrador del sistema}{Reglas y umbrales configurables}{Alta}{Media}{5 SP}{Sprint 1}{Jair León; Paul Acurio; Alex Jonathan Chisag; Rolando Sebastián Miranda}{Como administrador, quiero configurar reglas y umbrales, para aplicar de forma consistente los criterios acordados.}{\item Dado un umbral válido, cuando se guarda, entonces queda asociado a su trámite, fuente y vigencia.\item Dado un valor fuera del rango permitido, cuando se actualiza, entonces se rechaza sin reemplazar la configuración vigente.\item Dado un usuario sin rol administrador, cuando modifica reglas, entonces se deniega la operación.}{La fuente la denomina US-02.}{Formulario de reglas}
+\begin{tabularx}{\textwidth}{|c|X|l|c|}\hline\rowcolor{grisTarjeta}\textbf{Número} & \textbf{Tarea} & \textbf{Responsable} & \textbf{Horas}\\\hline
+S1-J03 & API de reglas y umbrales & Jair León & 2,9 h\\\hline S1-A03 & Formulario web de reglas & Alex Chisag & 2,9 h\\\hline S1-P03 & Pruebas de rangos y permisos & Paul Acurio & 2,9 h\\\hline S1-S04 & Servidor gRPC de reglas & Rolando Miranda & 2,9 h\\\hline
+\end{tabularx}\captionof{table}{Tareas de HU-02}
+
+\subsubsection{HU-03: Carreras, mallas y asignaturas}
+\historia{HU-03}{Administrador y operador}{Carreras, mallas y asignaturas}{Alta}{Media}{5 SP}{Sprint 1}{Jair León; Alex Jonathan Chisag; Paul Acurio}{Como administrador, quiero gestionar carreras, mallas y asignaturas, para que el operador pueda seleccionar las materias del caso.}{\item Dado un plan académico, cuando se consulta, entonces se identifican carrera, versión, asignatura, créditos, horas y unidades disponibles.\item Dado un código duplicado, cuando se carga, entonces el sistema lo rechaza.}{La fuente la denomina US-03.}{Catálogo académico}
+\begin{tabularx}{\textwidth}{|c|X|l|c|}\hline\rowcolor{grisTarjeta}\textbf{Número} & \textbf{Tarea} & \textbf{Responsable} & \textbf{Horas}\\\hline
+S1-J04 & CRUD de carreras y versiones de mallas & Jair León & 2,9 h\\\hline S1-A04 & Listado y formularios de mallas & Alex Chisag & 2,9 h\\\hline S1-J05 & Asignaturas e importación de planes & Jair León & 2,9 h\\\hline S1-A05 & Interfaz de asignaturas & Alex Chisag & 2,9 h\\\hline S1-P05 & Validación funcional del catálogo & Paul Acurio & 2,9 h\\\hline
+\end{tabularx}\captionof{table}{Tareas de HU-03}
+
+\subsubsection{HU-04: API Gateway}
+\historia{HU-04}{Responsable de arquitectura}{Entrada central con permisos}{Alta}{Media}{5 SP}{Sprint 1}{Jair León; Alex Jonathan Chisag; Rolando Sebastián Miranda; Paul Acurio}{Como responsable de arquitectura, quiero centralizar las rutas y validar los permisos, para dirigir cada petición al servicio correspondiente.}{\item Dado un token válido y permisos adecuados, cuando se envía una petición, entonces llega al servicio previsto.\item Dado un token ausente o un rol sin permiso, cuando se accede a una ruta protegida, entonces el Gateway rechaza la petición.}{Historia habilitadora US-04.}{Rutas protegidas}
+\begin{tabularx}{\textwidth}{|c|X|l|c|}\hline\rowcolor{grisTarjeta}\textbf{Número} & \textbf{Tarea} & \textbf{Responsable} & \textbf{Horas}\\\hline
+S1-A01 & Proyecto React y cliente REST & Alex Chisag & 2,9 h\\\hline S1-J06 & Rutas Ocelot, JWT y permisos & Jair León & 2,9 h\\\hline S1-S07 & Pruebas Gateway y RabbitMQ & Rolando Miranda & 2,9 h\\\hline S1-P08 & Auditoría de rutas y respuestas & Paul Acurio & 2,9 h\\\hline
+\end{tabularx}\captionof{table}{Tareas de HU-04}
+
+\subsubsection{HU-05: Expedientes y PDF}
+\historia{HU-05}{Operador académico}{Registro de expedientes y documentos PDF}{Alta}{Media}{8 SP}{Sprint 1}{Rolando Sebastián Miranda; Alex Jonathan Chisag; Paul Acurio}{Como operador, quiero registrar expedientes internos o externos y adjuntar documentos PDF, para iniciar una solicitud de homologación.}{\item Dado un registro válido, cuando se envía, entonces se genera un identificador y se conserva su tipo de trámite.\item Dado un PDF inválido o información obligatoria ausente, cuando se carga, entonces se informa el error y no se acepta el expediente.}{Historia denominada US-05.}{Formulario de solicitud}
+\begin{tabularx}{\textwidth}{|c|X|l|c|}\hline\rowcolor{grisTarjeta}\textbf{Número} & \textbf{Tarea} & \textbf{Responsable} & \textbf{Horas}\\\hline
+S1-S05 & Alta de solicitudes y validación PDF & Rolando Miranda & 2,9 h\\\hline S1-S06 & Almacenamiento seguro y metadatos & Rolando Miranda & 2,9 h\\\hline S1-A06 & Formulario de solicitud y carga & Alex Chisag & 2,9 h\\\hline S1-P06 & Pruebas de expedientes & Paul Acurio & 2,9 h\\\hline
+\end{tabularx}\captionof{table}{Tareas de HU-05}
+
+\subsubsection{HU-06: Publicación de solicitudes}
+\historia{HU-06}{Responsable de integración}{Publicación de solicitudes en RabbitMQ}{Alta}{Media}{5 SP}{Sprint 1}{Paul Acurio; Rolando Sebastián Miranda}{Como responsable de integración, quiero publicar las solicitudes registradas en RabbitMQ, para que los servicios consumidores puedan procesarlas.}{\item Dado un expediente guardado, cuando se confirma su registro, entonces se publica un evento de solicitud creada.\item Dado que el bus no responde, cuando se intenta publicar, entonces se conserva la posibilidad de reintentar la publicación.}{Historia habilitadora denominada US-06.}{Evento SolicitudCreadaEvent}
+\begin{tabularx}{\textwidth}{|c|X|l|c|}\hline\rowcolor{grisTarjeta}\textbf{Número} & \textbf{Tarea} & \textbf{Responsable} & \textbf{Horas}\\\hline
+S1-S07 & Pruebas de integración de Gateway y RabbitMQ & Rolando Miranda & 2,9 h\\\hline
+\end{tabularx}\captionof{table}{Tarea de HU-06; la fuente registra actividades compartidas}
+
+\subsection{Incremento entregado y retrospectiva}
+El informe del Sprint 2 señala como punto de partida que el Sprint 1 dejó usuarios y roles, reglas configurables, catálogo de carreras, entrada por Gateway y registro de solicitudes con sus PDF. La retrospectiva orientó mejoras en coordinación, integración y verificación continua; los hallazgos pendientes alimentaron el trabajo del Sprint 2.

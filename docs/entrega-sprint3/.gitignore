@@ -1,0 +1,13 @@
+# Archivos temporales de LaTeX
+latex/*.aux
+latex/*.fdb_latexmk
+latex/*.fls
+latex/*.log
+latex/*.out
+latex/*.toc
+latex/*.lof
+latex/*.lot
+latex/*.synctex.gz
+latex/main.pdf
+# Notas de trabajo para armar el informe
+fuentes/
