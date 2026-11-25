@@ -69,7 +69,9 @@ public record EvaluacionMateriaResponse(
     /// <summary>Créditos de lo aprobado (suma si son varias materias); nulo si no se conocen.</summary>
     int? CreditosOrigen = null,
     /// <summary>True si no se conocían los créditos y el porcentaje se calculó con las horas (equivalente).</summary>
-    bool CreditosPorHoras = false);
+    bool CreditosPorHoras = false,
+    /// <summary>True cuando los créditos no llegan al mínimo y hay sílabo para comparar; no se vota.</summary>
+    bool BloqueadaPorCreditos = false);
 
 public record MateriaOrigenEvaluadaResponse(
     string Nombre,
@@ -120,6 +122,7 @@ public record ResultadoFinalMateriaResponse(
     int Aprobaciones,
     int Rechazos,
     string Resultado,
+    bool BloqueadaPorCreditos = false,
     /// <summary>Decisión del administrador cuando los docentes no se pusieron de acuerdo (si la hay).</summary>
     DecisionFinalResponse? DecisionFinal = null);
 

@@ -120,18 +120,34 @@ describe('Solicitud: análisis explicado y decisión del docente', () => {
     expect(screen.queryByText(/θ|δ|τ|0,65/)).not.toBeInTheDocument();
   });
 
+  it('oculta votos de materias bloqueadas y conserva los votos para NO_CUMPLE no bloqueada', async () => {
+    const solicitud = {
+      ...SOLICITUD,
+      resultado: { ...SOLICITUD.resultado!, evaluaciones: SOLICITUD.resultado!.evaluaciones.map((e, i) => ({ ...e, estimacion: 'NO_CUMPLE', bloqueadaPorCreditos: i === 0 })) },
+      resultadoFinal: SOLICITUD.resultadoFinal.map((m, i) => ({ ...m, estimacion: 'NO_CUMPLE' as const, bloqueadaPorCreditos: i === 0 })),
+    };
+    api.obtenerSolicitud.mockResolvedValue(solicitud);
+    abrir();
+
+    expect((await screen.findAllByText('No se puede homologar')).length).toBeGreaterThan(0);
+    expect(screen.getByText('Los créditos no llegan al 80 %.')).toBeInTheDocument();
+    expect((await screen.findAllByText('✘ No llega al 80 % · recomienda no homologar')).length).toBeGreaterThan(0);
+    expect(screen.getByRole('group', { name: 'Decisión para Cálculo Diferencial' })).toBeInTheDocument();
+    expect(screen.queryByRole('group', { name: 'Decisión para Algoritmos y Lógica de Programación' })).not.toBeInTheDocument();
+  });
   it('si los docentes no coinciden, el administrador toma la decisión final con un motivo', async () => {
     const user = userEvent.setup();
     sesion.usuario = { rol: 'ADMINISTRADOR', correoInstitucional: 'admin@uta.edu.ec', nombreCompleto: 'Director' };
     const sinAcuerdo = {
       ...SOLICITUD,
-      estadoRevision: 'RESUELTA',
+      estadoRevision: 'ESPERA_ADMINISTRADOR',
       puedeResponder: false,
       resultadoFinal: [{ ...SOLICITUD.resultadoFinal[1], aprobaciones: 1, rechazos: 1, resultado: 'SIN_ACUERDO' }],
     };
     api.obtenerSolicitud.mockResolvedValue(sinAcuerdo);
     api.decidirComoAdministrador.mockResolvedValue({
       ...sinAcuerdo,
+      estadoRevision: 'RESUELTA',
       resultadoFinal: [
         {
           ...sinAcuerdo.resultadoFinal[0],
@@ -142,7 +158,7 @@ describe('Solicitud: análisis explicado y decisión del docente', () => {
     });
     abrir();
 
-    expect(await screen.findByText('Los docentes no coinciden: su decisión final')).toBeInTheDocument();
+    expect(await screen.findByText(/Los dos docentes no se pusieron de acuerdo en:/)).toBeInTheDocument();
     const guardar = screen.getByRole('button', { name: 'Guardar decisión final' });
     expect(guardar).toBeDisabled();
     await user.click(within(screen.getByRole('group', { name: 'Decisión final para Cálculo Diferencial' })).getByRole('button', { name: 'Sí, homologar' }));
@@ -156,20 +172,33 @@ describe('Solicitud: análisis explicado y decisión del docente', () => {
       comentario: 'Cubre los temas',
     });
     expect(await screen.findByText(/Cubre los temas/)).toBeInTheDocument();
-    expect(screen.queryByText('Los docentes no coinciden: su decisión final')).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Guardar decisión final' })).not.toBeInTheDocument();
   });
 
   it('el docente ve que, sin acuerdo, decide el administrador', async () => {
     api.obtenerSolicitud.mockResolvedValue({
       ...SOLICITUD,
+      estadoRevision: 'ESPERA_ADMINISTRADOR',
       resultadoFinal: [{ ...SOLICITUD.resultadoFinal[1], aprobaciones: 1, rechazos: 1, resultado: 'SIN_ACUERDO' }],
     });
     abrir();
 
-    expect(await screen.findByText(/La decisión final la toma el\s+administrador/)).toBeInTheDocument();
+    expect(await screen.findByText('Los docentes no se pusieron de acuerdo; falta la decisión del administrador.')).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Guardar decisión final' })).not.toBeInTheDocument();
   });
 
+  it('el docente no puede cambiar el voto después de la decisión final', async () => {
+    api.obtenerSolicitud.mockResolvedValue({
+      ...SOLICITUD,
+      puedeResponder: true,
+      estadoRevision: 'RESUELTA',
+      resultadoFinal: [{ ...SOLICITUD.resultadoFinal[0], resultado: 'HOMOLOGADA', decisionFinal: { aprobada: true, comentario: 'Final', nombreAdministrador: 'Director', fechaUtc: '2026-11-24T00:00:00Z' } }],
+    });
+    abrir();
+
+    expect(await screen.findByText('El administrador ya dio la decisión final.')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Enviar mi decisión' })).not.toBeInTheDocument();
+  });
   it('si el agente no responde lo explica y deja volver a enviar la solicitud', async () => {
     const user = userEvent.setup();
     sesion.usuario = { rol: 'OPERADOR', correoInstitucional: 'op@uta.edu.ec', nombreCompleto: 'Operador' };

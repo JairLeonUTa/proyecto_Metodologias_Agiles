@@ -104,11 +104,21 @@ public sealed class SolicitudesAnalisisService
         if (contexto.Estado != EstadosAnalisis.Analizado || contexto.ResultadoJson is null)
             return (null, "El agente todavía no termina el análisis de esta solicitud.", StatusCodes.Status409Conflict);
 
-        var materias = Materias(Leer(contexto.ResultadoJson)).Select(m => m.Codigo).ToHashSet(StringComparer.OrdinalIgnoreCase);
+        if (await _db.DecisionesFinales.AnyAsync(d => d.ExpedienteId == expedienteId, cancellationToken))
+            return (null, "El administrador ya dio la decisión final de esta solicitud; los votos ya no se pueden cambiar.", StatusCodes.Status409Conflict);
+
+        var resultado = Leer(contexto.ResultadoJson);
+        var bloqueadas = Todas(resultado).Where(m => m.Bloqueada).Select(m => m.Codigo).ToHashSet(StringComparer.OrdinalIgnoreCase);
         var decisiones = (solicitud?.Decisiones ?? Array.Empty<DecisionMateriaRequest>())
             .GroupBy(d => d.CodigoDestino, StringComparer.OrdinalIgnoreCase)
             .Select(g => g.Last())
             .ToList();
+
+        var noHomologables = decisiones.Where(d => bloqueadas.Contains(d.CodigoDestino)).Select(d => d.CodigoDestino).ToList();
+        if (noHomologables.Count > 0)
+            return (null, $"{string.Join(", ", noHomologables)}: no se puede(n) homologar porque los créditos no llegan al mínimo; no se vota(n).", StatusCodes.Status400BadRequest);
+
+        var materias = Materias(resultado).Select(m => m.Codigo).ToHashSet(StringComparer.OrdinalIgnoreCase);
 
         var faltan = materias.Where(m => !decisiones.Any(d => string.Equals(d.CodigoDestino, m, StringComparison.OrdinalIgnoreCase))).ToList();
         if (faltan.Count > 0)
@@ -167,7 +177,9 @@ public sealed class SolicitudesAnalisisService
         // El agente solo recomienda: toda materia pedida la deciden los dos docentes.
         var nadaQueDecidir = resultado is not null && !Materias(resultado).Any();
         var estadoRevision = nadaQueDecidir ? "RESUELTA"
-            : respondieron == 0 ? "PENDIENTE" : respondieron < 2 ? "EN_REVISION" : "RESUELTA";
+            : respondieron == 0 ? "PENDIENTE"
+            : respondieron < 2 ? "EN_REVISION"
+            : final.Any(m => m.Resultado is "PENDIENTE" or SinAcuerdo) ? "ESPERA_ADMINISTRADOR" : "RESUELTA";
         puedeResponder = puedeResponder && !nadaQueDecidir;
 
         Siha.Certificados.CertificadoSiha? certificado = null;
@@ -209,6 +221,8 @@ public sealed class SolicitudesAnalisisService
         IReadOnlyCollection<DecisionFinalAdministrador>? decisionesFinales = null)
         => Todas(resultado).Select(m =>
         {
+            if (m.Bloqueada)
+                return new ResultadoFinalMateriaResponse(m.Codigo, m.Nombre, m.Estimacion, 0, 0, "NO_HOMOLOGADA", true);
             var votos = respuestas
                 .Select(r => r.Decisiones.FirstOrDefault(x => string.Equals(x.CodigoDestino, m.Codigo, StringComparison.OrdinalIgnoreCase)))
                 .Where(x => x is not null)
@@ -225,20 +239,36 @@ public sealed class SolicitudesAnalisisService
             {
                 return new ResultadoFinalMateriaResponse(m.Codigo, m.Nombre, m.Estimacion, si, no,
                     decision.Aprobada ? "HOMOLOGADA" : "NO_HOMOLOGADA",
+                    false,
                     new DecisionFinalResponse(decision.Aprobada, decision.Comentario, decision.NombreAdministrador, decision.FechaUtc));
             }
 
-            return new ResultadoFinalMateriaResponse(m.Codigo, m.Nombre, m.Estimacion, si, no, estado);
+            return new ResultadoFinalMateriaResponse(m.Codigo, m.Nombre, m.Estimacion, si, no, estado, false);
         }).ToList();
 
     /// <summary>Todas las materias pedidas, con la estimación del agente.</summary>
-    private static IEnumerable<(string Codigo, string Nombre, string Estimacion)> Todas(AnalisisAutomaticoResponse r)
-        => (r.Evaluaciones ?? Array.Empty<EvaluacionMateriaResponse>()).Select(e => (e.MateriaDestino, e.MateriaDestino, e.Estimacion));
+    private static IEnumerable<(string Codigo, string Nombre, string Estimacion, bool Bloqueada)> Todas(AnalisisAutomaticoResponse r)
+        => (r.Evaluaciones ?? Array.Empty<EvaluacionMateriaResponse>()).Select(e => (e.MateriaDestino, e.MateriaDestino, e.Estimacion, Bloqueada(e, r.Minimo)));
+
+    /// <summary>
+    /// Bloqueada por créditos. Los resultados guardados antes de existir <c>BloqueadaPorCreditos</c> no traen el dato,
+    /// así que también se calcula con el porcentaje de créditos guardado (solo si existe: los muy antiguos no lo tienen).
+    /// </summary>
+    private static bool Bloqueada(EvaluacionMateriaResponse e, double? minimo)
+        => e.BloqueadaPorCreditos
+           || (e.Estimacion == AnalisisAutomaticoService.NoCumple && !e.SinSilabo
+               && e.PorcentajeCreditos > 0 && (double)e.PorcentajeCreditos < (minimo ?? 80));
 
     /// <summary>Materias que los docentes deben decidir: todas las pedidas (el agente solo recomienda).</summary>
     private static IEnumerable<(string Codigo, string Nombre, string Estimacion)> Materias(AnalisisAutomaticoResponse r)
-        => Todas(r);
+        => Todas(r).Where(m => !m.Bloqueada).Select(m => (m.Codigo, m.Nombre, m.Estimacion));
 
+    /// <summary>Lee el resultado guardado y completa <c>BloqueadaPorCreditos</c> en los análisis anteriores a ese dato.</summary>
     private static AnalisisAutomaticoResponse Leer(string json)
-        => JsonSerializer.Deserialize<AnalisisAutomaticoResponse>(json, AnalisisAutomaticoService.Json)!;
+    {
+        var r = JsonSerializer.Deserialize<AnalisisAutomaticoResponse>(json, AnalisisAutomaticoService.Json)!;
+        return r.Evaluaciones is null
+            ? r
+            : r with { Evaluaciones = r.Evaluaciones.Select(e => e with { BloqueadaPorCreditos = Bloqueada(e, r.Minimo) }).ToList() };
+    }
 }

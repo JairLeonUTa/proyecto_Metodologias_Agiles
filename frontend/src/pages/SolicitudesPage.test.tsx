@@ -39,6 +39,7 @@ const analisis = (respondio: boolean) => ({
     { nombre: 'Ing. Vaca', correo: 'mvaca@uta.edu.ec', respondio: false },
   ],
   resultado: { evaluaciones: [] },
+  puedeResponder: !respondio,
 });
 
 const abrir = () => render(<MemoryRouter><SolicitudesPage /></MemoryRouter>);
@@ -76,5 +77,30 @@ describe('Solicitudes del docente revisor', () => {
 
     expect(await screen.findByText('Se le asignó una solicitud nueva')).toBeInTheDocument();
     expect(screen.getByText(/Sara Fiallos\. Ya traen el análisis/)).toBeInTheDocument();
+  });
+
+  it('si todo quedó bloqueado por créditos no pide la decisión del docente', async () => {
+    api.obtenerSolicitud.mockResolvedValue({
+      ...analisis(false),
+      estadoRevision: 'RESUELTA',
+      puedeResponder: false,
+      resultadoFinal: [{ resultado: 'NO_HOMOLOGADA', bloqueadaPorCreditos: true }],
+    });
+    abrir();
+
+    expect((await screen.findAllByText('Resuelta')).length).toBeGreaterThan(0);
+    expect(screen.queryByText('Falta su decisión')).not.toBeInTheDocument();
+    expect(screen.queryByText(/esperando su decisión/)).not.toBeInTheDocument();
+  });
+
+  it('muestra que falta la decisión del administrador', async () => {
+    api.obtenerSolicitud.mockResolvedValue({
+      ...analisis(true),
+      estadoRevision: 'ESPERA_ADMINISTRADOR',
+      resultadoFinal: [{ resultado: 'SIN_ACUERDO' }],
+    });
+    abrir();
+
+    expect((await screen.findAllByText('Falta la decisión del administrador')).length).toBeGreaterThan(0);
   });
 });

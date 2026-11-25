@@ -24,6 +24,7 @@ public static class DbSeederA
         await SembrarReglasAsync(db, logger);
         await ActualizarReglaCreditosAsync(db, logger);
         await ActualizarReglaRecomendacionAsync(db, logger);
+        await ActualizarReglaCreditosObligatoriosAsync(db, logger);
         await SembrarCatalogoAsync(db, logger);
         await SembrarCatalogoUtaAsync(db, logger);
         if (!string.IsNullOrWhiteSpace(docentesDemoPassword))
@@ -186,6 +187,47 @@ public static class DbSeederA
         if (cambios == 0) return;
         await db.SaveChangesAsync();
         logger.LogInformation("Reglas RN-01 y RN-13 versionadas a 2.0: 80 % en contenidos y 80 % en créditos.");
+    }
+
+    /// <summary>Inicio de RN-01 2.2: los créditos bajo el mínimo bloquean; los contenidos solo aconsejan.</summary>
+    public static readonly DateOnly VigenciaReglaCreditosObligatorios = new(2026, 11, 25);
+
+    /// <summary>Texto de RN-01 2.2 (cabe en REGLA.Descripcion, 400 caracteres).</summary>
+    public const string DescripcionRn01CreditosObligatorios =
+        "Créditos obligatorios (CAU-P-011): si la materia aprobada no llega al 80 % de los créditos de destino, no se puede " +
+        "homologar y no se vota. Si llega en créditos pero no al 80 % en contenidos, el agente recomienda no homologar y " +
+        "deciden los dos docentes revisores; si no coinciden, decide el administrador con un motivo.";
+
+    /// <summary>
+    /// RN-01 2.2 (aclarada con el docente): los créditos por debajo del mínimo bloquean la materia; los
+    /// contenidos por debajo solo son una recomendación del agente. Cierra la 2.1. Incremental e idempotente.
+    /// </summary>
+    private static async Task ActualizarReglaCreditosObligatoriosAsync(SihaDbContextA db, ILogger logger)
+    {
+        var versiones = await db.Reglas
+            .Where(r => r.Codigo == "RN-01" && r.RutaNormativa == RutasNormativas.CambioCarreraOu)
+            .OrderByDescending(r => r.VigenteDesde).ThenByDescending(r => r.Id)
+            .ToListAsync();
+        if (versiones.Count == 0 || versiones.Any(r => r.Version == "2.2")) return;
+
+        var anterior = versiones[0];
+        var fin = VigenciaReglaCreditosObligatorios.AddDays(-1);
+        if (anterior.VigenteHasta is null || anterior.VigenteHasta > fin) anterior.VigenteHasta = fin;
+        db.Reglas.Add(new Regla
+        {
+            Codigo = "RN-01",
+            RutaNormativa = anterior.RutaNormativa,
+            TipoTramite = anterior.TipoTramite,
+            EsNormativa = anterior.EsNormativa,
+            Descripcion = DescripcionRn01CreditosObligatorios,
+            Expresion = "bloquea: creditos<80; recomendacion: contenido>=80; decision: docentes",
+            Version = "2.2",
+            Fuente = "Aclarado con el docente (25-11-2026): los créditos son obligatorios",
+            VigenteDesde = VigenciaReglaCreditosObligatorios,
+            Activa = true
+        });
+        await db.SaveChangesAsync();
+        logger.LogInformation("Regla RN-01 versionada a 2.2: los créditos bajo el mínimo bloquean.");
     }
 
     /// <summary>Texto de RN-01 2.1 (cabe en REGLA.Descripcion, 400 caracteres).</summary>

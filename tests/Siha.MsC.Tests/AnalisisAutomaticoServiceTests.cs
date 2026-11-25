@@ -1,4 +1,4 @@
-﻿using System.Security.Cryptography;
+using System.Security.Cryptography;
 using System.Text.Json;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
@@ -175,9 +175,8 @@ public class AnalisisAutomaticoServiceTests
         e.CargaHoraria.Should().Be(100m, "tiene las mismas horas");
         e.PorcentajeCreditos.Should().Be(66.67m, "2 créditos frente a 3");
         e.Estimacion.Should().Be(AnalisisAutomaticoService.NoCumple);
-        e.Conclusion.Should().StartWith("Recomendación: no homologar").And.Contain("créditos (66,67 %)")
-            .And.Contain("Los docentes revisores deciden");
-        e.Conclusion.Should().NotContain("contenidos (");
+        e.BloqueadaPorCreditos.Should().BeTrue();
+        e.Conclusion.Should().Be("No se puede homologar: no llega al 80 % en créditos (66,67 %); los créditos son obligatorios, así que no se vota.");
     }
 
     [Fact]
@@ -192,8 +191,7 @@ public class AnalisisAutomaticoServiceTests
         e.CargaHoraria.Should().Be(75m, "dato informativo: 144 horas frente a 192");
         e.Profundidad.Should().Be(75m, "dato informativo: cada tema tiene 36 horas frente a 48");
         e.Estimacion.Should().Be(AnalisisAutomaticoService.NoCumple);
-        e.Conclusion.Should().Contain("créditos (75 %)").And.Contain("pide al menos el 80 % en contenidos y en créditos")
-            .And.Contain("pueden homologarla");
+        e.BloqueadaPorCreditos.Should().BeTrue();
     }
 
     [Fact]
@@ -269,10 +267,13 @@ public class AnalisisAutomaticoServiceTests
         r.Requisitos.Should().Contain(q => q.Regla.StartsWith("Aprobó al menos el primer período") && q.Cumple);
         r.Requisitos.Should().Contain(q => q.Regla == "Solo se piden materias aprobadas" && q.Explicacion.Contains("Cálculo Integral"));
         r.Requisitos.Should().Contain(q => q.Regla.StartsWith("Tiene al menos una materia") && q.Cumple && q.Explicacion.Contains("1 de 2"));
-        r.Resumen.Should().Contain("1 cumple(n) el 80 % en contenidos y créditos").And.Contain("1 no llega(n) al 80 % y el agente recomienda no homologarla(s)")
-            .And.Contain("la decisión final de cada materia es de los dos docentes revisores");
+        // POO tiene 75 % en créditos: está bloqueada, así que el resumen no debe decir que "se recomienda" (H-01 del informe).
+        r.Resumen.Should().Contain("1 cumple(n) el 80 % en contenidos y créditos")
+            .And.Contain("1 no se puede(n) homologar porque los créditos no llegan al 80 %")
+            .And.Contain("Las que no llegan en créditos no se votan")
+            .And.NotContain("recomienda no homologar");
         r.Requisitos.Should().Contain(q => q.Regla == "Equivalencia mínima del 80 % en contenidos y en créditos" && !q.Cumple
-            && q.Explicacion.Contains("no llega al mínimo (recomienda no homologar) (contenidos 100 %, créditos 75 %)"));
+            && q.Explicacion.Contains("no se puede homologar (los créditos no llegan al mínimo) (contenidos 100 %, créditos 75 %)"));
         string.Join(" ", r.Requisitos.Select(q => q.Explicacion)).Should().NotContainAny("θ", "δ", "τ");
     }
 
@@ -623,7 +624,8 @@ public class AnalisisAutomaticoServiceTests
         vista.Historial.Should().Contain(m => m.Nombre == "Cálculo Integral" && !m.Aprobada);
         vista.ResultadoFinal.Select(m => (m.CodigoDestino, m.Estimacion, m.Resultado)).Should().Equal(
             ("Algoritmos y Lógica de Programación", AnalisisAutomaticoService.Cumple, "PENDIENTE"),
-            ("Programación Orientada a Objetos", AnalisisAutomaticoService.NoCumple, "PENDIENTE"));
+            ("Programación Orientada a Objetos", AnalisisAutomaticoService.NoCumple, "NO_HOMOLOGADA"));
+        vista.ResultadoFinal.ElementAt(1).BloqueadaPorCreditos.Should().BeTrue("los créditos no llegan al 80 % y no se vota");
         vista.PuedeResponder.Should().BeFalse("el administrador no es revisor");
     }
 
@@ -649,17 +651,18 @@ public class AnalisisAutomaticoServiceTests
         var solicitudes = new SolicitudesAnalisisService(db);
         const string alg = "Algoritmos y Lógica de Programación", poo = "Programación Orientada a Objetos";
 
-        // POO no llega al 80 % en créditos: el agente recomienda no homologarla, pero los docentes la votan.
-        var uno = await solicitudes.ResponderAsync(expediente, "cparedes@uta.edu.ec", "Paredes", Decidir((alg, true), (poo, false)));
+        // POO no llega al 80 % en créditos: está bloqueada y no se vota; los docentes solo votan Algoritmos.
+        var uno = await solicitudes.ResponderAsync(expediente, "cparedes@uta.edu.ec", "Paredes", Decidir((alg, true)));
         uno.Error.Should().BeNull();
         uno.Respuesta!.EstadoRevision.Should().Be("EN_REVISION");
-        var dos = await solicitudes.ResponderAsync(expediente, "mvaca@uta.edu.ec", "Vaca", Decidir((alg, true), (poo, false)));
+        var dos = await solicitudes.ResponderAsync(expediente, "mvaca@uta.edu.ec", "Vaca", Decidir((alg, true)));
 
         dos.Respuesta!.EstadoRevision.Should().Be("RESUELTA");
         dos.Respuesta.ResultadoFinal.Single(m => m.CodigoDestino == alg).Resultado.Should().Be("HOMOLOGADA");
         var noCumple = dos.Respuesta.ResultadoFinal.Single(m => m.CodigoDestino == poo);
         noCumple.Resultado.Should().Be("NO_HOMOLOGADA");
-        (noCumple.Aprobaciones, noCumple.Rechazos).Should().Be((0, 2));
+        (noCumple.Aprobaciones, noCumple.Rechazos).Should().Be((0, 0));
+        noCumple.BloqueadaPorCreditos.Should().BeTrue();
     }
 
     [Fact]
@@ -671,10 +674,11 @@ public class AnalisisAutomaticoServiceTests
         const string alg = "Algoritmos y Lógica de Programación";
 
         const string poo = "Programación Orientada a Objetos";
-        await solicitudes.ResponderAsync(expediente, "cparedes@uta.edu.ec", "Paredes", Decidir((alg, true), (poo, false)));
-        var dos = await solicitudes.ResponderAsync(expediente, "mvaca@uta.edu.ec", "Vaca", Decidir((alg, false), (poo, false)));
+        await solicitudes.ResponderAsync(expediente, "cparedes@uta.edu.ec", "Paredes", Decidir((alg, true)));
+        var dos = await solicitudes.ResponderAsync(expediente, "mvaca@uta.edu.ec", "Vaca", Decidir((alg, false)));
 
         dos.Respuesta!.ResultadoFinal.Single(m => m.CodigoDestino == alg).Resultado.Should().Be("SIN_ACUERDO");
+        dos.Respuesta.EstadoRevision.Should().Be("ESPERA_ADMINISTRADOR");
     }
 
     private static async Task<(SolicitudesAnalisisService Servicio, Guid Expediente)> SinAcuerdoEnAlgoritmos(SihaDbContextC db)
@@ -682,8 +686,8 @@ public class AnalisisAutomaticoServiceTests
         var expediente = await SolicitudAnalizada(db);
         var solicitudes = new SolicitudesAnalisisService(db);
         const string alg = "Algoritmos y Lógica de Programación", poo = "Programación Orientada a Objetos";
-        await solicitudes.ResponderAsync(expediente, "cparedes@uta.edu.ec", "Paredes", Decidir((alg, true), (poo, false)));
-        await solicitudes.ResponderAsync(expediente, "mvaca@uta.edu.ec", "Vaca", Decidir((alg, false), (poo, false)));
+        await solicitudes.ResponderAsync(expediente, "cparedes@uta.edu.ec", "Paredes", Decidir((alg, true)));
+        await solicitudes.ResponderAsync(expediente, "mvaca@uta.edu.ec", "Vaca", Decidir((alg, false)));
         return (solicitudes, expediente);
     }
 
@@ -704,6 +708,24 @@ public class AnalisisAutomaticoServiceTests
         fila.DecisionFinal!.Comentario.Should().Be("Revisé el plan analítico: cubre los temas.");
         fila.DecisionFinal.NombreAdministrador.Should().Be("Director de carrera");
         (await db.ResultadosHomologacion.SingleAsync(f => f.MateriaDestino == alg)).ResultadoFinal.Should().Be("HOMOLOGADA");
+        respuesta.EstadoRevision.Should().Be("RESUELTA", "ya no queda ninguna materia sin acuerdo");
+    }
+
+    [Fact]
+    public async Task Con_un_solo_voto_la_materia_sigue_pendiente_y_no_hay_decision_final()
+    {
+        await using var db = CrearDb();
+        var expediente = await SolicitudAnalizada(db);
+        var solicitudes = new SolicitudesAnalisisService(db);
+        const string alg = "Algoritmos y Lógica de Programación";
+
+        var uno = await solicitudes.ResponderAsync(expediente, "cparedes@uta.edu.ec", "Paredes", Decidir((alg, true)));
+
+        uno.Respuesta!.ResultadoFinal.Single(m => m.CodigoDestino == alg).Resultado.Should().Be("PENDIENTE");
+        uno.Respuesta.EstadoRevision.Should().Be("EN_REVISION");
+        var decision = await solicitudes.DecidirComoAdministradorAsync(expediente, "admin@uta.edu.ec", "Admin",
+            new DecisionFinalRequest(alg, true, "Adelantar la decisión"));
+        decision.Codigo.Should().Be(409, "falta el voto del otro docente: todavía no hay desacuerdo");
     }
 
     [Fact]
@@ -723,57 +745,120 @@ public class AnalisisAutomaticoServiceTests
     }
 
     [Fact]
-    public async Task Si_un_docente_cambia_su_voto_y_se_ponen_de_acuerdo_decide_la_votacion()
+    public async Task Despues_de_decision_final_un_docente_no_puede_cambiar_su_voto()
     {
         await using var db = CrearDb();
         var (solicitudes, expediente) = await SinAcuerdoEnAlgoritmos(db);
-        const string alg = "Algoritmos y Lógica de Programación", poo = "Programación Orientada a Objetos";
+        const string alg = "Algoritmos y Lógica de Programación";
         await solicitudes.DecidirComoAdministradorAsync(expediente, "admin@uta.edu.ec", "Admin", new DecisionFinalRequest(alg, true, "Procede."));
 
-        var cambio = await solicitudes.ResponderAsync(expediente, "cparedes@uta.edu.ec", "Paredes", Decidir((alg, false), (poo, false)));
+        var cambio = await solicitudes.ResponderAsync(expediente, "cparedes@uta.edu.ec", "Paredes", Decidir((alg, false)));
 
-        var fila = cambio.Respuesta!.ResultadoFinal.Single(m => m.CodigoDestino == alg);
-        fila.Resultado.Should().Be("NO_HOMOLOGADA");
-        fila.DecisionFinal.Should().BeNull();
+        cambio.Codigo.Should().Be(409);
+        cambio.Error.Should().Be("El administrador ya dio la decisión final de esta solicitud; los votos ya no se pueden cambiar.");
+        (await solicitudes.ObtenerAsync(expediente, null, esDocente: false))!.ResultadoFinal.Single(m => m.CodigoDestino == alg).Resultado.Should().Be("HOMOLOGADA");
     }
-
     [Fact]
-    public async Task Los_docentes_pueden_homologar_una_materia_que_no_llega_al_80()
+    public async Task Las_materias_con_creditos_bajos_no_admiten_votos_ni_decision_final()
     {
         await using var db = CrearDb();
         var expediente = await SolicitudAnalizada(db);
         var solicitudes = new SolicitudesAnalisisService(db);
         const string alg = "Algoritmos y Lógica de Programación", poo = "Programación Orientada a Objetos";
 
-        // El agente recomienda no homologar POO, pero los docentes consideran que sí vio los temas.
-        await solicitudes.ResponderAsync(expediente, "cparedes@uta.edu.ec", "Paredes", Decidir((alg, true), (poo, true)));
-        var dos = await solicitudes.ResponderAsync(expediente, "mvaca@uta.edu.ec", "Vaca", Decidir((alg, true), (poo, true)));
-
-        dos.Error.Should().BeNull();
-        var fila = dos.Respuesta!.ResultadoFinal.Single(m => m.CodigoDestino == poo);
-        fila.Estimacion.Should().Be(AnalisisAutomaticoService.NoCumple);
-        fila.Resultado.Should().Be("HOMOLOGADA");
+        var voto = await solicitudes.ResponderAsync(expediente, "cparedes@uta.edu.ec", "Paredes", Decidir((alg, true), (poo, true)));
+        voto.Codigo.Should().Be(400);
+        voto.Error.Should().Contain("no se vota");
+        var final = (await solicitudes.ObtenerAsync(expediente, null, esDocente: false))!.ResultadoFinal.Single(m => m.CodigoDestino == poo);
+        final.Resultado.Should().Be("NO_HOMOLOGADA");
+        (final.Aprobaciones, final.Rechazos).Should().Be((0, 0));
+        var decision = await solicitudes.DecidirComoAdministradorAsync(expediente, "admin@uta.edu.ec", "Admin", new DecisionFinalRequest(poo, true, "Motivo"));
+        decision.Codigo.Should().Be(409);
     }
 
     [Fact]
-    public async Task El_docente_tambien_debe_decidir_la_que_no_llega_al_80()
-    {
-        await using var db = CrearDb();
-        var expediente = await SolicitudAnalizada(db);
-
-        var (respuesta, error, codigo) = await new SolicitudesAnalisisService(db).ResponderAsync(expediente, "cparedes@uta.edu.ec", "Paredes",
-            Decidir(("Algoritmos y Lógica de Programación", true)));
-
-        respuesta.Should().BeNull();
-        codigo.Should().Be(400);
-        error.Should().Contain("Falta: Programación Orientada a Objetos");
-    }
-
-    [Fact]
-    public async Task Si_ninguna_materia_cumple_igual_la_deciden_los_docentes()
+    public async Task Fisica_con_creditos_insuficientes_y_contenidos_completos_rechaza_el_voto()
     {
         await using var db = CrearDb();
         var expediente = await Sembrar(db, Certificado((new[] { "Física Básica" }, "Física")));
+        await Agente(db).AnalizarYGuardarAsync(expediente);
+        var solicitudes = new SolicitudesAnalisisService(db);
+        var evaluacion = (await solicitudes.ObtenerAsync(expediente, null, esDocente: false))!.Resultado!.Evaluaciones.Single();
+        evaluacion.Contenidos.Should().Be(100m);
+        evaluacion.PorcentajeCreditos.Should().Be(66.67m);
+        evaluacion.BloqueadaPorCreditos.Should().BeTrue();
+
+        var voto = await solicitudes.ResponderAsync(expediente, "cparedes@uta.edu.ec", "Paredes", Decidir(("Física", false)));
+
+        voto.Codigo.Should().Be(400);
+        voto.Error.Should().Contain("no se vota");
+        var final = (await solicitudes.ObtenerAsync(expediente, null, esDocente: false))!.ResultadoFinal.Single();
+        (final.Aprobaciones, final.Rechazos).Should().Be((0, 0));
+        final.Resultado.Should().Be("NO_HOMOLOGADA");
+    }
+
+    [Fact]
+    public async Task Un_analisis_guardado_antes_del_bloqueo_por_creditos_tambien_rechaza_el_voto()
+    {
+        await using var db = CrearDb();
+        var expediente = await Sembrar(db, Certificado((new[] { "Física Básica" }, "Física")));
+        await Agente(db).AnalizarYGuardarAsync(expediente);
+        // Simula un resultado guardado antes de existir el dato: sin "bloqueadaPorCreditos".
+        var contexto = await db.AnalisisExpedientes.SingleAsync();
+        contexto.ResultadoJson.Should().Contain("\"bloqueadaPorCreditos\":true");
+        contexto.ResultadoJson = contexto.ResultadoJson!.Replace("\"bloqueadaPorCreditos\":true", "\"bloqueadaPorCreditos\":false");
+        await db.SaveChangesAsync();
+        var solicitudes = new SolicitudesAnalisisService(db);
+
+        var voto = await solicitudes.ResponderAsync(expediente, "cparedes@uta.edu.ec", "Paredes", Decidir(("Física", true)));
+
+        voto.Codigo.Should().Be(400, "66,67 % en créditos sigue bloqueado aunque el dato no se haya guardado");
+        var vista = (await solicitudes.ObtenerAsync(expediente, null, esDocente: false))!;
+        vista.Resultado!.Evaluaciones.Single().BloqueadaPorCreditos.Should().BeTrue("la pantalla debe mostrarla bloqueada");
+        vista.ResultadoFinal.Single().Resultado.Should().Be("NO_HOMOLOGADA");
+    }
+
+    [Fact]
+    public async Task Los_docentes_responden_solo_sobre_materias_no_bloqueadas()
+    {
+        await using var db = CrearDb();
+        var expediente = await SolicitudAnalizada(db);
+        var (respuesta, error, codigo) = await new SolicitudesAnalisisService(db).ResponderAsync(expediente, "cparedes@uta.edu.ec", "Paredes",
+            Decidir(("Algoritmos y Lógica de Programación", true)));
+
+        error.Should().BeNull();
+        codigo.Should().Be(200);
+        respuesta!.ResultadoFinal.Single(m => m.CodigoDestino == "Programación Orientada a Objetos").Resultado.Should().Be("NO_HOMOLOGADA");
+    }
+
+    [Fact]
+    public async Task Dos_aprobaciones_homologan_con_creditos_suficientes_y_contenidos_bajos()
+    {
+        await using var db = CrearDb();
+        var expediente = await Sembrar(db, Certificado((new[] { "Fundamentos de Programación" }, "Algoritmos y Lógica de Programación")));
+        var sw = MallaSw.Where(a => a.Codigo != "SW-ALG")
+            .Append(A("SW-ALG", "ALGORITMOS Y LOGICA DE PROGRAMACION", 1, 4,
+                U(1, "Algoritmos", 48), U(2, "Control", 48), U(3, "Funciones", 48), U(4, "Búsqueda", 48), U(5, "Ordenamiento", 48)))
+            .ToList();
+        await Agente(db, sw).AnalizarYGuardarAsync(expediente);
+        var solicitudes = new SolicitudesAnalisisService(db);
+        const string alg = "Algoritmos y Lógica de Programación";
+
+        var analisis = (await solicitudes.ObtenerAsync(expediente, "cparedes@uta.edu.ec", esDocente: true))!;
+        analisis.Resultado!.Evaluaciones.Single().Contenidos.Should().Be(60m);
+        analisis.Resultado.Evaluaciones.Single().PorcentajeCreditos.Should().Be(100m);
+        (await solicitudes.ResponderAsync(expediente, "cparedes@uta.edu.ec", "Paredes", Decidir((alg, true)))).Error.Should().BeNull();
+        var final = await solicitudes.ResponderAsync(expediente, "mvaca@uta.edu.ec", "Vaca", Decidir((alg, true)));
+
+        final.Respuesta!.ResultadoFinal.Single().Resultado.Should().Be("HOMOLOGADA");
+    }
+
+    [Fact]
+    public async Task Si_ninguna_materia_cumple_solo_por_contenidos_igual_la_deciden_los_docentes()
+    {
+        await using var db = CrearDb();
+        // Física II: créditos completos (100 %) pero solo la mitad de los temas (50 %) → recomendación, deciden los docentes.
+        var expediente = await Sembrar(db, Certificado((new[] { "Física II" }, "Física")));
         await Agente(db).AnalizarYGuardarAsync(expediente);
 
         var vista = (await new SolicitudesAnalisisService(db).ObtenerAsync(expediente, "cparedes@uta.edu.ec", esDocente: true))!;
@@ -781,6 +866,10 @@ public class AnalisisAutomaticoServiceTests
         vista.EstadoRevision.Should().Be("PENDIENTE");
         vista.PuedeResponder.Should().BeTrue("el agente solo recomienda; el docente decide");
         vista.ResultadoFinal.Single().Resultado.Should().Be("PENDIENTE");
+        vista.Resultado!.Evaluaciones.Single().Contenidos.Should().Be(50m);
+        vista.Resultado.Evaluaciones.Single().PorcentajeCreditos.Should().Be(100m);
+        vista.Resultado.Resumen.Should().Contain("1 no llega(n) al 80 % en contenidos y el agente recomienda no homologarla(s)")
+            .And.Contain("la decisión final de cada materia es de los dos docentes revisores");
     }
 
     // ---------- tabla RESULTADO_HOMOLOGACION ----------
@@ -814,7 +903,7 @@ public class AnalisisAutomaticoServiceTests
         poo.HorasOrigen.Should().Be(144);
         poo.HorasDestino.Should().Be(192);
         poo.EstimacionAgente.Should().Be(AnalisisAutomaticoService.NoCumple);
-        poo.ResultadoFinal.Should().Be("PENDIENTE", "el agente recomienda no homologarla, pero deciden los docentes");
+        poo.ResultadoFinal.Should().Be("NO_HOMOLOGADA", "los créditos no llegan al 80 %: no se vota");
     }
 
     [Fact]
@@ -825,16 +914,16 @@ public class AnalisisAutomaticoServiceTests
         var solicitudes = new SolicitudesAnalisisService(db);
         const string alg = "Algoritmos y Lógica de Programación", poo = "Programación Orientada a Objetos";
 
-        await solicitudes.ResponderAsync(expediente, "cparedes@uta.edu.ec", "Paredes", Decidir((alg, true), (poo, false)));
+        await solicitudes.ResponderAsync(expediente, "cparedes@uta.edu.ec", "Paredes", Decidir((alg, true)));
         (await db.ResultadosHomologacion.SingleAsync(f => f.MateriaDestino == alg)).Aprobaciones.Should().Be(1);
 
-        await solicitudes.ResponderAsync(expediente, "mvaca@uta.edu.ec", "Vaca", Decidir((alg, true), (poo, false)));
+        await solicitudes.ResponderAsync(expediente, "mvaca@uta.edu.ec", "Vaca", Decidir((alg, true)));
 
         var filaAlg = await db.ResultadosHomologacion.SingleAsync(f => f.MateriaDestino == alg);
         filaAlg.Aprobaciones.Should().Be(2);
         filaAlg.ResultadoFinal.Should().Be("HOMOLOGADA");
         var filaPoo = await db.ResultadosHomologacion.SingleAsync(f => f.MateriaDestino == poo);
-        (filaPoo.Aprobaciones, filaPoo.Rechazos).Should().Be((0, 2), "los docentes también votan la que no llega al 80 %");
+        (filaPoo.Aprobaciones, filaPoo.Rechazos).Should().Be((0, 0), "los créditos no llegan al 80 %: no se vota");
         filaPoo.ResultadoFinal.Should().Be("NO_HOMOLOGADA");
         (await db.ResultadosHomologacion.CountAsync()).Should().Be(2, "las filas se actualizan, no se duplican");
     }

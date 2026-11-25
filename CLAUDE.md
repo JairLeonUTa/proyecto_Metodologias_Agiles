@@ -8,8 +8,10 @@ de la otra universidad). .NET 8: MS A (usuarios, reglas, catálogo), MS B (exped
 embeddings de Ollama), gateway Ocelot, SQL Server, RabbitMQ. Frontend React + Vite + Tailwind en `frontend/`.
 
 ## Reglas de negocio
-- Homologa solo con **≥ 80 % en contenidos Y ≥ 80 % en créditos**. `CUMPLE` → votan los 2 docentes;
-  `NO_CUMPLE` → "No se puede homologar", `NO_HOMOLOGADA` sin votación; `CRITERIO_DOCENTE` → sin sílabo, deciden docentes.
+- **Créditos < 80 % bloquean**: "No se puede homologar", `NO_HOMOLOGADA` sin votación (`bloqueadaPorCreditos`).
+  **Contenidos < 80 % solo aconsejan**: `NO_CUMPLE` = el agente recomienda no homologar, pero los 2 docentes votan y deciden
+  (ej.: el profesor dio temas que no están en el sílabo). `CUMPLE` (ambos ≥ 80 %) → votan los 2 docentes.
+  `CRITERIO_DOCENTE` → sin sílabo, deciden docentes. Si los 2 docentes discrepan, decide el Administrador (con comentario).
 - El mínimo no se puede bajar de 80. Profundidad y carga horaria son solo dato.
 - El estudiante no usa el sistema. Roles: Administrador, Operador, Docente.
 - Interfaz sin símbolos (θ, δ, τ) ni errores técnicos. Ver skills `siha-ui` y `frontend-design`.
@@ -17,7 +19,7 @@ embeddings de Ollama), gateway Ocelot, SQL Server, RabbitMQ. Frontend React + Vi
 ## Reglas del equipo
 - Migraciones EF siempre incrementales. Toda regla nueva con prueba. No subir `.env`.
 - Se sube directo a `develop` (sin PR), solo cuando el usuario lo pida, tras `git fetch`.
-- Commits con `git commit -F archivo` y `Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>`.
+- Commits con `git commit -F archivo`, **sin** línea `Co-Authored-By` (decisión de Jonathan, 22/11/2026).
 
 ## Comandos
 - Levantar: `docker compose --profile sprint23 up -d --build` → app http://localhost:5173, gateway http://localhost:5000.
