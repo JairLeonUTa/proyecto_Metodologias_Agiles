@@ -106,6 +106,41 @@
 \multicolumn{2}{|p{\dimexpr\textwidth-2\tabcolsep}|}{\textbf{Descripción:} #9}\\\hline
 \end{tabularx}\par\medskip}
 
+% ---------- Diagrama de casos de uso (actor dibujado como muñeco, igual que en el Sprint 2) ----------
+\definecolor{grisCaso}{HTML}{E4E8F0}
+\tikzset{cu/.style={draw,ellipse,fill=grisCaso,align=center,font=\small,minimum width=4.1cm,minimum height=1cm,inner sep=1pt},
+  rel/.style={densely dashed,-{Stealth[length=2mm]},font=\scriptsize}}
+% \munieco{nombre}{(x,y)}{etiqueta}: crea los puntos nombre-e (derecha) y nombre-w (izquierda) para unir líneas.
+\newcommand{\munieco}[3]{%
+  \begin{scope}[shift={#2}]
+    \draw[line width=0.9pt] (0,0.66) circle (0.18);
+    \draw[line width=0.9pt] (0,0.48)--(0,-0.12) (-0.34,0.28)--(0.34,0.28) (0,-0.12)--(-0.28,-0.6) (0,-0.12)--(0.28,-0.6);
+    \node[align=center,font=\small] at (0,-1.02) {#3};
+    \coordinate (#1-e) at (0.42,0.2); \coordinate (#1-w) at (-0.42,0.2);
+  \end{scope}}
+\newcommand{\incluye}[2]{\draw[rel] (c#1) -- node[right]{«incluye»} (c#2);}
+\newcommand{\extiende}[2]{\draw[rel] (c#1) -- node[right]{«extiende»} (c#2);}
+% Relación entre casos que no están uno debajo del otro: se dibuja por el lado derecho.
+\newcommand{\incluyeLado}[2]{\draw[rel] (c#1.east) to[out=-15,in=15,looseness=1.6] node[right]{«incluye»} (c#2.east);}
+\newcommand{\extiendeLado}[2]{\draw[rel] (c#1.east) to[out=15,in=-15,looseness=1.6] node[right]{«extiende»} (c#2.east);}
+% \casosdeuso{historia}{actor principal (vacío si se dibujan a mano)}{casos {a},{b},...}{casos unidos al actor}{dibujo extra}{explicación}
+\newcommand{\casosdeuso}[6]{%
+\par\needspace{12\baselineskip}\noindent\textbf{\textit{Diagrama de casos de uso -- #1}}\par
+\begin{figure}[H]\centering
+\begin{tikzpicture}
+  \foreach \c [count=\i] in {#3} {\node[cu] (c\i) at (5.6,{-1.45*(\i-1)}) {\c}; \xdef\ncu{\i}}
+  \node[font=\bfseries] (titulo) at (5.6,1.05) {Sistema de homologación};
+  \node[draw,rounded corners=5pt,inner sep=8pt,fit=(titulo)(c1)(c\ncu)] {};
+  \if\relax\detokenize{#2}\relax\else
+    \munieco{act}{(0,{-0.725*(\ncu-1)})}{#2}
+    \foreach \i in {#4} {\draw (act-e) -- (c\i.west);}
+  \fi
+  #5
+\end{tikzpicture}
+\caption{Diagrama de casos de uso de la #1}
+\end{figure}
+#6\par\medskip}
+
 % ---------- Prueba con captura (formato de la sección de resultados del Sprint 2) ----------
 % \prueba{titulo}{accion}{archivo}{pie de figura}{resultado obtenido}{ancho relativo}
 \newcommand{\prueba}[6]{%

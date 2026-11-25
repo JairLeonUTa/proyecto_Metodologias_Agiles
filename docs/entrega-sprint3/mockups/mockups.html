@@ -1,0 +1,448 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Mockups SIHA-IA</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Balsamiq+Sans:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  /* Estilo de wireframe tipo Balsamiq: trazo a mano, escala de grises y notas adhesivas */
+  :root { --tinta:#2b2b2b; --gris:#e9e9e9; --gris2:#cfcfcf; --azul:#3d7bd1; --nota:#fff6a3; }
+  * { box-sizing:border-box; }
+  body { margin:0; padding:24px; background:#fff; font-family:'Balsamiq Sans', cursive; color:var(--tinta); font-size:15px; }
+  .win { width:1100px; margin:0 0 40px; border:2.5px solid var(--tinta); border-radius:12px 9px 13px 8px / 9px 13px 8px 12px; background:#fff; overflow:hidden; }
+  .bar { display:flex; align-items:center; gap:8px; padding:8px 12px; border-bottom:2.5px solid var(--tinta); background:var(--gris); }
+  .bar i { width:13px; height:13px; border:2px solid var(--tinta); border-radius:50%; display:inline-block; }
+  .url { flex:1; margin-left:10px; border:2px solid var(--tinta); border-radius:7px 5px 8px 6px; background:#fff; padding:2px 10px; font-size:13px; }
+  .top { display:flex; justify-content:space-between; align-items:center; padding:8px 16px; border-bottom:2px solid var(--tinta); }
+  .logo { font-weight:700; font-size:19px; display:flex; align-items:center; gap:8px; }
+  .user { display:flex; align-items:center; gap:8px; font-size:14px; }
+  .av { width:28px; height:28px; border:2px solid var(--tinta); border-radius:50%; display:grid; place-items:center; font-size:13px; }
+  .app { display:flex; min-height:470px; }
+  .side { width:215px; border-right:2px solid var(--tinta); padding:12px 10px; font-size:14px; }
+  .side h4 { margin:10px 6px 6px; font-size:12px; letter-spacing:.06em; color:#666; }
+  .it { padding:6px 8px; margin:2px 0; border-radius:6px; }
+  .it.on { background:var(--gris2); font-weight:700; border:2px solid var(--tinta); }
+  .main { flex:1; padding:16px 22px; }
+  h1 { font-size:23px; margin:0 0 4px; }
+  .sub { color:#555; font-size:14px; margin:0 0 12px; }
+  .card { border:2px solid var(--tinta); border-radius:9px 6px 10px 7px / 7px 10px 6px 9px; padding:12px 14px; margin:0 0 12px; }
+  .card h3 { margin:0 0 8px; font-size:16px; }
+  .row { display:flex; gap:14px; align-items:flex-end; flex-wrap:wrap; }
+  .f { display:flex; flex-direction:column; gap:3px; font-size:13px; flex:1; min-width:140px; }
+  .in { border:2px solid var(--tinta); border-radius:5px 4px 6px 4px; padding:5px 8px; min-height:31px; background:#fff; font-size:14px; color:#444; }
+  .in.sel::after { content:"\25BE"; float:right; }
+  .in.err { border-color:#c0392b; background:#fdecea; }
+  .ayuda { font-size:12px; color:#666; }
+  .btn { display:inline-block; border:2px solid var(--tinta); border-radius:9px 7px 10px 8px; padding:6px 14px; background:var(--gris); font-weight:700; font-size:14px; }
+  .btn.pri { background:var(--azul); color:#fff; border-color:#1f4f93; }
+  .btn.off { color:#999; border-color:#999; background:#f4f4f4; }
+  .link { color:var(--azul); text-decoration:underline; }
+  table { width:100%; border-collapse:collapse; font-size:13.5px; border:2px solid var(--tinta); }
+  th, td { border:1.5px solid var(--tinta); padding:5px 7px; text-align:left; }
+  th { background:var(--gris); }
+  .tag { display:inline-block; border:2px solid var(--tinta); border-radius:12px; padding:0 8px; font-size:12.5px; }
+  .tag.g { background:#dff0d8; } .tag.r { background:#f8d7da; } .tag.y { background:#fff3cd; } .tag.b { background:#dbe8fb; }
+  .nota { position:absolute; background:var(--nota); border:1.5px solid #c9b94f; padding:8px 10px; width:210px; font-size:13px; transform:rotate(-2deg); box-shadow:2px 3px 0 rgba(0,0,0,.15); }
+  .rel { position:relative; }
+  .ph { border:2px solid var(--tinta); background:
+        linear-gradient(to top right, transparent calc(50% - 1px), var(--tinta) 50%, transparent calc(50% + 1px)),
+        linear-gradient(to bottom right, transparent calc(50% - 1px), var(--tinta) 50%, transparent calc(50% + 1px)); }
+  .aviso { border:2px solid var(--tinta); border-radius:8px; padding:8px 12px; margin:0 0 12px; font-size:14px; }
+  .aviso.g { background:#dff0d8; } .aviso.r { background:#f8d7da; } .aviso.y { background:#fff3cd; } .aviso.b { background:#dbe8fb; }
+  .barra { height:14px; border:2px solid var(--tinta); border-radius:8px; overflow:hidden; background:#fff; }
+  .barra b { display:block; height:100%; background:var(--gris2); }
+  .zona { border:2.5px dashed var(--tinta); border-radius:10px; padding:16px; text-align:center; color:#555; }
+  .lineas span { display:block; height:8px; background:var(--gris2); border-radius:4px; margin:7px 0; }
+  .cols { display:flex; gap:14px; } .cols > * { flex:1; }
+  .modal { position:absolute; right:40px; top:70px; width:360px; background:#fff; border:2.5px solid var(--tinta); border-radius:10px; padding:14px; box-shadow:6px 6px 0 rgba(0,0,0,.18); }
+  .velo::before { content:""; position:absolute; inset:0; background:rgba(0,0,0,.12); }
+</style>
+</head>
+<body>
+
+<!-- ============================ SPRINT 1 ============================ -->
+
+<!-- M-01 HU-01: Inicio de sesión -->
+<div class="win" id="m01">
+  <div class="bar"><i></i><i></i><i></i><span class="url">http://homologa.uta.edu.ec/login</span></div>
+  <div class="rel" style="height:520px; display:grid; place-items:center; background:#f6f6f6">
+    <div class="card" style="width:400px; background:#fff; padding:22px">
+      <div style="display:flex; align-items:center; gap:12px; margin-bottom:14px">
+        <div class="ph" style="width:54px;height:54px"></div>
+        <div><div style="font-size:22px;font-weight:700">Homologa UTA</div><div class="ayuda">Homologación de materias FISEI</div></div>
+      </div>
+      <div class="f" style="margin-bottom:10px">Correo institucional<div class="in">usuario@uta.edu.ec</div></div>
+      <div class="f" style="margin-bottom:14px">Contraseña<div class="in">••••••••</div></div>
+      <div class="btn pri" style="width:100%;text-align:center">Ingresar</div>
+      <p class="ayuda" style="margin:12px 0 0">¿Olvidó su contraseña? Pida al Administrador que la restablezca.</p>
+    </div>
+    <div class="nota" style="right:120px; top:70px">Solo entran cuentas activas. Cada rol ve únicamente sus opciones.</div>
+  </div>
+</div>
+
+<!-- M-02 HU-02: Configurar el mínimo -->
+<div class="win" id="m02">
+  <div class="bar"><i></i><i></i><i></i><span class="url">http://homologa.uta.edu.ec/reglas</span></div>
+  <div class="top"><span class="logo"><span class="ph" style="width:26px;height:26px"></span>Homologa UTA</span><span class="user"><span class="av">A</span>Administrador</span></div>
+  <div class="app"><div class="side" data-rol="admin" data-on="Configurar mínimo (80 %)"></div>
+    <div class="main rel">
+      <h1>Configurar mínimo para homologar</h1><p class="sub">Regla vigente que usa el agente para comparar créditos y contenidos.</p>
+      <div class="card"><div class="row">
+        <div class="f">Créditos mínimos (%)<div class="in">80</div><span class="ayuda">No puede ser menor que 80.</span></div>
+        <div class="f">Contenido mínimo (%)<div class="in">80</div><span class="ayuda">No puede ser menor que 80.</span></div>
+        <div class="f">Versión vigente<div class="in" style="background:var(--gris)">3</div></div>
+        <span class="btn pri">Guardar nueva versión</span></div></div>
+      <div class="card"><h3>Historial de versiones</h3>
+        <table><tr><th>Versión</th><th>Créditos</th><th>Contenidos</th><th>Fecha</th><th>Cambiado por</th></tr>
+        <tr><td>3</td><td>80 %</td><td>80 %</td><td>14/10/2026</td><td>Administrador</td></tr>
+        <tr><td>2</td><td>80 %</td><td>75 %</td><td>10/10/2026</td><td>Administrador</td></tr>
+        <tr><td>1</td><td>80 %</td><td>70 %</td><td>07/10/2026</td><td>Administrador</td></tr></table></div>
+      <div class="nota" style="right:30px; top:10px">Cada cambio crea una versión nueva; las anteriores se conservan.</div>
+    </div></div>
+</div>
+
+<!-- M-03 HU-03: Asignaturas de la malla -->
+<div class="win" id="m03">
+  <div class="bar"><i></i><i></i><i></i><span class="url">http://homologa.uta.edu.ec/catalogos/asignaturas</span></div>
+  <div class="top"><span class="logo"><span class="ph" style="width:26px;height:26px"></span>Homologa UTA</span><span class="user"><span class="av">A</span>Administrador</span></div>
+  <div class="app"><div class="side" data-rol="admin" data-on="Asignaturas y contenidos"></div>
+    <div class="main">
+      <h1>Asignaturas y contenidos</h1><p class="sub">Mallas de cada carrera que usa el agente para comparar.</p>
+      <div class="row" style="margin-bottom:12px">
+        <div class="f">Carrera<div class="in sel">Ingeniería de Software</div></div>
+        <div class="f">Versión de malla<div class="in sel">2023</div></div>
+        <div class="f">Nivel<div class="in sel">Todos</div></div>
+        <span class="btn">+ Agregar asignatura</span></div>
+      <table><tr><th>Nivel</th><th>Asignatura</th><th>Créditos</th><th>Horas</th><th>Unidades</th><th>Acción</th></tr>
+        <tr><td>1</td><td>Física</td><td>3</td><td>144</td><td>4</td><td class="link">Ver contenidos</td></tr>
+        <tr><td>1</td><td>Cálculo diferencial</td><td>3</td><td>144</td><td>4</td><td class="link">Ver contenidos</td></tr>
+        <tr><td>1</td><td>Algoritmos y lógica de programación</td><td>4</td><td>192</td><td>5</td><td class="link">Ver contenidos</td></tr>
+        <tr><td>2</td><td>Metodología de la investigación</td><td>2</td><td>96</td><td>3</td><td class="link">Ver contenidos</td></tr>
+        <tr><td>2</td><td>Programación orientada a objetos</td><td>4</td><td>192</td><td>5</td><td class="link">Ver contenidos</td></tr></table>
+    </div></div>
+</div>
+
+<!-- M-04 HU-04: Acceso denegado -->
+<div class="win" id="m04">
+  <div class="bar"><i></i><i></i><i></i><span class="url">http://homologa.uta.edu.ec/administracion/usuarios</span></div>
+  <div class="top"><span class="logo"><span class="ph" style="width:26px;height:26px"></span>Homologa UTA</span><span class="user"><span class="av">O</span>Operador</span></div>
+  <div class="app"><div class="side" data-rol="operador" data-on=""></div>
+    <div class="main rel" style="display:grid; place-items:center">
+      <div style="text-align:center; max-width:460px">
+        <div class="ph" style="width:90px;height:90px;margin:0 auto 14px;border-radius:50%"></div>
+        <h1>No tiene acceso a esta sección</h1>
+        <p class="sub">Su rol (Operador) no puede abrir Usuarios y roles. Si cree que es un error, comuníquese con el Administrador.</p>
+        <span class="btn pri">Volver al inicio</span>
+      </div>
+      <div class="nota" style="right:30px; top:30px">El Gateway revisa la sesión y el rol antes de dejar pasar cada petición.</div>
+    </div></div>
+</div>
+
+<!-- M-05 HU-05: Registrar solicitud con PDF -->
+<div class="win" id="m05">
+  <div class="bar"><i></i><i></i><i></i><span class="url">http://homologa.uta.edu.ec/solicitudes/nueva</span></div>
+  <div class="top"><span class="logo"><span class="ph" style="width:26px;height:26px"></span>Homologa UTA</span><span class="user"><span class="av">O</span>Operador</span></div>
+  <div class="app"><div class="side" data-rol="operador" data-on="Registrar solicitud"></div>
+    <div class="main rel">
+      <h1>Registrar solicitud</h1><p class="sub">Datos del estudiante y documentos en PDF.</p>
+      <div class="card"><div class="row">
+        <div class="f">Tipo de trámite<div class="in sel">Cambio de carrera (dentro de la UTA)</div></div>
+        <div class="f">Nombres y apellidos<div class="in">Torres Vega Martín</div></div>
+        <div class="f" style="max-width:170px">Cédula<div class="in">1805123456</div></div></div>
+        <div class="row" style="margin-top:10px">
+        <div class="f">Carrera de origen<div class="in sel">Ingeniería Industrial</div></div>
+        <div class="f">Carrera a la que quiere pasar<div class="in sel">Ingeniería de Software</div></div></div></div>
+      <div class="cols" style="margin-bottom:12px">
+        <div class="zona">Certificado de notas (PDF)<br><b>Arrastre el archivo o pulse para elegir</b></div>
+        <div class="zona">Plan analítico (PDF)<br><b>plan-fisica.pdf</b> <span class="tag g">Listo</span></div></div>
+      <span class="btn pri">Registrar solicitud</span> <span class="btn">Cancelar</span>
+      <div class="nota" style="right:24px; top:6px">Solo se aceptan PDF de hasta 10 MB.</div>
+    </div></div>
+</div>
+
+<!-- M-06 HU-06: Solicitud enviada al análisis -->
+<div class="win" id="m06">
+  <div class="bar"><i></i><i></i><i></i><span class="url">http://homologa.uta.edu.ec/solicitudes</span></div>
+  <div class="top"><span class="logo"><span class="ph" style="width:26px;height:26px"></span>Homologa UTA</span><span class="user"><span class="av">O</span>Operador</span></div>
+  <div class="app"><div class="side" data-rol="operador" data-on="Solicitudes"></div>
+    <div class="main rel">
+      <h1>Solicitudes</h1><p class="sub">Solicitudes registradas y su estado.</p>
+      <div class="aviso g">La solicitud EXP-0012 se registró y se envió al análisis.</div>
+      <table><tr><th>Código</th><th>Estudiante</th><th>Trámite</th><th>Registrada</th><th>Estado</th></tr>
+        <tr><td>EXP-0012</td><td>Torres Vega Martín</td><td>Cambio de carrera</td><td>20/10/2026</td><td><span class="tag b">Enviada al análisis</span></td></tr>
+        <tr><td>EXP-0011</td><td>Pérez Gómez Ana</td><td>Movilidad externa</td><td>19/10/2026</td><td><span class="tag b">Enviada al análisis</span></td></tr>
+        <tr><td>EXP-0010</td><td>Mora Ruiz Carlos</td><td>Cambio de carrera</td><td>18/10/2026</td><td><span class="tag y">Registrada</span></td></tr></table>
+      <div class="nota" style="right:30px; bottom:30px">El aviso “solicitud creada” va a la cola de mensajes y el Servicio de Análisis lo recibe una sola vez.</div>
+    </div></div>
+</div>
+
+<!-- ============================ SPRINT 2 ============================ -->
+
+<!-- M-07 HU-07: Bandeja de procesamiento -->
+<div class="win" id="m07">
+  <div class="bar"><i></i><i></i><i></i><span class="url">http://homologa.uta.edu.ec/procesamiento</span></div>
+  <div class="top"><span class="logo"><span class="ph" style="width:26px;height:26px"></span>Homologa UTA</span><span class="user"><span class="av">O</span>Operador académico</span></div>
+  <div class="app"><div class="side" data-rol="operador" data-on="Solicitudes"></div>
+    <div class="main rel">
+      <div class="row" style="justify-content:space-between"><div><h1>Expedientes en procesamiento</h1><p class="sub">Lectura de los PDF enviados.</p></div><span class="btn">Actualizar</span></div>
+      <table><tr><th>Expediente</th><th>Trámite</th><th>Documento</th><th>Confianza</th><th>Estado</th><th>Acción</th></tr>
+        <tr><td>EXP-0012</td><td>Interno</td><td>plan-programacion.pdf</td><td>0,94</td><td><span class="tag g">Datos leídos</span></td><td class="link">Ver</td></tr>
+        <tr><td>EXP-0013</td><td>Externo</td><td>silabo-bases-datos.pdf</td><td>0,62</td><td><span class="tag y">Confirmar datos</span></td><td class="link">Revisar</td></tr>
+        <tr><td>EXP-0014</td><td>Externo</td><td>programa-escaneado.pdf</td><td>-</td><td><span class="tag b">Lectura con IA</span></td><td class="link">Ver</td></tr>
+        <tr><td>EXP-0015</td><td>Interno</td><td>plan-fisica.pdf</td><td>0,88</td><td><span class="tag g">Datos leídos</span></td><td class="link">Ver</td></tr></table>
+      <div class="nota" style="right:30px; bottom:40px">Confianza: qué tan segura fue la lectura (de 0 a 1). Con menos de 0,80 el operador debe revisar.</div>
+    </div></div>
+</div>
+
+<!-- M-08 HU-07: Confirmar datos leídos -->
+<div class="win" id="m08">
+  <div class="bar"><i></i><i></i><i></i><span class="url">http://homologa.uta.edu.ec/procesamiento/EXP-0013</span></div>
+  <div class="top"><span class="logo"><span class="ph" style="width:26px;height:26px"></span>Homologa UTA</span><span class="user"><span class="av">O</span>Operador académico</span></div>
+  <div class="app"><div class="side" data-rol="operador" data-on="Solicitudes"></div>
+    <div class="main rel">
+      <h1>Confirmar datos leídos - EXP-0013</h1><p class="sub">Revise y corrija lo que el sistema no pudo leer con seguridad.</p>
+      <div class="cols">
+        <div class="card" style="max-width:300px"><h3>Documento</h3><div class="ph" style="height:300px"></div><p class="ayuda">silabo-bases-datos.pdf</p></div>
+        <div class="card"><div class="row">
+          <div class="f">Materia<div class="in">Bases de Datos I</div></div>
+          <div class="f">Créditos<div class="in err"></div><span class="ayuda" style="color:#c0392b">Ingrese los créditos.</span></div>
+          <div class="f">Horas<div class="in">96</div></div></div>
+          <h3 style="margin-top:12px">Unidades</h3>
+          <table><tr><th>N.º</th><th>Unidad</th><th>Horas</th></tr><tr><td>1</td><td>Modelo entidad relación</td><td>24</td></tr><tr><td>2</td><td>Modelo relacional y SQL</td><td>36</td></tr><tr><td>3</td><td>Normalización</td><td>36</td></tr></table>
+          <div style="margin-top:12px"><span class="btn off">Confirmar y calcular</span> <span class="btn">Cancelar</span></div></div></div>
+      <div class="nota" style="right:28px; top:6px">Mientras falte un dato obligatorio, no deja avanzar.</div>
+    </div></div>
+</div>
+
+<!-- M-09 HU-09: Créditos y alertas -->
+<div class="win" id="m09">
+  <div class="bar"><i></i><i></i><i></i><span class="url">http://homologa.uta.edu.ec/solicitudes/EXP-0012/creditos</span></div>
+  <div class="top"><span class="logo"><span class="ph" style="width:26px;height:26px"></span>Homologa UTA</span><span class="user"><span class="av">D</span>Docente evaluador</span></div>
+  <div class="app"><div class="side" data-rol="docente" data-on="Solicitudes"></div>
+    <div class="main rel">
+      <h1>Créditos y alertas - EXP-0012</h1><p class="sub">Revisión antes de comparar los contenidos.</p>
+      <div class="cols">
+        <div class="card"><h3>Proporción de créditos</h3>
+          <table><tr><th>Materia aprobada</th><th>Créditos</th><th>Materia de destino</th><th>Créditos</th><th>Proporción</th></tr>
+          <tr><td>Física I</td><td>4</td><td>Física</td><td>3</td><td>100,00 %</td></tr>
+          <tr><td>Química</td><td>2</td><td>Química general</td><td>3</td><td>66,67 %</td></tr></table>
+          <p class="ayuda">Reglas aplicadas: versión 3 (mínimo de créditos 80 %).</p></div>
+        <div class="card" style="max-width:330px"><h3>Alertas de admisibilidad</h3>
+          <div class="aviso y">Vigencia: Física I se aprobó hace 12 años. Pasa a validación de conocimientos.</div>
+          <div class="aviso g">Tercera matrícula: no tiene.</div></div></div>
+      <div class="nota" style="right:360px; bottom:20px">La proporción de créditos se muestra como dato de apoyo.</div>
+    </div></div>
+</div>
+
+<!-- M-10 HU-10: Estado de la lectura -->
+<div class="win" id="m10">
+  <div class="bar"><i></i><i></i><i></i><span class="url">http://homologa.uta.edu.ec/procesamiento/lectura</span></div>
+  <div class="top"><span class="logo"><span class="ph" style="width:26px;height:26px"></span>Homologa UTA</span><span class="user"><span class="av">O</span>Operador académico</span></div>
+  <div class="app"><div class="side" data-rol="operador" data-on="Solicitudes"></div>
+    <div class="main rel">
+      <h1>Estado de la lectura</h1><p class="sub">PDF escaneados que se leen con la IA local.</p>
+      <table><tr><th>Expediente</th><th>Documento</th><th>Tipo</th><th style="width:230px">Avance</th><th>Estado</th></tr>
+        <tr><td>EXP-0014</td><td>programa-escaneado.pdf</td><td>Escaneado</td><td><div class="barra"><b style="width:60%"></b></div></td><td><span class="tag b">Leyendo con IA</span></td></tr>
+        <tr><td>EXP-0016</td><td>plan-electronica.pdf</td><td>Escaneado</td><td><div class="barra"><b style="width:100%"></b></div></td><td><span class="tag g">Datos leídos</span></td></tr>
+        <tr><td>EXP-0017</td><td>silabo-redes.pdf</td><td>Escaneado</td><td><div class="barra"><b style="width:100%"></b></div></td><td><span class="tag y">Revisar datos dudosos</span></td></tr></table>
+      <div class="nota" style="right:30px; bottom:40px">Lo que no se lee con seguridad queda vacío para que el operador lo complete; nunca se inventan datos.</div>
+    </div></div>
+</div>
+
+<!-- M-11 HU-10: Cobertura de contenidos -->
+<div class="win" id="m11">
+  <div class="bar"><i></i><i></i><i></i><span class="url">http://homologa.uta.edu.ec/solicitudes/EXP-0012/cobertura</span></div>
+  <div class="top"><span class="logo"><span class="ph" style="width:26px;height:26px"></span>Homologa UTA</span><span class="user"><span class="av">D</span>Docente evaluador</span></div>
+  <div class="app"><div class="side" data-rol="docente" data-on="Solicitudes"></div>
+    <div class="main rel">
+      <h1>Cobertura de contenidos</h1><p class="sub">Física I y Física II (origen) frente a Física (destino).</p>
+      <div class="row" style="margin-bottom:10px"><span class="tag g" style="font-size:15px;padding:2px 12px">Cobertura: 85,71 %</span><span class="ayuda">6 de 7 unidades cubiertas. Mínimo de la regla: 80 %.</span></div>
+      <table><tr><th>Unidad de destino</th><th>Horas</th><th>Tema más parecido</th><th>Parecido</th><th>Cubierta</th></tr>
+        <tr><td>1. Cinemática</td><td>12</td><td>Movimiento en una dimensión</td><td>0,91</td><td>Sí</td></tr>
+        <tr><td>2. Dinámica</td><td>12</td><td>Leyes de Newton</td><td>0,88</td><td>Sí</td></tr>
+        <tr><td>3. Trabajo y energía</td><td>12</td><td>Energía mecánica</td><td>0,84</td><td>Sí</td></tr>
+        <tr><td>6. Ondas</td><td>12</td><td>Movimiento ondulatorio</td><td>0,79</td><td>Sí</td></tr>
+        <tr style="background:#f8d7da"><td>7. Óptica</td><td>12</td><td>Sin tema parecido</td><td>0,41</td><td>No (faltante)</td></tr></table>
+      <div class="nota" style="right:30px; top:4px">Si hay dos materias de origen, sus temas se suman sin contarse dos veces.</div>
+    </div></div>
+</div>
+
+<!-- M-12 HU-11: Consulta de precedentes -->
+<div class="win" id="m12">
+  <div class="bar"><i></i><i></i><i></i><span class="url">http://homologa.uta.edu.ec/precedentes</span></div>
+  <div class="top"><span class="logo"><span class="ph" style="width:26px;height:26px"></span>Homologa UTA</span><span class="user"><span class="av">D</span>Docente evaluador</span></div>
+  <div class="app"><div class="side" data-rol="docente" data-on="Solicitudes"></div>
+    <div class="main rel">
+      <h1>Casos anteriores</h1><p class="sub">Resoluciones de casos idénticos ya decididos.</p>
+      <div class="card"><div class="row">
+        <div class="f">Materias de origen<div class="in">Física I, Física II</div></div>
+        <div class="f">Materia de destino<div class="in">Física</div></div>
+        <div class="f">Universidad de origen<div class="in">Universidad Técnica de Ambato</div></div>
+        <span class="btn pri">Buscar</span></div></div>
+      <div class="card"><h3>Coincidencia exacta</h3>
+        <table><tr><th>Resolución</th><th>Materias</th><th>Universidad</th><th>Fecha</th><th>Decisión</th></tr>
+        <tr><td>CAU-P-011-2025-034</td><td>Física I y Física II por Física</td><td>UTA</td><td>12/03/2025</td><td><span class="tag g">Homologada</span></td></tr></table></div>
+      <div class="aviso y">El precedente es solo de consulta: igual se revisan la vigencia y la matrícula del caso actual.</div>
+    </div></div>
+</div>
+
+<!-- ============================ SPRINT 3 ============================ -->
+
+<!-- M-13 HU-12: Revisión del certificado -->
+<div class="win" id="m13">
+  <div class="bar"><i></i><i></i><i></i><span class="url">http://homologa.uta.edu.ec/solicitudes/nueva</span></div>
+  <div class="top"><span class="logo"><span class="ph" style="width:26px;height:26px"></span>Homologa UTA</span><span class="user"><span class="av">O</span>Operador</span></div>
+  <div class="app"><div class="side" data-rol="operador3" data-on="Registrar solicitud"></div>
+    <div class="main rel">
+      <h1>Registrar solicitud</h1><p class="sub">Suba el certificado SIHA (PDF); el agente lo analiza y lo asigna a los dos docentes.</p>
+      <div class="cols">
+        <div><div class="zona" style="margin-bottom:10px">Certificado SIHA (PDF)<br><b>certificado-torres.pdf</b> <span class="tag g">Leído</span></div>
+          <div class="row"><div class="f">Docente revisor 1<div class="in sel">Ing. Carlos Paredes</div></div><div class="f">Docente revisor 2<div class="in sel">Ing. María Vaca</div></div></div></div>
+        <div class="card"><h3>Revisión del certificado</h3>
+          <table><tr><th>Sección</th><th>Resultado</th></tr>
+          <tr><td>Datos del estudiante</td><td><span class="tag g">Correcto</span></td></tr>
+          <tr><td>Carreras de origen y destino</td><td><span class="tag g">Correcto</span></td></tr>
+          <tr><td>Historial académico</td><td><span class="tag g">Correcto</span></td></tr>
+          <tr><td>Materias que pide homologar</td><td><span class="tag r">Corregir: falta la materia de destino</span></td></tr></table></div></div>
+      <div style="margin-top:12px"><span class="btn">Revisar los datos</span> <span class="btn off">Registrar y enviar solicitud</span></div>
+      <div class="nota" style="right:30px; bottom:6px">El registro se habilita solo cuando todas las secciones están correctas.</div>
+    </div></div>
+</div>
+
+<!-- M-14 HU-13: Análisis por materia -->
+<div class="win" id="m14">
+  <div class="bar"><i></i><i></i><i></i><span class="url">http://homologa.uta.edu.ec/solicitudes/EXP-20261124</span></div>
+  <div class="top"><span class="logo"><span class="ph" style="width:26px;height:26px"></span>Homologa UTA</span><span class="user"><span class="av">D</span>Docente</span></div>
+  <div class="app"><div class="side" data-rol="docente3" data-on="Solicitudes"></div>
+    <div class="main rel">
+      <div class="row" style="justify-content:space-between"><div><h1>Solicitud EXP-20261124</h1><p class="sub">Torres Vega Martín - Industrial a Software. Análisis con los sílabos oficiales de la UTA.</p></div><span class="btn">Volver a analizar</span></div>
+      <table><tr><th>Materia aprobada</th><th>Materia de destino</th><th>Créditos</th><th>Contenidos</th><th>Estimación del agente</th></tr>
+        <tr><td>Física básica</td><td>Física</td><td>100 %</td><td>86 %</td><td><span class="tag g">Cumple</span></td></tr>
+        <tr><td>Cálculo I</td><td>Cálculo diferencial</td><td>100 %</td><td>62 %</td><td><span class="tag y">Recomienda no homologar</span></td></tr></table>
+      <div class="card" style="margin-top:12px"><h3>Por qué - Física básica por Física</h3>
+        <p style="margin:0;font-size:14px">Los créditos llegan al 100 % y 6 de 7 unidades tienen temas parecidos (86 %). Falta la unidad de Óptica. Se recomienda homologar; deciden los dos docentes.</p></div>
+      <div class="nota" style="right:30px; bottom:20px">El agente explica cada materia; no reemplaza la decisión de los docentes.</div>
+    </div></div>
+</div>
+
+<!-- M-15 HU-14: Sílabo de otra universidad -->
+<div class="win" id="m15">
+  <div class="bar"><i></i><i></i><i></i><span class="url">http://homologa.uta.edu.ec/solicitudes/nueva</span></div>
+  <div class="top"><span class="logo"><span class="ph" style="width:26px;height:26px"></span>Homologa UTA</span><span class="user"><span class="av">O</span>Operador</span></div>
+  <div class="app"><div class="side" data-rol="operador3" data-on="Registrar solicitud"></div>
+    <div class="main rel">
+      <h1>Movilidad externa</h1><p class="sub">Viene de otra universidad: adjunte el sílabo de cada materia aprobada.</p>
+      <div class="card"><div class="row"><div class="f">Tipo de trámite<div class="in sel">Movilidad externa (viene de otra universidad)</div></div><div class="f">Institución de origen<div class="in">Universidad de Cuenca</div></div></div></div>
+      <table><tr><th>Materia aprobada</th><th>Homologar por</th><th>Sílabo de la otra universidad</th><th>Comparación</th></tr>
+        <tr><td>Bases de Datos I</td><td>Base de datos</td><td><span class="btn" style="font-size:12px;padding:2px 8px">silabo-bd.pdf</span></td><td><span class="tag g">Temas parecidos 82 %</span></td></tr>
+        <tr><td>Programación I</td><td>Fundamentos de programación</td><td><span class="btn" style="font-size:12px;padding:2px 8px">Adjuntar PDF</span></td><td><span class="tag y">Falta el sílabo</span></td></tr></table>
+      <div class="nota" style="right:30px; bottom:30px">Sin sílabo, la materia queda a criterio de los docentes.</div>
+    </div></div>
+</div>
+
+<!-- M-16 HU-15: Bloqueo por créditos y recomendación -->
+<div class="win" id="m16">
+  <div class="bar"><i></i><i></i><i></i><span class="url">http://homologa.uta.edu.ec/solicitudes/EXP-20261124</span></div>
+  <div class="top"><span class="logo"><span class="ph" style="width:26px;height:26px"></span>Homologa UTA</span><span class="user"><span class="av">D</span>Docente</span></div>
+  <div class="app"><div class="side" data-rol="docente3" data-on="Solicitudes"></div>
+    <div class="main rel">
+      <h1>Resultado por materia</h1><p class="sub">Mínimo vigente: 80 % de créditos y 80 % de contenidos.</p>
+      <div class="cols">
+        <div class="card"><h3>Química por Química general</h3><p style="margin:0 0 6px">Créditos: <b>66 %</b> - Contenidos: 85 %</p>
+          <div class="aviso r">No se puede homologar: los créditos no llegan al 80 %.</div><p class="ayuda">Bloqueada por créditos. No pasa a votación.</p></div>
+        <div class="card"><h3>Cálculo I por Cálculo diferencial</h3><p style="margin:0 0 6px">Créditos: 100 % - Contenidos: <b>62 %</b></p>
+          <div class="aviso y">El agente recomienda no homologar: los contenidos no llegan al 80 %.</div><p class="ayuda">Los dos docentes votan y deciden con su criterio.</p>
+          <span class="btn pri">Homologar</span> <span class="btn">No homologar</span></div></div>
+      <div class="nota" style="right:30px; bottom:20px">Créditos bajos bloquean; contenidos bajos solo aconsejan.</div>
+    </div></div>
+</div>
+
+<!-- M-17 HU-16: Votos y decisión del administrador -->
+<div class="win" id="m17">
+  <div class="bar"><i></i><i></i><i></i><span class="url">http://homologa.uta.edu.ec/solicitudes/EXP-20261124</span></div>
+  <div class="top"><span class="logo"><span class="ph" style="width:26px;height:26px"></span>Homologa UTA</span><span class="user"><span class="av">A</span>Administrador</span></div>
+  <div class="app"><div class="side" data-rol="admin3" data-on="Solicitudes"></div>
+    <div class="main rel">
+      <h1>Decisión de los docentes</h1><p class="sub">Si los dos docentes no coinciden, decide el Administrador con un comentario.</p>
+      <table><tr><th>Materia de destino</th><th>Ing. Carlos Paredes</th><th>Ing. María Vaca</th><th>Estado</th></tr>
+        <tr><td>Física</td><td>Homologar</td><td>Homologar</td><td><span class="tag g">Homologada</span></td></tr>
+        <tr><td>Cálculo diferencial</td><td>Homologar</td><td>No homologar</td><td><span class="tag y">Espera al Administrador</span></td></tr></table>
+      <div class="card" style="margin-top:12px; max-width:620px"><h3>Decisión final - Cálculo diferencial</h3>
+        <div class="row" style="margin-bottom:8px"><span><b>(o)</b> Homologar</span><span>( ) No homologar</span></div>
+        <div class="f">Comentario (obligatorio)<div class="in" style="min-height:54px">El estudiante cursó los temas faltantes en el laboratorio; se homologa.</div></div>
+        <div style="margin-top:10px"><span class="btn pri">Guardar decisión final</span></div></div>
+      <div class="nota" style="right:30px; bottom:60px">Después de la decisión final, los votos quedan cerrados.</div>
+    </div></div>
+</div>
+
+<!-- M-18 HU-17: Resultados por materia -->
+<div class="win" id="m18">
+  <div class="bar"><i></i><i></i><i></i><span class="url">http://homologa.uta.edu.ec/resultados</span></div>
+  <div class="top"><span class="logo"><span class="ph" style="width:26px;height:26px"></span>Homologa UTA</span><span class="user"><span class="av">A</span>Administrador</span></div>
+  <div class="app"><div class="side" data-rol="admin3" data-on="Solicitudes"></div>
+    <div class="main rel">
+      <h1>Resultados de homologación</h1><p class="sub">Resultado final de cada materia.</p>
+      <div class="row" style="margin-bottom:12px"><div class="f">Buscar estudiante o código<div class="in">Torres</div></div><div class="f">Resultado<div class="in sel">Todos</div></div><span class="btn">Filtrar</span></div>
+      <table><tr><th>Expediente</th><th>Estudiante</th><th>Materia de destino</th><th>Resultado</th><th>Decidido por</th><th>Fecha</th></tr>
+        <tr><td>EXP-20261124</td><td>Torres Vega Martín</td><td>Física</td><td><span class="tag g">Homologada</span></td><td>Docentes</td><td>24/11/2026</td></tr>
+        <tr><td>EXP-20261124</td><td>Torres Vega Martín</td><td>Cálculo diferencial</td><td><span class="tag g">Homologada</span></td><td>Administrador</td><td>25/11/2026</td></tr>
+        <tr><td>EXP-20261124</td><td>Torres Vega Martín</td><td>Química general</td><td><span class="tag r">No homologada</span></td><td>Bloqueo por créditos</td><td>24/11/2026</td></tr></table>
+    </div></div>
+</div>
+
+<!-- M-19 HU-18: Registro manual -->
+<div class="win" id="m19">
+  <div class="bar"><i></i><i></i><i></i><span class="url">http://homologa.uta.edu.ec/solicitudes/manual</span></div>
+  <div class="top"><span class="logo"><span class="ph" style="width:26px;height:26px"></span>Homologa UTA</span><span class="user"><span class="av">O</span>Operador</span></div>
+  <div class="app"><div class="side" data-rol="operador3" data-on="Registro manual"></div>
+    <div class="main rel">
+      <h1>Registro manual de solicitud</h1><p class="sub">Para cuando no tiene el certificado SIHA en PDF.</p>
+      <div class="card"><h3>4. Historial académico</h3>
+        <div class="row" style="margin-bottom:8px"><div class="f" style="max-width:240px">Cargar materias de la malla hasta el nivel<div class="in sel">Nivel 2</div></div><span class="btn">Cargar materias de la malla</span></div>
+        <table><tr><th>Nivel</th><th>Materia</th><th>Período académico</th><th>Nota</th><th>Estado</th></tr>
+          <tr><td>1</td><td>Física básica</td><td>AGOSTO 2025 - ENERO 2026</td><td>8,50</td><td>Aprobada</td></tr>
+          <tr><td>1</td><td>Lógica matemática</td><td>AGOSTO 2025 - ENERO 2026</td><td>7,80</td><td>Aprobada</td></tr></table></div>
+      <div class="card"><h3>5. Materias que pide homologar</h3>
+        <div class="aviso b">Sugerencias automáticas: Física básica por Física (35 %), Lógica matemática por Lógica matemática (54 %). <b class="link">Agregar todas las sugerencias</b></div>
+        <div class="row"><div class="f">Materia aprobada<div class="in sel">Física básica</div></div><div class="f">Homologar por (materia de la carrera nueva)<div class="in sel">Física (nivel 1, 3 créditos)</div></div></div></div>
+      <div class="nota" style="right:30px; top:8px">Solo se aceptan materias que se relacionan.</div>
+    </div></div>
+</div>
+
+<!-- M-20 HU-19: Usuarios y restablecer contraseña -->
+<div class="win" id="m20">
+  <div class="bar"><i></i><i></i><i></i><span class="url">http://homologa.uta.edu.ec/administracion/usuarios</span></div>
+  <div class="top"><span class="logo"><span class="ph" style="width:26px;height:26px"></span>Homologa UTA</span><span class="user"><span class="av">A</span>Administrador</span></div>
+  <div class="app"><div class="side" data-rol="admin3" data-on="Usuarios y roles"></div>
+    <div class="main rel velo">
+      <h1>Usuarios y roles</h1><p class="sub">Operadores y docentes revisores.</p>
+      <table><tr><th>Nombre</th><th>Correo</th><th>Rol</th><th>Estado</th><th>Acciones</th></tr>
+        <tr><td>Ing. Carlos Paredes</td><td>cparedes@uta.edu.ec</td><td>Docente</td><td>Activa</td><td class="link">Editar - Restablecer contraseña</td></tr>
+        <tr><td>Ing. María Vaca</td><td>mvaca@uta.edu.ec</td><td>Docente</td><td>Activa</td><td class="link">Editar - Restablecer contraseña</td></tr>
+        <tr><td>Operador FISEI</td><td>operador@uta.edu.ec</td><td>Operador</td><td>Activa</td><td class="link">Editar - Restablecer contraseña</td></tr></table>
+      <div class="modal"><h3 style="margin:0 0 8px">Restablecer contraseña</h3><p class="ayuda" style="margin:0 0 8px">Cuenta: cparedes@uta.edu.ec</p>
+        <div class="f" style="margin-bottom:8px">Contraseña nueva<div class="in">••••••••</div></div>
+        <div class="f" style="margin-bottom:10px">Repita la contraseña<div class="in">••••••••</div></div>
+        <span class="btn pri">Guardar</span> <span class="btn">Cancelar</span></div>
+      <div class="aviso y" style="position:absolute; left:22px; bottom:14px; width:420px">Su sesión vence en 2 minutos. <b class="link">Seguir conectado</b></div>
+    </div></div>
+</div>
+
+<script>
+  // Menú lateral según el rol (igual que la aplicación)
+  const MENUS = {
+    admin: [["SOLICITUDES", ["Solicitudes"]], ["ADMINISTRACIÓN", ["Configurar mínimo (80 %)", "Asignaturas y contenidos", "Carreras y mallas", "Usuarios y roles"]]],
+    operador: [["SOLICITUDES", ["Registrar solicitud", "Solicitudes"]]],
+    docente: [["SOLICITUDES", ["Solicitudes"]]],
+    operador3: [["SOLICITUDES", ["Registrar solicitud", "Registro manual", "Solicitudes"]]],
+    docente3: [["SOLICITUDES", ["Solicitudes", "Falta su decisión"]]],
+    admin3: [["SOLICITUDES", ["Registrar solicitud", "Registro manual", "Solicitudes", "Resultados"]], ["ADMINISTRACIÓN", ["Configurar mínimo (80 %)", "Asignaturas y contenidos", "Carreras y mallas", "Usuarios y roles"]]],
+  };
+  document.querySelectorAll(".side").forEach((s) => {
+    s.innerHTML = MENUS[s.dataset.rol].map(([t, items]) =>
+      "<h4>" + t + "</h4>" + items.map((i) => '<div class="it' + (i === s.dataset.on ? " on" : "") + '">' + i + "</div>").join("")).join("");
+  });
+</script>
+</body>
+</html>
