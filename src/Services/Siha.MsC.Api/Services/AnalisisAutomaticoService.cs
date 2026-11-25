@@ -375,15 +375,17 @@ public sealed class AnalisisAutomaticoService : IAnalisisAutomaticoService
         if (!creditosPorHoras)
             explicacion.Add($"Carga horaria (dato informativo, no decide): {horasOrigen} horas aprobadas frente a {horasDestino} horas de la materia de destino = {Num((double)carga)} %.");
 
-        // Regla del reglamento: al menos 80 % en contenidos y 80 % en créditos, las dos sí o sí.
+        // Los créditos por debajo del mínimo bloquean la materia. Los contenidos solo generan recomendación.
+        var bloqueadaPorCreditos = (double)creditos < theta;
         var bajos = new List<string>();
         if ((double)contenidos < theta) bajos.Add($"contenidos ({Num((double)contenidos)} %)");
         if ((double)creditos < theta) bajos.Add($"créditos ({Num((double)creditos)} %)");
         var estimacion = bajos.Count == 0 ? Cumple : NoCumple;
-        var conclusion = estimacion == Cumple
+        var conclusion = bloqueadaPorCreditos
+            ? $"No se puede homologar: no llega al {Num(theta)} % en {Unir(bajos)}; los créditos son obligatorios, así que no se vota."
+            : estimacion == Cumple
             ? $"Recomendación: homologar «{solicitud.MateriaDestino}». Llega al {Num(theta)} % en contenidos y en créditos. Los docentes revisores deciden."
-            : $"Recomendación: no homologar. No llega al {Num(theta)} % en {Unir(bajos)} (el reglamento pide al menos el {Num(theta)} % en contenidos y en créditos). " +
-              "Los docentes revisores deciden: si consideran que el estudiante sí vio esos temas (por ejemplo, con otro nombre en su sílabo), pueden homologarla.";
+            : $"Recomendación: no homologar. No llega al {Num(theta)} % en {Unir(bajos)}. Los docentes revisores deciden.";
 
         var precedentes = await _precedentes.BuscarAsync(new BuscarPrecedenteRequest(
             origenes.Select(o => o.Malla!.Codigo).ToList(), destino.Codigo, contexto.InstitucionOrigen), cancellationToken);
@@ -392,7 +394,8 @@ public sealed class AnalisisAutomaticoService : IAnalisisAutomaticoService
 
         return new EvaluacionMateriaResponse(solicitud.Numero, solicitud.MateriaDestino, destino.Codigo, destino.Semestre, destino.Creditos,
             horasDestino, origenDto, contenidos, profundidad, carga, estimacion, unidades, explicacion, conclusion, precedentes,
-            SinSilabo: false, PorcentajeCreditos: creditos, CreditosOrigen: creditosOrigen, CreditosPorHoras: creditosPorHoras);
+            SinSilabo: false, PorcentajeCreditos: creditos, CreditosOrigen: creditosOrigen, CreditosPorHoras: creditosPorHoras,
+            BloqueadaPorCreditos: bloqueadaPorCreditos);
     }
 
     /// <summary>Reglas del instructivo de cambio de carrera, verificadas con el certificado y la malla de origen.</summary>

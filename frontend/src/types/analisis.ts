@@ -214,6 +214,7 @@ export interface EvaluacionMateria {
   creditosOrigen?: number | null;
   /** True si no se conocían los créditos y se usaron las horas. */
   creditosPorHoras?: boolean;
+  bloqueadaPorCreditos?: boolean;
 }
 
 export interface AnalisisAutomatico {
@@ -248,6 +249,7 @@ export interface ResultadoFinalMateria {
   rechazos: number;
   /** PENDIENTE, HOMOLOGADA, NO_HOMOLOGADA o SIN_ACUERDO. */
   resultado: string;
+  bloqueadaPorCreditos?: boolean;
   /** Decisión del administrador cuando los docentes no se pusieron de acuerdo. */
   decisionFinal?: DecisionFinal | null;
 }

@@ -120,6 +120,21 @@ describe('Solicitud: análisis explicado y decisión del docente', () => {
     expect(screen.queryByText(/θ|δ|τ|0,65/)).not.toBeInTheDocument();
   });
 
+  it('oculta votos de materias bloqueadas y conserva los votos para NO_CUMPLE no bloqueada', async () => {
+    const solicitud = {
+      ...SOLICITUD,
+      resultado: { ...SOLICITUD.resultado!, evaluaciones: SOLICITUD.resultado!.evaluaciones.map((e, i) => ({ ...e, estimacion: 'NO_CUMPLE', bloqueadaPorCreditos: i === 0 })) },
+      resultadoFinal: SOLICITUD.resultadoFinal.map((m, i) => ({ ...m, estimacion: 'NO_CUMPLE' as const, bloqueadaPorCreditos: i === 0 })),
+    };
+    api.obtenerSolicitud.mockResolvedValue(solicitud);
+    abrir();
+
+    expect((await screen.findAllByText('No se puede homologar')).length).toBeGreaterThan(0);
+    expect(screen.getByText('Los créditos no llegan al 80 %.')).toBeInTheDocument();
+    expect((await screen.findAllByText('✘ No llega al 80 % · recomienda no homologar')).length).toBeGreaterThan(0);
+    expect(screen.getByRole('group', { name: 'Decisión para Cálculo Diferencial' })).toBeInTheDocument();
+    expect(screen.queryByRole('group', { name: 'Decisión para Algoritmos y Lógica de Programación' })).not.toBeInTheDocument();
+  });
   it('si los docentes no coinciden, el administrador toma la decisión final con un motivo', async () => {
     const user = userEvent.setup();
     sesion.usuario = { rol: 'ADMINISTRADOR', correoInstitucional: 'admin@uta.edu.ec', nombreCompleto: 'Director' };

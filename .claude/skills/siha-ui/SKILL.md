@@ -25,13 +25,18 @@ description: Reglas de interfaz y de negocio visibles de SIHA-IA (Homologa UTA).
 - Tests junto al código (`*.test.ts(x)`) con Vitest + Testing Library. Todo cambio de regla visible lleva prueba.
 
 ## Estados de homologación (por materia)
-La regla vigente: homologa solo si llega **sí o sí al 80 % en contenidos Y al 80 % en créditos**.
+La regla vigente: **los créditos bloquean, los contenidos solo aconsejan**. Créditos < 80 % → no se puede
+homologar, sin votación. Contenidos < 80 % (con créditos ≥ 80 %) → el agente recomienda no homologar, pero deciden
+los docentes (el profesor pudo dar temas que no están en el sílabo).
 
 | Estado | Cuándo | Cómo se muestra | Acciones |
 |---|---|---|---|
-| `CUMPLE` | contenidos ≥ 80 % **y** créditos ≥ 80 % | `Etiqueta tono="exito"` ✔ "Cumple el 80 %" | Los dos docentes revisores confirman; homologada si ambos aprueban |
-| `NO_CUMPLE` | alguna de las dos < 80 % | `Etiqueta tono="error"` ✘ "No se puede homologar" + cuál no llegó (ej. "Créditos: 66,7 % de 80 %") | **Sin votación**: no mostrar botones de aprobar/rechazar; queda `NO_HOMOLOGADA` |
+| `CUMPLE` | contenidos ≥ 80 % **y** créditos ≥ 80 % | `Etiqueta tono="exito"` ✔ "Cumple el 80 %" | Votan los dos docentes; homologada si ambos aprueban |
+| `NO_CUMPLE` + `bloqueadaPorCreditos` | créditos < 80 % (ej. 2 frente a 3 = 66,67 %) | `Etiqueta tono="error"` ✘ "No se puede homologar" + "Los créditos no llegan al 80 %." | **Sin votación**: sin botones; queda `NO_HOMOLOGADA`; el Administrador tampoco puede decidirla |
+| `NO_CUMPLE` sin bloqueo | créditos ≥ 80 % y contenidos < 80 % | "✘ No llega al 80 % · recomienda no homologar" | Votan los dos docentes; pueden homologarla |
 | `CRITERIO_DOCENTE` | no hay sílabo para comparar | `Etiqueta tono="advertencia"` ! "A criterio del docente" + "Sin sílabo para comparar" | Los docentes deciden |
+
+Si los dos docentes discrepan (`SIN_ACUERDO`), el Administrador da la decisión final con un comentario.
 
 - El mínimo vive en `MINIMO` (Reglas de homologación) y **no se puede bajar de 80** en `ReglasHomologacionPage`;
   si alguien lo intenta, explicar "El mínimo no puede ser menor a 80 %".

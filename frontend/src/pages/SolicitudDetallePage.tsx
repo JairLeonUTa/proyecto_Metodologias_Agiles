@@ -46,7 +46,8 @@ function Paso({ id, numero, titulo, ayuda, children }: { id?: string; numero: nu
  * Recomendación del agente: CUMPLE (llega al 80 % en contenidos y créditos), NO_CUMPLE (no llega: recomienda no
  * homologar) o sin sílabo. Es solo una recomendación: la decisión es siempre de los dos docentes revisores.
  */
-function Veredicto({ estimacion, sinSilabo = false }: { estimacion: string; sinSilabo?: boolean }): JSX.Element {
+function Veredicto({ estimacion, sinSilabo = false, bloqueadaPorCreditos = false }: { estimacion: string; sinSilabo?: boolean; bloqueadaPorCreditos?: boolean }): JSX.Element {
+  if (bloqueadaPorCreditos) return <Etiqueta tono="error">No se puede homologar</Etiqueta>;
   if (sinSilabo) return <Etiqueta tono="neutro">Sin sílabo para comparar · decide el docente</Etiqueta>;
   if (estimacion === 'CUMPLE') return <Etiqueta tono="exito">✔ Cumple el {MINIMO} % · recomienda homologar</Etiqueta>;
   if (estimacion === 'NO_CUMPLE') return <Etiqueta tono="advertencia">✘ No llega al {MINIMO} % · recomienda no homologar</Etiqueta>;
@@ -103,7 +104,7 @@ function AnalisisMateria({ e, carreraOrigen }: { e: EvaluacionMateria; carreraOr
           ← {e.materiasOrigen.map((o) => o.nombre).join(' + ')} ({carreraOrigen})
         </span>
         <span className="ml-auto">
-          <Veredicto estimacion={e.estimacion} sinSilabo={e.sinSilabo} />
+          <Veredicto estimacion={e.estimacion} sinSilabo={e.sinSilabo} bloqueadaPorCreditos={e.bloqueadaPorCreditos} />
         </span>
       </header>
 
@@ -126,7 +127,7 @@ function AnalisisMateria({ e, carreraOrigen }: { e: EvaluacionMateria; carreraOr
           e.sinSilabo ? 'bg-slate-100 text-slate-800' : cumple ? 'bg-emerald-50 text-emerald-900' : 'bg-amber-50 text-amber-900'
         }`}
       >
-        {e.conclusion}
+        {e.bloqueadaPorCreditos ? 'Los créditos no llegan al 80 %.' : e.conclusion}
       </p>
 
       <div>
@@ -304,7 +305,7 @@ function SuDecision({ solicitud, alGuardar }: { solicitud: SolicitudAnalisis; al
   const { usuario } = useAuth();
   const previa = solicitud.dictamenes.find((d) => d.correoDocente === usuario?.correoInstitucional?.toLowerCase());
   // El agente solo recomienda: el docente decide todas las materias, también las que no llegan al 80 %.
-  const aDecidir = solicitud.resultadoFinal;
+  const aDecidir = solicitud.resultadoFinal.filter((m) => !m.bloqueadaPorCreditos);
   const [decisiones, setDecisiones] = useState<Record<string, boolean | undefined>>(() =>
     Object.fromEntries(
       aDecidir.map((m) => [
@@ -353,6 +354,7 @@ function SuDecision({ solicitud, alGuardar }: { solicitud: SolicitudAnalisis; al
           <Veredicto
             estimacion={m.estimacion}
             sinSilabo={solicitud.resultado?.evaluaciones.find((e) => e.materiaDestino === m.codigoDestino)?.sinSilabo}
+            bloqueadaPorCreditos={m.bloqueadaPorCreditos}
           />
           <div className="flex gap-2" role="group" aria-label={`Decisión para ${m.nombreDestino}`}>
             <button
@@ -527,7 +529,7 @@ export function SolicitudDetallePage(): JSX.Element {
                 <span aria-hidden="true">→</span>
                 <span className="font-semibold text-ink">{e.materiaDestino}</span>
                 <span className="ml-auto flex gap-2">
-                  <Veredicto estimacion={e.estimacion} sinSilabo={e.sinSilabo} />
+                  <Veredicto estimacion={e.estimacion} sinSilabo={e.sinSilabo} bloqueadaPorCreditos={e.bloqueadaPorCreditos} />
                   {final && final.resultado !== 'PENDIENTE' ? (
                     <Etiqueta tono={RESULTADO[final.resultado]?.tono ?? 'neutro'}>{RESULTADO[final.resultado]?.texto}</Etiqueta>
                   ) : null}
