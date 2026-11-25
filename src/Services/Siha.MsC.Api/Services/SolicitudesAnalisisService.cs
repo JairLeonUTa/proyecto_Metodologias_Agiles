@@ -143,7 +143,8 @@ public sealed class SolicitudesAnalisisService
         return new SolicitudAnalisisResponse(
             c.ExpedienteId, c.CodigoExpediente, c.NumeroCertificado, c.EstudianteNombre, c.TipoTramite, c.RutaNormativa,
             c.InstitucionOrigen, c.CarreraOrigenNombre, c.CarreraDestinoNombre, historial, revisores, c.Estado, c.Mensaje, c.AnalizadoUtc,
-            resultado, respuestas, final, estadoRevision, puedeResponder && c.Estado == EstadosAnalisis.Analizado);
+            resultado, respuestas, final, estadoRevision, puedeResponder && c.Estado == EstadosAnalisis.Analizado,
+            c.Estado is EstadosAnalisis.Analizado or EstadosAnalisis.Error && AnalisisAutomaticoService.EstaDesactualizado(c.ResultadoJson));
     }
 
     internal static List<DictamenResponse> ARespuestas(IEnumerable<DictamenDocente> dictamenes)

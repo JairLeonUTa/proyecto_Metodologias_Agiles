@@ -1,6 +1,7 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using System.Security.Claims;
@@ -173,6 +174,30 @@ public class CertificadosControllerTests : IDisposable
         segunda.Result.Should().BeOfType<ConflictObjectResult>();
         _db.Expedientes.Should().ContainSingle();
     }
+
+    [Fact]
+    public async Task Un_registro_del_formato_anterior_no_impide_registrar_el_certificado_actual()
+    {
+        await Controlador().Registrar(Certificado("SIHA-TI-SW-cambio-de-carrera.pdf"), CancellationToken.None);
+        // Simula el formato anterior del certificado: sus materias no traen período académico.
+        var anterior = _db.Expedientes.Include(e => e.Asignaturas).Single();
+        foreach (var a in anterior.Asignaturas) a.PeriodoAcademico = null;
+        await _db.SaveChangesAsync();
+
+        var segunda = await Controlador().Registrar(Certificado("SIHA-TI-SW-cambio-de-carrera.pdf"), CancellationToken.None);
+
+        segunda.Result.Should().BeOfType<AcceptedResult>();
+        _db.Expedientes.Should().HaveCount(2, "el anterior se conserva archivado");
+        _db.Expedientes.Count(e => e.NumeroCertificado == "SIHA-2026-0147").Should().Be(1);
+        _db.Expedientes.Single(e => e.Id == anterior.Id).NumeroCertificado.Should()
+            .StartWith("SIHA-2026-0147 (anterior ");
+    }
+
+    [Theory]
+    [InlineData("SIHA-2026-0147", "EXP-20261104-E46994")]
+    [InlineData("SIHA-UN-NUMERO-DE-CERTIFICADO-MUY-LARGO-0001", "EXP-20261104-E46994")]
+    public void El_numero_archivado_cabe_en_la_columna(string numero, string codigo)
+        => CertificadosController.NumeroArchivado(numero, codigo).Length.Should().BeLessThanOrEqualTo(40);
 
     [Fact]
     public async Task Validar_lee_el_certificado_sin_registrar()

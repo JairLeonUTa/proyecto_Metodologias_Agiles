@@ -276,4 +276,6 @@ export interface SolicitudAnalisis {
   /** PENDIENTE, EN_REVISION o RESUELTA. */
   estadoRevision: string;
   puedeResponder: boolean;
+  /** True si el análisis se hizo con reglas anteriores del agente y conviene volver a analizarlo. */
+  analisisDesactualizado?: boolean;
 }

@@ -340,6 +340,18 @@ export function SolicitudDetallePage(): JSX.Element {
           Esta pantalla se actualiza sola.
         </Alerta>
       ) : null}
+      {solicitud.analisisDesactualizado && solicitud.estado === 'ANALIZADO' ? (
+        <Alerta tono="advertencia" titulo="Este análisis se hizo con reglas anteriores">
+          <p>
+            Las reglas de homologación cambiaron después de analizar esta solicitud (ahora se exige el 80 % en contenidos
+            y en créditos). Vuelva a analizarla para ver el resultado con las reglas vigentes.
+            {solicitud.dictamenes.length > 0 ? ' Las decisiones que ya dieron los docentes se conservan.' : ''}
+          </p>
+          <Boton className="mt-2" onClick={() => void reanalizar()} cargando={reanalizando} textoCargando="Analizando…">
+            Volver a analizar con las reglas vigentes
+          </Boton>
+        </Alerta>
+      ) : null}
       {solicitud.estado === 'ERROR' ? (
         <Alerta tono="error" titulo="El análisis no se pudo completar">
           <p>{solicitud.mensaje}</p>

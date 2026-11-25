@@ -509,6 +509,79 @@ public class AnalisisAutomaticoServiceTests
         (await dbV.AnalisisExpedientes.SingleAsync(a => a.ExpedienteId == esperando)).Estado.Should().Be(EstadosAnalisis.Preparando);
     }
 
+    /// <summary>Simula un análisis guardado antes de versionar las reglas del agente.</summary>
+    private static void VolverloAntiguo(AnalisisExpediente contexto)
+    {
+        var r = JsonSerializer.Deserialize<AnalisisAutomaticoResponse>(contexto.ResultadoJson!, AnalisisAutomaticoService.Json)!;
+        contexto.ResultadoJson = JsonSerializer.Serialize(r with { VersionReglas = null }, AnalisisAutomaticoService.Json);
+    }
+
+    [Fact]
+    public async Task Un_analisis_con_reglas_anteriores_se_marca_como_desactualizado()
+    {
+        await using var db = CrearDb();
+        var expediente = await SolicitudAnalizada(db);
+        var solicitudes = new SolicitudesAnalisisService(db);
+
+        (await solicitudes.ObtenerAsync(expediente, "admin@uta.edu.ec", esDocente: false))!.AnalisisDesactualizado.Should().BeFalse();
+        (await solicitudes.ObtenerAsync(expediente, "admin@uta.edu.ec", esDocente: false))!.Resultado!.VersionReglas
+            .Should().Be(AnalisisAutomaticoService.VersionReglas);
+
+        VolverloAntiguo(await db.AnalisisExpedientes.SingleAsync());
+        await db.SaveChangesAsync();
+        (await solicitudes.ObtenerAsync(expediente, "admin@uta.edu.ec", esDocente: false))!.AnalisisDesactualizado.Should().BeTrue();
+
+        await Agente(db).AnalizarYGuardarAsync(expediente, manual: true);
+        (await solicitudes.ObtenerAsync(expediente, "admin@uta.edu.ec", esDocente: false))!.AnalisisDesactualizado.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task Al_arrancar_se_actualizan_solas_las_que_no_tienen_decisiones_de_los_docentes()
+    {
+        var nombre = $"siha-actualizar-{Guid.NewGuid():N}";
+        var servicios = new ServiceCollection();
+        servicios.AddDbContext<SihaDbContextC>(o => o.UseInMemoryDatabase(nombre));
+        servicios.AddScoped<IAnalisisAutomaticoService>(sp => Agente(sp.GetRequiredService<SihaDbContextC>()));
+        await using var proveedor = servicios.BuildServiceProvider();
+
+        Guid sinDecision, conDecision, vigente;
+        using (var scope = proveedor.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<SihaDbContextC>();
+            sinDecision = await SolicitudAnalizada(db);
+            conDecision = await SolicitudAnalizada(db);
+            vigente = await SolicitudAnalizada(db);
+            foreach (var c in db.AnalisisExpedientes.Where(a => a.ExpedienteId != vigente)) VolverloAntiguo(c);
+            db.DictamenesDocentes.Add(new DictamenDocente
+            {
+                ExpedienteId = conDecision, CorreoDocente = "hnaranjo@uta.edu.ec", NombreDocente = "Ing. Naranjo",
+                DecisionesJson = "[]", FechaUtc = DateTimeOffset.UtcNow
+            });
+            await db.SaveChangesAsync();
+        }
+
+        var factory = proveedor.GetRequiredService<IServiceScopeFactory>();
+        (await ReintentoAnalisisService.ProgramarActualizacionAsync(factory, NullLogger.Instance, CancellationToken.None)).Should().Be(1);
+
+        using (var scope = proveedor.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<SihaDbContextC>();
+            var marcada = await db.AnalisisExpedientes.SingleAsync(a => a.ExpedienteId == sinDecision);
+            marcada.Estado.Should().Be(EstadosAnalisis.Preparando);
+            marcada.Mensaje.Should().Be(AnalisisAutomaticoService.MensajeActualizando);
+            (await db.AnalisisExpedientes.SingleAsync(a => a.ExpedienteId == conDecision)).Estado.Should().Be(EstadosAnalisis.Analizado,
+                "con decisiones de los docentes no se toca sola: se vuelve a analizar a mano");
+            (await db.AnalisisExpedientes.SingleAsync(a => a.ExpedienteId == vigente)).Estado.Should().Be(EstadosAnalisis.Analizado);
+        }
+
+        (await ReintentoAnalisisService.ReintentarPendientesAsync(factory, CancellationToken.None)).Should().Be(1);
+        using var verificacion = proveedor.CreateScope();
+        var vista = await new SolicitudesAnalisisService(verificacion.ServiceProvider.GetRequiredService<SihaDbContextC>())
+            .ObtenerAsync(sinDecision, "admin@uta.edu.ec", esDocente: false);
+        vista!.Estado.Should().Be(EstadosAnalisis.Analizado);
+        vista.AnalisisDesactualizado.Should().BeFalse();
+    }
+
     [Fact]
     public async Task Sin_malla_de_destino_queda_en_error_con_el_motivo()
     {

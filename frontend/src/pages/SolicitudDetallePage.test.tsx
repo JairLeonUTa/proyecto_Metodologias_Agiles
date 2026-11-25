@@ -103,6 +103,19 @@ describe('Solicitud: análisis explicado y decisión del docente', () => {
     expect(screen.queryByText(/θ|δ|τ|0,65/)).not.toBeInTheDocument();
   });
 
+  it('un análisis con reglas anteriores ofrece volver a analizarlo', async () => {
+    api.obtenerSolicitud.mockResolvedValue({ ...SOLICITUD, analisisDesactualizado: true });
+    api.reanalizar.mockResolvedValue({ ...SOLICITUD, analisisDesactualizado: false });
+    abrir();
+
+    expect(await screen.findByText('Este análisis se hizo con reglas anteriores')).toBeInTheDocument();
+    await userEvent.click(screen.getByRole('button', { name: 'Volver a analizar con las reglas vigentes' }));
+
+    expect(api.reanalizar).toHaveBeenCalledWith('e1');
+    expect(await screen.findByText('Tecnologías de la Información')).toBeInTheDocument();
+    expect(screen.queryByText('Este análisis se hizo con reglas anteriores')).not.toBeInTheDocument();
+  });
+
   it('si el agente se está preparando lo explica y no pide reintentar a mano', async () => {
     api.obtenerSolicitud.mockResolvedValue({
       ...SOLICITUD,

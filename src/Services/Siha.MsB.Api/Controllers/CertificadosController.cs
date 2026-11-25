@@ -98,8 +98,21 @@ public class CertificadosController : ControllerBase
         {
             return silabosLeidos.Error;
         }
-        var existente = await _db.Expedientes.AsNoTracking()
+        var existente = await _db.Expedientes
+            .Include(e => e.Asignaturas)
             .FirstOrDefaultAsync(e => e.NumeroCertificado == c.NumeroCertificado, cancellationToken);
+        if (existente is not null && EsFormatoAnterior(existente))
+        {
+            // Registrado con el formato anterior del certificado (sin período académico): está oculto en la
+            // lista y no se puede analizar, así que no debe impedir registrar el certificado actual.
+            // Se le cambia el número para liberar el índice único y conservar su historial.
+            existente.NumeroCertificado = NumeroArchivado(c.NumeroCertificado, existente.Codigo);
+            await _db.SaveChangesAsync(cancellationToken);
+            _logger.LogInformation(
+                "Certificado {Certificado}: el expediente {Codigo} del formato anterior se archivó como {Archivado}.",
+                c.NumeroCertificado, existente.Codigo, existente.NumeroCertificado);
+            existente = null;
+        }
         if (existente is not null)
         {
             return Conflict(new
@@ -400,6 +413,20 @@ public class CertificadosController : ControllerBase
         // Movilidad externa: la carrera de otra universidad no está en el catálogo de la UTA.
         origen ??= new CarreraCatalogo("EXTERNA", lectura.Certificado.CarreraOrigen);
         return new Lectura(lectura.Certificado with { Revisores = revisores }, origen, destino, null);
+    }
+
+    /// <summary>
+    /// Expediente creado con el formato anterior del certificado SIHA: sus materias no tienen período académico.
+    /// La lista de Solicitudes los oculta con la misma regla.
+    /// </summary>
+    public static bool EsFormatoAnterior(Expediente e)
+        => e.Asignaturas.Count == 0 || e.Asignaturas.Any(a => string.IsNullOrWhiteSpace(a.PeriodoAcademico));
+
+    /// <summary>Número con el que queda archivado un expediente del formato anterior (máximo 40 caracteres).</summary>
+    public static string NumeroArchivado(string numero, string codigoExpediente)
+    {
+        var sufijo = $" (anterior {codigoExpediente[^6..]})";
+        return (numero.Length + sufijo.Length > 40 ? numero[..(40 - sufijo.Length)] : numero) + sufijo;
     }
 
     internal static Expediente ConstruirExpediente(CertificadoSiha c, CarreraCatalogo origen, CarreraCatalogo destino)

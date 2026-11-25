@@ -82,6 +82,32 @@ public sealed class AnalisisAutomaticoService : IAnalisisAutomaticoService
         _catalogo = catalogo;
     }
 
+    /// <summary>
+    /// Versión de las reglas del agente. Cambiarla cada vez que cambie cómo se decide (umbral, criterios,
+    /// textos de la decisión): los análisis guardados con otra versión se marcan como desactualizados y los
+    /// que todavía no tienen decisiones de los docentes se vuelven a analizar solos al arrancar MS C.
+    /// </summary>
+    public const string VersionReglas = "2026-11-contenidos-y-creditos";
+
+    /// <summary>Mensaje mientras se actualiza un análisis hecho con reglas anteriores.</summary>
+    public const string MensajeActualizando =
+        "Se está actualizando el análisis con las reglas vigentes. La pantalla se actualiza sola.";
+
+    /// <summary>True si un resultado guardado se hizo con otra versión de las reglas (o no se puede leer).</summary>
+    public static bool EstaDesactualizado(string? resultadoJson)
+    {
+        if (string.IsNullOrWhiteSpace(resultadoJson)) return false;
+        try
+        {
+            var r = JsonSerializer.Deserialize<AnalisisAutomaticoResponse>(resultadoJson, Json);
+            return r?.VersionReglas != VersionReglas;
+        }
+        catch (JsonException)
+        {
+            return true;
+        }
+    }
+
     /// <summary>Reintentos automáticos antes de dejar la solicitud en ERROR (unas dos horas en total).</summary>
     public const int MaximoIntentos = 15;
 
@@ -225,7 +251,7 @@ public sealed class AnalisisAutomaticoService : IAnalisisAutomaticoService
         if (sinSilabo > 0) partes.Add($"{sinSilabo} no tiene(n) sílabo para comparar y la(s) deciden los docentes");
         var resumen = $"Se analizaron {evaluaciones.Count} materia(s) pedida(s): {Unir(partes)}.";
 
-        return new AnalisisAutomaticoResponse(contexto.ExpedienteId, requisitos, evaluaciones, Array.Empty<string>(), resumen, string.Join(" | ", traza), theta);
+        return new AnalisisAutomaticoResponse(contexto.ExpedienteId, requisitos, evaluaciones, Array.Empty<string>(), resumen, string.Join(" | ", traza), theta, VersionReglas);
     }
 
     private async Task<EvaluacionMateriaResponse> EvaluarAsync(
