@@ -1,6 +1,7 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using System.Security.Claims;
@@ -32,7 +33,7 @@ public class CertificadosControllerTests : IDisposable
     /// <summary>Usuarios de MS A simulados: correo → (rol DOCENTE, activo).</summary>
     private readonly Dictionary<string, (bool Docente, bool Activo)> _usuarios = new()
     {
-        ["hnaranjo@uta.edu.ec"] = (true, true),
+        ["cparedes@uta.edu.ec"] = (true, true),
         ["mvaca@uta.edu.ec"] = (true, true),
         ["jcastro@uta.edu.ec"] = (true, true)
     };
@@ -51,6 +52,10 @@ public class CertificadosControllerTests : IDisposable
             => Task.FromResult<IReadOnlyList<DocenteRevisorVerificado>>(correos.Select(c => usuarios.TryGetValue(c, out var u)
                 ? new DocenteRevisorVerificado(c, true, u.Docente, u.Activo, $"Docente {c.Split('@')[0]}")
                 : new DocenteRevisorVerificado(c, false, false, false, string.Empty)).ToList());
+
+        public Task<IReadOnlyList<DocenteRevisorVerificado>> ListarDocentesAsync(CancellationToken cancellationToken = default)
+            => Task.FromResult<IReadOnlyList<DocenteRevisorVerificado>>(usuarios.Where(u => u.Value.Docente && u.Value.Activo)
+                .Select(u => new DocenteRevisorVerificado(u.Key, true, true, true, $"Docente {u.Key.Split('@')[0]}")).ToList());
 
         public Task<CarreraCatalogo?> ResolverCarreraAsync(string nombre, CancellationToken cancellationToken = default)
             => Task.FromResult<CarreraCatalogo?>(nombre switch
@@ -134,8 +139,8 @@ public class CertificadosControllerTests : IDisposable
         fundamentos.Aprobada.Should().BeTrue();
         fundamentos.AsignaturaDestinoNombre.Should().Be("Algoritmos y Lógica de Programación");
         e.Asignaturas.Single(a => a.NombreOrigen == "Medidas Eléctricas").Aprobada.Should().BeFalse();
-        e.Revisores!.Select(r => r.Correo).Should().Equal("hnaranjo@uta.edu.ec", "mvaca@uta.edu.ec");
-        e.Revisores!.First().Nombre.Should().Be("Docente hnaranjo", "se usa el nombre registrado en MS A");
+        e.Revisores!.Select(r => r.Correo).Should().Equal("cparedes@uta.edu.ec", "mvaca@uta.edu.ec");
+        e.Revisores!.First().Nombre.Should().Be("Docente cparedes", "se usa el nombre registrado en MS A");
 
         var evento = _publicados.Should().ContainSingle().Subject;
         evento.AsignaturasOrigen.Should().HaveCount(11);
@@ -175,6 +180,176 @@ public class CertificadosControllerTests : IDisposable
     }
 
     [Fact]
+    public async Task Un_registro_del_formato_anterior_no_impide_registrar_el_certificado_actual()
+    {
+        await Controlador().Registrar(Certificado("SIHA-TI-SW-cambio-de-carrera.pdf"), CancellationToken.None);
+        // Simula el formato anterior del certificado: sus materias no traen período académico.
+        var anterior = _db.Expedientes.Include(e => e.Asignaturas).Single();
+        foreach (var a in anterior.Asignaturas) a.PeriodoAcademico = null;
+        await _db.SaveChangesAsync();
+
+        var segunda = await Controlador().Registrar(Certificado("SIHA-TI-SW-cambio-de-carrera.pdf"), CancellationToken.None);
+
+        segunda.Result.Should().BeOfType<AcceptedResult>();
+        _db.Expedientes.Should().HaveCount(2, "el anterior se conserva archivado");
+        _db.Expedientes.Count(e => e.NumeroCertificado == "SIHA-2026-0147").Should().Be(1);
+        _db.Expedientes.Single(e => e.Id == anterior.Id).NumeroCertificado.Should()
+            .StartWith("SIHA-2026-0147 (anterior ");
+    }
+
+    [Theory]
+    [InlineData("SIHA-2026-0147", "EXP-20261104-E46994")]
+    [InlineData("SIHA-UN-NUMERO-DE-CERTIFICADO-MUY-LARGO-0001", "EXP-20261104-E46994")]
+    public void El_numero_archivado_cabe_en_la_columna(string numero, string codigo)
+        => CertificadosController.NumeroArchivado(numero, codigo).Length.Should().BeLessThanOrEqualTo(40);
+
+    // ---------- Registro manual (sin PDF) ----------
+
+    private static RegistroManualRequest Manual() => new(
+        "Torres Vega Martín Andrés", "1805123456", "Cambio de carrera", "Universidad Técnica de Ambato",
+        "Tecnologías de la Información", "Software", "cparedes@uta.edu.ec", "mvaca@uta.edu.ec",
+        new[]
+        {
+            new MateriaManualRequest("Fundamentos de Programación", 1, "Abr-Sep 2025", 8.9m, true),
+            new MateriaManualRequest("Física", 1, "Abr-Sep 2025", 8.1m, true),
+            new MateriaManualRequest("Cálculo Integral", 2, "Oct 2025-Mar 2026", 6.2m, false)
+        },
+        new[]
+        {
+            new SolicitudManualRequest(new[] { "Fundamentos de Programación" }, "Algoritmos y Lógica de Programación"),
+            new SolicitudManualRequest(new[] { "Física" }, "Física")
+        });
+
+    [Fact]
+    public async Task El_registro_manual_crea_la_solicitud_igual_que_el_certificado()
+    {
+        var resultado = await Controlador().RegistrarManual(Manual(), CancellationToken.None);
+
+        var respuesta = resultado.Result.Should().BeOfType<AcceptedResult>().Subject.Value
+            .Should().BeOfType<SolicitudCertificadoResponse>().Subject;
+        respuesta.Publicado.Should().BeTrue();
+        var e = respuesta.Expediente;
+        e.NumeroCertificado.Should().StartWith("MANUAL-");
+        e.TipoTramite.Should().Be(TiposTramite.Interno);
+        e.RutaNormativa.Should().Be(RutasNormativas.CambioCarreraOu);
+        e.CarreraOrigenCodigo.Should().Be("TI");
+        e.CarreraDestinoCodigo.Should().Be("SW");
+        e.Asignaturas.Should().HaveCount(3);
+        e.Asignaturas.Single(a => a.NombreOrigen == "Física").PeriodoAcademico.Should().Be("Abr-Sep 2025");
+        e.Revisores!.Select(r => r.Nombre).Should().Equal("Docente cparedes", "Docente mvaca");
+
+        // El documento guardado son los datos validados en JSON: MS C los lee como un certificado.
+        var documento = _db.ExpedienteDocumentos.Single();
+        documento.MimeType.Should().Be("application/json");
+        var guardado = System.Text.Json.JsonSerializer.Deserialize<CertificadoSiha>(
+            File.ReadAllBytes(Path.Combine(_directorio, documento.RutaAlmacenamiento)))!;
+        guardado.EstudianteNombre.Should().Be("Torres Vega Martín Andrés");
+        guardado.Solicitudes.Should().HaveCount(2);
+        guardado.EmitidoPor.Should().StartWith("Registro manual");
+        _publicados.Should().ContainSingle();
+    }
+
+    [Fact]
+    public async Task Una_solicitud_que_no_llego_al_agente_se_puede_volver_a_enviar_sin_cambiar_su_estado()
+    {
+        var registro = await Controlador().Registrar(Certificado("SIHA-TI-SW-cambio-de-carrera.pdf"), CancellationToken.None);
+        var id = ((SolicitudCertificadoResponse)((AcceptedResult)registro.Result!).Value!).Expediente.Id;
+        var envio = new ExpedienteEnvioService(_db, Pruebas.CrearAlmacenamiento(Pruebas.OpcionesArchivos(_directorio)), _publicador.Object,
+            Options.Create(Pruebas.OpcionesArchivos(_directorio)), Options.Create(new RepublicacionOptions()),
+            NullLogger<ExpedienteEnvioService>.Instance);
+
+        var reenvio = await envio.ReenviarAlAgenteAsync(id);
+
+        reenvio.Tipo.Should().Be(TipoResultadoEnvio.Publicado);
+        _publicados.Should().HaveCount(2);
+        _publicados[1].CorrelationId.Should().Be(_publicados[0].CorrelationId, "es el mismo evento");
+        _db.Expedientes.Single().Estado.Should().Be(ExpedienteEstados.PendienteContenidos);
+    }
+
+    [Fact]
+    public async Task El_numero_que_se_muestra_al_revisar_es_el_mismo_que_queda_registrado()
+    {
+        var revision = await Controlador().ValidarManual(Manual(), CancellationToken.None);
+        var numero = revision.Result.Should().BeOfType<OkObjectResult>().Subject.Value
+            .Should().BeOfType<CertificadoLeidoResponse>().Subject.NumeroCertificado;
+
+        var registro = await Controlador().RegistrarManual(Manual() with { NumeroCertificado = numero }, CancellationToken.None);
+
+        registro.Result.Should().BeOfType<AcceptedResult>().Subject.Value
+            .Should().BeOfType<SolicitudCertificadoResponse>().Subject.Expediente.NumeroCertificado.Should().Be(numero);
+
+        // Registrar dos veces con el mismo número revisado no duplica la solicitud.
+        var repetido = await Controlador().RegistrarManual(Manual() with { NumeroCertificado = numero }, CancellationToken.None);
+        repetido.Result.Should().BeOfType<ConflictObjectResult>();
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("SIHA-2026-0147")]
+    [InlineData("MANUAL-2026112-ABC123")]
+    [InlineData("MANUAL-20261124-abc123")]
+    public void Un_numero_que_no_es_manual_se_reemplaza_por_uno_nuevo(string? numero)
+        => CertificadosController.NumeroManual(numero).Should().MatchRegex("^MANUAL-[0-9]{8}-[0-9A-F]{6}$").And.NotBe(numero);
+
+    [Fact]
+    public async Task El_registro_manual_con_datos_faltantes_se_rechaza_con_la_lista_de_verificacion()
+    {
+        var incompleto = Manual() with { Cedula = "", Revisor2Correo = null, CarreraDestino = "SW" };
+
+        var resultado = await Controlador().ValidarManual(incompleto, CancellationToken.None);
+
+        var rechazo = resultado.Result.Should().BeOfType<UnprocessableEntityObjectResult>().Subject.Value
+            .Should().BeOfType<RechazoCertificadoResponse>().Subject;
+        rechazo.Secciones.Single(s => s.Seccion == "Estudiante").Ok.Should().BeFalse("falta la cédula");
+        rechazo.Secciones.Single(s => s.Seccion == "Revisores").Ok.Should().BeFalse("falta el segundo revisor");
+        rechazo.Detalles.Should().Contain(d => d.Contains("siglas") || d.Contains("nombre completo"));
+        _db.Expedientes.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task Pedir_una_materia_reprobada_a_mano_se_rechaza_igual_que_en_el_certificado()
+    {
+        var conReprobada = Manual() with
+        {
+            Solicitudes = new[] { new SolicitudManualRequest(new[] { "Cálculo Integral" }, "Cálculo Integral") }
+        };
+
+        var resultado = await Controlador().RegistrarManual(conReprobada, CancellationToken.None);
+
+        var cuerpo = resultado.Result.Should().BeOfType<UnprocessableEntityObjectResult>().Subject.Value!;
+        Detalles(cuerpo).Should().Contain(d => d.Contains("'Cálculo Integral' está reprobada"));
+        _db.Expedientes.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task Las_opciones_del_registro_manual_traen_los_docentes_y_las_materias()
+    {
+        _mallas["SW"] = new[] { "ALGORITMOS Y LOGICA DE PROGRAMACION", "FISICA" };
+
+        var resultado = await Controlador().OpcionesManual("Tecnologías de la Información", "Software", CancellationToken.None);
+
+        var opciones = resultado.Result.Should().BeOfType<OkObjectResult>().Subject.Value
+            .Should().BeOfType<OpcionesRegistroManualResponse>().Subject;
+        opciones.Docentes.Select(d => d.Correo).Should().BeEquivalentTo("cparedes@uta.edu.ec", "mvaca@uta.edu.ec", "jcastro@uta.edu.ec");
+        opciones.MateriasDestino.Should().Equal("ALGORITMOS Y LOGICA DE PROGRAMACION", "FISICA");
+    }
+
+    [Fact]
+    public void Las_lineas_del_registro_manual_quitan_saltos_de_linea_y_usan_la_ruta_del_tramite()
+    {
+        var r = Manual() with { EstudianteNombre = "Ana\nLucía", TipoTramite = "Movilidad externa" };
+
+        var lineas = CertificadosController.LineasRegistroManual(r, "MANUAL-1", new DateOnly(2026, 11, 24), "Operador",
+            new Dictionary<string, string> { ["cparedes@uta.edu.ec"] = "Ing. Carlos Paredes" });
+
+        lineas.Should().Contain("Estudiante: Ana Lucía");
+        lineas.Should().Contain("Ruta normativa: CAU-P-122");
+        lineas.Should().Contain("Docente revisor 1: Ing. Carlos Paredes - cparedes@uta.edu.ec");
+        lineas.Should().Contain("Nivel: 1 Período académico: Abr-Sep 2025 Nota: 8.9 Estado: Aprobada");
+        lineas.Last().Should().Be("FIN DEL CERTIFICADO");
+    }
+
+    [Fact]
     public async Task Validar_lee_el_certificado_sin_registrar()
     {
         var resultado = await Controlador().Validar(Certificado("SIHA-IND-SW-cambio-de-carrera.pdf"), CancellationToken.None);
@@ -202,13 +377,13 @@ public class CertificadosControllerTests : IDisposable
     public async Task Revisor_que_no_es_docente_o_no_existe_impide_registrar()
     {
         _usuarios["mvaca@uta.edu.ec"] = (false, true);
-        _usuarios.Remove("hnaranjo@uta.edu.ec");
+        _usuarios.Remove("cparedes@uta.edu.ec");
 
         var resultado = await Controlador().Registrar(Certificado("SIHA-TI-SW-cambio-de-carrera.pdf"), CancellationToken.None);
 
         var cuerpo = resultado.Result.Should().BeOfType<UnprocessableEntityObjectResult>().Subject.Value!;
         var detalles = Detalles(cuerpo);
-        detalles.Should().Contain(d => d.Contains("hnaranjo@uta.edu.ec") && d.Contains("no está registrado"));
+        detalles.Should().Contain(d => d.Contains("cparedes@uta.edu.ec") && d.Contains("no está registrado"));
         detalles.Should().Contain(d => d.Contains("mvaca@uta.edu.ec") && d.Contains("DOCENTE"));
         _db.Expedientes.Should().BeEmpty();
     }
@@ -370,8 +545,8 @@ public class CertificadosControllerTests : IDisposable
     [Fact]
     public async Task Cada_docente_ve_solo_las_solicitudes_que_le_asignaron()
     {
-        await Controlador().Registrar(Certificado("SIHA-TI-SW-cambio-de-carrera.pdf"), CancellationToken.None);      // hnaranjo + mvaca
-        await Controlador().Registrar(Certificado("SIHA-IND-SW-cambio-de-carrera.pdf"), CancellationToken.None);  // mvaca + jcastro
+        await Controlador().Registrar(Certificado("SIHA-TI-SW-cambio-de-carrera.pdf"), CancellationToken.None);      // cparedes + mvaca
+        await Controlador().Registrar(Certificado("SIHA-IND-SW-cambio-de-carrera.pdf"), CancellationToken.None);  // mvaca + cparedes
         var envio = new ExpedienteEnvioService(_db, Pruebas.CrearAlmacenamiento(Pruebas.OpcionesArchivos(_directorio)), _publicador.Object,
             Options.Create(Pruebas.OpcionesArchivos(_directorio)), Options.Create(new RepublicacionOptions()), NullLogger<ExpedienteEnvioService>.Instance);
 
@@ -389,14 +564,18 @@ public class CertificadosControllerTests : IDisposable
             }
         };
 
-        var deNaranjo = (await Como("hnaranjo@uta.edu.ec").Listar(null, CancellationToken.None)).Result
+        var deParedes = (await Como("cparedes@uta.edu.ec").Listar(null, CancellationToken.None)).Result
             .Should().BeOfType<OkObjectResult>().Subject.Value.Should().BeAssignableTo<IEnumerable<ExpedienteResponse>>().Subject.ToList();
         var deVaca = (await Como("mvaca@uta.edu.ec").Listar(null, CancellationToken.None)).Result
             .Should().BeOfType<OkObjectResult>().Subject.Value.Should().BeAssignableTo<IEnumerable<ExpedienteResponse>>().Subject.ToList();
 
-        deNaranjo.Should().ContainSingle().Which.NumeroCertificado.Should().Be("SIHA-2026-0147");
+        var deCastro = (await Como("jcastro@uta.edu.ec").Listar(null, CancellationToken.None)).Result
+            .Should().BeOfType<OkObjectResult>().Subject.Value.Should().BeAssignableTo<IEnumerable<ExpedienteResponse>>().Subject.ToList();
+
+        deParedes.Should().HaveCount(2);
         deVaca.Should().HaveCount(2);
+        deCastro.Should().BeEmpty("no es revisor de ninguna");
         var ajeno = _db.Expedientes.Single(x => x.NumeroCertificado == "SIHA-2026-0148").Id;
-        (await Como("hnaranjo@uta.edu.ec").Obtener(ajeno, CancellationToken.None)).Result.Should().BeOfType<NotFoundResult>();
+        (await Como("jcastro@uta.edu.ec").Obtener(ajeno, CancellationToken.None)).Result.Should().BeOfType<NotFoundResult>();
     }
 }

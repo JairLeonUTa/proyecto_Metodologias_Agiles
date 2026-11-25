@@ -37,7 +37,8 @@ public sealed class AnalisisAutomaticoException : Exception
 /// que el estudiante pide homologar, aplica la regla del reglamento: mínimo 80 % en las DOS, sí o sí:
 ///  - Contenidos: horas de la materia de destino cuyos temas aparecen en lo aprobado.
 ///  - Créditos: créditos aprobados frente a los de la materia de destino (con las horas si no se conocen).
-/// Si las dos llegan, la materia CUMPLE; si alguna no llega, NO_CUMPLE: no se puede homologar. Sin sílabo
+/// Si las dos llegan, la materia CUMPLE (recomienda homologar); si alguna no llega, NO_CUMPLE (recomienda no
+/// homologar). El agente solo recomienda y explica: la decisión es siempre de los dos docentes revisores. Sin sílabo
 /// para comparar no se puede medir y queda a CRITERIO de los docentes. Profundidad y carga horaria se
 /// muestran solo como datos informativos. Todo se explica en lenguaje sencillo, unidad por unidad.
 /// </summary>
@@ -45,7 +46,7 @@ public sealed class AnalisisAutomaticoService : IAnalisisAutomaticoService
 {
     public const string Cumple = "CUMPLE";
 
-    /// <summary>No llega al 80 % en contenidos o en créditos: el reglamento no permite homologarla.</summary>
+    /// <summary>No llega al 80 % en contenidos o en créditos: el agente recomienda no homologarla; deciden los docentes.</summary>
     public const string NoCumple = "NO_CUMPLE";
 
     /// <summary>Solo para materias sin sílabo para comparar: no se puede medir y deciden los docentes.</summary>
@@ -80,6 +81,32 @@ public sealed class AnalisisAutomaticoService : IAnalisisAutomaticoService
         _logger = logger;
         _cache = cache;
         _catalogo = catalogo;
+    }
+
+    /// <summary>
+    /// Versión de las reglas del agente. Cambiarla cada vez que cambie cómo se decide (umbral, criterios,
+    /// textos de la decisión): los análisis guardados con otra versión se marcan como desactualizados y los
+    /// que todavía no tienen decisiones de los docentes se vuelven a analizar solos al arrancar MS C.
+    /// </summary>
+    public const string VersionReglas = "2026-11-recomendacion-docente-decide";
+
+    /// <summary>Mensaje mientras se actualiza un análisis hecho con reglas anteriores.</summary>
+    public const string MensajeActualizando =
+        "Se está actualizando el análisis con las reglas vigentes. La pantalla se actualiza sola.";
+
+    /// <summary>True si un resultado guardado se hizo con otra versión de las reglas (o no se puede leer).</summary>
+    public static bool EstaDesactualizado(string? resultadoJson)
+    {
+        if (string.IsNullOrWhiteSpace(resultadoJson)) return false;
+        try
+        {
+            var r = JsonSerializer.Deserialize<AnalisisAutomaticoResponse>(resultadoJson, Json);
+            return r?.VersionReglas != VersionReglas;
+        }
+        catch (JsonException)
+        {
+            return true;
+        }
     }
 
     /// <summary>Reintentos automáticos antes de dejar la solicitud en ERROR (unas dos horas en total).</summary>
@@ -221,11 +248,12 @@ public sealed class AnalisisAutomaticoService : IAnalisisAutomaticoService
         var noCumplen = evaluaciones.Count(e => e.Estimacion == NoCumple);
         var partes = new List<string>();
         if (sinSilabo < evaluaciones.Count) partes.Add($"{cumplen} cumple(n) el {Num(theta)} % en contenidos y créditos");
-        if (noCumplen > 0) partes.Add($"{noCumplen} no se puede(n) homologar por no llegar al {Num(theta)} %");
+        if (noCumplen > 0) partes.Add($"{noCumplen} no llega(n) al {Num(theta)} % y el agente recomienda no homologarla(s)");
         if (sinSilabo > 0) partes.Add($"{sinSilabo} no tiene(n) sílabo para comparar y la(s) deciden los docentes");
-        var resumen = $"Se analizaron {evaluaciones.Count} materia(s) pedida(s): {Unir(partes)}.";
+        var resumen = $"Se analizaron {evaluaciones.Count} materia(s) pedida(s): {Unir(partes)}. " +
+                      "El agente solo recomienda: la decisión final de cada materia es de los dos docentes revisores.";
 
-        return new AnalisisAutomaticoResponse(contexto.ExpedienteId, requisitos, evaluaciones, Array.Empty<string>(), resumen, string.Join(" | ", traza), theta);
+        return new AnalisisAutomaticoResponse(contexto.ExpedienteId, requisitos, evaluaciones, Array.Empty<string>(), resumen, string.Join(" | ", traza), theta, VersionReglas);
     }
 
     private async Task<EvaluacionMateriaResponse> EvaluarAsync(
@@ -353,8 +381,9 @@ public sealed class AnalisisAutomaticoService : IAnalisisAutomaticoService
         if ((double)creditos < theta) bajos.Add($"créditos ({Num((double)creditos)} %)");
         var estimacion = bajos.Count == 0 ? Cumple : NoCumple;
         var conclusion = estimacion == Cumple
-            ? $"Cumple el {Num(theta)} % en contenidos y en créditos: se puede homologar «{solicitud.MateriaDestino}». Los docentes revisores lo confirman."
-            : $"No se puede homologar: no llega al {Num(theta)} % en {Unir(bajos)}. El reglamento exige al menos el {Num(theta)} % en contenidos y en créditos.";
+            ? $"Recomendación: homologar «{solicitud.MateriaDestino}». Llega al {Num(theta)} % en contenidos y en créditos. Los docentes revisores deciden."
+            : $"Recomendación: no homologar. No llega al {Num(theta)} % en {Unir(bajos)} (el reglamento pide al menos el {Num(theta)} % en contenidos y en créditos). " +
+              "Los docentes revisores deciden: si consideran que el estudiante sí vio esos temas (por ejemplo, con otro nombre en su sílabo), pueden homologarla.";
 
         var precedentes = await _precedentes.BuscarAsync(new BuscarPrecedenteRequest(
             origenes.Select(o => o.Malla!.Codigo).ToList(), destino.Codigo, contexto.InstitucionOrigen), cancellationToken);
@@ -403,7 +432,7 @@ public sealed class AnalisisAutomaticoService : IAnalisisAutomaticoService
                 : comparables.Count == 0
                     ? "El agente no tiene sílabos para comparar estas materias; los docentes deciden con el plan analítico del estudiante."
                     : comparables.Count == evaluaciones.Count
-                        ? $"Ninguna materia pedida llega al {Num(theta)} % en contenidos y créditos: no se puede homologar ninguna."
+                        ? $"Ninguna materia pedida llega al {Num(theta)} % en contenidos y créditos: el agente recomienda no homologarlas; deciden los docentes."
                         : $"Ninguna materia comparada llega al {Num(theta)} % en contenidos y créditos; solo quedan las que no tienen sílabo, que deciden los docentes."));
 
         requisitos.Add(new RequisitoResponse("Materias vigentes y sin tercera matrícula", true,
@@ -422,7 +451,7 @@ public sealed class AnalisisAutomaticoService : IAnalisisAutomaticoService
     private static string Estado(string estimacion) => estimacion switch
     {
         Cumple => "cumple",
-        NoCumple => "no se puede homologar",
+        NoCumple => "no llega al mínimo (recomienda no homologar)",
         _ => "a criterio del docente"
     };
 

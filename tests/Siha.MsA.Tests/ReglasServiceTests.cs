@@ -215,13 +215,35 @@ public class ReglasServiceTests
     }
 
     [Fact]
+    public async Task Rn01_version_2_1_el_agente_recomienda_y_los_docentes_deciden()
+    {
+        using var db = NuevaDb();
+        await Sembrar(db);
+        await Sembrar(db); // idempotente: una sola 2.1
+
+        var rn01 = await db.Reglas.SingleAsync(r => r.Codigo == "RN-01" && r.Version == "2.1");
+        Assert.Contains("decisión final es siempre de los dos docentes", rn01.Descripcion);
+        Assert.Equal(DbSeederA.VigenciaReglaRecomendacion, rn01.VigenteDesde);
+        Assert.Null(rn01.VigenteHasta);
+        // InMemory no aplica el largo de las columnas: se comprueba contra el modelo (SQL Server lo exige).
+        foreach (var regla in db.Reglas)
+        {
+            Assert.True(regla.Descripcion is null || regla.Descripcion.Length <= MaximoDe(db, nameof(regla.Descripcion)), regla.Codigo + " " + regla.Version);
+            Assert.True(regla.Expresion is null || regla.Expresion.Length <= MaximoDe(db, nameof(regla.Expresion)), regla.Codigo + " " + regla.Version);
+            Assert.True(regla.Fuente is null || regla.Fuente.Length <= MaximoDe(db, nameof(regla.Fuente)), regla.Codigo + " " + regla.Version);
+        }
+        var v2 = await db.Reglas.SingleAsync(r => r.Codigo == "RN-01" && r.Version == "2.0");
+        Assert.Equal(DbSeederA.VigenciaReglaRecomendacion.AddDays(-1), v2.VigenteHasta);
+    }
+
+    [Fact]
     public async Task La_actualizacion_de_la_regla_de_creditos_se_aplica_una_sola_vez()
     {
         using var db = NuevaDb();
         await Sembrar(db);
         await Sembrar(db);
 
-        Assert.Equal(2, await db.Reglas.CountAsync(r => r.Codigo == "RN-01"));
+        Assert.Equal(3, await db.Reglas.CountAsync(r => r.Codigo == "RN-01")); // 1.0, 2.0 y 2.1
         Assert.Equal(2, await db.Reglas.CountAsync(r => r.Codigo == "RN-13"));
     }
 
@@ -285,7 +307,7 @@ public class ReglasServiceTests
         await db.SaveChangesAsync();
         await Sembrar(db);
         Assert.Equal(2, await db.ParametrosEvaluacion.CountAsync());
-        Assert.Equal(8, await db.Reglas.CountAsync()); // 6 reglas 1.0 + RN-01 y RN-13 en 2.0
+        Assert.Equal(9, await db.Reglas.CountAsync()); // 6 reglas 1.0 + RN-01 y RN-13 en 2.0 + RN-01 2.1
         Assert.Equal(42, parametro.Tau);
         Assert.Equal("Configuración local", regla.Descripcion);
     }
@@ -347,6 +369,9 @@ public class ReglasServiceTests
         (await db.Mallas.CountAsync(m => m.CarreraId == malla.CarreraId && m.Version == DbSeederA.VersionMallaUta)).Should().Be(1);
         (await db.Asignaturas.Include(a => a.Unidades).SingleAsync(a => a.Codigo == quitadas[0].Codigo)).Unidades.Should().NotBeEmpty();
     }
+
+    private static int MaximoDe(SihaDbContextA db, string propiedad)
+        => db.Model.FindEntityType(typeof(Siha.MsA.Api.Domain.Entities.Regla))!.FindProperty(propiedad)!.GetMaxLength() ?? int.MaxValue;
 
     private static Task Sembrar(SihaDbContextA db) => DbSeederA.SembrarAsync(db,
         new BCryptPasswordHasher(), "admin@uta.edu.ec", "no-usada", NullLogger.Instance);

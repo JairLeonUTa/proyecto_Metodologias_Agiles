@@ -42,9 +42,14 @@ Proyecto integrado: Gateway, microservicios A/B, frontend y pruebas.
 ### Levantar la pila
 
 ```bash
-docker compose config --quiet   # Valida sintaxis
-docker compose up -d --build    # Primera vez: 5-15 min (descarga imágenes + build)
+docker compose config --quiet                     # Valida sintaxis
+docker compose --profile sprint23 up -d --build   # Primera vez: 5-15 min (descarga imágenes, modelos de IA y build)
 ```
+
+> **Importante:** sin `--profile sprint23` (o sin `COMPOSE_PROFILES=sprint23` en el `.env`) **no arrancan el
+> agente (MS C), su base de datos ni Ollama**. Las solicitudes se registran pero se quedan en
+> "Estamos recibiendo el certificado…". Si pasó, encienda el agente con el comando de arriba y, en la
+> solicitud, pulse **«Volver a enviar al agente»**.
 
 ### Verificar servicios
 

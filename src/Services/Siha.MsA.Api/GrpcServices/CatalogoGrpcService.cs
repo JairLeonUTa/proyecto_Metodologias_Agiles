@@ -119,4 +119,25 @@ public class CatalogoGrpcService : CatalogoGrpc.CatalogoGrpcBase
 
         return respuesta;
     }
+
+    /// <summary>Docentes activos (rol DOCENTE) que pueden ser revisores, ordenados por nombre.</summary>
+    public override async Task<RespuestaDocentes> ListarDocentes(SolicitudListaDocentes request, ServerCallContext context)
+    {
+        var docentes = await _db.Usuarios.AsNoTracking()
+            .Include(u => u.Rol)
+            .Where(u => u.Activo && u.Rol != null && u.Rol.Nombre == RolesSistema.Docente)
+            .OrderBy(u => u.NombreCompleto)
+            .ToListAsync(context.CancellationToken);
+
+        var respuesta = new RespuestaDocentes();
+        respuesta.Docentes.AddRange(docentes.Select(u => new DocenteVerificado
+        {
+            Correo = u.CorreoInstitucional.ToLowerInvariant(),
+            Existe = true,
+            EsDocente = true,
+            Activo = true,
+            NombreCompleto = u.NombreCompleto
+        }));
+        return respuesta;
+    }
 }

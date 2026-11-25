@@ -1,21 +1,37 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { ErrorApi } from '../api/httpClient';
 import { SolicitudDetallePage } from './SolicitudDetallePage';
 
-const api = vi.hoisted(() => ({ obtenerSolicitud: vi.fn(), responder: vi.fn(), reanalizar: vi.fn() }));
+const api = vi.hoisted(() => ({
+  obtenerSolicitud: vi.fn(),
+  responder: vi.fn(),
+  reanalizar: vi.fn(),
+  decidirComoAdministrador: vi.fn(),
+  reenviarAgente: vi.fn(),
+}));
+const DOCENTE = { rol: 'DOCENTE', correoInstitucional: 'cparedes@uta.edu.ec', nombreCompleto: 'Ing. Carlos Paredes' };
+const sesion = vi.hoisted(() => ({ usuario: null as unknown }));
 
 vi.mock('../api', async (importOriginal) => {
   const real = await importOriginal<typeof import('../api')>();
   return {
     ...real,
-    extraccionesApi: { ...real.extraccionesApi, ...api },
+    extraccionesApi: {
+      ...real.extraccionesApi,
+      obtenerSolicitud: api.obtenerSolicitud,
+      responder: api.responder,
+      reanalizar: api.reanalizar,
+      decidirComoAdministrador: api.decidirComoAdministrador,
+    },
+    expedientesApi: { ...real.expedientesApi, reenviarAgente: api.reenviarAgente },
   };
 });
 
 vi.mock('../hooks/useAuth', () => ({
-  useAuth: () => ({ usuario: { rol: 'DOCENTE', correoInstitucional: 'hnaranjo@uta.edu.ec', nombreCompleto: 'Ing. Hernán Naranjo' } }),
+  useAuth: () => ({ usuario: sesion.usuario }),
 }));
 
 const evaluacion = (numero: number, destino: string, origen: string, valor: number) => ({
@@ -51,7 +67,7 @@ const SOLICITUD = {
     { nombre: 'Medidas Eléctricas', nivel: 2, periodoAcademico: 'Oct 2025-Mar 2026', nota: 5.9, aprobada: false },
   ],
   revisores: [
-    { nombre: 'Ing. Hernán Naranjo', correo: 'hnaranjo@uta.edu.ec', respondio: false },
+    { nombre: 'Ing. Carlos Paredes', correo: 'cparedes@uta.edu.ec', respondio: false },
     { nombre: 'Ing. María Vaca', correo: 'mvaca@uta.edu.ec', respondio: false },
   ],
   estado: 'ANALIZADO',
@@ -79,6 +95,7 @@ const SOLICITUD = {
 
 describe('Solicitud: análisis explicado y decisión del docente', () => {
   beforeEach(() => {
+    sesion.usuario = DOCENTE;
     api.obtenerSolicitud.mockResolvedValue(SOLICITUD);
     api.responder.mockResolvedValue({ ...SOLICITUD, estadoRevision: 'EN_REVISION' });
   });
@@ -101,6 +118,84 @@ describe('Solicitud: análisis explicado y decisión del docente', () => {
     expect(screen.getAllByText(/la cubre la unidad 1/).length).toBeGreaterThan(0);
     expect(screen.getByText(/queda a criterio de los docentes/)).toBeInTheDocument();
     expect(screen.queryByText(/θ|δ|τ|0,65/)).not.toBeInTheDocument();
+  });
+
+  it('si los docentes no coinciden, el administrador toma la decisión final con un motivo', async () => {
+    const user = userEvent.setup();
+    sesion.usuario = { rol: 'ADMINISTRADOR', correoInstitucional: 'admin@uta.edu.ec', nombreCompleto: 'Director' };
+    const sinAcuerdo = {
+      ...SOLICITUD,
+      estadoRevision: 'RESUELTA',
+      puedeResponder: false,
+      resultadoFinal: [{ ...SOLICITUD.resultadoFinal[1], aprobaciones: 1, rechazos: 1, resultado: 'SIN_ACUERDO' }],
+    };
+    api.obtenerSolicitud.mockResolvedValue(sinAcuerdo);
+    api.decidirComoAdministrador.mockResolvedValue({
+      ...sinAcuerdo,
+      resultadoFinal: [
+        {
+          ...sinAcuerdo.resultadoFinal[0],
+          resultado: 'HOMOLOGADA',
+          decisionFinal: { aprobada: true, comentario: 'Cubre los temas', nombreAdministrador: 'Director', fechaUtc: '2026-11-24T00:00:00Z' },
+        },
+      ],
+    });
+    abrir();
+
+    expect(await screen.findByText('Los docentes no coinciden: su decisión final')).toBeInTheDocument();
+    const guardar = screen.getByRole('button', { name: 'Guardar decisión final' });
+    expect(guardar).toBeDisabled();
+    await user.click(within(screen.getByRole('group', { name: 'Decisión final para Cálculo Diferencial' })).getByRole('button', { name: 'Sí, homologar' }));
+    expect(guardar).toBeDisabled();
+    await user.type(screen.getByLabelText('Motivo de la decisión final para Cálculo Diferencial'), 'Cubre los temas');
+    await user.click(guardar);
+
+    expect(api.decidirComoAdministrador).toHaveBeenCalledWith('e1', {
+      codigoDestino: 'Cálculo Diferencial',
+      aprobada: true,
+      comentario: 'Cubre los temas',
+    });
+    expect(await screen.findByText(/Cubre los temas/)).toBeInTheDocument();
+    expect(screen.queryByText('Los docentes no coinciden: su decisión final')).not.toBeInTheDocument();
+  });
+
+  it('el docente ve que, sin acuerdo, decide el administrador', async () => {
+    api.obtenerSolicitud.mockResolvedValue({
+      ...SOLICITUD,
+      resultadoFinal: [{ ...SOLICITUD.resultadoFinal[1], aprobaciones: 1, rechazos: 1, resultado: 'SIN_ACUERDO' }],
+    });
+    abrir();
+
+    expect(await screen.findByText(/La decisión final la toma el\s+administrador/)).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Guardar decisión final' })).not.toBeInTheDocument();
+  });
+
+  it('si el agente no responde lo explica y deja volver a enviar la solicitud', async () => {
+    const user = userEvent.setup();
+    sesion.usuario = { rol: 'OPERADOR', correoInstitucional: 'op@uta.edu.ec', nombreCompleto: 'Operador' };
+    api.obtenerSolicitud.mockRejectedValue(new ErrorApi('Bad Gateway', 502));
+    api.reenviarAgente.mockResolvedValue({});
+    abrir();
+
+    expect(await screen.findByText('El agente no está respondiendo')).toBeInTheDocument();
+    expect(screen.getByText(/docker compose --profile sprint23 up -d/)).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Volver a enviar al agente' }));
+
+    expect(api.reenviarAgente).toHaveBeenCalledWith('e1');
+    expect(await screen.findByText(/Se volvió a enviar al agente/)).toBeInTheDocument();
+  });
+
+  it('un análisis con reglas anteriores ofrece volver a analizarlo', async () => {
+    api.obtenerSolicitud.mockResolvedValue({ ...SOLICITUD, analisisDesactualizado: true });
+    api.reanalizar.mockResolvedValue({ ...SOLICITUD, analisisDesactualizado: false });
+    abrir();
+
+    expect(await screen.findByText('Este análisis se hizo con reglas anteriores')).toBeInTheDocument();
+    await userEvent.click(screen.getByRole('button', { name: 'Volver a analizar con las reglas vigentes' }));
+
+    expect(api.reanalizar).toHaveBeenCalledWith('e1');
+    expect(await screen.findByText('Tecnologías de la Información')).toBeInTheDocument();
+    expect(screen.queryByText('Este análisis se hizo con reglas anteriores')).not.toBeInTheDocument();
   });
 
   it('si el agente se está preparando lo explica y no pide reintentar a mano', async () => {
@@ -139,7 +234,7 @@ describe('Solicitud: análisis explicado y decisión del docente', () => {
     expect(screen.queryByText('0 %')).not.toBeInTheDocument();
   });
 
-  it('la que no llega al 80 % en créditos no se vota y muestra contenidos y créditos', async () => {
+  it('la que no llega al 80 % es una recomendación: el docente igual la decide y puede homologarla', async () => {
     const user = userEvent.setup();
     const noCumple = {
       ...evaluacion(2, 'Física', 'Física Básica', 100),
@@ -148,27 +243,31 @@ describe('Solicitud: análisis explicado y decisión del docente', () => {
       porcentajeCreditos: 66.67,
       creditosOrigen: 2,
       unidades: [{ numero: 1, nombre: 'Estática', horas: 36, similitud: 95, cubierta: true, materiaOrigen: 'Física Básica', numeroUnidadOrigen: 1, nombreUnidadOrigen: 'Estática', horasUnidadOrigen: 36 }],
-      conclusion: 'No se puede homologar: no llega al 80 % en créditos (66,67 %).',
+      conclusion: 'Recomendación: no homologar. No llega al 80 % en créditos (66,67 %). Los docentes revisores deciden.',
     };
     api.obtenerSolicitud.mockResolvedValue({
       ...SOLICITUD,
       resultado: { ...SOLICITUD.resultado, evaluaciones: [SOLICITUD.resultado.evaluaciones[0], noCumple] },
       resultadoFinal: [
         SOLICITUD.resultadoFinal[0],
-        { codigoDestino: 'Física', nombreDestino: 'Física', estimacion: 'NO_CUMPLE', aprobaciones: 0, rechazos: 0, resultado: 'NO_HOMOLOGADA' },
+        { codigoDestino: 'Física', nombreDestino: 'Física', estimacion: 'NO_CUMPLE', aprobaciones: 0, rechazos: 0, resultado: 'PENDIENTE' },
       ],
     });
     abrir();
 
-    expect((await screen.findAllByText('✘ No se puede homologar')).length).toBeGreaterThan(0);
+    expect((await screen.findAllByText('✘ No llega al 80 % · recomienda no homologar')).length).toBeGreaterThan(0);
     expect(screen.getByRole('img', { name: 'Créditos: 66.67 %' })).toBeInTheDocument();
     expect(screen.getByText('2 crédito(s) aprobado(s) frente a 3.')).toBeInTheDocument();
-    expect(screen.getByText(/No se vota: no llega al 80 %/)).toBeInTheDocument();
-    expect(screen.queryByRole('group', { name: 'Decisión para Física' })).not.toBeInTheDocument();
+    expect(screen.queryByText(/No se vota/)).not.toBeInTheDocument();
 
+    const grupo = screen.getByRole('group', { name: 'Decisión para Física' });
+    await user.click(within(grupo).getByRole('button', { name: 'Sí, homologar' }));
     await user.click(screen.getByRole('button', { name: 'Enviar mi decisión' }));
     expect(api.responder).toHaveBeenLastCalledWith('e1', {
-      decisiones: [{ codigoDestino: 'Algoritmos y Lógica de Programación', aprobada: true, observacion: null }],
+      decisiones: [
+        { codigoDestino: 'Algoritmos y Lógica de Programación', aprobada: true, observacion: null },
+        { codigoDestino: 'Física', aprobada: true, observacion: null },
+      ],
       comentario: null,
     });
   });

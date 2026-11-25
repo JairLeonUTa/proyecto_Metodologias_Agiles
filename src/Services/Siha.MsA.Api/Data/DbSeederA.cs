@@ -23,6 +23,7 @@ public static class DbSeederA
         await SembrarParametrosAsync(db, logger);
         await SembrarReglasAsync(db, logger);
         await ActualizarReglaCreditosAsync(db, logger);
+        await ActualizarReglaRecomendacionAsync(db, logger);
         await SembrarCatalogoAsync(db, logger);
         await SembrarCatalogoUtaAsync(db, logger);
         if (!string.IsNullOrWhiteSpace(docentesDemoPassword))
@@ -37,9 +38,8 @@ public static class DbSeederA
     /// </summary>
     public static readonly (string Correo, string Nombre)[] DocentesDemo =
     {
-        ("hnaranjo@uta.edu.ec", "Ing. Hernán Naranjo"),
-        ("mvaca@uta.edu.ec", "Ing. María Vaca"),
-        ("jcastro@uta.edu.ec", "Ing. Javier Castro")
+        ("cparedes@uta.edu.ec", "Ing. Carlos Paredes"),
+        ("mvaca@uta.edu.ec", "Ing. María Vaca")
     };
 
     private static async Task SembrarDocentesDemoAsync(SihaDbContextA db, IPasswordHasher hasher, string password, ILogger logger)
@@ -186,6 +186,49 @@ public static class DbSeederA
         if (cambios == 0) return;
         await db.SaveChangesAsync();
         logger.LogInformation("Reglas RN-01 y RN-13 versionadas a 2.0: 80 % en contenidos y 80 % en créditos.");
+    }
+
+    /// <summary>Texto de RN-01 2.1 (cabe en REGLA.Descripcion, 400 caracteres).</summary>
+    public const string DescripcionRn01Recomendacion =
+        "El agente recomienda homologar (CAU-P-011) si llega al 80 % en contenidos y al 80 % en créditos; si no llega, " +
+        "recomienda no homologar y explica por qué. La decisión final es siempre de los dos docentes revisores, que pueden " +
+        "homologarla aunque no llegue (por ejemplo, si el tema está en el sílabo de origen con otro nombre).";
+
+    /// <summary>Inicio de la versión 2.1 de RN-01: el agente recomienda y los docentes deciden.</summary>
+    public static readonly DateOnly VigenciaReglaRecomendacion = new(2026, 11, 24);
+
+    /// <summary>
+    /// RN-01 2.1: el 80 % en contenidos y en créditos es la recomendación del agente, no un rechazo
+    /// automático. Aunque una materia no llegue, la deciden los dos docentes revisores (el agente puede no
+    /// reconocer un tema que en el sílabo de origen se nombra distinto). Incremental e idempotente.
+    /// </summary>
+    private static async Task ActualizarReglaRecomendacionAsync(SihaDbContextA db, ILogger logger)
+    {
+        var versiones = await db.Reglas
+            .Where(r => r.Codigo == "RN-01" && r.RutaNormativa == RutasNormativas.CambioCarreraOu)
+            .OrderByDescending(r => r.VigenteDesde).ThenByDescending(r => r.Id)
+            .ToListAsync();
+        if (versiones.Count == 0 || versiones.Any(r => r.Version == "2.1")) return;
+
+        var anterior = versiones[0];
+        var fin = VigenciaReglaRecomendacion.AddDays(-1);
+        if (anterior.VigenteHasta is null || anterior.VigenteHasta > fin) anterior.VigenteHasta = fin;
+        db.Reglas.Add(new Regla
+        {
+            Codigo = "RN-01",
+            RutaNormativa = anterior.RutaNormativa,
+            TipoTramite = anterior.TipoTramite,
+            EsNormativa = anterior.EsNormativa,
+            // Máximo 400 caracteres (columna REGLA.Descripcion).
+            Descripcion = DescripcionRn01Recomendacion,
+            Expresion = "recomendacion: contenido>=80 && creditos>=80; decision: docentes",
+            Version = "2.1",
+            Fuente = "Definición del equipo SIHA-IA (noviembre 2026): el agente recomienda y los docentes deciden",
+            VigenteDesde = VigenciaReglaRecomendacion,
+            Activa = true
+        });
+        await db.SaveChangesAsync();
+        logger.LogInformation("Regla RN-01 versionada a 2.1: el agente recomienda y los docentes deciden.");
     }
 
     private static async Task SembrarReglasAsync(SihaDbContextA db, ILogger logger)

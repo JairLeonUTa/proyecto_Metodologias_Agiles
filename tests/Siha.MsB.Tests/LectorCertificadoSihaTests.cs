@@ -46,7 +46,7 @@ public class LectorCertificadoSihaTests
         c.Solicitudes.Should().HaveCount(5);
         c.Solicitudes[0].MateriasOrigen.Should().Equal("Fundamentos de Programación");
         c.Solicitudes[0].MateriaDestino.Should().Be("Algoritmos y Lógica de Programación");
-        c.Revisores.Select(r => r.Correo).Should().Equal("hnaranjo@uta.edu.ec", "mvaca@uta.edu.ec");
+        c.Revisores.Select(r => r.Correo).Should().Equal("cparedes@uta.edu.ec", "mvaca@uta.edu.ec");
     }
 
     [Fact]

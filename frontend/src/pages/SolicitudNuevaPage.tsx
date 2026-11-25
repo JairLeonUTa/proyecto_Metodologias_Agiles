@@ -45,7 +45,7 @@ const COLUMNAS: Array<ColumnaTabla<MateriaCursada>> = [
 ];
 
 /** Datos leídos del certificado: estudiante, carreras, historial y lo que pide homologar. */
-function ResumenCertificado({ certificado }: { certificado: CertificadoLeido }): JSX.Element {
+export function ResumenCertificado({ certificado }: { certificado: CertificadoLeido }): JSX.Element {
   const dato = (etiqueta: string, valor: string): JSX.Element => (
     <div>
       <dt className="text-xs uppercase tracking-wide text-faint">{etiqueta}</dt>
@@ -94,7 +94,7 @@ function sinTituloRepetido(mensaje: string, titulo: string): string {
 }
 
 /** Lee del error del servidor el rechazo con su lista de verificación, si la trae. */
-function rechazoDe(fallo: unknown): RechazoCertificado | null {
+export function rechazoDe(fallo: unknown): RechazoCertificado | null {
   if (!(fallo instanceof ErrorApi) || fallo.estado !== 422) return null;
   const datos = fallo.datos as Partial<RechazoCertificado> | null;
   return datos && typeof datos.tipo === 'string' && Array.isArray(datos.secciones) ? (datos as RechazoCertificado) : null;

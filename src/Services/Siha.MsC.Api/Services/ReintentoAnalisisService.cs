@@ -25,6 +25,15 @@ public sealed class ReintentoAnalisisService : BackgroundService
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
+        try
+        {
+            await ProgramarActualizacionAsync(_scopes, _logger, stoppingToken);
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            _logger.LogWarning(ex, "No se pudo revisar si hay análisis hechos con reglas anteriores.");
+        }
+
         using var reloj = new PeriodicTimer(Intervalo);
         while (await EsperarAsync(reloj, stoppingToken))
         {
@@ -54,6 +63,38 @@ public sealed class ReintentoAnalisisService : BackgroundService
         {
             return false;
         }
+    }
+
+    /// <summary>
+    /// Al arrancar: las solicitudes analizadas con reglas anteriores del agente y sin ninguna decisión de los
+    /// docentes pasan a PREPARANDO para que se vuelvan a analizar solas con las reglas vigentes. Las que ya
+    /// tienen decisiones no se tocan: el operador o el administrador pueden volver a analizarlas a mano.
+    /// </summary>
+    public static async Task<int> ProgramarActualizacionAsync(IServiceScopeFactory scopes, ILogger logger, CancellationToken cancellationToken)
+    {
+        using var scope = scopes.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<SihaDbContextC>();
+        var conDecision = db.DictamenesDocentes.Select(d => d.ExpedienteId);
+        var analizados = await db.AnalisisExpedientes
+            .Where(a => a.Estado == EstadosAnalisis.Analizado && a.ResultadoJson != null && !conDecision.Contains(a.ExpedienteId))
+            .ToListAsync(cancellationToken);
+
+        var desactualizados = analizados.Where(a => AnalisisAutomaticoService.EstaDesactualizado(a.ResultadoJson)).ToList();
+        foreach (var a in desactualizados)
+        {
+            a.Estado = EstadosAnalisis.Preparando;
+            a.Mensaje = AnalisisAutomaticoService.MensajeActualizando;
+            a.Intentos = 0;
+            a.ProximoIntentoUtc = DateTimeOffset.UtcNow;
+        }
+
+        if (desactualizados.Count > 0)
+        {
+            await db.SaveChangesAsync(cancellationToken);
+            logger.LogInformation("{Cantidad} solicitud(es) analizadas con reglas anteriores se volverán a analizar.", desactualizados.Count);
+        }
+
+        return desactualizados.Count;
     }
 
     /// <summary>Una ronda: analiza de nuevo las solicitudes en PREPARANDO cuya espera ya terminó.</summary>

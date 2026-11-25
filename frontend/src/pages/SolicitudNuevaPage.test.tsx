@@ -49,7 +49,7 @@ const CERTIFICADO = {
   carreraOrigen: 'Tecnologías de la Información',
   carreraDestino: 'Software',
   revisores: [
-    { nombre: 'Ing. Hernán Naranjo', correo: 'hnaranjo@uta.edu.ec' },
+    { nombre: 'Ing. Carlos Paredes', correo: 'cparedes@uta.edu.ec' },
     { nombre: 'Ing. María Vaca', correo: 'mvaca@uta.edu.ec' },
   ],
   materias: [
@@ -96,7 +96,7 @@ describe('Registro con un único certificado SIHA', () => {
     expect(screen.getByText('Abr-Sep 2025')).toBeInTheDocument();
     expect(screen.getByText('8,90')).toBeInTheDocument();
     expect(screen.getByText('Reprobada')).toBeInTheDocument();
-    expect(screen.getByText('Ing. Hernán Naranjo y Ing. María Vaca')).toBeInTheDocument();
+    expect(screen.getByText('Ing. Carlos Paredes y Ing. María Vaca')).toBeInTheDocument();
 
     await user.click(screen.getByRole('button', { name: 'Registrar y enviar solicitud' }));
 

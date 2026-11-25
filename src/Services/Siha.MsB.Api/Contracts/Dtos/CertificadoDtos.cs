@@ -63,3 +63,39 @@ public record SolicitudCertificadoResponse(
     CertificadoLeidoResponse Certificado,
     bool Publicado,
     string Mensaje);
+
+/// <summary>Materia del historial digitada en el registro manual.</summary>
+public record MateriaManualRequest(string? Nombre, int? Nivel, string? PeriodoAcademico, decimal? Nota, bool Aprobada);
+
+/// <summary>Una materia de destino y las materias aprobadas con las que se pide homologarla.</summary>
+public record SolicitudManualRequest(IReadOnlyList<string>? MateriasOrigen, string? MateriaDestino);
+
+/// <summary>
+/// Registro manual de una solicitud, sin PDF: los mismos datos del certificado SIHA, digitados por el
+/// operador. Pasa por las mismas validaciones que el certificado.
+/// </summary>
+public record RegistroManualRequest(
+    string? EstudianteNombre,
+    string? Cedula,
+    /// <summary>"Cambio de carrera" o "Movilidad externa".</summary>
+    string? TipoTramite,
+    string? InstitucionOrigen,
+    string? CarreraOrigen,
+    string? CarreraDestino,
+    string? Revisor1Correo,
+    string? Revisor2Correo,
+    IReadOnlyList<MateriaManualRequest>? Materias,
+    IReadOnlyList<SolicitudManualRequest>? Solicitudes,
+    /// <summary>
+    /// Número que se mostró al revisar los datos (MANUAL-AAAAMMDD-XXXXXX). Al registrar se reutiliza para que
+    /// el número revisado y el registrado sean el mismo; si no viene o no tiene ese formato se genera uno nuevo.
+    /// </summary>
+    string? NumeroCertificado = null);
+
+public record DocenteOpcionResponse(string Nombre, string Correo);
+
+/// <summary>Opciones para llenar el registro manual: docentes revisores y materias de cada carrera.</summary>
+public record OpcionesRegistroManualResponse(
+    IReadOnlyList<DocenteOpcionResponse> Docentes,
+    IReadOnlyList<string> MateriasOrigen,
+    IReadOnlyList<string> MateriasDestino);

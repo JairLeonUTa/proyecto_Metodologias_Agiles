@@ -13,6 +13,7 @@ export type NombreIcono =
   | 'reglas'
   | 'instructivo'
   | 'nueva-solicitud'
+  | 'registro-manual'
   | 'bandeja'
   | 'consulta'
   | 'carreras'
@@ -51,6 +52,12 @@ const TRAZOS: Record<NombreIcono, JSX.Element> = {
     <>
       <path d="M12 7v14" />
       <path d="M3 18V5a2 2 0 012-2h3a4 4 0 014 4 4 4 0 014-4h3a2 2 0 012 2v13a2 2 0 01-2 2h-3a4 4 0 00-4 2 4 4 0 00-4-2H5a2 2 0 01-2-2z" />
+    </>
+  ),
+  'registro-manual': (
+    <>
+      <path d="M12 20h9" />
+      <path d="M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4z" />
     </>
   ),
   'nueva-solicitud': (

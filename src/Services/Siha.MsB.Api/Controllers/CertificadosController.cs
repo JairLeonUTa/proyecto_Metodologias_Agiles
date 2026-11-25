@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Siha.Certificados;
@@ -92,14 +92,187 @@ public class CertificadosController : ControllerBase
             return lectura.Error;
         }
 
+        return await RegistrarLecturaAsync(lectura, archivo!, silabos, silabosMaterias, cancellationToken);
+    }
+
+    // ---------- Registro manual (sin PDF) ----------
+
+    /// <summary>
+    /// Opciones para el registro manual: docentes activos que pueden ser revisores y, si se indican las
+    /// carreras, las materias de su malla vigente (para sugerir los nombres oficiales).
+    /// </summary>
+    [HttpGet("~/api/expedientes/manual/opciones")]
+    [ProducesResponseType(typeof(OpcionesRegistroManualResponse), StatusCodes.Status200OK)]
+    public async Task<ActionResult<OpcionesRegistroManualResponse>> OpcionesManual(
+        [FromQuery] string? carreraOrigen, [FromQuery] string? carreraDestino, CancellationToken cancellationToken)
+    {
+        try
+        {
+            var docentes = await _docentes.ListarDocentesAsync(cancellationToken);
+            async Task<IReadOnlyList<string>> MateriasDe(string? nombre)
+            {
+                if (string.IsNullOrWhiteSpace(nombre)) return Array.Empty<string>();
+                var carrera = await _docentes.ResolverCarreraAsync(nombre, cancellationToken);
+                return carrera is null ? Array.Empty<string>() : await _docentes.ObtenerMateriasAsync(carrera.Codigo, cancellationToken);
+            }
+
+            return Ok(new OpcionesRegistroManualResponse(
+                docentes.Where(d => d.Valido).Select(d => new DocenteOpcionResponse(d.NombreCompleto, d.Correo)).ToList(),
+                await MateriasDe(carreraOrigen),
+                await MateriasDe(carreraDestino)));
+        }
+        catch (VerificacionDocentesNoDisponibleException ex)
+        {
+            return StatusCode(StatusCodes.Status503ServiceUnavailable, new { mensaje = ex.Message });
+        }
+    }
+
+    /// <summary>Revisa los datos del registro manual sin registrar nada (mismas reglas que el certificado).</summary>
+    [HttpPost("~/api/expedientes/manual/validar")]
+    [ProducesResponseType(typeof(CertificadoLeidoResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
+    public async Task<ActionResult<CertificadoLeidoResponse>> ValidarManual(
+        [FromBody] RegistroManualRequest solicitud, CancellationToken cancellationToken)
+    {
+        var lectura = await LeerManualAsync(solicitud, cancellationToken);
+        if (lectura.Error is not null) return lectura.Error;
+
+        var avisos = await AvisosMateriasDestinoAsync(lectura.Certificado!, lectura.Destino!, cancellationToken);
+        return Ok(ADto(lectura.Certificado!) with { Avisos = avisos });
+    }
+
+    /// <summary>
+    /// Registra y envía una solicitud digitada a mano. Queda igual que una registrada con el certificado:
+    /// el agente la analiza y se asigna a los dos docentes revisores.
+    /// </summary>
+    [HttpPost("~/api/expedientes/manual")]
+    [ProducesResponseType(typeof(SolicitudCertificadoResponse), StatusCodes.Status202Accepted)]
+    [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
+    public async Task<ActionResult<SolicitudCertificadoResponse>> RegistrarManual(
+        [FromBody] RegistroManualRequest solicitud, CancellationToken cancellationToken)
+    {
+        var lectura = await LeerManualAsync(solicitud, cancellationToken);
+        if (lectura.Error is not null) return lectura.Error;
+
+        // El registro manual se guarda como el documento del expediente (JSON con los datos ya validados);
+        // MS C lo lee igual que un certificado.
+        var c = lectura.Certificado!;
+        var bytes = System.Text.Json.JsonSerializer.SerializeToUtf8Bytes(c);
+        var documento = new FormFile(new MemoryStream(bytes), 0, bytes.Length, "archivo", $"registro-manual-{c.NumeroCertificado}.json")
+        {
+            Headers = new HeaderDictionary(),
+            ContentType = "application/json"
+        };
+        return await RegistrarLecturaAsync(lectura, documento, null, null, cancellationToken);
+    }
+
+    /// <summary>Arma el registro manual como el texto del certificado y lo valida con las mismas reglas.</summary>
+    private async Task<Lectura> LeerManualAsync(RegistroManualRequest? solicitud, CancellationToken cancellationToken)
+    {
+        solicitud ??= new RegistroManualRequest(null, null, null, null, null, null, null, null, null, null);
+        var correos = new[] { solicitud.Revisor1Correo, solicitud.Revisor2Correo }
+            .Where(c => !string.IsNullOrWhiteSpace(c)).Select(c => c!.Trim()).ToList();
+        IReadOnlyList<DocenteRevisorVerificado> verificados;
+        try
+        {
+            verificados = correos.Count == 0 ? Array.Empty<DocenteRevisorVerificado>() : await _docentes.VerificarAsync(correos, cancellationToken);
+        }
+        catch (VerificacionDocentesNoDisponibleException ex)
+        {
+            return Lectura.Fallo(StatusCode(StatusCodes.Status503ServiceUnavailable, new { mensaje = ex.Message }));
+        }
+
+        var nombres = verificados
+            .Where(d => !string.IsNullOrWhiteSpace(d.NombreCompleto))
+            .ToDictionary(d => d.Correo.ToLowerInvariant(), d => d.NombreCompleto);
+        var operador = User.FindFirst(System.Security.Claims.ClaimTypes.Name)?.Value ?? "operador";
+        var numero = NumeroManual(solicitud.NumeroCertificado);
+        var lineas = LineasRegistroManual(solicitud, numero, DateOnly.FromDateTime(DateTime.Today), operador, nombres);
+        return await ValidarLecturaAsync(LectorCertificadoSiha.LeerTexto(lineas), "registro manual", cancellationToken);
+    }
+
+    /// <summary>
+    /// Convierte el registro manual en las líneas del certificado SIHA-CH-01, para validarlo con exactamente
+    /// las mismas reglas que un PDF. Los campos vacíos quedan vacíos y el lector los reporta.
+    /// </summary>
+    public static IReadOnlyList<string> LineasRegistroManual(
+        RegistroManualRequest r, string numero, DateOnly fecha, string operador, IReadOnlyDictionary<string, string> nombresRevisores)
+    {
+        static string T(string? v) => string.Join(' ', (v ?? string.Empty).Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries));
+        var tipo = T(r.TipoTramite);
+        var ruta = Normalizar(tipo).Contains("movilidad") ? RutasNormativas.Movilidad : RutasNormativas.CambioCarreraOu;
+        string Revisor(string? correo)
+        {
+            var c = T(correo).ToLowerInvariant();
+            if (c.Length == 0) return string.Empty;
+            return $"{(nombresRevisores.TryGetValue(c, out var n) ? n : c)} - {c}";
+        }
+
+        var lineas = new List<string>
+        {
+            "CERTIFICADO DE HOMOLOGACIÓN SIHA-IA", "Formato SIHA-CH-01",
+            $"Número de certificado: {numero}", $"Fecha de emisión: {fecha:yyyy-MM-dd}",
+            $"Emitido por: Registro manual ({T(operador)})",
+            $"Estudiante: {T(r.EstudianteNombre)}", $"Cédula: {T(r.Cedula)}",
+            $"Tipo de trámite: {tipo}", $"Ruta normativa: {ruta}",
+            $"Institución de origen: {T(r.InstitucionOrigen)}",
+            $"Carrera de origen: {T(r.CarreraOrigen)}", $"Carrera de destino: {T(r.CarreraDestino)}",
+            $"Docente revisor 1: {Revisor(r.Revisor1Correo)}", $"Docente revisor 2: {Revisor(r.Revisor2Correo)}"
+        };
+        foreach (var m in r.Materias ?? Array.Empty<MateriaManualRequest>())
+        {
+            lineas.Add($"Materia: {T(m.Nombre)}");
+            var nota = m.Nota is null ? string.Empty : m.Nota.Value.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture);
+            lineas.Add($"Nivel: {m.Nivel?.ToString() ?? string.Empty} Período académico: {T(m.PeriodoAcademico)} Nota: {nota} Estado: {(m.Aprobada ? "Aprobada" : "Reprobada")}");
+        }
+        var numeroSolicitud = 0;
+        foreach (var s in r.Solicitudes ?? Array.Empty<SolicitudManualRequest>())
+        {
+            lineas.Add($"Solicitud {++numeroSolicitud}");
+            foreach (var o in s.MateriasOrigen ?? Array.Empty<string>())
+                if (!string.IsNullOrWhiteSpace(o)) lineas.Add($"Materia aprobada: {T(o)}");
+            lineas.Add($"Homologar por: {T(s.MateriaDestino)}");
+        }
+        lineas.Add("FIN DEL CERTIFICADO");
+        return lineas;
+    }
+
+    private static string Normalizar(string texto) => LectorCertificadoSiha.Normalizar(texto);
+
+    /// <summary>
+    /// Número del registro manual: el que se mostró al revisar (si tiene el formato MANUAL-AAAAMMDD-XXXXXX) o
+    /// uno nuevo. Si ese número ya se registró, el registro responde 409 como cualquier certificado repetido.
+    /// </summary>
+    public static string NumeroManual(string? revisado)
+        => revisado is not null && System.Text.RegularExpressions.Regex.IsMatch(revisado, "^MANUAL-[0-9]{8}-[0-9A-F]{6}$")
+            ? revisado
+            : $"MANUAL-{DateTime.UtcNow:yyyyMMdd}-{Guid.NewGuid().ToString("N")[..6].ToUpperInvariant()}";
+
+    /// <summary>Parte común del registro (certificado PDF o registro manual): crea el expediente y lo envía.</summary>
+    private async Task<ActionResult<SolicitudCertificadoResponse>> RegistrarLecturaAsync(
+        Lectura lectura, IFormFile documento, List<IFormFile>? silabos, List<string>? silabosMaterias, CancellationToken cancellationToken)
+    {
         var c = lectura.Certificado!;
         var silabosLeidos = await LeerSilabosAsync(c, silabos, silabosMaterias, cancellationToken);
         if (silabosLeidos.Error is not null)
         {
             return silabosLeidos.Error;
         }
-        var existente = await _db.Expedientes.AsNoTracking()
+        var existente = await _db.Expedientes
+            .Include(e => e.Asignaturas)
             .FirstOrDefaultAsync(e => e.NumeroCertificado == c.NumeroCertificado, cancellationToken);
+        if (existente is not null && EsFormatoAnterior(existente))
+        {
+            // Registrado con el formato anterior del certificado (sin período académico): está oculto en la
+            // lista y no se puede analizar, así que no debe impedir registrar el certificado actual.
+            // Se le cambia el número para liberar el índice único y conservar su historial.
+            existente.NumeroCertificado = NumeroArchivado(c.NumeroCertificado, existente.Codigo);
+            await _db.SaveChangesAsync(cancellationToken);
+            _logger.LogInformation(
+                "Certificado {Certificado}: el expediente {Codigo} del formato anterior se archivó como {Archivado}.",
+                c.NumeroCertificado, existente.Codigo, existente.NumeroCertificado);
+            existente = null;
+        }
         if (existente is not null)
         {
             return Conflict(new
@@ -113,7 +286,7 @@ public class CertificadosController : ControllerBase
         var almacenados = new List<(DocumentoAlmacenado Documento, string Tipo, string? Materia)>();
         try
         {
-            almacenados.Add((await _archivos.GuardarAsync(archivo!, cancellationToken), TiposDocumentoExpediente.Certificado, null));
+            almacenados.Add((await _archivos.GuardarAsync(documento, cancellationToken), TiposDocumentoExpediente.Certificado, null));
             foreach (var adjunto in silabosLeidos.Adjuntos)
             {
                 almacenados.Add((await _archivos.GuardarAsync(adjunto.Archivo, cancellationToken),
@@ -332,11 +505,19 @@ public class CertificadosController : ControllerBase
 
         using var memoria = new MemoryStream();
         await archivo!.CopyToAsync(memoria, cancellationToken);
-        var lectura = LectorCertificadoSiha.Leer(memoria.ToArray());
+        return await ValidarLecturaAsync(LectorCertificadoSiha.Leer(memoria.ToArray()), archivo.FileName, cancellationToken);
+    }
+
+    /// <summary>
+    /// Reglas que dependen del sistema (revisores DOCENTE activos y carreras del catálogo), comunes al
+    /// certificado PDF y al registro manual.
+    /// </summary>
+    private async Task<Lectura> ValidarLecturaAsync(ResultadoLecturaCertificado lectura, string procedencia, CancellationToken cancellationToken)
+    {
         if (!lectura.EsValido)
         {
-            _logger.LogWarning("Certificado SIHA rechazado. Archivo={Archivo} Errores={Errores}",
-                archivo.FileName, string.Join(" | ", lectura.Errores));
+            _logger.LogWarning("Certificado SIHA rechazado. Procedencia={Procedencia} Errores={Errores}",
+                procedencia, string.Join(" | ", lectura.Errores));
             return Lectura.Fallo(UnprocessableEntity(Rechazo(lectura.Problemas)));
         }
 
@@ -400,6 +581,20 @@ public class CertificadosController : ControllerBase
         // Movilidad externa: la carrera de otra universidad no está en el catálogo de la UTA.
         origen ??= new CarreraCatalogo("EXTERNA", lectura.Certificado.CarreraOrigen);
         return new Lectura(lectura.Certificado with { Revisores = revisores }, origen, destino, null);
+    }
+
+    /// <summary>
+    /// Expediente creado con el formato anterior del certificado SIHA: sus materias no tienen período académico.
+    /// La lista de Solicitudes los oculta con la misma regla.
+    /// </summary>
+    public static bool EsFormatoAnterior(Expediente e)
+        => e.Asignaturas.Count == 0 || e.Asignaturas.Any(a => string.IsNullOrWhiteSpace(a.PeriodoAcademico));
+
+    /// <summary>Número con el que queda archivado un expediente del formato anterior (máximo 40 caracteres).</summary>
+    public static string NumeroArchivado(string numero, string codigoExpediente)
+    {
+        var sufijo = $" (anterior {codigoExpediente[^6..]})";
+        return (numero.Length + sufijo.Length > 40 ? numero[..(40 - sufijo.Length)] : numero) + sufijo;
     }
 
     internal static Expediente ConstruirExpediente(CertificadoSiha c, CarreraCatalogo origen, CarreraCatalogo destino)

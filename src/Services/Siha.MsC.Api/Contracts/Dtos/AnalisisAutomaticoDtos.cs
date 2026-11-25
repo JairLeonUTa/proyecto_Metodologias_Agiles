@@ -24,7 +24,12 @@ public record AnalisisAutomaticoResponse(
     /// <summary>Trazabilidad técnica (reglas y versión aplicadas). No se muestra en pantalla.</summary>
     string DetalleTrazabilidad,
     /// <summary>Mínimo exigido (%) con el que se evaluó; nulo en resultados guardados antes de este dato.</summary>
-    double? Minimo = null);
+    double? Minimo = null,
+    /// <summary>
+    /// Versión de las reglas del agente con la que se hizo el análisis. Nula en análisis guardados antes de
+    /// este dato. Si no coincide con <c>AnalisisAutomaticoService.VersionReglas</c>, el análisis está desactualizado.
+    /// </summary>
+    string? VersionReglas = null);
 
 /// <summary>Regla del instructivo de homologación y si la solicitud la cumple, con la razón.</summary>
 public record RequisitoResponse(string Regla, bool Cumple, string Explicacion);
@@ -45,7 +50,7 @@ public record EvaluacionMateriaResponse(
     /// <summary>% de horas aprobadas frente a las horas de la materia de destino (máximo 100). Solo informativo.</summary>
     decimal CargaHoraria,
     /// <summary>
-    /// CUMPLE (contenidos y créditos llegan al 80 %), NO_CUMPLE (alguno no llega: no se puede homologar)
+    /// CUMPLE (contenidos y créditos llegan al 80 %), NO_CUMPLE (alguno no llega: recomienda no homologar; deciden los docentes)
     /// o CRITERIO_DOCENTE (sin sílabo para comparar: deciden los docentes).
     /// </summary>
     string Estimacion,
@@ -114,7 +119,15 @@ public record ResultadoFinalMateriaResponse(
     string Estimacion,
     int Aprobaciones,
     int Rechazos,
-    string Resultado);
+    string Resultado,
+    /// <summary>Decisión del administrador cuando los docentes no se pusieron de acuerdo (si la hay).</summary>
+    DecisionFinalResponse? DecisionFinal = null);
+
+/// <summary>Decisión final del administrador sobre una materia sin acuerdo entre los docentes.</summary>
+public record DecisionFinalResponse(bool Aprobada, string Comentario, string NombreAdministrador, DateTimeOffset FechaUtc);
+
+/// <summary>El administrador decide una materia en la que los dos docentes no se pusieron de acuerdo.</summary>
+public record DecisionFinalRequest(string? CodigoDestino, bool Aprobada, string? Comentario);
 
 /// <summary>Materia del historial del certificado (aprobada o reprobada).</summary>
 public record MateriaHistorialResponse(string Nombre, int Nivel, string PeriodoAcademico, decimal Nota, bool Aprobada);
@@ -142,4 +155,9 @@ public record SolicitudAnalisisResponse(
     /// <summary>PENDIENTE (0 de 2 respuestas), EN_REVISION (1 de 2) o RESUELTA (2 de 2).</summary>
     string EstadoRevision,
     /// <summary>True si quien consulta es uno de los revisores y aún puede responder.</summary>
-    bool PuedeResponder);
+    bool PuedeResponder,
+    /// <summary>
+    /// True si el análisis guardado se hizo con reglas anteriores del agente (por ejemplo, antes de exigir el 80 %
+    /// en créditos) y conviene volver a analizarlo.
+    /// </summary>
+    bool AnalisisDesactualizado = false);

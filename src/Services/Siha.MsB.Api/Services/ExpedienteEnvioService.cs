@@ -173,6 +173,38 @@ public class ExpedienteEnvioService
                 "Los documentos se verificaron, pero la publicación en el bus falló; el expediente quedó en estado recuperable y se reintentará conservando el CorrelationId.");
     }
 
+    /// <summary>
+    /// Vuelve a mandar al agente (MS C) una solicitud ya publicada que nunca le llegó, por ejemplo porque el
+    /// agente estaba apagado cuando se registró (el mensaje se pierde si nadie lo escucha). Publica el mismo
+    /// evento, con el mismo CorrelationId; MS C ignora lo que ya procesó. No cambia el estado del expediente.
+    /// Si el expediente aún no se publicó, hace el envío normal.
+    /// </summary>
+    public async Task<ResultadoEnvio> ReenviarAlAgenteAsync(Guid expedienteId, CancellationToken cancellationToken = default)
+    {
+        var expediente = await _db.Expedientes
+            .Include(e => e.Documentos)
+            .Include(e => e.Asignaturas)
+            .FirstOrDefaultAsync(e => e.Id == expedienteId, cancellationToken);
+        if (expediente is null)
+            return Resultado(TipoResultadoEnvio.NoEncontrado, null, $"No existe el expediente '{expedienteId}'.");
+        if (!expediente.EventoPublicado)
+            return await EnviarAsync(expedienteId,
+                expediente.Estado == ExpedienteEstados.PendienteDocumentos ? ModoEnvio.Envio : ModoEnvio.Reintento, cancellationToken);
+
+        var (verificados, problemas) = await VerificarDocumentosAsync(expediente, cancellationToken);
+        if (verificados.Count == 0)
+            return new ResultadoEnvio(TipoResultadoEnvio.RequisitosIncumplidos, expediente,
+                "Los documentos de la solicitud ya no están disponibles; no se puede volver a enviar.", problemas);
+
+        var (publicado, error) = await _publisher.PublicarAsync(ConstruirEvento(expediente, verificados), CancellationToken.None);
+        _logger.LogInformation("Reenvío al agente. ExpedienteId={ExpedienteId} CorrelationId={CorrelationId} Publicado={Publicado} Error={Error}",
+            expediente.Id, expediente.CorrelationId, publicado, error);
+        return publicado
+            ? Resultado(TipoResultadoEnvio.Publicado, expediente, "La solicitud se volvió a enviar al agente.")
+            : Resultado(TipoResultadoEnvio.FalloPublicacion, expediente,
+                "No se pudo volver a enviar: el bus de mensajes (RabbitMQ) no responde. Intente en unos minutos.");
+    }
+
     /// <summary>Construye el evento solo con los documentos verificados en disco por el servidor.</summary>
     public static SolicitudCreadaEvent ConstruirEvento(Expediente expediente, IReadOnlyCollection<ExpedienteDocumento> verificados) => new()
     {

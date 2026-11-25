@@ -31,8 +31,30 @@ public sealed class LectorCertificadosAlmacen : ILectorCertificadosAlmacen
         }
 
         var bytes = await File.ReadAllBytesAsync(ruta, cancellationToken);
+
+        // Registro manual (sin PDF): MS B guarda los datos ya validados como JSON.
+        if (EsJson(bytes))
+        {
+            try
+            {
+                return System.Text.Json.JsonSerializer.Deserialize<CertificadoSiha>(bytes);
+            }
+            catch (System.Text.Json.JsonException)
+            {
+                return null;
+            }
+        }
+
         var lectura = LectorCertificadoSiha.Leer(bytes);
         return lectura.EsValido ? lectura.Certificado : null;
+    }
+
+    /// <summary>True si el archivo es JSON (empieza con "{", con o sin BOM y espacios).</summary>
+    public static bool EsJson(byte[] bytes)
+    {
+        var i = bytes.Length >= 3 && bytes[0] == 0xEF && bytes[1] == 0xBB && bytes[2] == 0xBF ? 3 : 0;
+        while (i < bytes.Length && (bytes[i] == ' ' || bytes[i] == '\n' || bytes[i] == '\r' || bytes[i] == '\t')) i++;
+        return i < bytes.Length && bytes[i] == '{';
     }
 
     public async Task<SilaboExterno?> LeerSilaboAsync(

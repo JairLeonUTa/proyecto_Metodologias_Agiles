@@ -25,9 +25,8 @@ PUBLICO = os.path.join(RAIZ, "frontend", "public", "plantillas")
 
 # Deben existir en MS A como usuarios DOCENTE (DbSeederA.DocentesDemo los crea con Seed:DocentePassword).
 REVISORES = {
-    "hnaranjo": ("Ing. Hernán Naranjo", "hnaranjo@uta.edu.ec"),
+    "cparedes": ("Ing. Carlos Paredes", "cparedes@uta.edu.ec"),
     "mvaca": ("Ing. María Vaca", "mvaca@uta.edu.ec"),
-    "jcastro": ("Ing. Javier Castro", "jcastro@uta.edu.ec"),
 }
 
 AZUL = HexColor("#7a1f2b")  # granate institucional
@@ -59,7 +58,7 @@ class Certificado:
     carrera_destino: str
     materias: list
     solicitudes: list  # [( [materias aprobadas], materia de destino )]
-    revisores: list = field(default_factory=lambda: [REVISORES["hnaranjo"], REVISORES["mvaca"]])
+    revisores: list = field(default_factory=lambda: [REVISORES["cparedes"], REVISORES["mvaca"]])
 
 
 class Escritor:
@@ -279,7 +278,7 @@ def main():
             (["Programación"], "Algoritmos y Lógica de Programación"),
             (["Cálculo Diferencial"], "Cálculo Diferencial"),
         ],
-        revisores=[REVISORES["mvaca"], REVISORES["jcastro"]])
+        revisores=[REVISORES["mvaca"], REVISORES["cparedes"]])
 
     # Rechazado: siglas en la carrera, primer nivel no aprobado, pide una reprobada y revisor con Gmail.
     erroneo = Certificado(
@@ -292,7 +291,7 @@ def main():
             Materia("Álgebra Lineal", 1, "Abr-Sep 2013", "8.00", "Aprobada"),
         ],
         solicitudes=[(["Física"], "Física"), (["Fundamentos de Programación"], "Algoritmos y Lógica de Programación")],
-        revisores=[REVISORES["hnaranjo"], ("Docente Externo", "docente@gmail.com")])
+        revisores=[REVISORES["cparedes"], ("Docente Externo", "docente@gmail.com")])
 
     rutas = [generar(c) for c in (ti_sw, ind_sw, erroneo)]
     invalido = os.path.join(SALIDA, "plan-analitico-no-valido.pdf")
