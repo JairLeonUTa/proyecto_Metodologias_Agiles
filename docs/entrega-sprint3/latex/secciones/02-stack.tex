@@ -1,0 +1,17 @@
+\section{Justificación del stack tecnológico}
+La selección mantiene las tecnologías de la solución y separa la interfaz, los servicios, los datos y la comunicación entre componentes.
+
+\begin{tabularx}{\textwidth}{|p{0.18\textwidth}|p{0.32\textwidth}|X|}\hline
+\rowcolor{grisTarjeta}\textbf{Capa} & \textbf{Tecnología} & \textbf{Justificación}\\\hline
+Servicios & .NET 8 y ASP.NET Core & Plataforma para implementar servicios web con soporte de pruebas y despliegue.\\\hline
+Persistencia & Entity Framework Core & Mapea entidades y administra cambios de esquema mediante migraciones.\\\hline
+Datos & SQL Server A, B y C & Una base de datos por microservicio, para mantener separados sus datos.\\\hline
+Mensajería & RabbitMQ y MassTransit & Publica y consume eventos entre servicios con reintentos.\\\hline
+Enrutamiento & Ocelot & Centraliza la entrada HTTP y el direccionamiento hacia los servicios.\\\hline
+Inteligencia artificial & Ollama y embeddings & Permite ejecutar modelos y comparar contenidos dentro del entorno local.\\\hline
+Interfaz & React, Vite, TypeScript y Tailwind & Construye una interfaz web tipada y facilita el desarrollo y la presentación.\\\hline
+Entorno & Docker Compose & Levanta los componentes relacionados en un entorno reproducible.\\\hline
+Pruebas & xUnit y Vitest & Ejecutan pruebas automatizadas de backend y frontend.\\\hline
+Integración & GitHub Actions & Automatiza compilación y validaciones del proyecto.\\\hline
+\end{tabularx}
+\captionof{table}{Tecnologías y justificación}

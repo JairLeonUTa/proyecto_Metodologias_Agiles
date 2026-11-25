@@ -1,0 +1,181 @@
+\documentclass[11pt,a4paper]{article}
+
+% ---------- Idioma, fuente y página ----------
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[spanish,es-noshorthands,es-tabla]{babel}
+\usepackage{newtxtext,newtxmath}
+\usepackage[a4paper,top=3.6cm,bottom=2.5cm,left=2.5cm,right=2.5cm,headheight=70pt,headsep=14pt]{geometry}
+\usepackage{microtype}
+
+% ---------- Paquetes ----------
+\usepackage{graphicx}
+\usepackage{pdfpages}
+\usepackage[table]{xcolor}
+\usepackage{needspace}
+\usepackage{tabularx,longtable,booktabs,array,multirow}
+\usepackage{enumitem}
+\usepackage{float}
+\usepackage{caption}
+\usepackage{tikz}
+\usetikzlibrary{shapes.geometric,arrows.meta,positioning,fit,calc,shapes.misc}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.18}
+\usepackage{fancyhdr}
+\usepackage{titlesec}
+\usepackage{tocloft}
+\usepackage[hidelinks]{hyperref}
+
+\graphicspath{{../capturas/}{../img/}}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{6pt}
+\renewcommand{\arraystretch}{1.25}
+\captionsetup{font=small,labelfont=it,textfont=it,labelsep=period}
+\captionsetup[figure]{name=Figura}
+\captionsetup[table]{name=Tabla}
+\setlist[itemize]{leftmargin=1.4em,itemsep=2pt,topsep=2pt,label=\small$\blacksquare$}
+\setlist[enumerate]{leftmargin=1.6em,itemsep=2pt,topsep=2pt}
+\definecolor{grisTarjeta}{HTML}{E6E6E6}
+\definecolor{grisBorde}{HTML}{9A9A9A}
+
+% ---------- Encabezado institucional (igual al Sprint 2) ----------
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[C]{%
+  \begin{minipage}[c]{0.13\textwidth}\includegraphics[width=1.5cm]{logo-izq.png}\end{minipage}%
+  \begin{minipage}[c]{0.74\textwidth}\centering
+    {\bfseries UNIVERSIDAD TÉCNICA DE AMBATO}\\[1pt]
+    {\scriptsize\bfseries FACULTAD DE INGENIERÍA EN SISTEMAS ELECTRÓNICA E INDUSTRIAL}\\[1pt]
+    {\scriptsize\bfseries CARRERA DE SOFTWARE}\\[1pt]
+    {\scriptsize\bfseries CICLO ACADÉMICO: JULIO -- DICIEMBRE 2026}
+  \end{minipage}%
+  \begin{minipage}[c]{0.13\textwidth}\raggedleft\includegraphics[width=1.5cm]{logo-der.png}\end{minipage}}
+\fancyfoot[R]{\thepage}
+\renewcommand{\headrulewidth}{1.2pt}
+
+% ---------- Títulos de sección ----------
+\titleformat{\section}{\normalfont\large\bfseries}{\thesection.}{0.5em}{\MakeUppercase}
+\titleformat{\subsection}{\normalfont\normalsize\bfseries}{\thesubsection}{0.6em}{}
+\titleformat{\subsubsection}{\normalfont\normalsize\bfseries\itshape}{}{0em}{}
+\titlespacing*{\section}{0pt}{12pt}{6pt}
+\titlespacing*{\subsection}{0pt}{10pt}{4pt}
+
+% ---------- Índice "CONTENIDO" ----------
+\addto\captionsspanish{\renewcommand{\contentsname}{CONTENIDO}}
+\renewcommand{\cftsecleader}{\cftdotfill{\cftdotsep}}
+\renewcommand{\cftsecaftersnum}{.}
+\setlength{\cftbeforesecskip}{3pt}
+\renewcommand{\listfigurename}{ÍNDICE DE FIGURAS}
+\renewcommand{\listtablename}{ÍNDICE DE TABLAS}
+
+% ---------- Tarjeta de historia de usuario ----------
+% \historia{numero}{usuario}{nombre}{prioridad}{riesgo}{puntos}{iteracion}{responsables}{descripcion}{criterios}{observaciones}{mockups}
+% LaTeX admite hasta 9 parámetros: \historia guarda los 9 primeros y \historiaFin recibe los 3 últimos.
+\newcommand{\historia}[9]{%
+\def\hNum{#1}\def\hUsu{#2}\def\hNom{#3}\def\hPri{#4}\def\hRie{#5}\def\hPun{#6}\def\hIte{#7}\def\hRes{#8}\def\hDes{#9}%
+\historiaFin}
+\newcommand{\historiaFin}[3]{%
+\par\noindent
+\begin{tabularx}{\textwidth}{|X|X|}
+\hline
+\rowcolor{grisTarjeta}\multicolumn{2}{|l|}{\large\textbf{Historia de Usuario}}\\\hline
+\textbf{Número:} \hNum & \textbf{Usuario:} \hUsu\\\hline
+\multicolumn{2}{|p{\dimexpr\textwidth-2\tabcolsep}|}{\textbf{Nombre historia:} \hNom}\\\hline
+\textbf{Prioridad en negocio:} \hPri & \textbf{Riesgo en desarrollo:} \hRie\\\hline
+\textbf{Puntos estimados:} \hPun & \textbf{Iteración asignada:} \hIte\\\hline
+\multicolumn{2}{|p{\dimexpr\textwidth-2\tabcolsep}|}{\textbf{Programador responsable:} \hRes}\\\hline
+\multicolumn{2}{|p{\dimexpr\textwidth-2\tabcolsep}|}{\textbf{Descripción:}\newline \hDes}\\\hline
+\multicolumn{2}{|p{\dimexpr\textwidth-2\tabcolsep}|}{\textbf{Validación (criterios de aceptación):}\begin{itemize}#1\end{itemize}}\\\hline
+\multicolumn{2}{|p{\dimexpr\textwidth-2\tabcolsep}|}{\textbf{Observaciones:} #2}\\\hline
+\multicolumn{2}{|p{\dimexpr\textwidth-2\tabcolsep}|}{\textbf{Mockups / pantallas asociadas:} #3}\\\hline
+\end{tabularx}\par\medskip}
+
+% ---------- Tarjeta de tarea ----------
+% \tarea{numero}{historia}{nombre}{tipo: D, C, M u O}{horas}{inicio}{fin}{responsable}{descripcion}
+\newcommand{\marca}[2]{\ifx#1#2$\boxtimes$\else$\square$\fi}
+\newcommand{\tarea}[9]{%
+\par\noindent
+\begin{tabularx}{\textwidth}{|X|X|}
+\hline
+\rowcolor{grisTarjeta}\multicolumn{2}{|l|}{\textbf{Tarea}}\\\hline
+\textbf{Número tarea:} #1 & \textbf{Número historia:} #2\\\hline
+\multicolumn{2}{|p{\dimexpr\textwidth-2\tabcolsep}|}{\textbf{Nombre tarea:} #3}\\\hline
+\textbf{Tipo de tarea:} \marca{#4}{D} Desarrollo \marca{#4}{C} Corrección \marca{#4}{M} Mejora \marca{#4}{O} Otra & \textbf{Horas estimadas:} #5\\\hline
+\textbf{Fecha inicio:} #6 & \textbf{Fecha fin:} #7\\\hline
+\multicolumn{2}{|p{\dimexpr\textwidth-2\tabcolsep}|}{\textbf{Programador responsable:} #8}\\\hline
+\multicolumn{2}{|p{\dimexpr\textwidth-2\tabcolsep}|}{\textbf{Descripción:} #9}\\\hline
+\end{tabularx}\par\medskip}
+
+% ---------- Diagrama de casos de uso (actor dibujado como muñeco, igual que en el Sprint 2) ----------
+\definecolor{grisCaso}{HTML}{E4E8F0}
+\tikzset{cu/.style={draw,ellipse,fill=grisCaso,align=center,font=\small,minimum width=4.1cm,minimum height=1cm,inner sep=1pt},
+  rel/.style={densely dashed,-{Stealth[length=2mm]},font=\scriptsize}}
+% \munieco{nombre}{(x,y)}{etiqueta}: crea los puntos nombre-e (derecha) y nombre-w (izquierda) para unir líneas.
+\newcommand{\munieco}[3]{%
+  \begin{scope}[shift={#2}]
+    \draw[line width=0.9pt] (0,0.66) circle (0.18);
+    \draw[line width=0.9pt] (0,0.48)--(0,-0.12) (-0.34,0.28)--(0.34,0.28) (0,-0.12)--(-0.28,-0.6) (0,-0.12)--(0.28,-0.6);
+    \node[align=center,font=\small] at (0,-1.02) {#3};
+    \coordinate (#1-e) at (0.42,0.2); \coordinate (#1-w) at (-0.42,0.2);
+  \end{scope}}
+\newcommand{\incluye}[2]{\draw[rel] (c#1) -- node[right]{«incluye»} (c#2);}
+\newcommand{\extiende}[2]{\draw[rel] (c#1) -- node[right]{«extiende»} (c#2);}
+% Relación entre casos que no están uno debajo del otro: se dibuja por el lado derecho.
+\newcommand{\incluyeLado}[2]{\draw[rel] (c#1.east) to[out=-15,in=15,looseness=1.6] node[right]{«incluye»} (c#2.east);}
+\newcommand{\extiendeLado}[2]{\draw[rel] (c#1.east) to[out=15,in=-15,looseness=1.6] node[right]{«extiende»} (c#2.east);}
+% \casosdeuso{historia}{actor principal (vacío si se dibujan a mano)}{casos {a},{b},...}{casos unidos al actor}{dibujo extra}{explicación}
+\newcommand{\casosdeuso}[6]{%
+\par\needspace{12\baselineskip}\noindent\textbf{\textit{Diagrama de casos de uso -- #1}}\par
+\begin{figure}[H]\centering
+\begin{tikzpicture}
+  \foreach \c [count=\i] in {#3} {\node[cu] (c\i) at (5.6,{-1.45*(\i-1)}) {\c}; \xdef\ncu{\i}}
+  \node[font=\bfseries] (titulo) at (5.6,1.05) {Sistema de homologación};
+  \node[draw,rounded corners=5pt,inner sep=8pt,fit=(titulo)(c1)(c\ncu)] {};
+  \if\relax\detokenize{#2}\relax\else
+    \munieco{act}{(0,{-0.725*(\ncu-1)})}{#2}
+    \foreach \i in {#4} {\draw (act-e) -- (c\i.west);}
+  \fi
+  #5
+\end{tikzpicture}
+\caption{Diagrama de casos de uso de la #1}
+\end{figure}
+#6\par\medskip}
+
+% ---------- Prueba con captura (formato de la sección de resultados del Sprint 2) ----------
+% \prueba{titulo}{accion}{archivo}{pie de figura}{resultado obtenido}{ancho relativo}
+\newcommand{\prueba}[6]{%
+\par\needspace{0.5\textheight}%
+{\bfseries\itshape #1}\par
+\textbf{Acción:} #2\par
+\begin{figure}[H]\centering
+\includegraphics[width=#6\textwidth,height=0.55\textheight,keepaspectratio]{#3}
+\caption{#4}
+\end{figure}
+\textbf{Resultado obtenido:} #5\par\bigskip}
+\usepackage{needspace}
+
+\begin{document}
+
+% ---------- Portada (misma del Sprint 2, con el tema actualizado) ----------
+\includepdf[pages=1]{../img/portada.pdf}
+
+\setcounter{page}{2}
+\begin{center}
+{\large\bfseries I. INFORME}
+\end{center}
+\tableofcontents
+\clearpage
+
+\input{secciones/01-introduccion}
+\input{secciones/02-stack}
+\input{secciones/03-arquitectura}
+\input{secciones/04-metodologia}
+\input{secciones/05-sprint1}
+\input{secciones/06-sprint2}
+\input{secciones/07-correcciones}
+\input{secciones/08-planificacion-sprint3}
+\input{secciones/09-historias-sprint3}
+\input{secciones/10-pruebas}
+\input{secciones/11-cierre}
+
+\end{document}

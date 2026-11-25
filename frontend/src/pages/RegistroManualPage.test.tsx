@@ -251,6 +251,23 @@ describe('Registro manual de una solicitud (sin PDF)', () => {
     expect(screen.getByLabelText(/Homologar por/)).toHaveValue('Fisica');
   });
 
+  it('al agregar las sugerencias deja elegida la materia de destino aunque cambien las mayúsculas', async () => {
+    const user = userEvent.setup();
+    api.afinidadManual.mockResolvedValue({
+      sugerencias: [{ materiaOrigen: 'Fisica', materiaDestino: 'FISICA', porcentaje: 60 }],
+      solicitudes: [],
+    });
+    abrir();
+    await elegirCarreras(user);
+    await screen.findByLabelText(/Cargar las materias de la malla/);
+    await user.selectOptions(screen.getByLabelText('Materia'), 'Fisica');
+    await user.type(screen.getByLabelText('Nota'), '8');
+
+    await user.click(await screen.findByRole('button', { name: 'Agregar todas las sugerencias' }));
+
+    expect(screen.getByLabelText(/Homologar por/)).toHaveValue('Fisica');
+  });
+
   it('ofrece períodos académicos de la UTA precargados en el combobox Período académico', () => {
     abrir();
 

@@ -1,0 +1,177 @@
+\section{Sprint 2: análisis de la solicitud}
+\subsection{Propósito y objetivos}
+El propósito fue procesar planes con texto o escaneados, calcular créditos y contenidos con las reglas vigentes y consultar precedentes para entregar una estimación explicable a revisión docente. El período planificado fue del 21 de octubre al 4 de noviembre de 2026, con revisión el 4 de noviembre. Las cinco historias fueron HU-07 a HU-11.
+
+\subsection{Capacidad}
+\begin{tabularx}{\textwidth}{|X|l|c|c|c|c|}\hline\rowcolor{grisTarjeta}\textbf{Integrante} & \textbf{Rol} & \textbf{Brutas} & \textbf{Coordinación} & \textbf{Técnicas} & \textbf{Planificado}\\\hline
+Jair León & Scrum Master / Backend & 30 h & 1 h & 29 h & 46 h\\\hline Paul Acurio & Product Owner Proxy / IA & 30 h & 1 h & 29 h & 36 h\\\hline Alex Chisag & Frontend / UI-UX & 30 h & 1 h & 29 h & 32 h\\\hline Rolando Sebastián Miranda & Backend / QA-DevOps & 30 h & 1 h & 29 h & 39 h\\\hline Total & & 120 h & 4 h & 116 h & 153 h\\\hline
+\end{tabularx}\captionof{table}{Capacidad del Sprint 2}
+Las tareas sumaron 153 horas frente a una capacidad técnica de 116 horas. La planificación registró una diferencia de 37 horas como riesgo del sprint.
+
+\subsection{Sprint Backlog}
+\begin{tabularx}{\textwidth}{|c|X|c|c|}\hline\rowcolor{grisTarjeta}\textbf{Historia} & \textbf{Alcance} & \textbf{SP} & \textbf{Horas}\\\hline
+HU-07 & Leer el plan analítico y confirmar datos dudosos & 8 & 36\\\hline HU-08 & Calcular con reglas y umbrales aprobados & 3 & 18\\\hline HU-09 & Mostrar proporción de créditos y alertas & 3 & 20\\\hline HU-10 & Leer planes escaneados y comparar contenidos & 8 & 40\\\hline HU-11 & Consultar casos anteriores y resoluciones & 5 & 39\\\hline Total & & 27 & 153\\\hline
+\end{tabularx}\captionof{table}{Sprint Backlog del Sprint 2}
+
+\subsection{Historias y pruebas de aceptación}
+Las siguientes tarjetas condensan las historias incluidas en el informe entregado del Sprint 2. En la tabla de pruebas se resumen los escenarios de aceptación descritos en sus secciones.
+
+\subsubsection{HU-07: Lectura del plan y confirmación}
+\historia{HU-07}{Operador académico}{Leer el plan analítico y confirmar los datos dudosos}{Alta}{Media}{8 SP}{21 al 23 de octubre}{Jair León (5 h); Paul Acurio (8 h); Alex Chisag (13 h); Rolando Miranda (10 h)}{Como operador académico, quiero que el sistema lea créditos, horas y temas del PDF y me pida revisar lo que no leyó con seguridad, para evitar evaluar con datos equivocados.}{\item Dado un PDF con texto, cuando se envía, entonces se muestran los datos leídos y un aviso repetido no genera una evaluación duplicada.\item Dado un dato obligatorio ausente o confianza menor a 0,80, cuando termina la lectura, entonces queda pendiente de confirmación y no empieza el cálculo.\item Dado un PDF escaneado, cuando se procesa, entonces queda pendiente de lectura con IA y no se inventan datos.}{La lectura escaneada continúa en HU-10.}{M-07 (Bandeja de procesamiento); M-08 (Confirmar los datos leídos)}
+\casosdeuso{HU-07}{Operador académico}{{Consultar la bandeja\\de procesamiento},{Revisar y corregir\\los datos leídos},{Confirmar y calcular},{Validar los datos\\obligatorios}}{1,2,3}{\extiende{2}{3}\incluye{3}{4}}{El operador consulta la bandeja, corrige los datos dudosos solo si hace falta y confirma; la confirmación siempre valida los datos obligatorios.}
+\par\needspace{8\baselineskip}\noindent\textbf{\textit{Desglose de tareas -- HU-07}}\par
+La historia se divide en 9 tareas que suman 36 horas.\par\medskip
+\tarea{TA-07.1}{HU-07}{Recibir cada solicitud enviada una sola vez}{D}{3 h}{21/10/2026}{21/10/2026}{Jair León}{Cuando el Servicio de Expedientes avisa que hay una solicitud nueva, el Servicio de Análisis la recibe y obtiene el PDF guardado. Si el mismo aviso llega dos veces, solo se procesa el primero.}
+\tarea{TA-07.2}{HU-07}{Preparar la IA local y las tablas del análisis}{O}{5 h}{21/10/2026}{21/10/2026}{Sebastián Miranda}{Agregar el contenedor de Ollama al docker-compose y crear en la base de datos del Servicio de Análisis las tablas donde se guardan los datos leídos y las evaluaciones.}
+\tarea{TA-07.3}{HU-07}{Leer créditos, horas y unidades de un PDF con texto}{D}{5 h}{21/10/2026}{21/10/2026}{Paul Acurio}{Leer el plan analítico y calcular qué tan segura fue la lectura (confianza de 0 a 1). Con 0,80 o más los datos se aceptan solos; con menos, pasan a revisión del operador.}
+\tarea{TA-07.4}{HU-07}{Pantalla de bandeja de procesamiento}{D}{3 h}{21/10/2026}{21/10/2026}{Alex Chisag}{Listar los expedientes que se están procesando con su nivel de confianza y el aviso “Confirmación pendiente” cuando corresponda.}
+\tarea{TA-07.5}{HU-07}{Servicios para consultar y confirmar los datos leídos}{D}{2 h}{22/10/2026}{22/10/2026}{Jair León}{Crear las rutas que permiten al operador ver los datos leídos de un expediente y enviar los datos corregidos.}
+\tarea{TA-07.6}{HU-07}{Detectar PDF escaneados y lecturas poco seguras}{D}{3 h}{22/10/2026}{22/10/2026}{Paul Acurio}{Si la confianza es baja o falta un dato obligatorio, el expediente queda en “Confirmación pendiente”. Si el PDF no tiene texto, queda en “Pendiente de lectura con IA” y continúa en la HU-10.}
+\tarea{TA-07.7}{HU-07}{Formulario para revisar y corregir los datos leídos}{D}{5 h}{22/10/2026}{22/10/2026}{Alex Chisag}{El operador revisa y corrige los créditos, las horas y las unidades. El botón “Confirmar y calcular” habilita el análisis.}
+\tarea{TA-07.8}{HU-07}{Pruebas unitarias de la lectura y del aviso repetido}{O}{5 h}{22/10/2026}{22/10/2026}{Sebastián Miranda}{Probar con xUnit la lectura de un PDF con texto, el bloqueo cuando faltan datos y que un aviso repetido no cree dos evaluaciones.}
+\tarea{TA-07.9}{HU-07}{Conectar la confirmación con el Servicio de Análisis}{D}{5 h}{23/10/2026}{23/10/2026}{Alex Chisag}{Enlazar el formulario con el servicio de confirmación y comprobar que el cálculo sigue bloqueado mientras falte algún dato.}
+\par\needspace{14\baselineskip}\noindent\textbf{\textit{Mockup de HU-07}}\par
+\begin{figure}[H]\centering\fbox{\includegraphics[width=0.93\textwidth]{mockups/m07.png}}
+\caption{Mockup M-07 -- Bandeja de procesamiento}
+\end{figure}
+\begin{figure}[H]\centering\fbox{\includegraphics[width=0.93\textwidth]{mockups/m08.png}}
+\caption{Mockup M-08 -- Confirmar los datos leídos}
+\end{figure}
+\par\needspace{6\baselineskip}\noindent\textbf{\textit{Pruebas de aceptación -- HU-07}}\par
+
+\begin{longtable}{|p{1.4cm}|p{3.7cm}|p{4.6cm}|p{5.1cm}|}
+\hline\rowcolor{grisTarjeta}\textbf{N.º} & \textbf{Prueba} & \textbf{Entrada} & \textbf{Resultado esperado}\\\hline
+\endhead
+PA-07.1 & Lectura de un PDF con texto & Solicitud enviada con un plan analítico con texto & Se muestran los datos leídos con confianza 0,94 y el estado Datos leídos.\\\hline
+PA-07.2 & Aviso de solicitud repetido & El mismo aviso llega dos veces & Se crea una sola evaluación.\\\hline
+PA-07.3 & Lectura poco segura & PDF sin créditos legibles & Estado Confirmación pendiente; el cálculo no empieza.\\\hline
+PA-07.4 & Confirmar con datos vacíos & Formulario con los créditos vacíos & Aviso Ingrese los créditos; no se guarda nada.\\\hline
+PA-07.5 & PDF escaneado & PDF sin texto & Estado Pendiente de lectura con IA, sin datos inventados.\\\hline
+\caption{Pruebas de aceptación de la HU-07 (definidas en el Sprint 2)}
+\end{longtable}
+
+
+\subsubsection{HU-08: Reglas y umbrales}
+\historia{HU-08}{Docente evaluador}{Calcular con las reglas y umbrales aprobados}{Alta}{Media}{3 SP}{23 y 30 de octubre}{Jair León (10 h); Paul Acurio (3 h); Alex Chisag (2 h); Rolando Miranda (3 h)}{Como docente evaluador, quiero que el cálculo use las reglas vigentes aprobadas, para que el análisis sea consistente y explicable.}{\item Dada una solicitud confirmada, cuando se procesa, entonces el servicio consulta la versión vigente de las reglas.\item Dado un resultado calculado, cuando se presenta, entonces se identifican las reglas aplicadas.}{Consume las reglas del MS A.}{No tiene pantalla propia; las reglas aplicadas se ven en M-09 y M-11.}
+\casosdeuso{HU-08}{Docente evaluador}{{Ver los umbrales y la versión\\de regla aplicados},{Calcular con las\\reglas vigentes},{Consultar las reglas\\al Servicio de Reglas}}{1,2}{\incluye{2}{3}\munieco{reg}{(11.2,-3.1)}{Servicio de\\Reglas}\draw (reg-w) -- (c3.east);}{Cada cálculo incluye la consulta de las reglas vigentes al Servicio de Reglas; el docente ve qué umbrales y qué versión se aplicaron.}
+\par\needspace{8\baselineskip}\noindent\textbf{\textit{Desglose de tareas -- HU-08}}\par
+La historia se divide en 4 tareas que suman 18 horas.\par\medskip
+\tarea{TA-08.1}{HU-08}{Consultar las reglas vigentes al Servicio de Reglas}{D}{10 h}{23/10/2026}{23/10/2026}{Jair León}{Antes de calcular, el Servicio de Análisis pide al Servicio de Reglas los umbrales vigentes y su versión, por una conexión interna (gRPC) que no queda expuesta fuera de Docker. Si no responde, el expediente queda “Pendiente de reglas” y se registra el error.}
+\tarea{TA-08.2}{HU-08}{Probar el cambio de un umbral y la caída del servicio}{M}{3 h}{23/10/2026}{23/10/2026}{Paul Acurio}{Cambiar un umbral y verificar que la siguiente evaluación usa el valor nuevo. Apagar el Servicio de Reglas y verificar que el expediente se detiene sin usar valores inventados.}
+\tarea{TA-08.3}{HU-08}{Pruebas de integración de la consulta de reglas}{O}{3 h}{23/10/2026}{23/10/2026}{Sebastián Miranda}{Siete casos con xUnit, entre ellos: respuesta correcta, tiempo de espera agotado, datos inválidos y versión incompatible.}
+\tarea{TA-08.4}{HU-08}{Mostrar en las pantallas las reglas aplicadas}{D}{2 h}{30/10/2026}{30/10/2026}{Alex Chisag}{Conectar las pantallas del docente con las respuestas reales del Servicio de Análisis para que muestren los umbrales y la versión de la regla que se usaron.}
+\par\needspace{14\baselineskip}\noindent\textbf{\textit{Mockup de HU-08}}\par
+La HU-08 no tiene pantalla propia: las reglas y la versión aplicadas se muestran en los mockups M-09 (Créditos y alertas) y M-11 (Cobertura de contenidos).\par\medskip
+\par\needspace{6\baselineskip}\noindent\textbf{\textit{Pruebas de aceptación -- HU-08}}\par
+
+\begin{longtable}{|p{1.4cm}|p{3.7cm}|p{4.6cm}|p{5.1cm}|}
+\hline\rowcolor{grisTarjeta}\textbf{N.º} & \textbf{Prueba} & \textbf{Entrada} & \textbf{Resultado esperado}\\\hline
+\endhead
+PA-08.1 & Reglas en el resultado & Reglas en su versión 3; análisis de un expediente & El resultado muestra 80 ~\%, 15 ~\%, 0,75 y versión 3.\\\hline
+PA-08.2 & Cambio de umbral & El administrador sube el parecido mínimo a 0,80 & Se usa 0,80 y la versión sube a 4.\\\hline
+PA-08.3 & Servicio de Reglas apagado & Análisis de un expediente confirmado & Estado Pendiente de reglas con el error registrado.\\\hline
+\caption{Pruebas de aceptación de la HU-08 (definidas en el Sprint 2)}
+\end{longtable}
+
+
+\subsubsection{HU-09: Créditos y alertas}
+\historia{HU-09}{Docente evaluador}{Ver proporción de créditos y alertas}{Alta}{Media}{3 SP}{26 de octubre}{Jair León (7 h); Paul Acurio (5 h); Alex Chisag (3 h); Rolando Miranda (5 h)}{Como docente evaluador, quiero ver la proporción de créditos y las alertas antes de comparar, para valorar las condiciones de la solicitud.}{\item Dado un caso con créditos, cuando se analiza, entonces se muestra su proporción.\item Dado un caso fuera de las condiciones de vigencia o matrícula, cuando se analiza, entonces se presentan las alertas.}{Depende de los datos confirmados de HU-07 y las reglas de HU-08.}{M-09 (Créditos y alertas)}
+\casosdeuso{HU-09}{Docente evaluador}{{Consultar la proporción\\de créditos},{Ver las alertas\\de admisibilidad},{Evaluar la vigencia\\(10 años)},{Detectar la tercera\\matrícula}}{1,2}{\incluye{2}{3}\incluyeLado{2}{4}}{Las alertas de admisibilidad incluyen siempre el control de vigencia y el de tercera matrícula.}
+\par\needspace{8\baselineskip}\noindent\textbf{\textit{Desglose de tareas -- HU-09}}\par
+La historia se divide en 4 tareas que suman 20 horas.\par\medskip
+\tarea{TA-09.1}{HU-09}{Calcular la proporción de créditos y los controles de vigencia y matrícula}{D}{7 h}{26/10/2026}{26/10/2026}{Jair León}{La proporción de créditos se obtiene dividiendo los créditos de origen para los de destino y multiplicando por 100, con un máximo de 100~\%. Si la materia se aprobó hace más de 10 años, el caso pasa a “Validación de conocimientos”; si el estudiante está en tercera matrícula, el caso se bloquea.}
+\tarea{TA-09.2}{HU-09}{Pruebas de los controles con casos de la normativa}{M}{5 h}{26/10/2026}{26/10/2026}{Paul Acurio}{Comprobar que 4 frente a 3 créditos dan 100 ~\%, que 2 frente a 3 dan 66,67 ~\%, que más de 10 años deriva a validación de conocimientos, que la tercera matrícula bloquea y que un destino sin créditos da error.}
+\tarea{TA-09.3}{HU-09}{Panel de créditos y alertas}{D}{3 h}{26/10/2026}{26/10/2026}{Alex Chisag}{Mostrar la proporción de créditos como “dato de apoyo” y las alertas “Vigencia mayor a 10 años” y “Tercera matrícula detectada”.}
+\tarea{TA-09.4}{HU-09}{Pruebas con casos límite del cálculo de créditos}{O}{5 h}{26/10/2026}{26/10/2026}{Sebastián Miranda}{Pruebas escritas antes del código: créditos en cero o negativos, créditos de otra universidad y dos materias de origen para un mismo destino.}
+\par\needspace{14\baselineskip}\noindent\textbf{\textit{Mockup de HU-09}}\par
+\begin{figure}[H]\centering\fbox{\includegraphics[width=0.93\textwidth]{mockups/m09.png}}
+\caption{Mockup M-09 -- Créditos y alertas}
+\end{figure}
+\par\needspace{6\baselineskip}\noindent\textbf{\textit{Pruebas de aceptación -- HU-09}}\par
+
+\begin{longtable}{|p{1.4cm}|p{3.7cm}|p{4.6cm}|p{5.1cm}|}
+\hline\rowcolor{grisTarjeta}\textbf{N.º} & \textbf{Prueba} & \textbf{Entrada} & \textbf{Resultado esperado}\\\hline
+\endhead
+PA-09.1 & Créditos suficientes & 4 créditos de origen y 3 de destino & 100,00 ~\% con la etiqueta dato de apoyo.\\\hline
+PA-09.2 & Créditos insuficientes & 2 créditos de origen y 3 de destino & 66,67 ~\%.\\\hline
+PA-09.3 & Destino sin créditos & 4 frente a 0 & Mensaje de error; no se calcula.\\\hline
+PA-09.4 & Materia de más de 10 años & Cambio de carrera; materia aprobada hace 12 años & Alerta de vigencia y paso a Validación de conocimientos.\\\hline
+PA-09.5 & Tercera matrícula & Estudiante con tercera matrícula & Caso bloqueado con la alerta correspondiente.\\\hline
+\caption{Pruebas de aceptación de la HU-09 (definidas en el Sprint 2)}
+\end{longtable}
+
+
+\subsubsection{HU-10: Lectura escaneada y comparación}
+\historia{HU-10}{Docente evaluador}{Leer planes escaneados y comparar tema por tema}{Alta}{Alta}{8 SP}{27 al 29 de octubre}{Jair León (11 h); Paul Acurio (13 h); Alex Chisag (5 h); Rolando Miranda (11 h)}{Como docente evaluador, quiero que el sistema lea planes escaneados y compare sus temas, para revisar la cobertura de contenidos con evidencia.}{\item Dado un PDF escaneado, cuando se procesa, entonces se extrae información sin inventar los campos que no se reconocen.\item Dadas las materias de origen y destino, cuando se comparan, entonces se presenta el resultado por tema.}{Usa datos confirmados y reglas vigentes.}{M-10 (Estado de la lectura); M-11 (Cobertura de contenidos)}
+\casosdeuso{HU-10}{}{{Combinar dos materias\\de origen},{Consultar la cobertura\\por unidad},{Comparar temas\\con IA},{Ver el estado de lectura\\del PDF escaneado}}{}{\munieco{doc}{(0,-1.45)}{Docente\\evaluador}\draw (doc-e) -- (c2.west);\munieco{op}{(0,-4.35)}{Operador\\académico}\draw (op-e) -- (c4.west);\extiende{1}{2}\incluye{2}{3}\munieco{ia}{(11.4,-2.9)}{Motor IA local\\(Ollama)}\draw (ia-w) -- (c3.east);}{El docente consulta la cobertura por unidad, que siempre compara los temas con la IA local; si hay dos materias de origen, se combinan. El operador ve el estado de lectura de los PDF escaneados.}
+\par\needspace{8\baselineskip}\noindent\textbf{\textit{Desglose de tareas -- HU-10}}\par
+La historia se divide en 11 tareas que suman 40 horas.\par\medskip
+\tarea{TA-10.1}{HU-10}{Representar los temas con la IA local}{D}{3 h}{27/10/2026}{27/10/2026}{Jair León}{Usar Semantic Kernel con Ollama para convertir el texto de cada unidad en un vector numérico que permita comparar qué tanto se parecen dos temas.}
+\tarea{TA-10.2}{HU-10}{Leer PDF escaneados con OCR e IA sin inventar datos}{D}{4 h}{27/10/2026}{27/10/2026}{Paul Acurio}{Aplicar OCR y pedir a la IA que extraiga los datos con la instrucción de no inventar: lo dudoso queda vacío y pasa a revisión del operador (HU-07).}
+\tarea{TA-10.3}{HU-10}{Pantalla del estado de la lectura}{D}{2 h}{27/10/2026}{27/10/2026}{Alex Chisag}{Mostrar las etapas de la lectura: archivo recibido, lectura del texto, análisis con IA y validación del operador.}
+\tarea{TA-10.4}{HU-10}{Guardar los vectores de las materias de Software}{D}{3 h}{27/10/2026}{27/10/2026}{Sebastián Miranda}{Calcular una sola vez y guardar los vectores de las unidades de las 43 asignaturas de la carrera, para no recalcularlos en cada análisis.}
+\tarea{TA-10.5}{HU-10}{Comparar temas y calcular el porcentaje de contenido}{D}{4 h}{28/10/2026}{28/10/2026}{Jair León}{Una unidad de la UTA está cubierta si se parece al menos 0,75 a alguna unidad de origen. El porcentaje se pondera por horas: 6 de 7 unidades de igual duración dan 85,71 ~\%.}
+\tarea{TA-10.6}{HU-10}{Ajustar la comparación con casos reales}{M}{4 h}{28/10/2026}{28/10/2026}{Paul Acurio}{Probar con planes de la FISEI y sílabos de otras universidades que la comparación acierta en contenido y profundidad, y ajustarla si hace falta.}
+\tarea{TA-10.7}{HU-10}{Tabla de cobertura por unidad}{D}{3 h}{28/10/2026}{28/10/2026}{Alex Chisag}{Una fila por unidad de la UTA con su parecido, sus horas y si está cubierta o falta.}
+\tarea{TA-10.8}{HU-10}{Pruebas unitarias del porcentaje de contenido}{O}{5 h}{28/10/2026}{28/10/2026}{Sebastián Miranda}{Casos fijos: 6 de 7 unidades dan 85,71 ~\%; un plan sin horas se bloquea; un parecido justo en el umbral cuenta como cubierto.}
+\tarea{TA-10.9}{HU-10}{Combinar dos materias de origen para un destino}{D}{4 h}{29/10/2026}{29/10/2026}{Jair León}{Sumar las unidades cubiertas por dos materias (Física I + Física II para Física) e impedir que una misma materia de origen se use para dos destinos del mismo expediente.}
+\tarea{TA-10.10}{HU-10}{Pruebas funcionales de la combinación y de los temas faltantes}{M}{5 h}{29/10/2026}{29/10/2026}{Paul Acurio}{Verificar que ninguna unidad se cuenta dos veces y que el sistema lista exactamente los temas que faltan.}
+\tarea{TA-10.11}{HU-10}{Pruebas de carga de la lectura con IA}{O}{3 h}{29/10/2026}{29/10/2026}{Sebastián Miranda}{Medir memoria, procesador y tiempo de respuesta con PDF de varias páginas y ajustar los tiempos de espera.}
+\par\needspace{14\baselineskip}\noindent\textbf{\textit{Mockup de HU-10}}\par
+\begin{figure}[H]\centering\fbox{\includegraphics[width=0.93\textwidth]{mockups/m10.png}}
+\caption{Mockup M-10 -- Estado de la lectura}
+\end{figure}
+\begin{figure}[H]\centering\fbox{\includegraphics[width=0.93\textwidth]{mockups/m11.png}}
+\caption{Mockup M-11 -- Cobertura de contenidos}
+\end{figure}
+\par\needspace{6\baselineskip}\noindent\textbf{\textit{Pruebas de aceptación -- HU-10}}\par
+
+\begin{longtable}{|p{1.4cm}|p{3.7cm}|p{4.6cm}|p{5.1cm}|}
+\hline\rowcolor{grisTarjeta}\textbf{N.º} & \textbf{Prueba} & \textbf{Entrada} & \textbf{Resultado esperado}\\\hline
+\endhead
+PA-10.1 & PDF escaneado legible & PDF sin texto & Datos leídos; lo dudoso queda vacío para el operador.\\\hline
+PA-10.2 & Cobertura de 6 de 7 unidades & 7 unidades de 12 h; 6 con parecido de 0,75 o más & 85,71 ~\% y la unidad 7 marcada como faltante.\\\hline
+PA-10.3 & Parecido bajo el umbral & Unidad con parecido 0,74 & La unidad queda como faltante.\\\hline
+PA-10.4 & Dos materias para un destino & Física I y Física II para Física & Los temas se suman sin contarse dos veces.\\\hline
+PA-10.5 & Misma materia en dos destinos & Física I usada en dos destinos & El sistema lo rechaza.\\\hline
+\caption{Pruebas de aceptación de la HU-10 (definidas en el Sprint 2)}
+\end{longtable}
+
+
+\subsubsection{HU-11: Precedentes}
+\historia{HU-11}{Docente evaluador}{Consultar casos anteriores y sus resoluciones}{Media}{Media}{5 SP}{29 de octubre al 3 de noviembre}{Jair León (13 h); Paul Acurio (7 h); Alex Chisag (9 h); Rolando Miranda (10 h)}{Como docente evaluador, quiero consultar casos anteriores idénticos y su resolución, para disponer de antecedentes durante la revisión.}{\item Dada una solicitud con materias identificables, cuando se consulta, entonces se muestran precedentes coincidentes y su resolución.\item Dado que no hay precedentes, cuando se consulta, entonces se informa que no existen coincidencias.}{La búsqueda de casos anteriores aporta contexto para la revisión.}{M-12 (Consulta de precedentes)}
+\casosdeuso{HU-11}{Docente evaluador}{{Consultar precedentes},{Ver la resolución\\del caso idéntico},{Mantener los controles\\normativos}}{1}{\extiende{2}{1}\incluyeLado{1}{3}}{Ver la resolución solo ocurre si hay coincidencia exacta; la consulta siempre mantiene los controles normativos del caso actual.}
+\par\needspace{8\baselineskip}\noindent\textbf{\textit{Desglose de tareas -- HU-11}}\par
+La historia se divide en 12 tareas que suman 39 horas.\par\medskip
+\tarea{TA-11.1}{HU-11}{Pantalla de consulta de precedentes}{D}{5 h}{29/10/2026}{29/10/2026}{Alex Chisag}{Mostrar la resolución anterior, las materias comparadas y la universidad de origen. Si no hay coincidencias, mostrar “Sin precedentes registrados”.}
+\tarea{TA-11.2}{HU-11}{Guardar precedentes y buscarlos por coincidencia exacta}{D}{8 h}{30/10/2026}{30/10/2026}{Jair León}{Crear la tabla de precedentes (resolución, materias de origen y de destino, universidad y fecha) y buscar solo coincidencias exactas de materias y universidad.}
+\tarea{TA-11.3}{HU-11}{Cargar resoluciones anteriores de prueba}{M}{3 h}{30/10/2026}{30/10/2026}{Paul Acurio}{Registrar la resolución RES-FISEI-2025-031 y otras de ejemplo. Con coincidencia exacta debe aparecer el precedente; sin coincidencia, la lista vacía.}
+\tarea{TA-11.4}{HU-11}{Pruebas de la búsqueda de precedentes}{O}{5 h}{30/10/2026}{30/10/2026}{Sebastián Miranda}{Probar con xUnit una conexión fallida, una búsqueda sin resultados y que nunca se devuelve una resolución inventada.}
+\tarea{TA-11.5}{HU-11}{Unir todos los pasos del análisis}{D}{3 h}{02/11/2026}{02/11/2026}{Jair León}{Ejecutar en orden: datos confirmados, reglas vigentes, proporción de créditos, porcentaje de contenido y búsqueda de precedentes.}
+\tarea{TA-11.6}{HU-11}{Verificar que un precedente no salte los controles}{M}{2 h}{02/11/2026}{02/11/2026}{Paul Acurio}{Caso: precedente favorable con una materia de más de 10 años. El sistema debe pedir igual la validación de conocimientos y la revisión del docente.}
+\tarea{TA-11.7}{HU-11}{Mensajes de error claros en la interfaz}{C}{2 h}{02/11/2026}{02/11/2026}{Alex Chisag}{PDF ilegible: mensaje claro. Datos sin confirmar: bloqueo. Falla de la búsqueda de precedentes: aviso que no detiene el cálculo.}
+\tarea{TA-11.8}{HU-11}{Prueba completa del flujo entre servicios}{O}{3 h}{02/11/2026}{02/11/2026}{Sebastián Miranda}{Desde el envío de la solicitud hasta el resultado, pasando por la cola de mensajes, con todos los contenedores levantados.}
+\tarea{TA-11.9}{HU-11}{Ordenar el código y cerrar la parte técnica}{M}{2 h}{03/11/2026}{03/11/2026}{Jair León}{Limpiar el código de las reglas de cálculo y dejar la base lista para la clasificación final del Sprint 3.}
+\tarea{TA-11.10}{HU-11}{Repetir las pruebas funcionales y guardar evidencias}{M}{2 h}{03/11/2026}{03/11/2026}{Paul Acurio}{Probar un caso interno, uno externo con PDF de texto, uno con PDF escaneado, la comparación de temas y los precedentes. Documentar los resultados.}
+\tarea{TA-11.11}{HU-11}{Revisar el aspecto de las pantallas y preparar la demostración}{M}{2 h}{03/11/2026}{03/11/2026}{Alex Chisag}{Revisar estilos, mensajes y navegación con teclado, y preparar el guion de la revisión del sprint.}
+\tarea{TA-11.12}{HU-11}{Agregar las pruebas a la integración continua}{O}{2 h}{03/11/2026}{03/11/2026}{Sebastián Miranda}{Ejecutar las pruebas del Servicio de Análisis en GitHub Actions y elaborar el informe de calidad del segundo incremento.}
+\par\needspace{14\baselineskip}\noindent\textbf{\textit{Mockup de HU-11}}\par
+\begin{figure}[H]\centering\fbox{\includegraphics[width=0.93\textwidth]{mockups/m12.png}}
+\caption{Mockup M-12 -- Consulta de precedentes}
+\end{figure}
+\par\needspace{6\baselineskip}\noindent\textbf{\textit{Pruebas de aceptación -- HU-11}}\par
+
+\begin{longtable}{|p{1.4cm}|p{3.7cm}|p{4.6cm}|p{5.1cm}|}
+\hline\rowcolor{grisTarjeta}\textbf{N.º} & \textbf{Prueba} & \textbf{Entrada} & \textbf{Resultado esperado}\\\hline
+\endhead
+PA-11.1 & Coincidencia exacta & Física I y Física II para Física, misma universidad & Se muestran la resolución, las materias y la universidad.\\\hline
+PA-11.2 & Sin coincidencia & Bases de Datos I, Universidad de Cuenca & Aviso Sin precedentes registrados.\\\hline
+PA-11.3 & Caso solo parecido & Física I sola para Física & No se muestra como coincidencia.\\\hline
+PA-11.4 & Precedente y más de 10 años & Precedente favorable; materia de hace 12 años & Igual pide validación de conocimientos y revisión docente.\\\hline
+PA-11.5 & Falla la búsqueda & Servicio de precedentes sin respuesta & Aviso; los cálculos de créditos y temas continúan.\\\hline
+\caption{Pruebas de aceptación de la HU-11 (definidas en el Sprint 2)}
+\end{longtable}
+
+
+\subsection{Resultado del Sprint 2}
+El informe del Sprint 2 registra la demostración del incremento con lectura, confirmación de datos, reglas, créditos, contenidos y precedentes. Una prueba de aceptación de HU-11 (PA-11.5) quedó pendiente y otra quedó parcial según la evidencia de ejecución. En el trabajo posterior se abordó la falla del servicio y el reintento automático, descritos en la sección de correcciones.

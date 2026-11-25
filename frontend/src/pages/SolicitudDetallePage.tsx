@@ -598,6 +598,25 @@ export function SolicitudDetallePage(): JSX.Element {
               })}
             </ul>
             {solicitud.estadoRevision === 'RESUELTA' ? (
+              <Alerta
+                tono="exito"
+                titulo="Solicitud finalizada"
+                accion={
+                  <Boton
+                    onClick={async () => {
+                      // jsPDF solo se carga cuando se pide el documento.
+                      const { descargarResolucionPdf } = await import('../utils/resolucionPdf');
+                      descargarResolucionPdf(solicitud);
+                    }}
+                  >
+                    Descargar resolución (PDF)
+                  </Boton>
+                }
+              >
+                Ya hay decisión en todas las materias. Descargue la resolución de homologación formal para el estudiante y Secretaría.
+              </Alerta>
+            ) : null}
+            {solicitud.estadoRevision === 'RESUELTA' ? (
               <ul className="space-y-2">
                 {solicitud.resultadoFinal.map((m) => (
                   <li key={m.codigoDestino} className="space-y-1 text-sm">
