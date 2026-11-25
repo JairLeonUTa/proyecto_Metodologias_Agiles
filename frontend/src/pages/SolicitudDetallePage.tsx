@@ -212,27 +212,20 @@ function DecisionDelAdministrador({
   const sinAcuerdo = solicitud.resultadoFinal.filter((m) => m.resultado === 'SIN_ACUERDO');
 
   if (!esAdministrador) {
-    return (
-      <Alerta tono="advertencia" titulo="Los docentes no coinciden">
-        En {sinAcuerdo.map((m) => `«${m.nombreDestino}»`).join(', ')} un docente aprobó y el otro no. La decisión final la toma el
-        administrador (coordinador o director de carrera).
-      </Alerta>
-    );
+    return <Alerta tono="advertencia">Los docentes no se pusieron de acuerdo; falta la decisión del administrador.</Alerta>;
   }
 
   return (
     <div className="space-y-3 rounded-lg border-2 border-amber-300 bg-amber-50 p-4">
-      <p className="text-sm font-semibold text-ink">Los docentes no coinciden: su decisión final</p>
-      <p className="text-sm text-slate-700">
-        Un docente aprobó y el otro no. Como coordinador o director de carrera, decida cada materia y escriba el motivo.
-      </p>
+      <Alerta tono="advertencia">Los dos docentes no se pusieron de acuerdo en: {sinAcuerdo.map((m) => m.nombreDestino).join(', ')}. Su decisión es la final.</Alerta>
+      <p className="text-sm font-semibold text-ink">Decisión final del administrador</p>
+      <p className="text-sm text-slate-700">Decida cada materia y escriba el motivo.</p>
       {sinAcuerdo.map((m) => (
         <DecisionFinalMateria key={m.codigoDestino} expedienteId={solicitud.expedienteId} materia={m} alGuardar={alGuardar} />
       ))}
     </div>
   );
 }
-
 function DecisionFinalMateria({
   expedienteId,
   materia,
@@ -622,10 +615,14 @@ export function SolicitudDetallePage(): JSX.Element {
                 ))}
               </ul>
             ) : null}
-            {solicitud.resultadoFinal.some((m) => m.resultado === 'SIN_ACUERDO') ? (
+            {solicitud.estadoRevision === 'ESPERA_ADMINISTRADOR' ? (
               <DecisionDelAdministrador solicitud={solicitud} alGuardar={setSolicitud} />
             ) : null}
-            {solicitud.puedeResponder ? <SuDecision solicitud={solicitud} alGuardar={setSolicitud} /> : null}
+            {solicitud.puedeResponder && !solicitud.resultadoFinal.some((m) => m.decisionFinal) ? (
+              <SuDecision solicitud={solicitud} alGuardar={setSolicitud} />
+            ) : solicitud.resultadoFinal.some((m) => m.decisionFinal) ? (
+              <Alerta tono="advertencia">El administrador ya dio la decisión final.</Alerta>
+            ) : null}
           </div>
         </Paso>
       ) : null}

@@ -37,6 +37,7 @@ export function estadoSolicitud(analisis: SolicitudAnalisis | null): { texto: st
   if (!analisis || analisis.estado === 'PENDIENTE') return { texto: 'Analizando…', tono: 'marca' };
   if (analisis.estado === 'PREPARANDO') return { texto: 'El agente se está preparando', tono: 'marca' };
   if (analisis.estado === 'ERROR') return { texto: 'Análisis con error', tono: 'error' };
+  if (analisis.estadoRevision === 'ESPERA_ADMINISTRADOR') return { texto: 'Falta la decisión del administrador', tono: 'advertencia' };
   if (analisis.resultadoFinal?.some((m) => m.resultado === 'SIN_ACUERDO'))
     return { texto: 'Docentes sin acuerdo · decide el administrador', tono: 'advertencia' };
   if (analisis.estadoRevision === 'RESUELTA') return { texto: 'Resuelta', tono: 'exito' };

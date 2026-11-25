@@ -77,4 +77,15 @@ describe('Solicitudes del docente revisor', () => {
     expect(await screen.findByText('Se le asignó una solicitud nueva')).toBeInTheDocument();
     expect(screen.getByText(/Sara Fiallos\. Ya traen el análisis/)).toBeInTheDocument();
   });
+
+  it('muestra que falta la decisión del administrador', async () => {
+    api.obtenerSolicitud.mockResolvedValue({
+      ...analisis(true),
+      estadoRevision: 'ESPERA_ADMINISTRADOR',
+      resultadoFinal: [{ resultado: 'SIN_ACUERDO' }],
+    });
+    abrir();
+
+    expect((await screen.findAllByText('Falta la decisión del administrador')).length).toBeGreaterThan(0);
+  });
 });

@@ -277,7 +277,7 @@ export interface SolicitudAnalisis {
   resultado: AnalisisAutomatico | null;
   dictamenes: DictamenDocente[];
   resultadoFinal: ResultadoFinalMateria[];
-  /** PENDIENTE, EN_REVISION o RESUELTA. */
+  /** PENDIENTE, EN_REVISION, ESPERA_ADMINISTRADOR o RESUELTA. */
   estadoRevision: string;
   puedeResponder: boolean;
   /** True si el análisis se hizo con reglas anteriores del agente y conviene volver a analizarlo. */

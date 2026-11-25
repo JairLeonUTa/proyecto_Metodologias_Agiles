@@ -1,4 +1,4 @@
-﻿using System.Security.Cryptography;
+using System.Security.Cryptography;
 using System.Text.Json;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
@@ -675,6 +675,7 @@ public class AnalisisAutomaticoServiceTests
         var dos = await solicitudes.ResponderAsync(expediente, "mvaca@uta.edu.ec", "Vaca", Decidir((alg, false)));
 
         dos.Respuesta!.ResultadoFinal.Single(m => m.CodigoDestino == alg).Resultado.Should().Be("SIN_ACUERDO");
+        dos.Respuesta.EstadoRevision.Should().Be("ESPERA_ADMINISTRADOR");
     }
 
     private static async Task<(SolicitudesAnalisisService Servicio, Guid Expediente)> SinAcuerdoEnAlgoritmos(SihaDbContextC db)
@@ -704,6 +705,24 @@ public class AnalisisAutomaticoServiceTests
         fila.DecisionFinal!.Comentario.Should().Be("Revisé el plan analítico: cubre los temas.");
         fila.DecisionFinal.NombreAdministrador.Should().Be("Director de carrera");
         (await db.ResultadosHomologacion.SingleAsync(f => f.MateriaDestino == alg)).ResultadoFinal.Should().Be("HOMOLOGADA");
+        respuesta.EstadoRevision.Should().Be("RESUELTA", "ya no queda ninguna materia sin acuerdo");
+    }
+
+    [Fact]
+    public async Task Con_un_solo_voto_la_materia_sigue_pendiente_y_no_hay_decision_final()
+    {
+        await using var db = CrearDb();
+        var expediente = await SolicitudAnalizada(db);
+        var solicitudes = new SolicitudesAnalisisService(db);
+        const string alg = "Algoritmos y Lógica de Programación";
+
+        var uno = await solicitudes.ResponderAsync(expediente, "cparedes@uta.edu.ec", "Paredes", Decidir((alg, true)));
+
+        uno.Respuesta!.ResultadoFinal.Single(m => m.CodigoDestino == alg).Resultado.Should().Be("PENDIENTE");
+        uno.Respuesta.EstadoRevision.Should().Be("EN_REVISION");
+        var decision = await solicitudes.DecidirComoAdministradorAsync(expediente, "admin@uta.edu.ec", "Admin",
+            new DecisionFinalRequest(alg, true, "Adelantar la decisión"));
+        decision.Codigo.Should().Be(409, "falta el voto del otro docente: todavía no hay desacuerdo");
     }
 
     [Fact]
@@ -723,20 +742,19 @@ public class AnalisisAutomaticoServiceTests
     }
 
     [Fact]
-    public async Task Si_un_docente_cambia_su_voto_y_se_ponen_de_acuerdo_decide_la_votacion()
+    public async Task Despues_de_decision_final_un_docente_no_puede_cambiar_su_voto()
     {
         await using var db = CrearDb();
         var (solicitudes, expediente) = await SinAcuerdoEnAlgoritmos(db);
-        const string alg = "Algoritmos y Lógica de Programación", poo = "Programación Orientada a Objetos";
+        const string alg = "Algoritmos y Lógica de Programación";
         await solicitudes.DecidirComoAdministradorAsync(expediente, "admin@uta.edu.ec", "Admin", new DecisionFinalRequest(alg, true, "Procede."));
 
         var cambio = await solicitudes.ResponderAsync(expediente, "cparedes@uta.edu.ec", "Paredes", Decidir((alg, false)));
 
-        var fila = cambio.Respuesta!.ResultadoFinal.Single(m => m.CodigoDestino == alg);
-        fila.Resultado.Should().Be("NO_HOMOLOGADA");
-        fila.DecisionFinal.Should().BeNull();
+        cambio.Codigo.Should().Be(409);
+        cambio.Error.Should().Be("El administrador ya dio la decisión final de esta solicitud; los votos ya no se pueden cambiar.");
+        (await solicitudes.ObtenerAsync(expediente, null, esDocente: false))!.ResultadoFinal.Single(m => m.CodigoDestino == alg).Resultado.Should().Be("HOMOLOGADA");
     }
-
     [Fact]
     public async Task Las_materias_con_creditos_bajos_no_admiten_votos_ni_decision_final()
     {

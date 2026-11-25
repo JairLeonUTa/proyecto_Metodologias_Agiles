@@ -104,6 +104,9 @@ public sealed class SolicitudesAnalisisService
         if (contexto.Estado != EstadosAnalisis.Analizado || contexto.ResultadoJson is null)
             return (null, "El agente todavía no termina el análisis de esta solicitud.", StatusCodes.Status409Conflict);
 
+        if (await _db.DecisionesFinales.AnyAsync(d => d.ExpedienteId == expedienteId, cancellationToken))
+            return (null, "El administrador ya dio la decisión final de esta solicitud; los votos ya no se pueden cambiar.", StatusCodes.Status409Conflict);
+
         var resultado = Leer(contexto.ResultadoJson);
         var bloqueadas = Todas(resultado).Where(m => m.Bloqueada).Select(m => m.Codigo).ToHashSet(StringComparer.OrdinalIgnoreCase);
         var decisiones = (solicitud?.Decisiones ?? Array.Empty<DecisionMateriaRequest>())
@@ -174,7 +177,9 @@ public sealed class SolicitudesAnalisisService
         // El agente solo recomienda: toda materia pedida la deciden los dos docentes.
         var nadaQueDecidir = resultado is not null && !Materias(resultado).Any();
         var estadoRevision = nadaQueDecidir ? "RESUELTA"
-            : respondieron == 0 ? "PENDIENTE" : respondieron < 2 ? "EN_REVISION" : "RESUELTA";
+            : respondieron == 0 ? "PENDIENTE"
+            : respondieron < 2 ? "EN_REVISION"
+            : final.Any(m => m.Resultado is "PENDIENTE" or SinAcuerdo) ? "ESPERA_ADMINISTRADOR" : "RESUELTA";
         puedeResponder = puedeResponder && !nadaQueDecidir;
 
         Siha.Certificados.CertificadoSiha? certificado = null;
