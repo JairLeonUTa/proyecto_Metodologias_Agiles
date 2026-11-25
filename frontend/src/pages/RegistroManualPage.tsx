@@ -16,6 +16,7 @@ import type {
   SolicitudCertificado,
   SolicitudManual,
 } from '../types/expedientes';
+import { periodosSugeridos } from '../utils/periodosUta';
 import { ListaVerificacion, ResumenCertificado, rechazoDe } from './SolicitudNuevaPage';
 
 const UTA = 'Universidad Técnica de Ambato';
@@ -90,6 +91,7 @@ export function RegistroManualPage(): JSX.Element {
   const [resultado, setResultado] = useState<SolicitudCertificado | null>(null);
   const [afinidad, setAfinidad] = useState<AfinidadManual | null>(null);
   const [nivelCarga, setNivelCarga] = useState(1);
+  const periodos = useMemo(() => periodosSugeridos(), []);
 
   const esMovilidad = registro.tipoTramite === MOVILIDAD;
   const datosActuales = JSON.stringify(registro);
@@ -121,6 +123,7 @@ export function RegistroManualPage(): JSX.Element {
   const mallaOrigen = useMemo(() => (esMovilidad ? [] : opciones.mallaOrigen ?? []), [esMovilidad, opciones.mallaOrigen]);
   const mallaDestino = opciones.mallaDestino ?? [];
   const nivelesOrigen = useMemo(() => [...new Set(mallaOrigen.map((m) => m.nivel))].sort((a, b) => a - b), [mallaOrigen]);
+  const nivelesDisponibles = nivelesOrigen.length > 0 ? nivelesOrigen : [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
 
   // Mientras se llena el formulario se consulta qué materias se relacionan (sugerencias y avisos).
   const consultaAfinidad = JSON.stringify({
@@ -160,7 +163,15 @@ export function RegistroManualPage(): JSX.Element {
   const cambiarMateria = (i: number, parcial: Partial<FilaMateria>): void =>
     cambiar({ materias: registro.materias.map((m, j) => (j === i ? { ...m, ...parcial } : m)) });
 
-  /** Al escribir una materia de la malla de origen, su nivel se llena solo. */
+  /** Al cambiar el nivel se filtran las materias de ese nivel; si la materia elegida era de otro nivel, se limpia. */
+  const cambiarNivel = (i: number, nivel: number | null): void => {
+    const actual = registro.materias[i];
+    const deMalla = mallaOrigen.find((m) => clave(m.nombre) === clave(actual.nombre));
+    const conservarNombre = !deMalla || deMalla.nivel === nivel;
+    cambiarMateria(i, conservarNombre ? { nivel } : { nivel, nombre: '' });
+  };
+
+  /** Al elegir una materia de la malla de origen, su nivel queda sincronizado. */
   const cambiarNombre = (i: number, nombre: string): void => {
     const deMalla = mallaOrigen.find((m) => clave(m.nombre) === clave(nombre));
     cambiarMateria(i, deMalla ? { nombre, nivel: deMalla.nivel } : { nombre });
@@ -295,17 +306,6 @@ export function RegistroManualPage(): JSX.Element {
         acciones={usuario ? <Etiqueta tono="marca">Operador: {usuario.nombreCompleto}</Etiqueta> : null}
       />
 
-      <datalist id="materias-origen">
-        {opciones.materiasOrigen.map((m) => (
-          <option key={m} value={legible(m)} />
-        ))}
-      </datalist>
-      <datalist id="materias-destino">
-        {opciones.materiasDestino.map((m) => (
-          <option key={m} value={legible(m)} />
-        ))}
-      </datalist>
-
       <Tarjeta titulo="1. Estudiante">
         <div className="grid gap-4 sm:grid-cols-2">
           <Campo htmlFor="estudiante" etiqueta="Nombres y apellidos completos" obligatorio>
@@ -407,7 +407,7 @@ export function RegistroManualPage(): JSX.Element {
 
       <Tarjeta
         titulo="4. Historial académico"
-        descripcion="Todas las materias que cursó en la carrera de origen, aprobadas y reprobadas. El nivel se llena solo con la malla, el período se copia a las materias del mismo nivel y, al escribir la nota, se marca sola como Aprobada (7 o más) o Reprobada."
+        descripcion="Todas las materias que cursó en la carrera de origen, aprobadas y reprobadas. Elija el nivel para filtrar las materias de ese nivel; el período se copia a las materias del mismo nivel y, al escribir la nota, se marca sola como Aprobada (7 o más) o Reprobada."
       >
         <div className="space-y-3">
           {mallaOrigen.length > 0 ? (
@@ -424,71 +424,107 @@ export function RegistroManualPage(): JSX.Element {
               <Boton variante="secundario" onClick={cargarMalla}>
                 Cargar materias de la malla
               </Boton>
-              <span className="text-sm text-muted">Solo falta escribir el período y la nota; quite las que no cursó.</span>
+              <span className="text-sm text-muted">Solo falta elegir el período y escribir la nota; quite las que no cursó.</span>
             </div>
           ) : null}
-          {registro.materias.map((m, i) => (
-            <fieldset key={i} className="grid items-end gap-3 rounded-md border border-slate-200 p-3 sm:grid-cols-12">
-              <legend className="sr-only">Materia {i + 1}</legend>
-              <Campo htmlFor={`materia-${i}`} etiqueta="Materia" className="sm:col-span-4">
-                <EntradaTexto
-                  id={`materia-${i}`}
-                  list="materias-origen"
-                  value={m.nombre}
-                  onChange={(e) => cambiarNombre(i, e.target.value)}
-                  placeholder="Nombre completo de la materia"
-                />
-              </Campo>
-              <Campo htmlFor={`nivel-${i}`} etiqueta="Nivel" className="sm:col-span-1">
-                <EntradaTexto
-                  id={`nivel-${i}`}
-                  type="number"
-                  min={1}
-                  max={10}
-                  value={m.nivel ?? ''}
-                  onChange={(e) => cambiarMateria(i, { nivel: e.target.value === '' ? null : Number(e.target.value) })}
-                />
-              </Campo>
-              <Campo htmlFor={`periodo-${i}`} etiqueta="Período académico" className="sm:col-span-3">
-                <EntradaTexto
-                  id={`periodo-${i}`}
-                  value={m.periodoAcademico}
-                  onChange={(e) => cambiarPeriodo(i, e.target.value)}
-                  placeholder="Ej. Abr-Sep 2025"
-                />
-              </Campo>
-              <Campo htmlFor={`nota-${i}`} etiqueta="Nota" className="sm:col-span-1">
-                <EntradaTexto
-                  id={`nota-${i}`}
-                  inputMode="decimal"
-                  value={m.nota}
-                  onChange={(e) => cambiarNota(i, e.target.value)}
-                  placeholder="8,50"
-                />
-              </Campo>
-              <Campo htmlFor={`estado-${i}`} etiqueta="Estado" className="sm:col-span-2">
-                <Selector
-                  id={`estado-${i}`}
-                  value={m.aprobada ? 'si' : 'no'}
-                  onChange={(e) => cambiarMateria(i, { aprobada: e.target.value === 'si' })}
-                >
-                  <option value="si">Aprobada</option>
-                  <option value="no">Reprobada</option>
-                </Selector>
-              </Campo>
-              <div className="sm:col-span-1">
-                <Boton
-                  variante="fantasma"
-                  tamano="sm"
-                  disabled={registro.materias.length === 1}
-                  onClick={() => cambiar({ materias: registro.materias.filter((_, j) => j !== i) })}
-                  aria-label={`Quitar la materia ${i + 1}`}
-                >
-                  Quitar
-                </Boton>
-              </div>
-            </fieldset>
-          ))}
+          {registro.materias.map((m, i) => {
+            const materiasDelNivel = m.nivel !== null ? mallaOrigen.filter((x) => x.nivel === m.nivel) : mallaOrigen;
+            return (
+              <fieldset key={i} className="grid items-end gap-3 rounded-md border border-slate-200 p-3 sm:grid-cols-12">
+                <legend className="sr-only">Materia {i + 1}</legend>
+                <Campo htmlFor={`nivel-${i}`} etiqueta="Nivel" className="sm:col-span-1">
+                  <Selector
+                    id={`nivel-${i}`}
+                    className="px-2"
+                    value={m.nivel ?? ''}
+                    onChange={(e) => cambiarNivel(i, e.target.value === '' ? null : Number(e.target.value))}
+                  >
+                    {nivelesDisponibles.map((n) => (
+                      <option key={n} value={n}>
+                        {n}
+                      </option>
+                    ))}
+                  </Selector>
+                </Campo>
+                <Campo htmlFor={`materia-${i}`} etiqueta="Materia" className="sm:col-span-4">
+                  {esMovilidad ? (
+                    <EntradaTexto
+                      id={`materia-${i}`}
+                      value={m.nombre}
+                      onChange={(e) => cambiarNombre(i, e.target.value)}
+                      placeholder="Nombre completo de la materia"
+                    />
+                  ) : (
+                    <Selector
+                      id={`materia-${i}`}
+                      value={m.nombre}
+                      disabled={mallaOrigen.length === 0}
+                      onChange={(e) => cambiarNombre(i, e.target.value)}
+                    >
+                      <option value="">
+                        {mallaOrigen.length === 0 ? 'Primero elija la carrera de origen…' : 'Elija la materia…'}
+                      </option>
+                      {m.nombre && !materiasDelNivel.some((x) => clave(x.nombre) === clave(m.nombre)) ? (
+                        <option value={m.nombre}>{m.nombre}</option>
+                      ) : null}
+                      {materiasDelNivel.map((x) => (
+                        <option key={x.nombre} value={legible(x.nombre)}>
+                          {legible(x.nombre)}
+                        </option>
+                      ))}
+                    </Selector>
+                  )}
+                </Campo>
+                <Campo htmlFor={`periodo-${i}`} etiqueta="Período académico" className="sm:col-span-3">
+                  <Selector
+                    id={`periodo-${i}`}
+                    value={m.periodoAcademico}
+                    onChange={(e) => cambiarPeriodo(i, e.target.value)}
+                  >
+                    <option value="">Elija el período…</option>
+                    {m.periodoAcademico && !periodos.includes(m.periodoAcademico) ? (
+                      <option value={m.periodoAcademico}>{m.periodoAcademico}</option>
+                    ) : null}
+                    {periodos.map((p) => (
+                      <option key={p} value={p}>
+                        {p}
+                      </option>
+                    ))}
+                  </Selector>
+                </Campo>
+                <Campo htmlFor={`nota-${i}`} etiqueta="Nota" className="sm:col-span-1">
+                  <EntradaTexto
+                    id={`nota-${i}`}
+                    inputMode="decimal"
+                    value={m.nota}
+                    onChange={(e) => cambiarNota(i, e.target.value)}
+                    placeholder="8,50"
+                  />
+                </Campo>
+                <Campo htmlFor={`estado-${i}`} etiqueta="Estado" className="sm:col-span-2">
+                  <Selector
+                    id={`estado-${i}`}
+                    value={m.aprobada ? 'si' : 'no'}
+                    onChange={(e) => cambiarMateria(i, { aprobada: e.target.value === 'si' })}
+                  >
+                    <option value="si">Aprobada</option>
+                    <option value="no">Reprobada</option>
+                  </Selector>
+                </Campo>
+                <div className="sm:col-span-1">
+                  <Boton
+                    variante="fantasma"
+                    tamano="sm"
+                    disabled={registro.materias.length === 1}
+                    onClick={() => cambiar({ materias: registro.materias.filter((_, j) => j !== i) })}
+                    aria-label={`Quitar la materia ${i + 1}`}
+                  >
+                    Quitar
+                  </Boton>
+                </div>
+              </fieldset>
+            );
+          })}
           <Boton
             variante="secundario"
             onClick={() => {
@@ -532,27 +568,24 @@ export function RegistroManualPage(): JSX.Element {
                   </Boton>
                 </div>
                 <Campo htmlFor={`destino-${i}`} etiqueta="Homologar por (materia de la carrera nueva)">
-                  {mallaDestino.length > 0 ? (
-                    <Selector id={`destino-${i}`} value={s.materiaDestino} onChange={(e) => cambiarSolicitud(i, { materiaDestino: e.target.value })}>
-                      <option value="">Elija la materia de la carrera nueva…</option>
-                      {s.materiaDestino && !mallaDestino.some((m) => clave(m.nombre) === clave(s.materiaDestino)) ? (
-                        <option value={s.materiaDestino}>{s.materiaDestino}</option>
-                      ) : null}
-                      {mallaDestino.map((m) => (
-                        <option key={m.nombre} value={legible(m.nombre)}>
-                          {legible(m.nombre)} (nivel {m.nivel}, {m.creditos} créditos)
-                        </option>
-                      ))}
-                    </Selector>
-                  ) : (
-                    <EntradaTexto
-                      id={`destino-${i}`}
-                      list="materias-destino"
-                      value={s.materiaDestino}
-                      onChange={(e) => cambiarSolicitud(i, { materiaDestino: e.target.value })}
-                      placeholder="Escriba o elija de la lista"
-                    />
-                  )}
+                  <Selector
+                    id={`destino-${i}`}
+                    value={s.materiaDestino}
+                    disabled={mallaDestino.length === 0}
+                    onChange={(e) => cambiarSolicitud(i, { materiaDestino: e.target.value })}
+                  >
+                    <option value="">
+                      {mallaDestino.length === 0 ? 'Primero elija la carrera de destino…' : 'Elija la materia de la carrera nueva…'}
+                    </option>
+                    {s.materiaDestino && !mallaDestino.some((m) => clave(m.nombre) === clave(s.materiaDestino)) ? (
+                      <option value={s.materiaDestino}>{s.materiaDestino}</option>
+                    ) : null}
+                    {mallaDestino.map((m) => (
+                      <option key={m.nombre} value={legible(m.nombre)}>
+                        {legible(m.nombre)} (nivel {m.nivel}, {m.creditos} créditos)
+                      </option>
+                    ))}
+                  </Selector>
                 </Campo>
               </div>
               {(() => {

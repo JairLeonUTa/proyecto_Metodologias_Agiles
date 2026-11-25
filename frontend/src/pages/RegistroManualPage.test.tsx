@@ -94,10 +94,10 @@ describe('Registro manual de una solicitud (sin PDF)', () => {
     await screen.findAllByRole('option', { name: /Carlos Paredes/ });
     await user.selectOptions(screen.getByLabelText(/Docente revisor 1/), 'cparedes@uta.edu.ec');
     await user.selectOptions(screen.getByLabelText(/Docente revisor 2/), 'mvaca@uta.edu.ec');
-    await user.type(screen.getByLabelText('Materia'), 'Física');
-    await user.type(screen.getByLabelText('Período académico'), 'Abr-Sep 2025');
+    await user.selectOptions(screen.getByLabelText('Materia'), 'Fisica');
+    await user.selectOptions(screen.getByLabelText('Período académico'), 'AGOSTO 2025 - ENERO 2026');
     await user.type(screen.getByLabelText('Nota'), '8,5');
-    await user.selectOptions(screen.getByLabelText('Materia aprobada'), 'Física');
+    await user.selectOptions(screen.getByLabelText('Materia aprobada'), 'Fisica');
     await user.selectOptions(screen.getByLabelText(/Homologar por/), 'Fisica');
   };
 
@@ -124,8 +124,8 @@ describe('Registro manual de una solicitud (sin PDF)', () => {
         cedula: '1805123456',
         tipoTramite: 'Cambio de carrera',
         carreraDestino: 'Software',
-        materias: [{ nombre: 'Física', nivel: 1, periodoAcademico: 'Abr-Sep 2025', nota: 8.5, aprobada: true }],
-        solicitudes: [{ materiasOrigen: ['Física'], materiaDestino: 'Fisica' }],
+        materias: [{ nombre: 'Fisica', nivel: 1, periodoAcademico: 'AGOSTO 2025 - ENERO 2026', nota: 8.5, aprobada: true }],
+        solicitudes: [{ materiasOrigen: ['Fisica'], materiaDestino: 'Fisica' }],
       }),
     );
 
@@ -180,23 +180,36 @@ describe('Registro manual de una solicitud (sin PDF)', () => {
     await user.click(screen.getByRole('button', { name: 'Cargar materias de la malla' }));
 
     const materias = screen.getAllByLabelText('Materia');
-    expect(materias.map((m) => (m as HTMLInputElement).value)).toEqual(['Fisica', 'Algebra lineal', 'Calculo integral']);
-    expect(screen.getAllByLabelText('Nivel').map((n) => (n as HTMLInputElement).value)).toEqual(['1', '1', '2']);
+    expect(materias.map((m) => (m as HTMLSelectElement).value)).toEqual(['Fisica', 'Algebra lineal', 'Calculo integral']);
+    expect(screen.getAllByLabelText('Nivel').map((n) => (n as HTMLSelectElement).value)).toEqual(['1', '1', '2']);
 
-    await user.type(screen.getAllByLabelText('Período académico')[0], 'Abr-Sep 2025');
-    const periodos = screen.getAllByLabelText('Período académico').map((p) => (p as HTMLInputElement).value);
-    expect(periodos).toEqual(['Abr-Sep 2025', 'Abr-Sep 2025', '']);
+    await user.selectOptions(screen.getAllByLabelText('Período académico')[0], 'AGOSTO 2025 - ENERO 2026');
+    const periodos = screen.getAllByLabelText('Período académico').map((p) => (p as HTMLSelectElement).value);
+    expect(periodos).toEqual(['AGOSTO 2025 - ENERO 2026', 'AGOSTO 2025 - ENERO 2026', '']);
   });
 
-  it('escribir una materia de la malla llena su nivel', async () => {
+  it('filtra las materias según el nivel seleccionado y limpia la materia si se cambia a otro nivel', async () => {
     const user = userEvent.setup();
     abrir();
     await elegirCarreras(user);
     await screen.findByLabelText(/Cargar las materias de la malla/);
 
-    await user.type(screen.getByLabelText('Materia'), 'Cálculo Integral');
+    const selectorNivel = screen.getByLabelText('Nivel');
+    const selectorMateria = screen.getByLabelText('Materia');
 
-    expect(screen.getByLabelText('Nivel')).toHaveDisplayValue('2');
+    // En nivel 1 solo aparecen las materias de nivel 1
+    expect(within(selectorMateria).queryByRole('option', { name: 'Fisica' })).toBeInTheDocument();
+    expect(within(selectorMateria).queryByRole('option', { name: 'Algebra lineal' })).toBeInTheDocument();
+    expect(within(selectorMateria).queryByRole('option', { name: 'Calculo integral' })).not.toBeInTheDocument();
+
+    await user.selectOptions(selectorMateria, 'Fisica');
+    expect(selectorMateria).toHaveValue('Fisica');
+
+    // Al cambiar a nivel 2 se limpia la materia de nivel 1 y solo aparece la de nivel 2
+    await user.selectOptions(selectorNivel, '2');
+    expect(selectorMateria).toHaveValue('');
+    expect(within(selectorMateria).queryByRole('option', { name: 'Fisica' })).not.toBeInTheDocument();
+    expect(within(selectorMateria).queryByRole('option', { name: 'Calculo integral' })).toBeInTheDocument();
   });
 
   it('sugiere la materia de destino y avisa si lo pedido no se relaciona', async () => {
@@ -211,7 +224,7 @@ describe('Registro manual de una solicitud (sin PDF)', () => {
               solicitud: 1,
               seRelacionan: false,
               porcentaje: 3,
-              mensaje: 'Solicitud 1: «Física» no se relaciona con «Algoritmos y logica de programacion».',
+              mensaje: 'Solicitud 1: «Fisica» no se relaciona con «Algoritmos y logica de programacion».',
               sugerencia: 'Fisica',
             },
           ],
@@ -219,15 +232,16 @@ describe('Registro manual de una solicitud (sin PDF)', () => {
       }
       return pedida.materiasOrigen[0]
         ? { sugerencias: [], solicitudes: [{ solicitud: 1, seRelacionan: true, porcentaje: 60, mensaje: 'Se relacionan: sus temas se parecen un 60 %.', sugerencia: null }] }
-        : { sugerencias: [{ materiaOrigen: 'Física', materiaDestino: 'Fisica', porcentaje: 60 }], solicitudes: [] };
+        : { sugerencias: [{ materiaOrigen: 'Fisica', materiaDestino: 'Fisica', porcentaje: 60 }], solicitudes: [] };
     });
     abrir();
     await elegirCarreras(user);
-    await user.type(screen.getByLabelText('Materia'), 'Física');
+    await screen.findByLabelText(/Cargar las materias de la malla/);
+    await user.selectOptions(screen.getByLabelText('Materia'), 'Fisica');
     await user.type(screen.getByLabelText('Nota'), '8');
 
     expect(await screen.findByText(/Sugerencias automáticas/)).toBeInTheDocument();
-    await user.selectOptions(screen.getByLabelText('Materia aprobada'), 'Física');
+    await user.selectOptions(screen.getByLabelText('Materia aprobada'), 'Fisica');
     expect(screen.getByLabelText(/Homologar por/)).toHaveValue('Fisica');
     expect(await screen.findByText(/Se relacionan: sus temas se parecen un 60 %/)).toBeInTheDocument();
 
@@ -235,5 +249,18 @@ describe('Registro manual de una solicitud (sin PDF)', () => {
     expect(await screen.findByText('Estas materias no se relacionan')).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Usar «Fisica»' }));
     expect(screen.getByLabelText(/Homologar por/)).toHaveValue('Fisica');
+  });
+
+  it('ofrece períodos académicos de la UTA precargados en el combobox Período académico', () => {
+    abrir();
+
+    const campoPeriodo = screen.getByLabelText('Período académico');
+    const opciones = within(campoPeriodo)
+      .getAllByRole('option')
+      .map((o) => (o as HTMLOptionElement).value)
+      .filter(Boolean);
+    expect(opciones.length).toBeGreaterThan(10);
+    expect(opciones).toContain('AGOSTO 2025 - ENERO 2026');
+    expect(opciones).toContain('ABRIL - SEPTIEMBRE 2020');
   });
 });
